@@ -428,15 +428,21 @@ font-style: normal;
        margin: 2rem 0;
    }
 
-      .mobile-wrapper {
-      width: 100%;
-      max-width: 28rem;
-       display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin: 0 auto;
-        box-sizing: border-box;
-   }
+ .mobile-wrapper {
+    width: 100%;
+    max-width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4칸 균등 */
+    justify-items: center;
+    align-items: center;
+    padding-inline: 1rem;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+  .contentsblock { margin: 0; width: 100%; display: flex; justify-content: center; }
+  /* 세로쓰기에서 ‘인라인 크기’를 최소 확보 → 폰트 교체돼도 칸 안에서만 미세 변동 */
+  .contents { writing-mode: vertical-rl; min-inline-size: 2.8rem; }
+}
    
    .contents {
        font-size: 1.2rem;
