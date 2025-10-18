@@ -1,4 +1,4 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css");
+ @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css");
 @font-face {
     font-family: 'BookkMyungjo-Rg';
     src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkMyungjo-Bd.woff2') format('woff2');
@@ -416,8 +416,8 @@ font-style: normal;
    }
 
    .logo-img {
-  height: 3rem;
-  width: 3rem;  /* 이 부분이 auto에서 3rem으로 변경됨 */
+  height: 3.2rem;
+  width: 3.2rem;  /* 이 부분이 auto에서 3rem으로 변경됨 */
 margin: 0 auto;
 }
    
@@ -427,7 +427,7 @@ margin: 0 auto;
 
       .mobile-wrapper {
       width: 100%;
-      max-width: 25rem;
+      max-width: 28rem;
        display: flex;
         align-items: center;
         justify-content: space-between;
@@ -457,8 +457,8 @@ margin: 0 auto;
        left: auto;
        transform: none;
        width: 100%;
-       max-width: 25rem;
-       height: 49rem;
+       max-width: 28rem;
+       height: 50rem;
        margin: 1rem auto;
        margin-bottom: 7rem;
    }
