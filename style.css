@@ -457,7 +457,7 @@ font-style: normal;
 
   mark {
     display: inline-block;   /* 컨텐츠를 블록처럼 다뤄 폭 안정화 */
-    padding: 0.3rem 0.4rem;
+    padding: 0.3rem 0.3rem;
     border: 0.5px solid black;
   }
    
