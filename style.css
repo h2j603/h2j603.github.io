@@ -426,7 +426,7 @@ margin: 0 auto;
    }
 
        .mobile-wrapper {
-      width: 28rem;
+      width: 26rem;
        display: flex;
         align-items: center;
         justify-content: space-between;
@@ -454,7 +454,7 @@ margin: 0 auto;
        top: auto;
        left: auto;
        transform: none;
-       width: 28rem;
+       width: 26rem;
        height: 50rem;
        margin: 1rem auto;
        margin-bottom: 7rem;
