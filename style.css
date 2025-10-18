@@ -429,7 +429,7 @@ font-style: normal;
    }
 
       .mobile-wrapper {
-      width: calc(100% - 2rem);
+      width: 100%;
       max-width: 28rem;
        display: flex;
         align-items: center;
