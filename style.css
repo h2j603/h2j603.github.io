@@ -432,7 +432,7 @@ margin: 0 auto;
         align-items: center;
         justify-content: space-between;
         margin: 0 auto;
-        padding: 0 1rem;
+        box-sizing: border-box;
    }
    
    .contents {
