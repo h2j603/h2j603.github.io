@@ -425,12 +425,14 @@ margin: 0 auto;
        margin: 2rem 1rem;
    }
 
-       .mobile-wrapper {
-      width: 26rem;
+      .mobile-wrapper {
+      width: 100%;
+      max-width: 28rem;
        display: flex;
         align-items: center;
         justify-content: space-between;
         margin: 0 auto;
+        padding: 0 1rem;
    }
    
    .contents {
@@ -454,7 +456,8 @@ margin: 0 auto;
        top: auto;
        left: auto;
        transform: none;
-       width: 26rem;
+       width: 100%;
+       max-width: 28rem;
        height: 50rem;
        margin: 1rem auto;
        margin-bottom: 7rem;
