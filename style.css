@@ -428,38 +428,38 @@ font-style: normal;
        margin: 2rem 0;
    }
 
- .mobile-wrapper {
+  .mobile-wrapper {
     width: 100%;
     max-width: 100%;
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4칸 균등 */
+    grid-template-columns: repeat(4, 1fr);
     justify-items: center;
     align-items: center;
     padding-inline: 1rem;
     margin: 0 auto;
     box-sizing: border-box;
   }
-  .contentsblock { margin: 0; width: 100%; display: flex; justify-content: center; }
-  /* 세로쓰기에서 ‘인라인 크기’를 최소 확보 → 폰트 교체돼도 칸 안에서만 미세 변동 */
-  .contents { writing-mode: vertical-rl; min-inline-size: 2.8rem; }
-}
-   
-   .contents {
-	   
-  font-family: Pretendard, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Arial, sans-serif !important;
-       font-size: 1.2rem;
-       letter-spacing: 1px;
-       display: inline-block;
-       justify-content: center;
-       margin-bottom: 3rem;
-       letter-spacing: 3px;
-       text-align: center;
-       vertical-align: middle;
-   }
 
-   mark {
+
+  .contentsblock {
+    width: 3.2rem;        /* 필요시 2.8~3.6rem에서 미세 조정 */
+    margin: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .contents {
+    writing-mode: vertical-rl;
+    display: inline-block;
+    text-align: center;
+    letter-spacing: 3px;
+  }
+
+  mark {
+    display: inline-block;   /* 컨텐츠를 블록처럼 다뤄 폭 안정화 */
+    padding: 0.3rem 0.4rem;
     border: 0.5px solid black;
-   }
+  }
    
    .container {
        position: relative;
