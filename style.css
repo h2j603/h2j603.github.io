@@ -424,109 +424,31 @@ font-style: normal;
     object-fit: contain;
   }
 
-  /* ✅ 모바일 네비게이션 중앙정렬 */
-  .mobile-wrapper {
-    width: 100%;
-    max-width: 100%; /* 393px 화면에 정확히 맞게 */
-    display: flex;
-    align-items: center;
-    justify-content: space-evenly; /* ✅ 양끝 포함 균등 간격 */
-    padding-inline: 1rem;          /* 좌우 살짝 여백 */
-    margin: 0 auto;
-    box-sizing: border-box;
-  }
 
-  .contentsblock {
-    margin: 0; /* ✅ 불필요한 마진 제거 */
-    flex: 0 0 auto; /* 항목 크기를 내용에 맞게 */
-  }
+.mobile-wrapper {
+  width: 100%;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4칸 균등 */
+  justify-items: center;                 /* 각 칸 내용 중앙 */
+  align-items: center;
+  gap: 0;                                /* 필요시 0~0.5rem */
+  padding-inline: 1rem;                  /* 좌우 동일 여백 */
+  margin: 0 auto;
+  box-sizing: border-box;
+}
 
-  .contents {
-    font-size: 1.2rem;
-    letter-spacing: 2px;
-    display: inline-block;
-    text-align: center;
-    vertical-align: middle;
-    writing-mode: vertical-rl;
-  }
+.contentsblock {
+  margin: 0;           /* 불필요 마진 제거 */
+  width: 100%;         /* 칸폭 따라감 */
+  display: flex;       /* 안쪽 링크 중앙 */
+  justify-content: center;
+}
 
-  mark {
-    border: 0.5px solid black;
-  }
-
-  .container {
-    position: relative;
-    top: auto;
-    left: auto;
-    transform: none;
-    width: 100%;
-    max-width: 100%;  /* ✅ 화면 폭 전체 사용 */
-    height: 50rem;
-    margin: 1rem auto 7rem auto;
-  }
-
-  .verticalbox {
-    height: 18rem;
-  }
-
-  table, tr, td, th {
-    padding: 8px;
-  }
-
-  .titletext {
-    font-size: 0.9rem;
-    letter-spacing: 2px;
-  }
-
-  .verticaltext2 {
-    line-height: 18px;
-    letter-spacing: 1px;
-  }
-
-  .blacktitle {
-    font-size: 0.9rem;
-    letter-spacing: 2px;
-  }
-
-  .left {
-    overflow: hidden;
-  }
-
-  .verticaltext {
-    font-size: 0.52rem;
-    text-align: center;
-  }
-
-  .container-card {
-    position: relative;
-    top: auto;
-    left: auto;
-    transform: none;
-    width: 23rem;
-    height: 12.2rem;
-    max-height: 240px;
-    margin: 2rem auto;
-  }
-
-  .card-content {
-    margin: 1rem;
-    line-height: 1.4rem;
-    font-size: 0.9rem;
-  }
-
-  .name-1 {
-    font-size: 2rem;
-    margin-top: 2rem;
-    letter-spacing: 12px;
-  }
-
-  .cardlogo {
-    margin: 0.8rem;
-    font-size: 1.2rem;
-  }
-
-  .mobile-hidden {
-    display: none;
-  }
+.contents {
+  display: inline-block;
+  writing-mode: vertical-rl;
+  text-align: center;
+  letter-spacing: 3px;
 }
 
