@@ -427,7 +427,7 @@ margin: 0 auto;
 
       .mobile-wrapper {
       width: 100%;
-      max-width: 28rem;
+      max-width: 25rem;
        display: flex;
         align-items: center;
         justify-content: space-between;
@@ -436,7 +436,7 @@ margin: 0 auto;
    }
    
    .contents {
-       font-size: 1.1rem;
+       font-size: 1rem;
        letter-spacing: 1px;
        display: inline-block;
        justify-content: center;
@@ -457,8 +457,8 @@ margin: 0 auto;
        left: auto;
        transform: none;
        width: 100%;
-       max-width: 28rem;
-       height: 50rem;
+       max-width: 25rem;
+       height: 49rem;
        margin: 1rem auto;
        margin-bottom: 7rem;
    }
