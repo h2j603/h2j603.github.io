@@ -37,7 +37,7 @@ font-style: normal;
   color: var(--color-1);
   background-color: var(--color-2);
   background-image: radial-gradient(
-    rgba(0, 0, 0, 0.08) 0.5px, 0.5px,  /* Adjusted dot color to be more subtle */
+    rgba(0, 0, 0, 0.15) 0.5px, 0.5px,  /* Adjusted dot color to be more subtle */
     transparent 0.5px
   );
   background-size: 20px 20px;  /* Made dots slightly closer together */
