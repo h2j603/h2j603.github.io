@@ -89,9 +89,12 @@ letter-spacing: 3px;
 }
 
 mark {
-  padding: 0.3rem;
+
   background-color: var(--color-3);
   border: 1px solid black;
+display: inline-block;   
+    padding: 3rem 0rem;
+
 }
 
 .container::after {
@@ -457,7 +460,7 @@ font-style: normal;
 
   mark {
     display: inline-block;   /* 컨텐츠를 블록처럼 다뤄 폭 안정화 */
-    padding: 0rem 0.3rem;
+    padding: 3rem 0rem;
     border: 0.5px solid black;
   }
    
