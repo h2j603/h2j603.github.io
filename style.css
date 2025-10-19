@@ -448,7 +448,7 @@ font-style: normal;
 
   .contentsblock {
     width: 3.2rem;        /* 필요시 2.8~3.6rem에서 미세 조정 */
-    margin: 0;
+    margin: 6;
     display: flex;
     justify-content: center;
   }
