@@ -59,8 +59,8 @@ margin-left: 3rem
 }
 
 .logo-img {
-  height: 4rem;
-  width: 4rem;  /* 이 부분이 auto에서 3rem으로 변경됨 */
+  height: 4.5rem;
+  width: 4.5rem;  /* 이 부분이 auto에서 3rem으로 변경됨 */
   display: block;
 }
 
