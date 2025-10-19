@@ -181,7 +181,7 @@ display: inline-block;
     table-layout: fixed;
     max-height: 100%;
     max-width: 100%;
-    
+    border-collapse: collapse;
 }
 
 .table-a {
