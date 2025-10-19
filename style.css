@@ -60,8 +60,8 @@ margin-left: 3rem
 }
 
 .logo-img {
-  height: 2.7rem;
-  width: 2.7rem;  /* 이 부분이 auto에서 3rem으로 변경됨 */
+  height: 4rem;
+  width: 4rem;  /* 이 부분이 auto에서 3rem으로 변경됨 */
   display: block;
 }
 
@@ -422,8 +422,8 @@ font-style: normal;
    }
 
    .logo-img {
-       height: 3.5rem;
-       width: 3.5rem;
+       height: 4rem;
+       width: 4rem;
        margin: 0 auto;
 	   margin-bottom: 3rem;
        object-fit: contain;
