@@ -539,6 +539,13 @@ font-style: normal;
    .mobile-hidden {
     display: none;
    }
+
+	html.wf-loading .mobile-wrapper { 
+  visibility: hidden; 
+}
+html.wf-active .mobile-wrapper { 
+  visibility: visible; 
+}
   
 
 
