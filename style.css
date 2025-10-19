@@ -48,16 +48,11 @@ font-style: normal;
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
+  width: 30%;
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 10;
-  pointer-events: none;
-}
-
-.navigation-wrapper > * {
-  pointer-events: auto;
 }
 
 /* 스크롤바 숨기기 */
