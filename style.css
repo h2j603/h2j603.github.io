@@ -462,7 +462,6 @@ font-style: normal;
   }
    
    .container {
-       display: hidden;
        position: relative;
        top: auto;
        left: auto;
