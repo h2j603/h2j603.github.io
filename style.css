@@ -457,11 +457,12 @@ font-style: normal;
 
   mark {
     display: inline-block;   /* 컨텐츠를 블록처럼 다뤄 폭 안정화 */
-    padding: 0.1rem 0.3rem;
+    padding: 0.05rem 0.3rem;
     border: 0.5px solid black;
   }
    
    .container {
+       display: hidden;
        position: relative;
        top: auto;
        left: auto;
@@ -537,16 +538,5 @@ font-style: normal;
     display: none;
    }
   
-  .left,
-.right,
-.rightbottom,
-.bottom-left-wrapper,
-.leftbottom,
-.leftbottom2 {
-  box-sizing: border-box;
-  max-width: 100%;
-  max-height: 100%;
-  overflow: hidden;
-}
-}
+
 
