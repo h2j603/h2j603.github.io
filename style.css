@@ -574,6 +574,14 @@ font-style: normal;
     display: none;
    }
 
+	#page1 {
+    display: none;
+}
+
+#page1:target {
+    display: block;
+}
+
 	html.wf-loading .mobile-wrapper { 
   visibility: hidden; 
 }
