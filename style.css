@@ -1,4 +1,4 @@
- @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css");
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css");
 @font-face {
     font-family: 'BookkMyungjo-Rg';
     src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkMyungjo-Bd.woff2') format('woff2');
@@ -411,6 +411,7 @@ font-style: normal;
        font-size: 0.6rem;
        overflow-x: hidden;
        width: 100%;
+       overflow-y: auto;
    }
    
    h1 {
@@ -471,17 +472,33 @@ font-style: normal;
        transform: none;
        width: 100%;
        max-width: 28rem;
-       height: 48rem;
+       height: auto;
+       min-height: 48rem;
        margin: 1rem auto;
        margin-bottom: 7rem;
    }
    
+   .left, .right, .bottom-left-wrapper, .rightbottom {
+       height: 50%;
+       width: 50%;
+   }
+   
    .verticalbox {
-       height: 18rem;
+       height: 100%;
+       min-height: 18rem;
+   }
+   
+   .table-a, .table-b, .table-c {
+       height: 100%;
+       width: 100%;
+   }
+   
+   .table-a td, .table-b td, .table-c td {
+       overflow: hidden;
    }
    
    table, tr, td, th {
-       padding: 8px;
+       padding: 6px;
    }
    
    .titletext {
@@ -490,8 +507,9 @@ font-style: normal;
    }
    
    .verticaltext2 {
-       line-height: 18px;
-       letter-spacing: 1px;
+       line-height: 16px;
+       letter-spacing: 0.8px;
+       font-size: 0.85rem;
    }
 
    .blacktitle {
@@ -501,10 +519,26 @@ font-style: normal;
 
  .left  {
     overflow: hidden;
+    box-sizing: border-box;
+   }
+
+   .right {
+    overflow: hidden;
+    box-sizing: border-box;
+   }
+
+   .bottom-left-wrapper {
+    overflow: hidden;
+    box-sizing: border-box;
+   }
+
+   .rightbottom {
+    overflow: hidden;
+    box-sizing: border-box;
    }
 
    .verticaltext {
-    font-size: 0.52rem;
+    font-size: 0.55rem;
     text-align: center;
   }
    
@@ -546,4 +580,4 @@ font-style: normal;
 html.wf-active .mobile-wrapper { 
   visibility: visible; 
 }
-  
+}
