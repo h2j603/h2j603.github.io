@@ -36,11 +36,6 @@ font-style: normal;
   word-break: keep-all;
   color: var(--color-1);
   background-color: var(--color-2);
-  background-image: radial-gradient(
-    rgba(0, 0, 0, 0.15) 0.5px, 0.5px,  /* Adjusted dot color to be more subtle */
-    transparent 0.5px
-  );
-  background-size: 20px 20px;  /* Made dots slightly closer together */
   cursor: default;
     user-select: none;       /* 텍스트 선택 불가 */
   -webkit-user-select: none; /* 사파리/크롬용 */
