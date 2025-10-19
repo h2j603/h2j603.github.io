@@ -405,6 +405,7 @@ footer {
   margin-bottom: 50px;
   text-align: center;
   font-size: 0.8rem;
+  line-height: 160%;
   color:  var(--color-1);
 }
 
