@@ -91,6 +91,7 @@ font-style: normal;
 font-size: 1rem;
 writing-mode: vertical-rl;
 text-align: start;
+	justify-content: flex-start;
 letter-spacing: 3px;
 
 }
