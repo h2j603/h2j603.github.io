@@ -400,6 +400,14 @@ font-weight: 700;
 font-style: normal;
 }
 
+footer {
+  margin-top: 50px;
+  margin-bottom: 50px;
+  text-align: center;
+  font-size: 12px;
+  color:  var(--color-1);
+}
+
 
 @media only screen and (max-width: 600px) {
    html {
