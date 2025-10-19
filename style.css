@@ -41,27 +41,11 @@ font-style: normal;
   -webkit-user-select: none; /* 사파리/크롬용 */
   -moz-user-select: none;    /* 파이어폭스용 */
   -ms-user-select: none;     /* IE/Edge용 */
-  overflow: hidden;
 }
 
-.navigation-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 30%;
-  height: 100vh;
-  overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 10;
-}
-
-/* 스크롤바 숨기기 */
-.navigation-wrapper::-webkit-scrollbar {
-  display: none;
-}
-.navigation-wrapper {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.contentsblock {
+margin: 2rem;
+margin-left: 3rem
 }
 
 h1 {
@@ -88,7 +72,7 @@ margin-left: 3rem
 font-family: kozuka-mincho-pr6n, optique-display, serif;
 font-weight: 900;
 font-style: normal;
-font-size: 1rem;
+font-size: 1.1rem;
 writing-mode: vertical-rl;
 text-align: start;
 letter-spacing: 3px;
@@ -113,7 +97,6 @@ mark {
   border: 1px solid black;
 display: inline-block;   
     padding: 3.5rem 0rem;
-	text-align: start;
 
 }
 
@@ -432,13 +415,6 @@ font-style: normal;
        overflow-x: hidden;
        width: 100%;
        overflow-y: auto;
-       overflow: auto;
-   }
-
-   .navigation-wrapper {
-       position: relative;
-       height: auto;
-       overflow: visible;
    }
 
    /* 폰트 로딩 중에도 레이아웃 유지 */
@@ -466,8 +442,7 @@ font-style: normal;
    }
    
    .contentsblock {
-       margin: 1rem 0;
-	   text-align: start;
+       margin: 2rem 0;
    }
 
   .mobile-wrapper {
