@@ -191,7 +191,7 @@ display: inline-block;
 .verticalbox {
 	display: inline-block;
 	position: relative;
-	height: 22rem;
+	height: 100%;
 	width: 100%;
 	/*background-color: yellow;*/
 
