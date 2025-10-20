@@ -43,10 +43,7 @@ font-style: normal;
   -moz-user-select: none;    /* 파이어폭스용 */
   -ms-user-select: none;     /* IE/Edge용 */
 }
-.left { background: rgba(255,0,0,0.1); }
-.right { background: rgba(0,255,0,0.1); }
-.bottom-left-wrapper { background: rgba(0,0,255,0.1); }
-.rightbottom { background: rgba(255,255,0,0.1); }
+
 h1 {
 margin: 3rem;
   font-family: kozuka-mincho-pr6n, optique-display, serif;
