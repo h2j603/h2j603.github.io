@@ -374,6 +374,8 @@ a.titletext:hover {
 .cardlogo {
 margin: 1rem;
 font-size: 1rem;
+width: 0.6rem;
+height: 0.6rem;
 font-family: kozuka-mincho-pr6n, optique-display, serif;
 font-weight: 900;
 font-style: normal;
