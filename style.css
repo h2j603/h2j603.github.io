@@ -1,17 +1,122 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css");
+@font-face {
+    font-family: 'BookkMyungjo-Rg';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkMyungjo-Bd.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+}
+
+:root {
+  --color-1: black;
+  --color-2: DeepSkyBlue;
+  --color-3: gainsboro;
+  --color-5: whitesmoke;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  font-size: 100%;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 15px;
+}
+
+
+
+body {
+  font-family: agchoijeongho-screen, serif;
+font-weight: 400;
+font-style: normal;
+  font-size: 1rem;
+  word-break: keep-all;
+  color: var(--color-1);
+  background-color: var(--color-2);
+  cursor: default;
+    user-select: none;       /* 텍스트 선택 불가 */
+  -webkit-user-select: none; /* 사파리/크롬용 */
+  -moz-user-select: none;    /* 파이어폭스용 */
+  -ms-user-select: none;     /* IE/Edge용 */
+}
+
+h1 {
+margin: 3rem;
+  font-family: kozuka-mincho-pr6n, optique-display, serif;
+  font-weight: 900;
+font-style: normal;
+font-size: 3rem;
+margin-bottom: 5rem;
+
+}
+
+.contentsblock {
+margin: 2rem;
+margin-left: 3rem
+
+}
+
+.logo-img {
+  height: 4.2rem;
+  width: 4.2rem;  /* 이 부분이 auto에서 3rem으로 변경됨 */
+  display: block;
+}
+
+.contents {
+font-family: kozuka-mincho-pr6n, optique-display, serif;
+font-weight: 900;
+font-style: normal;
+font-size: 1.0rem;
+writing-mode: vertical-rl;
+text-align: left;
+letter-spacing: 3px;
+
+}
+
+.container {
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--color-3);
+  width: 35rem;
+  height: 55rem;
+  overflow: hidden;
+}
+
+mark {
+
+  background-color: var(--color-3);
+  border: 1px solid black;
+display: inline-block;   
+    padding: 3rem 0rem;
+
+}
+
+.container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(to top,    var(--color-2), transparent 3%),
+    linear-gradient(to bottom, var(--color-2), transparent 3%),
+    linear-gradient(to left,   var(--color-2), transparent 3%),
+    linear-gradient(to right,  var(--color-2), transparent 3%);
+  pointer-events: none; /* 오버레이 뒤의 콘텐츠를 클릭할 수 있도록 합니다. */
+  mix-blend-mode: hard-light;
+}
+
 .left {
   position: absolute;
   height: 50%;
   width: 50%;
-  overflow: hidden;
-}
-
-.left > .table-a {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  table-layout: fixed;
 }
 
 .right {
@@ -19,61 +124,466 @@
   height: 50%;
   width: 50%;
   left: 50%;
-  overflow: hidden;
 }
 
-.right > .table-b {
-  position: absolute;
-  top: 0;
-  left: 0;
+.leftbottom {
+  position: relative;
   height: 100%;
-  width: 100%;
-  table-layout: fixed;
+  width: 16%; /* 8% of 50% width is 16% of the wrapper */
 }
-
+.leftbottom2 {
+  position: relative;
+  height: 100%;
+  width: 84%; /* 42% of 50% width is 84% of the wrapper */
+  left: 0;
+}
 .rightbottom {
   position: absolute;
   height: 50%;
   width: 50%;
-  top: 50%;
+  top:50%;
   left: 50%;
-  overflow: hidden;
 }
 
-.rightbottom > .table-a {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  table-layout: fixed;
+.bottom-left-wrapper {
+    position: absolute;
+    height: 50%;
+    width: 50%;
+    top: 50%;
+    left: 0;
+    display: flex;
+}
+
+
+.table-a, .table-b, .table-c {
+    height: 100%;
+    width: 100%;
+    margin: auto;
+    table-layout: fixed;
+    max-height: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+}
+
+.table-a {
+    font-size: 0.9rem;
+    justify-content: center;
+}
+
+.table-b {
+    text-align: center;
+    justify-content: center;
+    font-size: 0.7rem;
+}
+
+.table-c {
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.left .table-a,
+.right .table-b,
+.rightbottom .table-a {
+    min-height: 100%;
+    min-width: 100%;
 }
 
 .verticalbox {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
+	display: inline-block;
+	position: relative;
+	height: 22rem;
+	width: 100%;
+	/*background-color: yellow;*/
+
 }
 
-.verticaltext2 {
-  height: 100%;
-  width: 100%;
-  display: block;
-  writing-mode: vertical-rl;
-  line-height: 21px;
-  letter-spacing: 1.2px;
-  overflow: hidden;
+li {
+  list-style: none;
 }
 
 table, tr, td, th {
-  border: 1px solid black;
-  border-collapse: collapse;
-  padding: 8px;
-  box-sizing: border-box;
-  overflow: hidden;
+	border: 1px solid black;
+	border-collapse: collapse;
+	padding: 10px;
+
 }
 
 td {
-  height: auto;
-  max-height: none;
+
+}
+
+.titlewhite, .titleblack {
+  height: 3rem;
+  position: relative; 
+  border: 0px;
+  text-align: center;
+}
+
+.titlewhite {
+	background-color: var(--color-1);
+	color: var(--color-3);
+}
+
+.titleblack {
+	background-color: var(--color-3);
+}
+
+
+.titletext {
+	 white-space: pre;
+  writing-mode: vertical-rl;
+  display: inline-block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  font-size: 1rem;
+  font-family: kozuka-mincho-pr6n, optique-display, serif;
+  font-weight: 900;
+font-style: normal;
+letter-spacing: 2.5px;
+}
+
+.verticaltext {
+  font-family: kozuka-mincho-pr6n, optique-display, serif;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  font-style: normal;
+  font-size: 0.82rem;
+}
+
+.verticaltext2 {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center; 
+	writing-mode: vertical-rl;
+	line-height: 21px;
+  letter-spacing: 1.2px;
+	text-align: top;
+	
+}
+
+.blacktd {
+  background-color: black;
+  color: var(--color-3);
+  text-align: center;   /* 가로 중앙 */
+  vertical-align: middle; /* 세로 중앙 */
+}
+
+
+.blacktitle {
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  color: var(--color-3);
+  display: flex;
+  align-items: center;   
+  justify-content: center; 
+  writing-mode: vertical-rl;
+  font-size: 1rem;
+  font-family: kozuka-mincho-pr6n, optique-display, serif;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+font-style: normal;
+}
+
+.number {
+  height: 3rem;
+}
+
+td.web:hover {
+  background-color: black;
+  color: var(--color-3);
+  cursor: cursor; /* 마우스 올렸을 때 손가락 모양 */
+}
+
+a {
+  text-decoration: none ; /* 밑줄 제거 */
+  color: inherit;        /* 부모 요소의 색상 상속 */
+}
+
+a:hover {
+  filter: blur(4px) ; /* 밑줄 제거 */
+}
+
+.page {
+  display: none;   /* 모든 페이지 기본적으로 숨김 */
+}
+
+/* page1을 기본적으로 표시 (URL에 #이 없을 때) */
+#page1 {
+  display: block;
+}
+
+/* target된 페이지만 표시 */
+.page:target {
+  display: block;
+}
+
+/* target된 페이지가 있을 때 page1 숨기기 */
+#page2:target ~ #page1,
+body:has(#page2:target) #page1 {
+  display: none !important;
+}
+
+a.titletext:hover {
+  filter: none !important;
+}
+
+/*명함*/
+.container-card {
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--color-3);
+  width: 25rem;
+  height: 15rem;
+  overflow: hidden;
+}
+
+.container-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(to top,    var(--color-2), transparent 3%),
+    linear-gradient(to bottom, var(--color-2), transparent 3%),
+    linear-gradient(to left,   var(--color-2), transparent 3%),
+    linear-gradient(to right,  var(--color-2), transparent 3%);
+  pointer-events: none; /* 오버레이 뒤의 콘텐츠를 클릭할 수 있도록 합니다. */
+  mix-blend-mode: hard-light;
+}
+
+.border {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 1px solid black;
+}
+
+
+.card-left {
+  position: absolute;
+  width: 30%;
+}
+
+.card-right {
+  position: absolute;
+  width: 70%;
+  left: 30%;
+}
+.cardlogo {
+margin: 1rem;
+font-size: 1rem;
+width: 0.6rem;
+height: 0.6rem;
+font-family: kozuka-mincho-pr6n, optique-display, serif;
+font-weight: 900;
+font-style: normal;
+}
+
+.name-1 {
+margin-top: 3rem;
+font-size: 2.5rem;
+font-family: kozuka-mincho-pr6n, optique-display, serif;
+font-weight: 900;
+writing-mode: vertical-rl;
+letter-spacing: 15px;
+
+}
+
+.card-content{
+  margin: 1.5rem;
+  line-height: 1.65rem;
+}
+
+.card-content b {
+font-family: optique-display, serif;
+font-weight: 700;
+font-style: normal;
+}
+
+footer {
+  margin-top: 100px;
+  margin-bottom: 50px;
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 160%;
+  color:  var(--color-1);
+}
+
+
+@media only screen and (max-width: 600px) {
+   html {
+       font-size: 12.5px;
+   }
+   
+   body {
+       padding: 1rem;
+       font-size: 0.6rem;
+       overflow-x: hidden;
+       width: 100%;
+       overflow-y: auto;
+   }
+   
+   h1 {
+       font-size: 3.5rem;
+       margin: 1.5rem;
+       margin-bottom: 2rem;
+       text-align: center;
+   }
+   .logo-img {
+       height: 6rem;
+       width: 6rem;
+       margin: 0 auto;
+	   margin-bottom: 3rem;
+       object-fit: contain;
+   }
+   
+   .contentsblock {
+       margin: 2rem 0;
+   }
+  .mobile-wrapper {
+    width: 100%;
+    max-width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    justify-items: center;
+    align-items: center;
+    padding-inline: 1rem;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+  .contentsblock {
+    width: 3.2rem;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .contents {
+    writing-mode: vertical-rl;
+    display: inline-block;
+    text-align: center;
+    letter-spacing: 3px;
+  }
+  mark {
+    display: inline-block;
+    padding: 3.5rem 0rem;
+    border: 0.5px solid black;
+  }
+   
+   .container {
+       position: relative;
+       top: auto;
+       left: auto;
+       transform: none;
+       width: 100%;
+       max-width: 28rem;
+       height: auto;
+       min-height: 48rem;
+       margin: 1rem auto;
+       margin-bottom: 7rem;
+       display: flex;
+       flex-wrap: wrap;
+   }
+   
+   .left, .right, .bottom-left-wrapper, .rightbottom {
+       height: 50%;
+       width: 50%;
+       flex: 0 0 50%;
+       display: flex;
+       overflow: hidden;
+       box-sizing: border-box;
+   }
+   
+   .left > table, .right > table, .rightbottom > table {
+       flex: 1;
+       height: 100%;
+       width: 100%;
+   }
+   
+   .verticalbox {
+       height: 100%;
+       min-height: 18rem;
+   }
+   
+   .table-a, .table-b, .table-c {
+       height: 100% !important;
+       width: 100% !important;
+       table-layout: fixed !important;
+       border-collapse: collapse !important;
+   }
+   
+   .table-a td, .table-b td, .table-c td {
+       overflow: hidden;
+       box-sizing: border-box;
+   }
+   
+   table, tr, td, th {
+       padding: 5px !important;
+       box-sizing: border-box !important;
+   }
+   
+   .titletext {
+       font-size: 0.9rem;
+       letter-spacing: 2px;
+   }
+   
+   .verticaltext2 {
+       line-height: 16px;
+       letter-spacing: 0.8px;
+       font-size: 0.85rem;
+   }
+   .blacktitle {
+       font-size: 0.9rem;
+       letter-spacing: 2px;
+   }
+   .verticaltext {
+    font-size: 0.55rem;
+    text-align: center;
+  }
+   
+   .container-card {
+       position: relative;
+       top: auto;
+       left: auto;
+       transform: none;
+       width: 23rem;
+       height: 12.2rem;
+       max-height: 240px;
+       margin: 2rem auto;
+   }
+   
+   .card-content {
+       margin: 1rem;
+       line-height: 1.4rem;
+       font-size: 0.9rem;
+   }
+   
+   .name-1 {
+       font-size: 2rem;
+       margin-top: 2rem;
+       letter-spacing: 12px;
+   }
+   
+   .cardlogo {
+       margin: 0.8rem;
+       font-size: 1.2rem;
+   }
+   .mobile-hidden {
+    display: none;
+   }
+	html.wf-loading .mobile-wrapper { 
+  visibility: hidden; 
+}
+html.wf-active .mobile-wrapper,
+html.wf-inactive .mobile-wrapper { 
+  visibility: visible; 
+}
 }
