@@ -431,7 +431,6 @@ footer {
        margin-bottom: 2rem;
        text-align: center;
    }
-
    .logo-img {
        height: 6rem;
        width: 6rem;
@@ -443,7 +442,6 @@ footer {
    .contentsblock {
        margin: 2rem 0;
    }
-
   .mobile-wrapper {
     width: 100%;
     max-width: 100%;
@@ -455,24 +453,20 @@ footer {
     margin: 0 auto;
     box-sizing: border-box;
   }
-
-
   .contentsblock {
-    width: 3.2rem;        /* 필요시 2.8~3.6rem에서 미세 조정 */
-    margin: 6;
+    width: 3.2rem;
+    margin: 0;
     display: flex;
     justify-content: center;
   }
-
   .contents {
     writing-mode: vertical-rl;
     display: inline-block;
     text-align: center;
     letter-spacing: 3px;
   }
-
   mark {
-    display: inline-block;   /* 컨텐츠를 블록처럼 다뤄 폭 안정화 */
+    display: inline-block;
     padding: 3.5rem 0rem;
     border: 0.5px solid black;
   }
@@ -488,11 +482,23 @@ footer {
        min-height: 48rem;
        margin: 1rem auto;
        margin-bottom: 7rem;
+       display: flex;
+       flex-wrap: wrap;
    }
    
    .left, .right, .bottom-left-wrapper, .rightbottom {
        height: 50%;
        width: 50%;
+       flex: 0 0 50%;
+       display: flex;
+       overflow: hidden;
+       box-sizing: border-box;
+   }
+   
+   .left > table, .right > table, .rightbottom > table {
+       flex: 1;
+       height: 100%;
+       width: 100%;
    }
    
    .verticalbox {
@@ -501,16 +507,20 @@ footer {
    }
    
    .table-a, .table-b, .table-c {
-       height: 100%;
-       width: 100%;
+       height: 100% !important;
+       width: 100% !important;
+       table-layout: fixed !important;
+       border-collapse: collapse !important;
    }
    
    .table-a td, .table-b td, .table-c td {
        overflow: hidden;
+       box-sizing: border-box;
    }
    
    table, tr, td, th {
-       padding: 6px;
+       padding: 5px !important;
+       box-sizing: border-box !important;
    }
    
    .titletext {
@@ -523,32 +533,10 @@ footer {
        letter-spacing: 0.8px;
        font-size: 0.85rem;
    }
-
    .blacktitle {
        font-size: 0.9rem;
        letter-spacing: 2px;
    }
-
- .left  {
-    overflow: hidden;
-    box-sizing: border-box;
-   }
-
-   .right {
-    overflow: hidden;
-    box-sizing: border-box;
-   }
-
-   .bottom-left-wrapper {
-    overflow: hidden;
-    box-sizing: border-box;
-   }
-
-   .rightbottom {
-    overflow: hidden;
-    box-sizing: border-box;
-   }
-
    .verticaltext {
     font-size: 0.55rem;
     text-align: center;
@@ -581,15 +569,14 @@ footer {
        margin: 0.8rem;
        font-size: 1.2rem;
    }
-
    .mobile-hidden {
     display: none;
    }
-
 	html.wf-loading .mobile-wrapper { 
   visibility: hidden; 
 }
-html.wf-active .mobile-wrapper { 
+html.wf-active .mobile-wrapper,
+html.wf-inactive .mobile-wrapper { 
   visibility: visible; 
 }
 }
