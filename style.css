@@ -1,11 +1,4 @@
-html.wf-loading .container {
-    visibility: hidden;
-}
 
-html.wf-active .container,
-html.wf-inactive .container {
-    visibility: visible;
-}
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css");
 @font-face {
     font-family: 'BookkMyungjo-Rg';
