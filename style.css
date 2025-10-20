@@ -185,10 +185,9 @@ display: inline-block;
 .verticalbox {
 	display: inline-block;
 	position: relative;
-	height: 22rem;
+	height: 100%; /* <-- 22rem 대신 100%로 변경 */
 	width: 100%;
 	/*background-color: yellow;*/
-
 }
 
 li {
