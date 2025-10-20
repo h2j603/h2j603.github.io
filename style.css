@@ -183,9 +183,9 @@ display: inline-block;
 }
 
 .verticalbox {
-	display: inline-block;
+	display: block; /* <-- 'inline-block'에서 'block'으로 변경 */
 	position: relative;
-	height: 100%; /* <-- 22rem 대신 100%로 변경 */
+	height: 100%;
 	width: 100%;
 	/*background-color: yellow;*/
 }
