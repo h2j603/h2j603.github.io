@@ -1,4 +1,3 @@
-
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css");
 @font-face {
     font-family: 'BookkMyungjo-Rg';
@@ -163,7 +162,7 @@ display: inline-block;
     table-layout: fixed;
     max-height: 100%;
     max-width: 100%;
-    
+    border-collapse: collapse;
 }
 
 .table-a {
@@ -182,12 +181,20 @@ display: inline-block;
     font-size: 0.9rem;
 }
 
+.left .table-a,
+.right .table-b,
+.rightbottom .table-a {
+    min-height: 100%;
+    min-width: 100%;
+}
+
 .verticalbox {
-	display: block; /* <-- 'inline-block'에서 'block'으로 변경 */
+	display: inline-block;
 	position: relative;
-	height: 100%;
+	height: 22rem;
 	width: 100%;
 	/*background-color: yellow;*/
+
 }
 
 li {
@@ -204,13 +211,14 @@ table, tr, td, th {
 td {
 
 }
+
 .titlewhite, .titleblack {
-  height: 3rem;
-  position: relative; 
-  border: 0px;
-  text-align: center;
-  padding: 0;  /* 이거 추가 */
+  height: 3rem;
+  position: relative; 
+  border: 0px;
+  text-align: center;
 }
+
 .titlewhite {
 	background-color: var(--color-1);
 	color: var(--color-3);
@@ -218,10 +226,6 @@ td {
 
 .titleblack {
 	background-color: var(--color-3);
-}
-
-.textbox {
-  padding: 0;  /* 이거 추가 */
 }
 
 
@@ -504,14 +508,10 @@ footer {
        width: 100%;
    }
    
-.verticalbox {
-  display: inline-block;
-  position: relative;
-  height: 100%;  /* 22rem에서 100%로 변경 */
-  width: 100%;
-  padding: 10px;  /* padding을 verticalbox로 이동 */
-  box-sizing: border-box;
-}
+   .verticalbox {
+       height: 100%;
+       min-height: 18rem;
+   }
    
    .table-a, .table-b, .table-c {
        height: 100% !important;
