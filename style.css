@@ -162,7 +162,7 @@ display: inline-block;
     table-layout: fixed;
     max-height: 100%;
     max-width: 100%;
-    border-collapse: collapse;
+    
 }
 
 .table-a {
@@ -179,13 +179,6 @@ display: inline-block;
 .table-c {
     text-align: center;
     font-size: 0.9rem;
-}
-
-.left .table-a,
-.right .table-b,
-.rightbottom .table-a {
-    min-height: 100%;
-    min-width: 100%;
 }
 
 .verticalbox {
