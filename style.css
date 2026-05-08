@@ -7,10 +7,9 @@
 }
 
 :root {
-	--color-1: black;
-	--color-2: DeepSkyBlue;
-	--color-3: gainsboro;
-	--color-5: whitesmoke;
+	--c-ink: #000;
+	--c-bg: DeepSkyBlue;
+	--c-paper: gainsboro;
 	--rule: 1px;
 }
 
@@ -31,53 +30,63 @@ body {
 	font-style: normal;
 	font-size: 1rem;
 	word-break: keep-all;
-	color: var(--color-1);
-	background-color: var(--color-2);
+	color: var(--c-ink);
+	background-color: var(--c-bg);
 	cursor: default;
 	user-select: none;
 	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
 }
 
-.contentsblock { margin: 3rem 2rem 2rem 3rem; }
+a { text-decoration: none; color: inherit; }
+a:hover { filter: blur(4px); }
+li { list-style: none; }
 
+/* ============================================================
+   Top navigation (㊀ 도표 / ㊁ 명함 / ㊂ 작업 / ㊃ 혼합)
+   ============================================================ */
+.mobile-wrapper {
+	display: flex;
+	justify-content: center;
+	gap: 2rem;
+	margin: 3rem auto 2rem;
+	flex-wrap: wrap;
+}
 .contents {
 	font-family: kozuka-mincho-pr6n, optique-display, serif;
 	font-weight: 900;
 	font-size: 1rem;
 	writing-mode: vertical-rl;
-	text-align: left;
 	letter-spacing: 3px;
 }
-
 mark {
-	background-color: var(--color-3);
-	border: var(--rule) solid black;
+	background-color: var(--c-paper);
+	border: var(--rule) solid var(--c-ink);
 	display: inline-block;
 	padding: 3rem 0;
 }
 
-a { text-decoration: none; color: inherit; }
-a:hover { filter: blur(4px); }
-a.titletext:hover { filter: none; }
+/* ============================================================
+   Page routing (#page1 default, #page2 via :target)
+   ============================================================ */
+.page { display: none; }
+#page1 { display: block; }
+.page:target { display: block; }
+body:has(#page2:target) #page1 { display: none !important; }
 
-li { list-style: none; }
-
-/* ========== page1 4-quadrant container ==========
-   The black background shows through 1px grid gaps to draw every internal
-   rule. Quadrants and inner cells have NO borders — all lines come from gap. */
+/* ============================================================
+   Container — A4 portrait (210:297), 2x2 grid of equal cells.
+   `minmax(0,1fr)` prevents content from forcing rows to grow.
+   Black background + 1px gap = uniform 1px rules between cells.
+   ============================================================ */
 .container {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	background-color: black;
-	width: 35rem;
+	position: relative;
+	margin: 0 auto;
+	width: min(35rem, calc(100vw - 2rem));
 	aspect-ratio: 210 / 297;
+	background-color: var(--c-ink);
 	display: grid;
-	grid-template-columns: 1fr 1fr;
-	grid-template-rows: 1fr 1fr;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
 	gap: var(--rule);
 	overflow: hidden;
 }
@@ -86,212 +95,99 @@ li { list-style: none; }
 	position: absolute;
 	inset: 0;
 	background:
-		linear-gradient(to top,    var(--color-2), transparent 3%),
-		linear-gradient(to bottom, var(--color-2), transparent 3%),
-		linear-gradient(to left,   var(--color-2), transparent 3%),
-		linear-gradient(to right,  var(--color-2), transparent 3%);
+		linear-gradient(to top,    var(--c-bg), transparent 3%),
+		linear-gradient(to bottom, var(--c-bg), transparent 3%),
+		linear-gradient(to left,   var(--c-bg), transparent 3%),
+		linear-gradient(to right,  var(--c-bg), transparent 3%);
 	pointer-events: none;
 	mix-blend-mode: hard-light;
 }
 
+/* Each cell: header (3rem) + body (auto). overflow:hidden inside
+   so vertical-rl text never bleeds out. */
 .quad {
-	background-color: var(--color-3);
-	overflow: hidden;
+	background-color: var(--c-paper);
 	min-width: 0;
 	min-height: 0;
-}
-/* Default quad placement (script.js shuffles via inline grid-area) */
-.left          { grid-area: 1 / 1; }
-.right         { grid-area: 1 / 2; }
-.bottom-left-wrapper { grid-area: 2 / 1; }
-.rightbottom   { grid-area: 2 / 2; }
-
-/* ========== shared pane: title (3rem) + body (1fr) ========== */
-.quad-pane,
-.left  > table,
-.rightbottom > table {
-	width: 100%;
-	height: 100%;
-}
-.quad-pane {
-	display: grid;
-	grid-template-rows: 3rem 1fr;
-	background-color: black;
-	gap: var(--rule);
-}
-.quad-title {
-	background-color: var(--color-3);
-	position: relative;
-}
-.quad-title.invert {
-	background-color: var(--color-1);
-	color: var(--color-3);
-}
-.quad-title .titletext {
-	position: absolute;
-	top: 50%; left: 50%;
-	transform: translate(-50%, -50%) rotate(-90deg);
-	white-space: pre;
-	writing-mode: vertical-rl;
-	font-size: 1rem;
-	font-family: kozuka-mincho-pr6n, optique-display, serif;
-	font-weight: 900;
-	letter-spacing: 2.5px;
-}
-.quad-body {
-	background-color: var(--color-3);
-	min-height: 0;
-	min-width: 0;
+	display: flex;
+	flex-direction: column;
 	overflow: hidden;
-}
-
-/* ========== bio table (left) ========== */
-.left > table {
-	border-collapse: collapse;
-	table-layout: fixed;
-}
-.left .table-a {
-	font-size: 0.9rem;
-}
-.left .titlewhite {
-	height: 3rem;
-	background-color: var(--color-1);
-	color: var(--color-3);
-	text-align: center;
-	border: 0;
-	border-bottom: var(--rule) solid black;
 	position: relative;
 }
-.left .textbox {
-	border: 0;
-	padding: 10px;
-	height: calc(100% - 3rem);
-}
 
+.quad-header {
+	flex: 0 0 3rem;
+	border-bottom: var(--rule) solid var(--c-ink);
+	background: var(--c-paper);
+	position: relative;
+}
+.quad-header.invert {
+	background: var(--c-ink);
+	color: var(--c-paper);
+	border-bottom-color: var(--c-ink);
+}
 .titletext {
-	white-space: pre;
-	writing-mode: vertical-rl;
-	display: inline-block;
 	position: absolute;
 	top: 50%; left: 50%;
 	transform: translate(-50%, -50%) rotate(-90deg);
+	white-space: pre;
+	font-family: kozuka-mincho-pr6n, optique-display, serif;
+	font-weight: 900;
 	font-size: 1rem;
-	font-family: kozuka-mincho-pr6n, optique-display, serif;
-	font-weight: 900;
 	letter-spacing: 2.5px;
 }
 
-.verticalbox {
-	display: inline-block;
-	position: relative;
-	height: 100%;
-	width: 100%;
-}
-.verticaltext {
-	font-family: kozuka-mincho-pr6n, optique-display, serif;
-	font-weight: 900;
-	letter-spacing: 2.5px;
-	font-size: 0.82rem;
-}
-.verticaltext2 {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	align-items: center;
-	writing-mode: vertical-rl;
-	line-height: 21px;
-	letter-spacing: 1.2px;
-}
-
-.bullet-list { list-style: none; padding: 0; margin: 0; }
-.bullet-list li { list-style: none; }
-
-/* ========== notes (bottom-left) ========== */
-.bottom-left-wrapper {
-	display: grid;
-	grid-template-columns: 16% 1fr;
-	gap: var(--rule);
-	background-color: black;
-}
-.leftbottom,
-.leftbottom2 {
-	min-width: 0;
+.quad-body {
+	flex: 1 1 0;
 	min-height: 0;
+	min-width: 0;
 	overflow: hidden;
+	position: relative;
 }
-.leftbottom {
-	background-color: black;
+
+/* ============================================================
+   BIO — vertical-rl text, columns flow right→left.
+   Horizontal scroll if too many bullets to fit.
+   ============================================================ */
+.bio-body {
+	padding: 0.6rem 0.8rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scrollbar-width: none;
 }
-.leftbottom2 {
-	background-color: var(--color-3);
-}
-.blacktitle {
-	width: 100%;
+.bio-body::-webkit-scrollbar { display: none; }
+.bio-list {
 	height: 100%;
-	background-color: black;
-	color: var(--color-3);
-	display: flex;
-	align-items: center;
-	justify-content: center;
 	writing-mode: vertical-rl;
-	font-size: 1rem;
-	font-family: kozuka-mincho-pr6n, optique-display, serif;
-	font-weight: 900;
-	letter-spacing: 2.5px;
+	font-size: clamp(0.7rem, 1.6vw, 0.85rem);
+	line-height: 1.6;
+	letter-spacing: 1px;
+	display: flex;
+	flex-direction: row-reverse;
+	gap: 0.4rem;
 }
-.table-c {
-	width: 100%;
-	height: 100%;
-	border-collapse: collapse;
-	table-layout: fixed;
-	font-size: 0.9rem;
-	text-align: center;
+.bio-list li {
+	white-space: nowrap;
+	min-height: 100%;
 }
-.table-c td {
-	border: 0;
-	border-bottom: var(--rule) solid black;
-	padding: 10px;
-}
-.table-c tr:last-child td { border-bottom: 0; }
-.table-c td.web { cursor: pointer; }
-.table-c td.web:hover { background-color: black; color: var(--color-3); }
 
-/* ========== web works (rightbottom) — 8-col vertical-text book list ========== */
-.works-web {
-	width: 100%;
-	height: 100%;
-	border-collapse: collapse;
-	table-layout: fixed;
-	font-size: 0.9rem;
-}
-.works-web td {
-	border: 0;
-	border-right: var(--rule) solid black;
-	padding: 10px;
-}
-.works-web tr:first-child td { border-bottom: var(--rule) solid black; }
-.works-web tr.number { height: 3rem; text-align: center; }
-.works-web td:last-child { border-right: 0; }
-.works-web td.web { cursor: pointer; }
-.works-web td.web:hover { background-color: black; color: var(--color-3); }
-
-/* ========== print works grid ========== */
-.works-grid {
-	display: grid;
-	width: 100%;
-	height: 100%;
-	background-color: black;
-	gap: var(--rule);
-}
+/* ============================================================
+   PRINT WORKS — 2-col image grid.
+   ============================================================ */
 .works-print {
-	grid-template-columns: repeat(2, 1fr);
-	grid-auto-rows: 1fr;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	grid-auto-rows: minmax(0, 1fr);
+	gap: var(--rule);
+	background: var(--c-ink);
+	width: 100%;
+	height: 100%;
 }
 .work-cell {
 	display: block;
 	position: relative;
 	overflow: hidden;
-	background: var(--color-3);
+	background: var(--c-paper);
 	min-width: 0;
 	min-height: 0;
 }
@@ -305,8 +201,8 @@ li { list-style: none; }
 	position: absolute;
 	left: 0; right: 0; bottom: 0;
 	padding: 4px 6px;
-	background: black;
-	color: var(--color-3);
+	background: rgba(0,0,0,0.85);
+	color: var(--c-paper);
 	font-size: 0.7rem;
 	text-align: center;
 	opacity: 0;
@@ -320,26 +216,111 @@ li { list-style: none; }
 	height: 100%;
 	width: 100%;
 	color: rgba(0,0,0,0.4);
-	font-size: 0.8rem;
+	font-size: 0.75rem;
 	text-align: center;
 	padding: 1rem;
 }
 
-/* ========== pages ========== */
-.page { display: none; }
-#page1 { display: block; }
-.page:target { display: block; }
-#page2:target ~ #page1,
-body:has(#page2:target) #page1 { display: none !important; }
+/* ============================================================
+   NOTES — black sidebar (vertical title) + ✽ list.
+   ============================================================ */
+.notes-layout {
+	display: grid;
+	grid-template-columns: 16% minmax(0, 1fr);
+	height: 100%;
+	background: var(--c-ink);
+	gap: var(--rule);
+}
+.notes-sidebar {
+	background: var(--c-ink);
+	color: var(--c-paper);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	writing-mode: vertical-rl;
+	font-family: kozuka-mincho-pr6n, optique-display, serif;
+	font-weight: 900;
+	font-size: clamp(0.7rem, 1.4vw, 0.95rem);
+	letter-spacing: 2px;
+	padding: 0.5rem 0;
+	text-align: center;
+}
+.notes-list {
+	display: grid;
+	grid-auto-rows: minmax(0, 1fr);
+	background: var(--c-ink);
+	gap: var(--rule);
+	overflow: hidden;
+}
+.notes-list li {
+	background: var(--c-paper);
+	padding: 0.5rem 0.6rem;
+	font-size: clamp(0.65rem, 1.4vw, 0.85rem);
+	line-height: 1.4;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	overflow: hidden;
+}
+.notes-list .dot {
+	display: block;
+	margin-bottom: 0.2rem;
+}
 
-/* ========== card (page2) ========== */
+/* ============================================================
+   WEB WORKS — 8 vertical-text columns + numerals strip.
+   ============================================================ */
+.works-web-body {
+	padding: 0;
+	background: var(--c-ink);
+}
+.works-web {
+	display: grid;
+	grid-template-columns: repeat(8, minmax(0, 1fr));
+	grid-template-rows: minmax(0, 1fr) 2.4rem;
+	gap: var(--rule);
+	background: var(--c-ink);
+	height: 100%;
+	width: 100%;
+}
+.works-web li {
+	background: var(--c-paper);
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.4rem 0;
+}
+.works-web li a {
+	writing-mode: vertical-rl;
+	font-family: kozuka-mincho-pr6n, optique-display, serif;
+	font-weight: 900;
+	font-size: clamp(0.55rem, 1.2vw, 0.78rem);
+	letter-spacing: 1px;
+	white-space: nowrap;
+}
+.works-web .num {
+	background: var(--c-paper);
+	font-family: kozuka-mincho-pr6n, optique-display, serif;
+	font-weight: 900;
+	font-size: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* ============================================================
+   Card (page2)
+   ============================================================ */
 .container-card {
 	position: absolute;
 	top: 50%; left: 50%;
 	transform: translate(-50%, -50%);
-	background-color: var(--color-3);
-	width: 25rem;
-	height: 15rem;
+	background-color: var(--c-paper);
+	width: min(25rem, calc(100vw - 2rem));
+	aspect-ratio: 5 / 3;
 	overflow: hidden;
 }
 .container-card::after {
@@ -347,20 +328,24 @@ body:has(#page2:target) #page1 { display: none !important; }
 	position: absolute;
 	inset: 0;
 	background:
-		linear-gradient(to top,    var(--color-2), transparent 3%),
-		linear-gradient(to bottom, var(--color-2), transparent 3%),
-		linear-gradient(to left,   var(--color-2), transparent 3%),
-		linear-gradient(to right,  var(--color-2), transparent 3%);
+		linear-gradient(to top,    var(--c-bg), transparent 3%),
+		linear-gradient(to bottom, var(--c-bg), transparent 3%),
+		linear-gradient(to left,   var(--c-bg), transparent 3%),
+		linear-gradient(to right,  var(--c-bg), transparent 3%);
 	pointer-events: none;
 	mix-blend-mode: hard-light;
 }
 .border {
 	position: absolute;
-	width: 100%;
-	height: 100%;
-	border: var(--rule) solid black;
+	inset: 0;
+	border: var(--rule) solid var(--c-ink);
 }
-.card-right { position: absolute; width: 100%; left: 0; }
+.card-body {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+}
 .card-content {
 	margin: 1.5rem;
 	line-height: 1.65rem;
@@ -370,92 +355,45 @@ body:has(#page2:target) #page1 { display: none !important; }
 	font-weight: 700;
 }
 
-footer {
-	margin-top: 100px;
-	margin-bottom: 50px;
-	text-align: center;
-	font-size: 0.8rem;
-	line-height: 160%;
-	color: var(--color-1);
+/* ============================================================
+   Page2 absolute positioning (the card is centered)
+   ============================================================ */
+#page2 {
+	position: relative;
+	min-height: 60vh;
 }
 
-/* ========== mobile ========== */
-@media only screen and (max-width: 600px) {
-	html { font-size: 12.5px; }
+footer {
+	margin-top: 6rem;
+	margin-bottom: 3rem;
+	text-align: center;
+	font-size: 0.8rem;
+	line-height: 1.6;
+}
 
-	body {
-		padding: 1rem;
-		font-size: 0.6rem;
-		overflow-x: hidden;
-		width: 100%;
-		overflow-y: auto;
-	}
+/* ============================================================
+   Loading state — hide until web fonts settle
+   ============================================================ */
+html.wf-loading .container,
+html.wf-loading .container-card { visibility: hidden; }
 
-	.mobile-wrapper {
-		width: 100%;
-		max-width: 100%;
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		justify-items: center;
-		align-items: center;
-		padding-inline: 1rem;
-		margin: 0 auto;
-		box-sizing: border-box;
-	}
-	.contentsblock {
-		width: 3.2rem;
-		margin: 0;
-		display: flex;
-		justify-content: center;
-	}
-	.contents {
-		writing-mode: vertical-rl;
-		text-align: center;
-		letter-spacing: 3px;
-	}
-	mark {
-		padding: 3.5rem 0;
-		border: 0.5px solid black;
-	}
+/* ============================================================
+   Mobile (≤600px)
+   ============================================================ */
+@media (max-width: 600px) {
+	html { font-size: 13px; }
+	body { padding: 0.5rem; }
+	.mobile-wrapper { gap: 0.6rem; margin: 1.5rem auto 1rem; }
+	.contents { font-size: 0.9rem; letter-spacing: 2px; }
+	mark { padding: 2.4rem 0; }
+	.titletext { font-size: 0.85rem; letter-spacing: 1.5px; }
+	.mobile-hidden { display: none; }
+	.container { width: 100%; max-width: 28rem; }
+	.container-card { width: 100%; max-width: 22rem; }
+	footer { margin-top: 3rem; margin-bottom: 1.5rem; }
+}
 
-	.container {
-		position: relative;
-		top: auto;
-		left: auto;
-		transform: none;
-		width: 100%;
-		max-width: 28rem;
-		aspect-ratio: 210 / 297;
-		height: auto;
-		margin: 1rem auto 7rem;
-	}
-
-	.titletext { font-size: 0.9rem; letter-spacing: 2px; }
-	.verticaltext2 { line-height: 16px; letter-spacing: 0.8px; font-size: 0.85rem; }
-	.blacktitle { font-size: 0.9rem; letter-spacing: 2px; }
-	.verticaltext { font-size: 0.55rem; text-align: center; }
-
-	.left .textbox,
-	.table-c td,
-	.works-web td {
-		padding: 5px !important;
-	}
-
-	.container-card {
-		position: relative;
-		top: auto; left: auto;
-		transform: none;
-		width: 23rem;
-		height: 12.2rem;
-		max-height: 240px;
-		margin: 2rem auto;
-	}
-	.card-content { margin: 1rem; line-height: 1.4rem; font-size: 0.9rem; }
-	.cardlogo { margin: 0.8rem; font-size: 2rem; }
-
-	.mobile-hidden, .mobile-hide { display: none; }
-
-	html.wf-loading .mobile-wrapper { visibility: hidden; }
-	html.wf-active .mobile-wrapper,
-	html.wf-inactive .mobile-wrapper { visibility: visible; }
+/* Desktop only quirks */
+@media (min-width: 601px) {
+	.container { margin-top: 2rem; margin-bottom: 4rem; }
 }
