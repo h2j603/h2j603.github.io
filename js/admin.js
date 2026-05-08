@@ -3,6 +3,20 @@
 	const $  = (s, r = document) => r.querySelector(s);
 	const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
+	function formatError(err) {
+		if (!err) return 'unknown';
+		if (typeof err === 'string') return err;
+		const parts = [];
+		if (err.message) parts.push(err.message);
+		if (err.code) parts.push(`(code: ${err.code})`);
+		if (err.details) parts.push(`details: ${err.details}`);
+		if (err.hint) parts.push(`hint: ${err.hint}`);
+		if (!parts.length) {
+			try { return JSON.stringify(err); } catch (_) { return String(err); }
+		}
+		return parts.join(' ');
+	}
+
 	const loginView  = $('#loginView');
 	const dashView   = $('#dashView');
 	const userBox    = $('#userBox');
@@ -84,6 +98,9 @@
 			msg.className = 'adm-msg';
 			msg.textContent = '저장 중...';
 			try {
+				const { data: sessionData } = await sb.auth.getSession();
+				if (!sessionData?.session) throw new Error('로그인 세션이 만료됨. 다시 로그인 해주세요.');
+
 				const fd = new FormData(form);
 				const file = fd.get('image');
 				let image_path = null;
@@ -93,9 +110,12 @@
 					const { error: upErr } = await sb.storage.from('works').upload(key, file, {
 						cacheControl: '3600',
 						upsert: false,
-						contentType: file.type || undefined
+						contentType: file.type || 'application/octet-stream'
 					});
-					if (upErr) throw upErr;
+					if (upErr) {
+						console.error('[storage upload]', upErr);
+						throw upErr;
+					}
 					image_path = key;
 				}
 				const row = {
@@ -108,14 +128,21 @@
 					image_path
 				};
 				const { error } = await sb.from('works').insert(row);
-				if (error) throw error;
+				if (error) {
+					console.error('[works insert]', error);
+					if (image_path) {
+						await sb.storage.from('works').remove([image_path]).catch(() => {});
+					}
+					throw error;
+				}
 				msg.className = 'adm-msg success';
 				msg.textContent = '추가됨';
 				form.reset();
 				await loadWorks();
 			} catch (err) {
+				console.error('[work-form submit]', err);
 				msg.className = 'adm-msg error';
-				msg.textContent = '오류: ' + (err.message || err);
+				msg.textContent = '오류: ' + formatError(err);
 			} finally {
 				submitBtn.disabled = false;
 			}
@@ -196,6 +223,9 @@
 			msg.className = 'adm-msg';
 			msg.textContent = '저장 중...';
 			try {
+				const { data: sessionData } = await sb.auth.getSession();
+				if (!sessionData?.session) throw new Error('로그인 세션이 만료됨. 다시 로그인 해주세요.');
+
 				const fd = new FormData(form);
 				const row = {
 					section: form.dataset.section,
@@ -204,14 +234,18 @@
 					sort_order: parseInt(fd.get('sort_order') || '0', 10) || 0
 				};
 				const { error } = await sb.from('bullets').insert(row);
-				if (error) throw error;
+				if (error) {
+					console.error('[bullets insert]', error);
+					throw error;
+				}
 				msg.className = 'adm-msg success';
 				msg.textContent = '추가됨';
 				form.reset();
 				await loadBullets();
 			} catch (err) {
+				console.error('[bullet-form submit]', err);
 				msg.className = 'adm-msg error';
-				msg.textContent = '오류: ' + (err.message || err);
+				msg.textContent = '오류: ' + formatError(err);
 			} finally {
 				submitBtn.disabled = false;
 			}

@@ -42,30 +42,6 @@ a:hover { filter: blur(4px); }
 li { list-style: none; }
 
 /* ============================================================
-   Top navigation (㊀ 도표 / ㊁ 명함 / ㊂ 작업 / ㊃ 혼합)
-   ============================================================ */
-.mobile-wrapper {
-	display: flex;
-	justify-content: center;
-	gap: 2rem;
-	margin: 3rem auto 2rem;
-	flex-wrap: wrap;
-}
-.contents {
-	font-family: kozuka-mincho-pr6n, optique-display, serif;
-	font-weight: 900;
-	font-size: 1rem;
-	writing-mode: vertical-rl;
-	letter-spacing: 3px;
-}
-mark {
-	background-color: var(--c-paper);
-	border: var(--rule) solid var(--c-ink);
-	display: inline-block;
-	padding: 3rem 0;
-}
-
-/* ============================================================
    Page routing (#page1 default, #page2 via :target)
    ============================================================ */
 .page { display: none; }
@@ -129,7 +105,8 @@ body:has(#page2:target) #page1 { display: none !important; }
 .titletext {
 	position: absolute;
 	top: 50%; left: 50%;
-	transform: translate(-50%, -50%) rotate(-90deg);
+	transform: translate(-50%, -50%);
+	writing-mode: vertical-rl;
 	white-space: pre;
 	font-family: kozuka-mincho-pr6n, optique-display, serif;
 	font-weight: 900;
@@ -163,12 +140,13 @@ body:has(#page2:target) #page1 { display: none !important; }
 	line-height: 1.6;
 	letter-spacing: 1px;
 	display: flex;
-	flex-direction: row-reverse;
+	flex-direction: column;
+	flex-wrap: nowrap;
 	gap: 0.4rem;
 }
 .bio-list li {
 	white-space: nowrap;
-	min-height: 100%;
+	flex: 0 0 auto;
 }
 
 /* ============================================================
@@ -210,11 +188,14 @@ body:has(#page2:target) #page1 { display: none !important; }
 }
 .work-cell:hover .work-meta { opacity: 1; }
 .works-empty {
+	grid-column: 1 / -1;
+	grid-row: 1 / -1;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	height: 100%;
 	width: 100%;
+	background: var(--c-paper);
 	color: rgba(0,0,0,0.4);
 	font-size: 0.75rem;
 	text-align: center;
@@ -363,14 +344,6 @@ body:has(#page2:target) #page1 { display: none !important; }
 	min-height: 60vh;
 }
 
-footer {
-	margin-top: 6rem;
-	margin-bottom: 3rem;
-	text-align: center;
-	font-size: 0.8rem;
-	line-height: 1.6;
-}
-
 /* ============================================================
    Loading state — hide until web fonts settle
    ============================================================ */
@@ -383,14 +356,10 @@ html.wf-loading .container-card { visibility: hidden; }
 @media (max-width: 600px) {
 	html { font-size: 13px; }
 	body { padding: 0.5rem; }
-	.mobile-wrapper { gap: 0.6rem; margin: 1.5rem auto 1rem; }
-	.contents { font-size: 0.9rem; letter-spacing: 2px; }
-	mark { padding: 2.4rem 0; }
 	.titletext { font-size: 0.85rem; letter-spacing: 1.5px; }
 	.mobile-hidden { display: none; }
 	.container { width: 100%; max-width: 28rem; }
 	.container-card { width: 100%; max-width: 22rem; }
-	footer { margin-top: 3rem; margin-bottom: 1.5rem; }
 }
 
 /* Desktop only quirks */
