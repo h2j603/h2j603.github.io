@@ -7,7 +7,7 @@ import type { WorkWithImages } from '@/lib/types';
 import { useLanguage } from '@/hooks/useLanguage';
 import { localizedTitle } from '@/lib/i18n';
 import { ControlPanel } from '@/components/panel/ControlPanel';
-import { publicImageUrl } from '@/lib/works';
+import { publicImageUrl } from '@/lib/storage-url';
 
 export function WorkDetailClient({
   work,
