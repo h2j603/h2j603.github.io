@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<title>admin · hyuk.xyz</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="noindex,nofollow">
+	<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+	<header class="adm-header">
+		<h1>hyuk.xyz · admin</h1>
+		<div id="userBox" class="adm-user" hidden>
+			<span id="userEmail"></span>
+			<button id="logoutBtn" type="button">logout</button>
+		</div>
+	</header>
+
+	<main>
+		<!-- LOGIN -->
+		<section id="loginView" class="adm-card" hidden>
+			<h2>로그인</h2>
+			<p class="adm-muted">등록된 어드민 이메일로 매직링크가 전송됩니다.</p>
+			<form id="loginForm" class="adm-form">
+				<label>이메일
+					<input type="email" id="emailInput" required autocomplete="email" placeholder="aoystu@gmail.com">
+				</label>
+				<button type="submit">매직 링크 보내기</button>
+			</form>
+			<p id="loginMsg" class="adm-msg"></p>
+		</section>
+
+		<!-- DASHBOARD -->
+		<section id="dashView" hidden>
+			<nav class="adm-tabs">
+				<button data-tab="print" class="active">인쇄물 (print)</button>
+				<button data-tab="web">웹 작업 (web)</button>
+				<button data-tab="bio">혁은 지금 (bio)</button>
+				<button data-tab="notes">그 밖의 것들 (notes)</button>
+			</nav>
+
+			<!-- WORKS: print / web -->
+			<div class="adm-pane" data-pane="print">
+				<form class="adm-form work-form" data-category="print" enctype="multipart/form-data">
+					<h3>인쇄물 추가</h3>
+					<label>제목 <input name="title" required></label>
+					<label>연도 <input name="year" placeholder="2025"></label>
+					<label>이미지 <input type="file" name="image" accept="image/*" required></label>
+					<label>외부 링크 (선택) <input name="external_url" placeholder="https://..."></label>
+					<label>설명 (선택) <textarea name="description" rows="2"></textarea></label>
+					<label>정렬 순서 <input name="sort_order" type="number" value="0"></label>
+					<button type="submit">추가</button>
+					<p class="adm-msg"></p>
+				</form>
+				<ul class="adm-list" data-list="print"></ul>
+			</div>
+
+			<div class="adm-pane" data-pane="web" hidden>
+				<form class="adm-form work-form" data-category="web">
+					<h3>웹 작업 추가</h3>
+					<label>제목 <input name="title" required placeholder="『작업명』"></label>
+					<label>연도 <input name="year" placeholder="2025"></label>
+					<label>외부 링크 <input name="external_url" required placeholder="https://..."></label>
+					<label>이미지 (선택) <input type="file" name="image" accept="image/*"></label>
+					<label>설명 (선택) <textarea name="description" rows="2"></textarea></label>
+					<label>정렬 순서 <input name="sort_order" type="number" value="0"></label>
+					<button type="submit">추가</button>
+					<p class="adm-msg"></p>
+				</form>
+				<ul class="adm-list" data-list="web"></ul>
+			</div>
+
+			<!-- BULLETS: bio / notes -->
+			<div class="adm-pane" data-pane="bio" hidden>
+				<form class="adm-form bullet-form" data-section="bio">
+					<h3>혁은 지금 항목 추가</h3>
+					<label>본문 (HTML 가능)
+						<textarea name="content" rows="3" required placeholder="<strong>爀</strong>은 ..."></textarea>
+					</label>
+					<label class="adm-inline">
+						<input type="checkbox" name="desktop_only"> 데스크톱에서만 표시
+					</label>
+					<label>정렬 순서 <input name="sort_order" type="number" value="0"></label>
+					<button type="submit">추가</button>
+					<p class="adm-msg"></p>
+				</form>
+				<ul class="adm-list" data-list="bio"></ul>
+			</div>
+
+			<div class="adm-pane" data-pane="notes" hidden>
+				<form class="adm-form bullet-form" data-section="notes">
+					<h3>그 밖의 것들 항목 추가</h3>
+					<label>본문 (HTML 가능)
+						<textarea name="content" rows="3" required></textarea>
+					</label>
+					<label class="adm-inline">
+						<input type="checkbox" name="desktop_only"> 데스크톱에서만 표시
+					</label>
+					<label>정렬 순서 <input name="sort_order" type="number" value="0"></label>
+					<button type="submit">추가</button>
+					<p class="adm-msg"></p>
+				</form>
+				<ul class="adm-list" data-list="notes"></ul>
+			</div>
+		</section>
+	</main>
+
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	<script src="js/config.js"></script>
+	<script src="js/supabase-client.js"></script>
+	<script src="js/admin.js"></script>
+</body>
+</html>
