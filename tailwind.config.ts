@@ -16,9 +16,9 @@ const config: Config = {
         hover: 'var(--color-hover)',
       },
       fontFamily: {
-        kr: ['agchoijeongho-screen', 'kozuka-mincho-pr6n', 'serif'],
-        en: ['optique-display', 'kozuka-mincho-pr6n', 'serif'],
-        body: ['kozuka-mincho-pr6n', 'optique-display', 'serif'],
+        kr: ['Pretendard Variable', 'Pretendard', 'sans-serif'],
+        en: ['Pretendard Variable', 'Pretendard', 'sans-serif'],
+        body: ['Pretendard Variable', 'Pretendard', 'sans-serif'],
       },
       screens: {
         sm: '768px',

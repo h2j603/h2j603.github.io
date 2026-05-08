@@ -7,13 +7,16 @@
   gap: var(--cell-gap);
   width: 100%;
   aspect-ratio: 1 / 1;
+  border-right: var(--cell-border-width) solid var(--color-border);
+  border-bottom: var(--cell-border-width) solid var(--color-border);
 }
 
 .grid-cell {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: var(--cell-border-width) solid var(--color-border);
+  border-top: var(--cell-border-width) solid var(--color-border);
+  border-left: var(--cell-border-width) solid var(--color-border);
   container-type: inline-size;
   user-select: none;
   position: relative;
@@ -62,13 +65,16 @@
   flex-shrink: 0;
   /* cqi inside cells resolves against this grid, not the viewport. */
   container-type: inline-size;
+  border-right: var(--cell-border-width) solid var(--color-border);
+  border-bottom: var(--cell-border-width) solid var(--color-border);
 }
 
 .category-cell {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: var(--cell-border-width) solid var(--color-border);
+  border-top: var(--cell-border-width) solid var(--color-border);
+  border-left: var(--cell-border-width) solid var(--color-border);
   /* 22% of grid width ≈ 66% of cell width (3 cols). */
   font-size: 22cqi;
   line-height: 1;
@@ -114,7 +120,7 @@
   }
   .containers .container-2 {
     order: 1;
-    align-items: flex-start;
+    align-items: center;
   }
   .containers .container-1 {
     order: 2;
