@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --container-ratio: 5;
-  --mobile-ratio: 4;
+  --container-ratio: 5fr;
+  --mobile-ratio: 4fr;
   --outer-margin: 24px;
   --container-1-position: left;
 
