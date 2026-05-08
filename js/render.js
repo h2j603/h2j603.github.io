@@ -48,28 +48,22 @@
 			root.appendChild(empty);
 			return;
 		}
+		const ol = document.createElement('ol');
+		ol.className = 'print-list';
 		for (const w of works) {
+			const li = document.createElement('li');
 			const a = document.createElement('a');
-			a.className = 'work-cell';
-			const href = w.external_url || (w.image_path ? imageUrl(w.image_path) : '#');
-			if (href !== '#') {
+			const href = w.external_url || (w.image_path ? imageUrl(w.image_path) : '');
+			if (href) {
 				a.href = href;
 				a.target = '_blank';
 				a.rel = 'noopener';
 			}
-			if (w.image_path) {
-				const img = document.createElement('img');
-				img.src = imageUrl(w.image_path);
-				img.alt = w.title || '';
-				img.loading = 'lazy';
-				a.appendChild(img);
-			}
-			const meta = document.createElement('div');
-			meta.className = 'work-meta';
-			meta.textContent = [w.title, w.year].filter(Boolean).join(', ');
-			a.appendChild(meta);
-			root.appendChild(a);
+			a.textContent = `${w.title}${w.year ? ', ' + w.year : ''}`;
+			li.appendChild(a);
+			ol.appendChild(li);
 		}
+		root.appendChild(ol);
 	}
 
 	function renderWeb(works) {
