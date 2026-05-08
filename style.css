@@ -105,8 +105,8 @@ body:has(#page2:target) #page1 { display: none !important; }
 .titletext {
 	position: absolute;
 	top: 50%; left: 50%;
-	transform: translate(-50%, -50%);
-	writing-mode: vertical-rl;
+	transform: translate(-50%, -50%) rotate(-90deg);
+	transform-origin: center;
 	white-space: pre;
 	font-family: kozuka-mincho-pr6n, optique-display, serif;
 	font-weight: 900;
