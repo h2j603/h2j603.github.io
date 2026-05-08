@@ -57,7 +57,7 @@
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   width: 100%;
-  max-width: 240px;
+  max-width: 180px;
   aspect-ratio: 1 / 1;
 }
 
@@ -110,21 +110,13 @@
   }
   .containers .container-2 {
     order: 1;
-    flex-direction: row;
-    align-items: center;
-    gap: 16px;
+    align-items: flex-start;
   }
   .containers .container-1 {
     order: 2;
   }
   .container-2 .category-grid {
-    width: 32vw;
-    max-width: 160px;
-    flex-shrink: 0;
-  }
-  .container-2 > .panel-secondary {
-    flex: 1;
-    align-items: flex-start;
+    max-width: 120px;
   }
 }
 
