@@ -1,5 +1,6 @@
-// Public-facing renderer for index.html.
-// Fetches works + bullets from Supabase and populates the page.
+// Public-facing renderer. Fetches works + bullets from Supabase and replaces
+// the static fallback markup. If Supabase isn't configured or the fetch fails,
+// the static fallback in index.html stays.
 (function () {
 	const CIRCLED = ['㊀','㊁','㊂','㊃','㊄','㊅','㊆','㊇','㊈','㊉'];
 
@@ -16,7 +17,6 @@
 		const ul = document.getElementById('bioList');
 		if (!ul) return;
 		ul.innerHTML = '';
-		if (!bullets.length) return;
 		for (const b of bullets) {
 			const li = document.createElement('li');
 			if (b.desktop_only) li.className = 'mobile-hidden';
@@ -26,18 +26,14 @@
 	}
 
 	function renderNotes(bullets) {
-		const tbody = document.getElementById('notesList');
-		if (!tbody) return;
-		tbody.innerHTML = '';
-		if (!bullets.length) return;
+		const ol = document.getElementById('notesList');
+		if (!ol) return;
+		ol.innerHTML = '';
 		for (const b of bullets) {
-			const tr = document.createElement('tr');
-			if (b.desktop_only) tr.className = 'mobile-hidden';
-			const td = document.createElement('td');
-			td.className = 'web';
-			td.innerHTML = '✽<br>' + b.content;
-			tr.appendChild(td);
-			tbody.appendChild(tr);
+			const li = document.createElement('li');
+			if (b.desktop_only) li.className = 'mobile-hidden';
+			li.innerHTML = `<span class="dot">✽</span>${b.content}`;
+			ol.appendChild(li);
 		}
 	}
 
@@ -55,12 +51,9 @@
 		for (const w of works) {
 			const a = document.createElement('a');
 			a.className = 'work-cell';
-			if (w.external_url) {
-				a.href = w.external_url;
-				a.target = '_blank';
-				a.rel = 'noopener';
-			} else if (w.image_path) {
-				a.href = imageUrl(w.image_path);
+			const href = w.external_url || (w.image_path ? imageUrl(w.image_path) : '#');
+			if (href !== '#') {
+				a.href = href;
 				a.target = '_blank';
 				a.rel = 'noopener';
 			}
@@ -80,34 +73,32 @@
 	}
 
 	function renderWeb(works) {
-		const table = document.getElementById('worksWeb');
-		if (!table) return;
-		const titleRow = table.querySelector('.works-web-titles');
-		const numberRow = table.querySelector('.works-web-numbers');
-		titleRow.innerHTML = '';
-		numberRow.innerHTML = '';
-		if (!works.length) return;
+		const ol = document.getElementById('worksWeb');
+		if (!ol) return;
+		ol.innerHTML = '';
 		const total = works.length;
-		works.forEach((w, i) => {
-			const td = document.createElement('td');
-			td.className = 'web';
-			const url = w.external_url || (w.image_path ? imageUrl(w.image_path) : '#');
-			const label = `${w.title}${w.year ? ',' + w.year : ''}`;
-			td.innerHTML = `<div class="verticalbox"><a href="${url}" class="verticaltext2">${label}</a></div>`;
-			titleRow.appendChild(td);
-
-			const numTd = document.createElement('td');
+		// Row 1: 8 titles
+		for (const w of works) {
+			const li = document.createElement('li');
+			li.className = 'title';
+			const a = document.createElement('a');
+			a.href = w.external_url || (w.image_path ? imageUrl(w.image_path) : '#');
+			a.textContent = `${w.title}${w.year ? ',' + w.year : ''}`;
+			li.appendChild(a);
+			ol.appendChild(li);
+		}
+		// Row 2: matching numerals (countdown from total to 1, right→left)
+		works.forEach((_, i) => {
+			const li = document.createElement('li');
+			li.className = 'num';
 			const idx = total - i - 1;
-			numTd.textContent = CIRCLED[idx] || '';
-			numberRow.appendChild(numTd);
+			li.textContent = CIRCLED[idx] || '';
+			ol.appendChild(li);
 		});
 	}
 
 	async function load() {
-		if (!window.sb) {
-			// Supabase not configured — leave static fallback markup intact.
-			return;
-		}
+		if (!window.sb) return;
 		const [bulletsRes, worksRes] = await Promise.all([
 			sb.from('bullets').select('*').order('sort_order', { ascending: true }),
 			sb.from('works').select('*').order('sort_order', { ascending: true })
@@ -118,10 +109,15 @@
 		}
 		const bullets = bulletsRes.data || [];
 		const works   = worksRes.data   || [];
-		renderBio(bullets.filter(b => b.section === 'bio'));
-		renderNotes(bullets.filter(b => b.section === 'notes'));
-		renderPrint(works.filter(w => w.category === 'print'));
-		renderWeb(works.filter(w => w.category === 'web'));
+		const bio    = bullets.filter(b => b.section === 'bio');
+		const notes  = bullets.filter(b => b.section === 'notes');
+		const print  = works.filter(w => w.category === 'print');
+		const web    = works.filter(w => w.category === 'web');
+		if (bio.length)   renderBio(bio);
+		if (notes.length) renderNotes(notes);
+		// Always render print (so empty state shows correctly)
+		renderPrint(print);
+		if (web.length)   renderWeb(web);
 	}
 
 	if (document.readyState === 'loading') {

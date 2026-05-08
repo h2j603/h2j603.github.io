@@ -48,18 +48,16 @@
 	loginForm.addEventListener('submit', async (e) => {
 		e.preventDefault();
 		const email = $('#emailInput').value.trim();
+		const password = $('#passwordInput').value;
 		loginMsg.className = 'adm-msg';
-		loginMsg.textContent = '전송 중...';
-		const { error } = await sb.auth.signInWithOtp({
-			email,
-			options: { emailRedirectTo: window.location.origin + window.location.pathname }
-		});
+		loginMsg.textContent = '로그인 중...';
+		const { error } = await sb.auth.signInWithPassword({ email, password });
 		if (error) {
 			loginMsg.className = 'adm-msg error';
 			loginMsg.textContent = '오류: ' + error.message;
 		} else {
 			loginMsg.className = 'adm-msg success';
-			loginMsg.textContent = '메일 확인 후 링크 클릭. 같은 브라우저에서 열면 자동 로그인됩니다.';
+			loginMsg.textContent = '로그인 성공';
 		}
 	});
 	logoutBtn.addEventListener('click', async () => {

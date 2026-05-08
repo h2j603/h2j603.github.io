@@ -20,12 +20,15 @@
 		<!-- LOGIN -->
 		<section id="loginView" class="adm-card" hidden>
 			<h2>로그인</h2>
-			<p class="adm-muted">등록된 어드민 이메일로 매직링크가 전송됩니다.</p>
+			<p class="adm-muted">Supabase Dashboard → Authentication → Users 에서 등록한 이메일/비밀번호를 입력.</p>
 			<form id="loginForm" class="adm-form">
 				<label>이메일
-					<input type="email" id="emailInput" required autocomplete="email" placeholder="aoystu@gmail.com">
+					<input type="email" id="emailInput" required autocomplete="email" placeholder="h2j603@naver.com">
 				</label>
-				<button type="submit">매직 링크 보내기</button>
+				<label>비밀번호
+					<input type="password" id="passwordInput" required autocomplete="current-password">
+				</label>
+				<button type="submit">로그인</button>
 			</form>
 			<p id="loginMsg" class="adm-msg"></p>
 		</section>
