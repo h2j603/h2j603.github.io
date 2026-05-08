@@ -35,20 +35,30 @@
   text-align: center;
 }
 
-/* Vertical title column hover */
-.work-column {
-  display: contents;
-}
-
-.work-column-cell {
-  cursor: pointer;
+/* The 9 cells in a hovered/focused work column light up together. The
+   :hover selector is intentionally NOT used on .grid-cell — interaction
+   lives on the column-spanning overlay below, so individual cells never
+   appear independently clickable. */
+.grid-cell-active {
+  background: var(--color-category-active-bg);
+  color: var(--color-category-active-text);
   transition: background-color 80ms ease, color 80ms ease;
 }
 
-.work-column-cell.work-column-active,
-.work-column-cell:hover {
-  background: var(--color-category-active-bg);
-  color: var(--color-category-active-text);
+/* Transparent overlay covering one full column of the work grid. Captures
+   hover, focus, and click for the entire vertical strip so a work title
+   reads as a single clickable unit, not 9 separate buttons. */
+.work-column-link {
+  display: block;
+  background: transparent;
+  cursor: pointer;
+  z-index: 1;
+  /* Sits on top of decorative cells; size is set inline via grid-area. */
+}
+
+.work-column-link:focus-visible {
+  outline: 2px solid var(--color-category-active-bg);
+  outline-offset: -2px;
 }
 
 /* Category 3x3 panel */

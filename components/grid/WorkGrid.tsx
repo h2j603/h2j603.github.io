@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import type { Work, Category, Lang } from '@/lib/types';
 import { useSettings } from '@/components/shared/SiteShell';
 import { splitTitleIntoCells, columnForWork, paginateWorks } from '@/lib/grid-utils';
@@ -16,7 +16,6 @@ interface WorkGridProps {
 
 export function WorkGrid({ works, activeCategories, lang }: WorkGridProps) {
   const settings = useSettings();
-  const router = useRouter();
   const gridSize = settings.grid.size;
   const emptyStyle = settings.grid.emptyCellStyle;
 
@@ -53,45 +52,62 @@ export function WorkGrid({ works, activeCategories, lang }: WorkGridProps) {
     return () => window.removeEventListener('keydown', onKey);
   }, [goPrev, goNext]);
 
-  // Build a column-indexed array of works, leftmost column 0 → rightmost gridSize-1
+  // Column-indexed array. Works fill from the rightmost column toward the left.
   const worksByCol: (Work | null)[] = Array(gridSize).fill(null);
   currentPage.forEach((w, idx) => {
     worksByCol[columnForWork(idx, gridSize)] = w;
   });
 
+  // Decorative cells: 81 boxes that show borders + characters but receive no events.
   const cells: React.ReactNode[] = [];
   for (let row = 0; row < gridSize; row++) {
     for (let col = 0; col < gridSize; col++) {
       const work = worksByCol[col];
       if (work) {
         const chars = splitTitleIntoCells(localizedTitle(work, lang), gridSize);
-        const ch = chars[row];
         cells.push(
           <GridCell
             key={`${row}-${col}`}
             emptyStyle={emptyStyle}
             active={hoverCol === col}
-            onMouseEnter={() => setHoverCol(col)}
-            onMouseLeave={() => setHoverCol(null)}
-            onClick={() => router.push(`/works/${work.slug}`)}
-            className="work-column-cell"
-            role="button"
-            ariaLabel={localizedTitle(work, lang)}
           >
-            {ch || ''}
+            {chars[row] || ''}
           </GridCell>
         );
       } else {
-        cells.push(
-          <GridCell key={`${row}-${col}`} emptyStyle={emptyStyle} />
-        );
+        cells.push(<GridCell key={`${row}-${col}`} emptyStyle={emptyStyle} />);
       }
     }
   }
 
+  // One transparent overlay per work column. Captures hover and click for the
+  // whole vertical strip so the 9 cells underneath act as a single target.
+  const columnLinks = worksByCol.map((work, col) =>
+    work ? (
+      <Link
+        key={`col-${col}`}
+        href={`/works/${work.slug}`}
+        aria-label={localizedTitle(work, lang)}
+        className="work-column-link"
+        style={{
+          gridColumnStart: col + 1,
+          gridRowStart: 1,
+          gridRowEnd: gridSize + 1,
+        }}
+        onMouseEnter={() => setHoverCol(col)}
+        onMouseLeave={() => setHoverCol(null)}
+        onFocus={() => setHoverCol(col)}
+        onBlur={() => setHoverCol(null)}
+      />
+    ) : null
+  );
+
   return (
     <div className="relative w-full">
-      <div className="work-grid">{cells}</div>
+      <div className="work-grid">
+        {cells}
+        {columnLinks}
+      </div>
       {pages.length > 1 && (
         <div className="flex justify-between mt-4 select-none">
           <button
