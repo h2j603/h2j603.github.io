@@ -60,6 +60,8 @@
   max-width: 100%;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
+  /* cqi inside cells resolves against this grid, not the viewport. */
+  container-type: inline-size;
 }
 
 .category-cell {
@@ -67,11 +69,12 @@
   align-items: center;
   justify-content: center;
   border: var(--cell-border-width) solid var(--color-border);
-  font-size: 45cqi;
+  /* 22% of grid width ≈ 66% of cell width (3 cols). */
+  font-size: 22cqi;
   line-height: 1;
+  overflow: hidden;
   cursor: pointer;
   user-select: none;
-  container-type: inline-size;
   transition: background-color 80ms ease, color 80ms ease;
 }
 
