@@ -14,7 +14,12 @@ $$;
 -- =========================================================
 -- 2. Tables
 -- =========================================================
-create table if not exists public.works (
+-- Drop any prior versions (e.g. from earlier Next.js scaffold) so
+-- the schema below is canonical. Safe on a fresh project too.
+drop table if exists public.works   cascade;
+drop table if exists public.bullets cascade;
+
+create table public.works (
   id uuid primary key default gen_random_uuid(),
   category text not null check (category in ('print','web')),
   title text not null,
@@ -27,10 +32,10 @@ create table if not exists public.works (
   updated_at timestamptz not null default now()
 );
 
-create index if not exists works_category_sort_idx
+create index works_category_sort_idx
   on public.works (category, sort_order);
 
-create table if not exists public.bullets (
+create table public.bullets (
   id uuid primary key default gen_random_uuid(),
   section text not null check (section in ('bio','notes')),
   content text not null,
@@ -40,7 +45,7 @@ create table if not exists public.bullets (
   updated_at timestamptz not null default now()
 );
 
-create index if not exists bullets_section_sort_idx
+create index bullets_section_sort_idx
   on public.bullets (section, sort_order);
 
 create or replace function public.touch_updated_at() returns trigger
