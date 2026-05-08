@@ -25,7 +25,7 @@ export function ControlPanel({
   return (
     <div className="container-2 flex flex-col gap-6">
       <CategoryGrid active={active} onToggle={onToggleCategory} />
-      <div className="flex flex-col gap-3 items-start">
+      <div className="panel-secondary flex flex-col gap-3 items-start">
         <LangToggle lang={lang} onToggle={onToggleLang} />
         <HomeButton onHome={onHome} />
         {showArchiveLink && (
