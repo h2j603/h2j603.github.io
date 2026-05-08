@@ -18,7 +18,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { createClient } from '@/lib/supabase/client';
 import type { WorkImage } from '@/lib/types';
-import { publicImageUrl } from '@/lib/works';
+import { publicImageUrl } from '@/lib/storage-url';
 
 interface Props {
   workId: string;
