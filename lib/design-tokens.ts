@@ -2,8 +2,8 @@ import type { SiteSettings } from './types';
 
 export function settingsToCssVars(s: SiteSettings): Record<string, string> {
   return {
-    '--container-ratio': String(s.layout.containerRatio),
-    '--mobile-ratio': String(s.layout.mobileRatio),
+    '--container-ratio': `${s.layout.containerRatio}fr`,
+    '--mobile-ratio': `${s.layout.mobileRatio}fr`,
     '--outer-margin': `${s.layout.outerMargin}px`,
     '--container-1-position': s.layout.container1Position,
 
