@@ -107,6 +107,7 @@ body:has(#page2:target) #page1 { display: none !important; }
 	top: 50%; left: 50%;
 	transform: translate(-50%, -50%) rotate(-90deg);
 	transform-origin: center;
+	writing-mode: vertical-rl;
 	white-space: pre;
 	font-family: kozuka-mincho-pr6n, optique-display, serif;
 	font-weight: 900;
