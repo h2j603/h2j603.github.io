@@ -9,12 +9,23 @@
 		const parts = [];
 		if (err.message) parts.push(err.message);
 		if (err.code) parts.push(`(code: ${err.code})`);
+		if (err.status) parts.push(`status: ${err.status}`);
+		if (err.statusCode) parts.push(`status: ${err.statusCode}`);
 		if (err.details) parts.push(`details: ${err.details}`);
 		if (err.hint) parts.push(`hint: ${err.hint}`);
 		if (!parts.length) {
 			try { return JSON.stringify(err); } catch (_) { return String(err); }
 		}
 		return parts.join(' ');
+	}
+
+	function withTimeout(promise, ms, label) {
+		return Promise.race([
+			Promise.resolve(promise),
+			new Promise((_, reject) =>
+				setTimeout(() => reject(new Error(`${label} timeout (${ms / 1000}s 초과)`)), ms)
+			)
+		]);
 	}
 
 	const loginView  = $('#loginView');
@@ -96,28 +107,36 @@
 			e.preventDefault();
 			submitBtn.disabled = true;
 			msg.className = 'adm-msg';
-			msg.textContent = '저장 중...';
+			msg.textContent = '세션 확인 중...';
 			try {
-				const { data: sessionData } = await sb.auth.getSession();
+				const { data: sessionData } = await withTimeout(
+					sb.auth.getSession(), 10000, '세션 조회'
+				);
 				if (!sessionData?.session) throw new Error('로그인 세션이 만료됨. 다시 로그인 해주세요.');
 
 				const fd = new FormData(form);
 				const file = fd.get('image');
 				let image_path = null;
 				if (file && file.size) {
+					msg.textContent = `이미지 업로드 중 (${Math.round(file.size / 1024)}KB)...`;
 					const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
 					const key = `${form.dataset.category}/${crypto.randomUUID()}.${ext}`;
-					const { error: upErr } = await sb.storage.from('works').upload(key, file, {
-						cacheControl: '3600',
-						upsert: false,
-						contentType: file.type || 'application/octet-stream'
-					});
+					const { error: upErr } = await withTimeout(
+						sb.storage.from('works').upload(key, file, {
+							cacheControl: '3600',
+							upsert: false,
+							contentType: file.type || 'application/octet-stream'
+						}),
+						60000,
+						'스토리지 업로드'
+					);
 					if (upErr) {
 						console.error('[storage upload]', upErr);
 						throw upErr;
 					}
 					image_path = key;
 				}
+				msg.textContent = 'DB 저장 중...';
 				const row = {
 					category: form.dataset.category,
 					title: fd.get('title')?.toString().trim(),
@@ -127,7 +146,9 @@
 					sort_order: parseInt(fd.get('sort_order') || '0', 10) || 0,
 					image_path
 				};
-				const { error } = await sb.from('works').insert(row);
+				const { error } = await withTimeout(
+					sb.from('works').insert(row), 15000, 'works insert'
+				);
 				if (error) {
 					console.error('[works insert]', error);
 					if (image_path) {
@@ -221,11 +242,14 @@
 			e.preventDefault();
 			submitBtn.disabled = true;
 			msg.className = 'adm-msg';
-			msg.textContent = '저장 중...';
+			msg.textContent = '세션 확인 중...';
 			try {
-				const { data: sessionData } = await sb.auth.getSession();
+				const { data: sessionData } = await withTimeout(
+					sb.auth.getSession(), 10000, '세션 조회'
+				);
 				if (!sessionData?.session) throw new Error('로그인 세션이 만료됨. 다시 로그인 해주세요.');
 
+				msg.textContent = 'DB 저장 중...';
 				const fd = new FormData(form);
 				const row = {
 					section: form.dataset.section,
@@ -233,7 +257,9 @@
 					desktop_only: fd.get('desktop_only') === 'on',
 					sort_order: parseInt(fd.get('sort_order') || '0', 10) || 0
 				};
-				const { error } = await sb.from('bullets').insert(row);
+				const { error } = await withTimeout(
+					sb.from('bullets').insert(row), 15000, 'bullets insert'
+				);
 				if (error) {
 					console.error('[bullets insert]', error);
 					throw error;
