@@ -88,8 +88,8 @@ li { list-style: none; }
 	left: 50%;
 	transform: translate(-50%, -50%);
 	background-color: black;
-	width: 40rem;
-	height: 40rem;
+	width: 35rem;
+	aspect-ratio: 210 / 297;
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	grid-template-rows: 1fr 1fr;
@@ -454,7 +454,7 @@ footer {
 		transform: none;
 		width: 100%;
 		max-width: 28rem;
-		aspect-ratio: 1 / 1;
+		aspect-ratio: 210 / 297;
 		height: auto;
 		margin: 1rem auto 7rem;
 	}
