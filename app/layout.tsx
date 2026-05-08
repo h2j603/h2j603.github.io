@@ -17,9 +17,6 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <head>
-        <link rel="stylesheet" href="https://use.typekit.net/hvw8xwa.css" />
-      </head>
       <body>
         {children}
         <Script id="typekit-loader" strategy="afterInteractive">
