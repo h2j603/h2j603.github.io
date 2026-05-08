@@ -3,10 +3,20 @@ import Script from 'next/script';
 import './globals.css';
 import '../styles/grid.css';
 
+function cleanUrl(raw: string | undefined, fallback: string): URL {
+  // Mobile clipboards sometimes wrap URLs in <> or append whitespace/newlines.
+  const cleaned = (raw ?? fallback).trim().replace(/^<+|>+$/g, '').trim();
+  try {
+    return new URL(cleaned || fallback);
+  } catch {
+    return new URL(fallback);
+  }
+}
+
 export const metadata: Metadata = {
   title: 'hyuk.xyz',
   description: "Hyuk Jang's portfolio.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://hyuk.xyz'),
+  metadataBase: cleanUrl(process.env.NEXT_PUBLIC_SITE_URL, 'https://hyuk.xyz'),
 };
 
 export const viewport: Viewport = {
