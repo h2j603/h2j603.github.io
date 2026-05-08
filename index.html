@@ -11,7 +11,6 @@
 	<link rel="icon" type="image/png" href="">
 </head>
 <body>
-<h1><a href="https://hyuk.xyz/" class="brand">爀</a></h1>
 <div class="mobile-wrapper">
 <div class="contentsblock"><a class="contents" href="#page1"><mark>㊀ 【도표 圖表】</mark></a></div>
 <div class="contentsblock"><a class="contents" href="#page2"><mark>㊁ 【명함 名銜】</mark></a></div>
@@ -104,9 +103,6 @@
 <section id="page2" class="page">
 	<div class="container-card">
 		<div class="border">
-			<div class="card-left">
-				<p class="cardlogo">爀</p>
-			</div>
 			<div class="card-right">
 				<p class="card-content">
 					<b><a href="mailto:aoystu@gmail.com">장혁 · Hyuk Jang</a></b><br><br>
@@ -121,6 +117,25 @@
 
 <footer>by <a href="https://www.instagram.com/aoystu/" class="footertext">Hyuk Jang</a> from Seoul, Korea.<br>Last updated <span id="lastUpdated">2025-10-19</span></footer>
 
+<script>
+(function(d){
+	var config = { kitId: 'hvw8xwa', scriptTimeout: 3000, async: true },
+		h = d.documentElement,
+		t = setTimeout(function(){ h.className = h.className.replace(/\bwf-loading\b/g, '') + ' wf-inactive'; }, config.scriptTimeout),
+		tk = d.createElement('script'), f = false,
+		s = d.getElementsByTagName('script')[0], a;
+	h.className += ' wf-loading';
+	tk.src = 'https://use.typekit.net/' + config.kitId + '.js';
+	tk.async = true;
+	tk.onload = tk.onreadystatechange = function(){
+		a = this.readyState;
+		if (f || a && a != 'complete' && a != 'loaded') return;
+		f = true; clearTimeout(t);
+		try { Typekit.load(config); } catch(e) {}
+	};
+	s.parentNode.insertBefore(tk, s);
+})(document);
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
 <script src="js/supabase-client.js"></script>

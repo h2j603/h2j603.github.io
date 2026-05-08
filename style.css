@@ -40,22 +40,7 @@ body {
 	-ms-user-select: none;
 }
 
-h1 {
-	margin: 3rem 3rem 5rem;
-	font-family: kozuka-mincho-pr6n, optique-display, serif;
-	font-weight: 900;
-	font-size: 3rem;
-}
-
-.brand {
-	display: inline-block;
-	font-family: kozuka-mincho-pr6n, optique-display, serif;
-	font-weight: 900;
-	font-size: 4.2rem;
-	line-height: 1;
-}
-
-.contentsblock { margin: 2rem 2rem 2rem 3rem; }
+.contentsblock { margin: 3rem 2rem 2rem 3rem; }
 
 .contents {
 	font-family: kozuka-mincho-pr6n, optique-display, serif;
@@ -75,7 +60,7 @@ mark {
 
 a { text-decoration: none; color: inherit; }
 a:hover { filter: blur(4px); }
-a.titletext:hover, .brand:hover { filter: none; }
+a.titletext:hover { filter: none; }
 
 li { list-style: none; }
 
@@ -375,15 +360,7 @@ body:has(#page2:target) #page1 { display: none !important; }
 	height: 100%;
 	border: var(--rule) solid black;
 }
-.card-left  { position: absolute; width: 30%; }
-.card-right { position: absolute; width: 70%; left: 30%; }
-.cardlogo {
-	margin: 1rem;
-	font-size: 2.5rem;
-	font-family: kozuka-mincho-pr6n, optique-display, serif;
-	font-weight: 900;
-	line-height: 1;
-}
+.card-right { position: absolute; width: 100%; left: 0; }
 .card-content {
 	margin: 1.5rem;
 	line-height: 1.65rem;
@@ -413,12 +390,6 @@ footer {
 		width: 100%;
 		overflow-y: auto;
 	}
-
-	h1 {
-		margin: 1.5rem 1.5rem 2rem;
-		text-align: center;
-	}
-	.brand { font-size: 6rem; }
 
 	.mobile-wrapper {
 		width: 100%;
