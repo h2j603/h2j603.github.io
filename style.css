@@ -156,23 +156,34 @@ body:has(#page2:target) #page1 { display: none !important; }
 }
 
 /* ============================================================
-   PRINT WORKS — title-only list, horizontal text, top-stacked.
-   Click a title to open its image / external URL.
+   PRINT WORKS — title-only grid, one work per cell.
+   Horizontal text, top-stacked. Click to open image / external URL.
+   Same divider treatment as .notes-list (ink bg + 1px gap).
    ============================================================ */
 .works-print {
-	background: var(--c-paper);
-	padding: 0.6rem 0.8rem;
-	overflow-y: auto;
-	overflow-x: hidden;
+	background: var(--c-ink);
+	overflow: hidden;
 }
 .print-list {
-	display: flex;
-	flex-direction: column;
-	gap: 0.25rem;
-	font-size: clamp(0.7rem, 1.6vw, 0.85rem);
-	line-height: 1.5;
+	display: grid;
+	grid-auto-rows: minmax(0, 1fr);
+	gap: var(--rule);
+	background: var(--c-ink);
+	height: 100%;
+	width: 100%;
 }
 .print-list li {
+	background: var(--c-paper);
+	padding: 0.5rem 0.8rem;
+	font-size: clamp(0.7rem, 1.6vw, 0.85rem);
+	line-height: 1.4;
+	display: flex;
+	align-items: flex-start;
+	overflow: hidden;
+}
+.print-list li a {
+	display: block;
+	width: 100%;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
