@@ -7,8 +7,14 @@
  */
 import { getChannel, getChannelContents, getChannelMetadata } from './arena.js';
 import { fetchDoc } from './docs.js';
-import { downloadImages, imageUrlFromBlock, type BlockImage } from './images.js';
-import { workSchema, type Work } from './schema.js';
+import {
+  downloadImages,
+  downloadFile,
+  classifyBlock,
+  type BlockImage,
+  type DownloadStats,
+} from './images.js';
+import { workSchema, TAGS, type Work, type WorkLink, type Tag } from './schema.js';
 import { ARENA_INDEX_CHANNEL } from './config.js';
 
 export interface BuildSummary {
@@ -50,6 +56,23 @@ function num(
   return n;
 }
 
+/**
+ * Parse the comma-separated `tags` metadata into known tags (deduped, in input
+ * order). Unknown tokens are warned about and dropped. `web` is added elsewhere
+ * when the work has a link block.
+ */
+function parseTags(value: string | undefined, warn: (m: string) => void, ctx: string): Tag[] {
+  if (!value) return [];
+  const seen = new Set<Tag>();
+  for (const raw of value.split(',')) {
+    const t = raw.trim().toLowerCase();
+    if (!t) continue;
+    if ((TAGS as readonly string[]).includes(t)) seen.add(t as Tag);
+    else warn(`${ctx}: unknown tag "${t}" ignored (allowed: ${TAGS.join(', ')})`);
+  }
+  return [...seen];
+}
+
 async function buildOne(
   ref: string | number,
   warn: (m: string) => void,
@@ -73,21 +96,68 @@ async function buildOne(
 
   const ctx = `work "${slug}"`;
 
-  // Images from channel blocks (in channel order).
+  // Classify channel blocks (in channel order): images → download artwork,
+  // links → outbound link + Are.na thumbnail (also downloaded locally).
   const blocks = await getChannelContents(channel.id);
   const imageBlocks: BlockImage[] = [];
+  const linkBlocks: { link: Omit<WorkLink, 'thumbnail'>; thumbnailUrl: string | null }[] = [];
   for (const b of blocks) {
-    const url = imageUrlFromBlock(b);
-    if (!url) continue;
-    imageBlocks.push({
-      url,
-      alt: b?.metadata?.alt ?? b?.alt ?? '',
-      caption: b?.metadata?.caption ?? b?.description ?? '',
-    });
+    const c = classifyBlock(b);
+    if (c.kind === 'image') {
+      imageBlocks.push({
+        url: c.url,
+        alt: b?.metadata?.alt ?? b?.alt ?? '',
+        caption: b?.metadata?.caption ?? b?.description ?? '',
+      });
+    } else if (c.kind === 'link') {
+      linkBlocks.push({
+        link: { url: c.url, title: c.title, description: c.description },
+        thumbnailUrl: c.thumbnailUrl,
+      });
+    }
   }
-  const { images, downloaded, skipped, failed } = await downloadImages(slug, imageBlocks);
-  if (downloaded || skipped || failed) {
-    console.log(`  ${slug}: images +${downloaded} cached:${skipped} failed:${failed}`);
+
+  const stats: DownloadStats = { downloaded: 0, skipped: 0, failed: 0 };
+  const images = await downloadImages(slug, imageBlocks, stats);
+
+  const links: WorkLink[] = [];
+  let li = 0;
+  for (const { link, thumbnailUrl } of linkBlocks) {
+    li++;
+    let thumbnail = '';
+    if (thumbnailUrl) {
+      const local = await downloadFile(slug, thumbnailUrl, `link-${String(li).padStart(4, '0')}`, stats);
+      if (local) thumbnail = local;
+    }
+    links.push({ ...link, thumbnail });
+  }
+
+  // A work with any link block is a `web` work.
+  const tags = parseTags(meta.tags, warn, ctx);
+  if (links.length && !tags.includes('web')) tags.push('web');
+
+  // Representative image for index thumbnails: `cover` metadata (1-based) →
+  // else first image → else first link thumbnail.
+  let cover = '';
+  if (images.length) {
+    let idx = 0;
+    if (meta.cover != null && meta.cover !== '') {
+      const c = Number(meta.cover);
+      if (!Number.isInteger(c) || c < 1 || c > images.length) {
+        warn(`${ctx}: cover "${meta.cover}" out of range (1–${images.length}), using first image`);
+      } else {
+        idx = c - 1;
+      }
+    }
+    cover = images[idx].localPath;
+  } else {
+    cover = links.find((l) => l.thumbnail)?.thumbnail ?? '';
+  }
+
+  if (stats.downloaded || stats.skipped || stats.failed || links.length) {
+    console.log(
+      `  ${slug}: images +${stats.downloaded} cached:${stats.skipped} failed:${stats.failed} links:${links.length} tags:[${tags.join(',')}]`,
+    );
   }
 
   // Body from Google Docs (optional).
@@ -110,9 +180,12 @@ async function buildOne(
     size: meta.size ?? '',
     client: meta.client ?? '',
     order: num(meta.order, 9999, warn, ctx),
+    tags,
+    cover,
     bodyKo,
     bodyEn,
     images,
+    links,
   });
   if (!parsed.success) {
     warn(`${ctx}: schema validation failed: ${parsed.error.message}`);
