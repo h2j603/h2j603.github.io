@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.astro/
+
+# generated build data (fetched from Are.na + Google Docs at build time)
+src/data/works.json
+
+# downloaded images (re-fetched at build time; skip-cached locally)
+src/assets/works/*/
+
+# secrets
+.env
+.env.*
+!.env.example
+service-account.json
+*.iam.gserviceaccount.com.json
+
+# misc
+.DS_Store
+npm-debug.log*
