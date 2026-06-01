@@ -1,0 +1,176 @@
+/**
+ * Orchestrator: combine Are.na (structure + images + metadata) with Google Docs
+ * (body text) into the validated `Work[]` that the site renders.
+ *
+ * Error isolation is the rule: a single bad work channel or Doc is logged and
+ * skipped, never fatal. A summary is returned for the caller to print.
+ */
+import { getChannel, getChannelContents, getChannelMetadata } from './arena.js';
+import { fetchDoc } from './docs.js';
+import { downloadImages, imageUrlFromBlock, type BlockImage } from './images.js';
+import { workSchema, type Work } from './schema.js';
+import { ARENA_INDEX_CHANNEL } from './config.js';
+
+export interface BuildSummary {
+  total: number;
+  built: number;
+  skippedUnpublished: number;
+  failed: string[];
+  warnings: string[];
+}
+
+function blockIsChannel(block: any): boolean {
+  const t = block?.class ?? block?.base_class ?? block?.type;
+  return typeof t === 'string' && t.toLowerCase() === 'channel';
+}
+
+/** Resolve the child channel's slug/id from an index-channel block. */
+function channelRefFromBlock(block: any): string | number | null {
+  return (
+    block?.slug ??
+    block?.channel?.slug ??
+    block?.id ??
+    block?.channel?.id ??
+    null
+  );
+}
+
+function num(
+  value: string | undefined,
+  fallback: number,
+  warn: (m: string) => void,
+  ctx: string,
+): number {
+  if (value == null || value === '') return fallback;
+  const n = Number(value);
+  if (Number.isNaN(n)) {
+    warn(`${ctx}: order "${value}" is not a number, using ${fallback}`);
+    return fallback;
+  }
+  return n;
+}
+
+async function buildOne(
+  ref: string | number,
+  warn: (m: string) => void,
+): Promise<{ work: Work | null; skipped: boolean }> {
+  const channel = await getChannel(ref);
+  if (!channel) {
+    warn(`channel "${ref}" not found`);
+    return { work: null, skipped: false };
+  }
+  const meta = await getChannelMetadata(channel.id);
+
+  if (meta.published?.toLowerCase() === 'false') {
+    return { work: null, skipped: true };
+  }
+
+  const slug = (meta.slug || channel.slug || '').trim();
+  if (!slug) {
+    warn(`channel ${channel.id} has no usable slug`);
+    return { work: null, skipped: false };
+  }
+
+  const ctx = `work "${slug}"`;
+
+  // Images from channel blocks (in channel order).
+  const blocks = await getChannelContents(channel.id);
+  const imageBlocks: BlockImage[] = [];
+  for (const b of blocks) {
+    const url = imageUrlFromBlock(b);
+    if (!url) continue;
+    imageBlocks.push({
+      url,
+      alt: b?.metadata?.alt ?? b?.alt ?? '',
+      caption: b?.metadata?.caption ?? b?.description ?? '',
+    });
+  }
+  const { images, downloaded, skipped, failed } = await downloadImages(slug, imageBlocks);
+  if (downloaded || skipped || failed) {
+    console.log(`  ${slug}: images +${downloaded} cached:${skipped} failed:${failed}`);
+  }
+
+  // Body from Google Docs (optional).
+  let bodyKo = '';
+  let bodyEn = '';
+  const docId = meta.doc_id?.trim();
+  if (docId && !/placeholder|replace_with/i.test(docId)) {
+    try {
+      ({ bodyKo, bodyEn } = await fetchDoc(docId));
+    } catch (err: any) {
+      warn(`${ctx}: Doc ${docId} failed: ${err.message}`);
+    }
+  }
+
+  const parsed = workSchema.safeParse({
+    slug,
+    title: meta.title || channel.title || slug,
+    year: meta.year ?? '',
+    medium: meta.medium ?? '',
+    size: meta.size ?? '',
+    client: meta.client ?? '',
+    order: num(meta.order, 9999, warn, ctx),
+    bodyKo,
+    bodyEn,
+    images,
+  });
+  if (!parsed.success) {
+    warn(`${ctx}: schema validation failed: ${parsed.error.message}`);
+    return { work: null, skipped: false };
+  }
+  return { work: parsed.data, skipped: false };
+}
+
+export async function buildWorks(): Promise<{ works: Work[]; summary: BuildSummary }> {
+  const warnings: string[] = [];
+  const warn = (m: string) => {
+    warnings.push(m);
+    console.warn(`  ⚠ ${m}`);
+  };
+
+  const index = await getChannel(ARENA_INDEX_CHANNEL);
+  if (!index) {
+    throw new Error(
+      `Index channel "${ARENA_INDEX_CHANNEL}" not found. Run \`npm run setup:arena\` first or check ARENA_INDEX_CHANNEL.`,
+    );
+  }
+  console.log(`Index channel: ${index.title} (#${index.id}, slug=${index.slug})`);
+
+  const indexBlocks = await getChannelContents(index.id);
+  const refs: (string | number)[] = [];
+  for (const b of indexBlocks) {
+    if (!blockIsChannel(b)) continue;
+    const ref = channelRefFromBlock(b);
+    if (ref != null) refs.push(ref);
+  }
+  console.log(`Found ${refs.length} work channel(s) in the index.`);
+
+  const works: Work[] = [];
+  const failed: string[] = [];
+  let skippedUnpublished = 0;
+
+  for (const ref of refs) {
+    try {
+      const { work, skipped } = await buildOne(ref, warn);
+      if (skipped) skippedUnpublished++;
+      else if (work) works.push(work);
+      else failed.push(String(ref));
+    } catch (err: any) {
+      failed.push(String(ref));
+      warn(`channel "${ref}" crashed: ${err.message}`);
+    }
+  }
+
+  works.sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
+
+  return {
+    works,
+    summary: {
+      total: refs.length,
+      built: works.length,
+      skippedUnpublished,
+      failed,
+      warnings,
+    },
+  };
+}

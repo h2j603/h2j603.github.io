@@ -1,0 +1,28 @@
+{
+  "name": "hyuk-portfolio",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Portfolio site (hyuk.xyz) with an Are.na + Google Docs hybrid backend, built at compile time into a static Astro site.",
+  "scripts": {
+    "setup:arena": "tsx scripts/setup-arena.ts",
+    "build:data": "tsx scripts/build-data.ts",
+    "check:arena": "tsx scripts/build-data.ts --dry-run",
+    "build": "tsx scripts/build-data.ts && astro build",
+    "build:nofetch": "astro build",
+    "dev": "tsx scripts/build-data.ts && astro dev",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.6.1",
+    "googleapis": "^148.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.7",
+    "sharp": "^0.34.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
