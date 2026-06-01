@@ -12,6 +12,17 @@ export const imageSchema = z.object({
   caption: z.string().default(''),
 });
 
+/**
+ * A Link (or embed/Media) block from the work channel. We keep the URL + text
+ * only — the thumbnail is deliberately NOT downloaded (it's not artwork, and we
+ * don't embed remote URLs). Rendered as a plain list of outbound links.
+ */
+export const linkSchema = z.object({
+  url: z.string().url(),
+  title: z.string().default(''),
+  description: z.string().default(''),
+});
+
 export const workSchema = z.object({
   slug: z.string().min(1),
   title: z.string().default(''),
@@ -25,9 +36,11 @@ export const workSchema = z.object({
   /** English body, already converted to clean semantic HTML. */
   bodyEn: z.string().default(''),
   images: z.array(imageSchema).default([]),
+  links: z.array(linkSchema).default([]),
 });
 
 export const worksFileSchema = z.array(workSchema);
 
 export type WorkImage = z.infer<typeof imageSchema>;
+export type WorkLink = z.infer<typeof linkSchema>;
 export type Work = z.infer<typeof workSchema>;

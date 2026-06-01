@@ -58,7 +58,7 @@ Google Docs (doc_id) ──┘
 | `src/lib/config.ts` | env access + constants |
 | `src/lib/arena.ts` | Are.na v3 client (read + the few write calls setup needs) |
 | `src/lib/docs.ts` | Google Docs (service-account) fetch → ko/en split → semantic HTML |
-| `src/lib/images.ts` | download Are.na images, skip-cache by filename |
+| `src/lib/images.ts` | classify blocks (image vs link), download images, skip-cache |
 | `src/lib/works.ts` | orchestrate Are.na + Docs + images into validated `Work[]` |
 | `src/lib/schema.ts` | the `Work` zod schema (single source of truth) |
 | `src/lib/site-data.ts` | page-side: read the snapshot + resolve image assets |
@@ -130,9 +130,19 @@ connected **channel block**. `build-data.ts` reads it to discover works.
 
 ### Work channel = one work
 
-Each work is its own channel. Its **image blocks** are the work's images, in
-channel order. Per-image optional block metadata `alt` and `caption` are used if
-present.
+Each work is its own channel. Blocks are handled **by class**, in channel order:
+
+- **Image / uploaded blocks** → the work's images. Downloaded locally and run
+  through Astro's image pipeline. Per-image optional block metadata `alt` and
+  `caption` are used if present.
+- **Link / Media (embed) blocks** → outbound links (`{ url, title,
+  description }`), rendered as a plain list. The link's **thumbnail is not
+  downloaded** — it isn't artwork, and we don't embed remote URLs. Use these for
+  "live site", external references, videos, etc.
+- **Text / Channel blocks** → ignored (body text comes from Google Docs).
+
+The block's class is authoritative, so a Link block that happens to carry a
+thumbnail is never mistaken for artwork.
 
 ### Work channel custom metadata (Are.na v3)
 
