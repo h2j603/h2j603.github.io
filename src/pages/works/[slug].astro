@@ -49,6 +49,22 @@ const { work } = Astro.props;
       }
     </div>
 
+    {work.links.length > 0 && (
+      <section>
+        <h2>Links</h2>
+        <ul>
+          {
+            work.links.map((link) => (
+              <li>
+                <a href={link.url}>{link.title || link.url}</a>
+                {link.description && <span> — {link.description}</span>}
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    )}
+
     {work.bodyKo && (
       <section lang="ko">
         <h2>본문 (KO)</h2>

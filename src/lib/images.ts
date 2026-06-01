@@ -10,20 +10,75 @@ import { join } from 'node:path';
 import { ASSETS_WORKS_DIR } from './config.js';
 import type { WorkImage } from './schema.js';
 
-/** Pull the best available image URL out of an Are.na block, or null. */
-export function imageUrlFromBlock(block: any): string | null {
+/** The class of an Are.na block, lowercased. Spellings vary by API version. */
+function blockClass(block: any): string {
+  const t = block?.class ?? block?.base_class ?? block?.type;
+  return typeof t === 'string' ? t.toLowerCase() : '';
+}
+
+/** Pull the best available *uploaded image* URL out of a block, or null. */
+function uploadedImageUrl(block: any): string | null {
   const img = block?.image;
   const candidates = [
     img?.original?.url,
     img?.large?.url,
     img?.display?.url,
     block?.attachment?.url,
-    block?.source?.url,
   ];
   for (const c of candidates) {
     if (typeof c === 'string' && /^https?:\/\//.test(c)) return c;
   }
   return null;
+}
+
+export type BlockKind =
+  | { kind: 'image'; url: string }
+  | { kind: 'link'; url: string; title: string; description: string }
+  | { kind: 'skip' };
+
+/**
+ * Classify a work-channel block.
+ *
+ * - Image / uploaded blocks → download as artwork.
+ * - Link / Media (embed) blocks → keep as an outbound link; do NOT download the
+ *   thumbnail (it's not artwork, and we don't embed remote URLs).
+ * - Text / Channel / anything else → skip (body text comes from Google Docs).
+ *
+ * The class field is authoritative; we fall back to URL shape only when the
+ * class is missing, so a Link block's thumbnail is never mistaken for artwork.
+ */
+export function classifyBlock(block: any): BlockKind {
+  const cls = blockClass(block);
+
+  if (cls === 'link' || cls === 'media') {
+    const url = block?.source?.url ?? block?.source_url ?? block?.url;
+    if (typeof url === 'string' && /^https?:\/\//.test(url)) {
+      return {
+        kind: 'link',
+        url,
+        title: block?.title ?? block?.generated_title ?? '',
+        description: block?.description ?? '',
+      };
+    }
+    return { kind: 'skip' };
+  }
+
+  if (cls === 'image' || cls === 'attachment') {
+    const url = uploadedImageUrl(block);
+    return url ? { kind: 'image', url } : { kind: 'skip' };
+  }
+
+  if (cls === 'text' || cls === 'channel') return { kind: 'skip' };
+
+  // No/unknown class: only treat as image if there's a genuine uploaded image,
+  // and there's no link source that would mark it as a Link block.
+  if (!cls) {
+    const hasLinkSource =
+      typeof (block?.source?.url ?? block?.source_url) === 'string';
+    const url = uploadedImageUrl(block);
+    if (url && !hasLinkSource) return { kind: 'image', url };
+  }
+  return { kind: 'skip' };
 }
 
 function extFromUrl(url: string): string {

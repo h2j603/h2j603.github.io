@@ -7,8 +7,8 @@
  */
 import { getChannel, getChannelContents, getChannelMetadata } from './arena.js';
 import { fetchDoc } from './docs.js';
-import { downloadImages, imageUrlFromBlock, type BlockImage } from './images.js';
-import { workSchema, type Work } from './schema.js';
+import { downloadImages, classifyBlock, type BlockImage } from './images.js';
+import { workSchema, type Work, type WorkLink } from './schema.js';
 import { ARENA_INDEX_CHANNEL } from './config.js';
 
 export interface BuildSummary {
@@ -73,21 +73,27 @@ async function buildOne(
 
   const ctx = `work "${slug}"`;
 
-  // Images from channel blocks (in channel order).
+  // Classify channel blocks (in channel order): images → download, links → keep.
   const blocks = await getChannelContents(channel.id);
   const imageBlocks: BlockImage[] = [];
+  const links: WorkLink[] = [];
   for (const b of blocks) {
-    const url = imageUrlFromBlock(b);
-    if (!url) continue;
-    imageBlocks.push({
-      url,
-      alt: b?.metadata?.alt ?? b?.alt ?? '',
-      caption: b?.metadata?.caption ?? b?.description ?? '',
-    });
+    const c = classifyBlock(b);
+    if (c.kind === 'image') {
+      imageBlocks.push({
+        url: c.url,
+        alt: b?.metadata?.alt ?? b?.alt ?? '',
+        caption: b?.metadata?.caption ?? b?.description ?? '',
+      });
+    } else if (c.kind === 'link') {
+      links.push({ url: c.url, title: c.title, description: c.description });
+    }
   }
   const { images, downloaded, skipped, failed } = await downloadImages(slug, imageBlocks);
-  if (downloaded || skipped || failed) {
-    console.log(`  ${slug}: images +${downloaded} cached:${skipped} failed:${failed}`);
+  if (downloaded || skipped || failed || links.length) {
+    console.log(
+      `  ${slug}: images +${downloaded} cached:${skipped} failed:${failed} links:${links.length}`,
+    );
   }
 
   // Body from Google Docs (optional).
@@ -113,6 +119,7 @@ async function buildOne(
     bodyKo,
     bodyEn,
     images,
+    links,
   });
   if (!parsed.success) {
     warn(`${ctx}: schema validation failed: ${parsed.error.message}`);
