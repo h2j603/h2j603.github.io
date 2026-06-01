@@ -1,9 +1,14 @@
 ---
 // Work index — list every published work, ordered by `order`.
-// Intentionally UNSTYLED: this page only proves the data pipeline flows.
-import { getWorks } from '../lib/site-data.js';
+// Shows a cover thumbnail per work, and a (no-style, JS-only) tag filter.
+// Intentionally UNSTYLED: this page only proves the data pipeline + features.
+import { Image } from 'astro:assets';
+import { getWorks, resolveImage } from '../lib/site-data.js';
+import { TAGS } from '../lib/schema.js';
 
 const works = getWorks();
+// Only show filter buttons for tags that actually occur.
+const usedTags = TAGS.filter((t) => works.some((w) => w.tags.includes(t)));
 ---
 
 <!doctype html>
@@ -15,18 +20,56 @@ const works = getWorks();
   </head>
   <body>
     <h1>Works</h1>
+
+    {usedTags.length > 0 && (
+      <nav aria-label="Filter by tag">
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        {usedTags.map((t) => (
+          <button type="button" data-filter={t} aria-pressed="false">{t}</button>
+        ))}
+      </nav>
+    )}
+
     {works.length === 0 && <p>No works yet. Run <code>npm run build</code>.</p>}
-    <ul>
+
+    <ul id="works">
       {
-        works.map((w) => (
-          <li data-tags={w.tags.join(' ')}>
-            <a href={`/works/${w.slug}/`}>{w.title || w.slug}</a>
-            {w.year && <span> — {w.year}</span>}
-            {w.medium && <span> · {w.medium}</span>}
-            {w.tags.length > 0 && <span> [{w.tags.join(', ')}]</span>}
-          </li>
-        ))
+        works.map((w) => {
+          const cover = w.cover ? resolveImage(w.cover) : undefined;
+          return (
+            <li data-tags={w.tags.join(' ')}>
+              <a href={`/works/${w.slug}/`}>
+                {cover && <Image src={cover} alt={w.title || w.slug} width={160} height={160} />}
+                {w.title || w.slug}
+              </a>
+              {w.year && <span> — {w.year}</span>}
+              {w.medium && <span> · {w.medium}</span>}
+              {w.tags.length > 0 && <span> [{w.tags.join(', ')}]</span>}
+            </li>
+          );
+        })
       }
     </ul>
+
+    <script is:inline>
+      // No-framework tag filter: toggle <li> visibility by data-tags.
+      (function () {
+        const nav = document.querySelector('nav[aria-label="Filter by tag"]');
+        if (!nav) return;
+        const items = Array.from(document.querySelectorAll('#works > li'));
+        nav.addEventListener('click', function (e) {
+          const btn = e.target.closest('button[data-filter]');
+          if (!btn) return;
+          const filter = btn.getAttribute('data-filter');
+          nav.querySelectorAll('button[data-filter]').forEach(function (b) {
+            b.setAttribute('aria-pressed', String(b === btn));
+          });
+          items.forEach(function (li) {
+            const tags = (li.getAttribute('data-tags') || '').split(' ');
+            li.hidden = filter !== 'all' && !tags.includes(filter);
+          });
+        });
+      })();
+    </script>
   </body>
 </html>

@@ -136,6 +136,24 @@ async function buildOne(
   const tags = parseTags(meta.tags, warn, ctx);
   if (links.length && !tags.includes('web')) tags.push('web');
 
+  // Representative image for index thumbnails: `cover` metadata (1-based) →
+  // else first image → else first link thumbnail.
+  let cover = '';
+  if (images.length) {
+    let idx = 0;
+    if (meta.cover != null && meta.cover !== '') {
+      const c = Number(meta.cover);
+      if (!Number.isInteger(c) || c < 1 || c > images.length) {
+        warn(`${ctx}: cover "${meta.cover}" out of range (1–${images.length}), using first image`);
+      } else {
+        idx = c - 1;
+      }
+    }
+    cover = images[idx].localPath;
+  } else {
+    cover = links.find((l) => l.thumbnail)?.thumbnail ?? '';
+  }
+
   if (stats.downloaded || stats.skipped || stats.failed || links.length) {
     console.log(
       `  ${slug}: images +${stats.downloaded} cached:${stats.skipped} failed:${stats.failed} links:${links.length} tags:[${tags.join(',')}]`,
@@ -163,6 +181,7 @@ async function buildOne(
     client: meta.client ?? '',
     order: num(meta.order, 9999, warn, ctx),
     tags,
+    cover,
     bodyKo,
     bodyEn,
     images,
