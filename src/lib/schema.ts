@@ -13,15 +13,21 @@ export const imageSchema = z.object({
 });
 
 /**
- * A Link (or embed/Media) block from the work channel. We keep the URL + text
- * only — the thumbnail is deliberately NOT downloaded (it's not artwork, and we
- * don't embed remote URLs). Rendered as a plain list of outbound links.
+ * A Link (or embed/Media) block from the work channel: the outbound URL + text,
+ * plus the Are.na-served thumbnail downloaded locally (`thumbnail`, a path under
+ * `src/assets` like images). A work with any link block is tagged `web`.
  */
 export const linkSchema = z.object({
   url: z.string().url(),
   title: z.string().default(''),
   description: z.string().default(''),
+  /** Local path to the downloaded thumbnail, or '' if none/failed. */
+  thumbnail: z.string().default(''),
 });
+
+/** The fixed classification vocabulary (a single axis). */
+export const TAGS = ['identity', 'editorial', 'poster', 'type', 'web'] as const;
+export const tagSchema = z.enum(TAGS);
 
 export const workSchema = z.object({
   slug: z.string().min(1),
@@ -31,6 +37,8 @@ export const workSchema = z.object({
   size: z.string().default(''),
   client: z.string().default(''),
   order: z.number().default(9999),
+  /** Classification tags (subset of TAGS); `web` is auto-added for link works. */
+  tags: z.array(tagSchema).default([]),
   /** Korean body, already converted to clean semantic HTML. */
   bodyKo: z.string().default(''),
   /** English body, already converted to clean semantic HTML. */
@@ -43,4 +51,5 @@ export const worksFileSchema = z.array(workSchema);
 
 export type WorkImage = z.infer<typeof imageSchema>;
 export type WorkLink = z.infer<typeof linkSchema>;
+export type Tag = z.infer<typeof tagSchema>;
 export type Work = z.infer<typeof workSchema>;

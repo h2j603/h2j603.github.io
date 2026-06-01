@@ -19,10 +19,11 @@ const works = getWorks();
     <ul>
       {
         works.map((w) => (
-          <li>
+          <li data-tags={w.tags.join(' ')}>
             <a href={`/works/${w.slug}/`}>{w.title || w.slug}</a>
             {w.year && <span> — {w.year}</span>}
             {w.medium && <span> · {w.medium}</span>}
+            {w.tags.length > 0 && <span> [{w.tags.join(', ')}]</span>}
           </li>
         ))
       }
