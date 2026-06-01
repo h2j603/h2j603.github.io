@@ -1,0 +1,66 @@
+---
+// Work detail — one static page per work.
+// Korean body first, then English body (matches the reference architecture).
+// Intentionally UNSTYLED.
+import { Image } from 'astro:assets';
+import { getWorks, resolveImage } from '../../lib/site-data.js';
+
+export function getStaticPaths() {
+  return getWorks().map((work) => ({
+    params: { slug: work.slug },
+    props: { work },
+  }));
+}
+
+const { work } = Astro.props;
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{work.title || work.slug}</title>
+  </head>
+  <body>
+    <p><a href="/">← Works</a></p>
+
+    <h1>{work.title || work.slug}</h1>
+    <dl>
+      {work.year && (<><dt>Year</dt><dd>{work.year}</dd></>)}
+      {work.medium && (<><dt>Medium</dt><dd>{work.medium}</dd></>)}
+      {work.size && (<><dt>Size</dt><dd>{work.size}</dd></>)}
+      {work.client && (<><dt>Client</dt><dd>{work.client}</dd></>)}
+    </dl>
+
+    <div>
+      {
+        work.images.map((img) => {
+          const asset = resolveImage(img.localPath);
+          return asset ? (
+            <figure>
+              <Image src={asset} alt={img.alt} />
+              {img.caption && <figcaption>{img.caption}</figcaption>}
+            </figure>
+          ) : (
+            <p>⚠ missing image asset: {img.localPath}</p>
+          );
+        })
+      }
+    </div>
+
+    {work.bodyKo && (
+      <section lang="ko">
+        <h2>본문 (KO)</h2>
+        <div set:html={work.bodyKo} />
+      </section>
+    )}
+
+    {work.bodyEn && (
+      <section lang="en">
+        <h2>Body (EN)</h2>
+        <div set:html={work.bodyEn} />
+      </section>
+    )}
+  </body>
+</html>
