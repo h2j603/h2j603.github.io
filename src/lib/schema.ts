@@ -39,6 +39,12 @@ export const workSchema = z.object({
   order: z.number().default(9999),
   /** Classification tags (subset of TAGS); `web` is auto-added for link works. */
   tags: z.array(tagSchema).default([]),
+  /**
+   * Local path to the representative image for index thumbnails, or '' if the
+   * work has no images/thumbnails. Chosen from the `cover` metadata (1-based),
+   * else the first image, else the first link thumbnail.
+   */
+  cover: z.string().default(''),
   /** Korean body, already converted to clean semantic HTML. */
   bodyKo: z.string().default(''),
   /** English body, already converted to clean semantic HTML. */

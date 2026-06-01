@@ -152,8 +152,9 @@ A single tag axis: **`identity`, `editorial`, `poster`, `type`, `web`**. Set the
 channel's `tags` metadata to a comma-separated subset, e.g. `identity, poster`.
 A work can carry multiple tags. `web` is added automatically when the work has a
 link block (you don't need to type it). Unknown tags are warned about and
-dropped. The index and detail pages display the tags (and the index puts them on
-a `data-tags` attribute for later filtering/styling).
+dropped. The detail page lists tags; the **index page has a tag-filter** (plain
+inline JS toggling `data-tags`, no framework) that shows only the tags actually
+in use.
 
 ### Work channel custom metadata (Are.na v3)
 
@@ -168,6 +169,7 @@ a `data-tags` attribute for later filtering/styling).
 | `doc_id` | `1AbC…xyz` | Google Doc ID for the body (the hybrid join key) |
 | `order` | `1` | sort order (ascending number) |
 | `tags` | `identity, poster` | comma-separated subset of `identity/editorial/poster/type/web`; `web` auto-added for link works |
+| `cover` | `2` | 1-based index of the image to use as the index thumbnail; defaults to the first image (or first link thumbnail for web-only works) |
 | `published` | `true` | `false` excludes the work from the build |
 
 Missing metadata falls back to defaults. `published=false` skips the work. A
