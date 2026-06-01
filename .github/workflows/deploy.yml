@@ -1,0 +1,49 @@
+name: Build & Deploy to GitHub Pages
+
+# Builds the site (fetching content from Are.na + Google Docs at build time) and
+# deploys it to GitHub Pages. GitHub-hosted runners have open internet, so the
+# data fetch that the web sandbox can't do works here.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {} # manual trigger = your "rebuild" button (Are.na/Docs changes)
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; don't cancel an in-progress run.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Build (fetch Are.na + Docs, then astro build)
+        run: npm run build
+        env:
+          ARENA_TOKEN: ${{ secrets.ARENA_TOKEN }}
+          ARENA_INDEX_CHANNEL: ${{ secrets.ARENA_INDEX_CHANNEL }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
