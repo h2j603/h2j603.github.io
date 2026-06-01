@@ -26,6 +26,7 @@ const { work } = Astro.props;
     <p><a href="/">← Works</a></p>
 
     <h1>{work.title || work.slug}</h1>
+    {work.tags.length > 0 && <p>Tags: {work.tags.join(', ')}</p>}
     <dl>
       {work.year && (<><dt>Year</dt><dd>{work.year}</dd></>)}
       {work.medium && (<><dt>Medium</dt><dd>{work.medium}</dd></>)}
@@ -54,12 +55,18 @@ const { work } = Astro.props;
         <h2>Links</h2>
         <ul>
           {
-            work.links.map((link) => (
-              <li>
-                <a href={link.url}>{link.title || link.url}</a>
-                {link.description && <span> — {link.description}</span>}
-              </li>
-            ))
+            work.links.map((link) => {
+              const thumb = link.thumbnail ? resolveImage(link.thumbnail) : undefined;
+              return (
+                <li>
+                  <a href={link.url}>
+                    {thumb && <Image src={thumb} alt={link.title || link.url} />}
+                    {link.title || link.url}
+                  </a>
+                  {link.description && <span> — {link.description}</span>}
+                </li>
+              );
+            })
           }
         </ul>
       </section>

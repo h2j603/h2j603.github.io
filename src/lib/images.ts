@@ -16,8 +16,12 @@ function blockClass(block: any): string {
   return typeof t === 'string' ? t.toLowerCase() : '';
 }
 
-/** Pull the best available *uploaded image* URL out of a block, or null. */
-function uploadedImageUrl(block: any): string | null {
+/**
+ * Best available bitmap URL on a block — the uploaded image for Image blocks,
+ * or the Are.na-served preview/thumbnail for Link/Media blocks (both live under
+ * the same `image.{original,large,display}` shape).
+ */
+function bitmapUrl(block: any): string | null {
   const img = block?.image;
   const candidates = [
     img?.original?.url,
@@ -33,19 +37,21 @@ function uploadedImageUrl(block: any): string | null {
 
 export type BlockKind =
   | { kind: 'image'; url: string }
-  | { kind: 'link'; url: string; title: string; description: string }
+  | { kind: 'link'; url: string; title: string; description: string; thumbnailUrl: string | null }
   | { kind: 'skip' };
 
 /**
  * Classify a work-channel block.
  *
  * - Image / uploaded blocks → download as artwork.
- * - Link / Media (embed) blocks → keep as an outbound link; do NOT download the
- *   thumbnail (it's not artwork, and we don't embed remote URLs).
+ * - Link / Media (embed) blocks → an outbound link AND its Are.na-served
+ *   thumbnail (downloaded locally like any image, so the build never depends on
+ *   a remote URL). A work with any link block is treated as a `web` work.
  * - Text / Channel / anything else → skip (body text comes from Google Docs).
  *
  * The class field is authoritative; we fall back to URL shape only when the
- * class is missing, so a Link block's thumbnail is never mistaken for artwork.
+ * class is missing, so a Link block's thumbnail is never mistaken for an
+ * uploaded artwork image.
  */
 export function classifyBlock(block: any): BlockKind {
   const cls = blockClass(block);
@@ -58,13 +64,14 @@ export function classifyBlock(block: any): BlockKind {
         url,
         title: block?.title ?? block?.generated_title ?? '',
         description: block?.description ?? '',
+        thumbnailUrl: bitmapUrl(block),
       };
     }
     return { kind: 'skip' };
   }
 
   if (cls === 'image' || cls === 'attachment') {
-    const url = uploadedImageUrl(block);
+    const url = bitmapUrl(block);
     return url ? { kind: 'image', url } : { kind: 'skip' };
   }
 
@@ -75,7 +82,7 @@ export function classifyBlock(block: any): BlockKind {
   if (!cls) {
     const hasLinkSource =
       typeof (block?.source?.url ?? block?.source_url) === 'string';
-    const url = uploadedImageUrl(block);
+    const url = bitmapUrl(block);
     if (url && !hasLinkSource) return { kind: 'image', url };
   }
   return { kind: 'skip' };
@@ -102,45 +109,60 @@ export interface BlockImage {
   caption: string;
 }
 
+export interface DownloadStats {
+  downloaded: number;
+  skipped: number;
+  failed: number;
+}
+
 /**
- * Download all images for one work. Returns the validated image descriptors
- * (paths relative to `src/assets`) in input order. Individual download
+ * Download one URL into `src/assets/works/<slug>/<basename>.<ext>` (skip-cached
+ * by filename). Returns the path relative to `src/assets`, or null on failure.
+ * Mutates `stats` so callers can aggregate a per-work summary.
+ */
+export async function downloadFile(
+  slug: string,
+  url: string,
+  basename: string,
+  stats: DownloadStats,
+): Promise<string | null> {
+  const dir = join(ASSETS_WORKS_DIR, slug);
+  await mkdir(dir, { recursive: true });
+  const name = `${basename}.${extFromUrl(url)}`;
+  const filePath = join(dir, name);
+  const localPath = `works/${slug}/${name}`;
+  try {
+    if (await exists(filePath)) {
+      stats.skipped++;
+    } else {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await writeFile(filePath, Buffer.from(await res.arrayBuffer()));
+      stats.downloaded++;
+    }
+    return localPath;
+  } catch (err: any) {
+    stats.failed++;
+    console.warn(`  ⚠ ${url} → ${localPath} failed: ${err.message}`);
+    return null;
+  }
+}
+
+/**
+ * Download all artwork images for one work, in input order. Individual download
  * failures are logged and skipped — they never abort the build.
  */
 export async function downloadImages(
   slug: string,
   blocks: BlockImage[],
-): Promise<{ images: WorkImage[]; downloaded: number; skipped: number; failed: number }> {
-  const dir = join(ASSETS_WORKS_DIR, slug);
-  await mkdir(dir, { recursive: true });
-
+  stats: DownloadStats,
+): Promise<WorkImage[]> {
   const images: WorkImage[] = [];
-  let downloaded = 0;
-  let skipped = 0;
-  let failed = 0;
-
   let i = 0;
   for (const b of blocks) {
     i++;
-    const name = `${String(i).padStart(4, '0')}.${extFromUrl(b.url)}`;
-    const filePath = join(dir, name);
-    const localPath = `works/${slug}/${name}`;
-    try {
-      if (await exists(filePath)) {
-        skipped++;
-      } else {
-        const res = await fetch(b.url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const buf = Buffer.from(await res.arrayBuffer());
-        await writeFile(filePath, buf);
-        downloaded++;
-      }
-      images.push({ localPath, alt: b.alt ?? '', caption: b.caption ?? '' });
-    } catch (err: any) {
-      failed++;
-      console.warn(`  ⚠ image ${b.url} → ${localPath} failed: ${err.message}`);
-    }
+    const localPath = await downloadFile(slug, b.url, String(i).padStart(4, '0'), stats);
+    if (localPath) images.push({ localPath, alt: b.alt ?? '', caption: b.caption ?? '' });
   }
-
-  return { images, downloaded, skipped, failed };
+  return images;
 }
