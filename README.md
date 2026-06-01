@@ -58,7 +58,7 @@ Google Docs (doc_id) ──┘
 | `src/lib/config.ts` | env access + constants |
 | `src/lib/arena.ts` | Are.na v3 client (read + the few write calls setup needs) |
 | `src/lib/docs.ts` | Google Docs (service-account) fetch → ko/en split → semantic HTML |
-| `src/lib/images.ts` | download Are.na images, skip-cache by filename |
+| `src/lib/images.ts` | classify blocks (image vs link), download images, skip-cache |
 | `src/lib/works.ts` | orchestrate Are.na + Docs + images into validated `Work[]` |
 | `src/lib/schema.ts` | the `Work` zod schema (single source of truth) |
 | `src/lib/site-data.ts` | page-side: read the snapshot + resolve image assets |
@@ -130,9 +130,31 @@ connected **channel block**. `build-data.ts` reads it to discover works.
 
 ### Work channel = one work
 
-Each work is its own channel. Its **image blocks** are the work's images, in
-channel order. Per-image optional block metadata `alt` and `caption` are used if
-present.
+Each work is its own channel. Blocks are handled **by class**, in channel order:
+
+- **Image / uploaded blocks** → the work's images. **A channel can hold as many
+  image blocks as you like** — they all become this work's images, in channel
+  order. Each is downloaded locally and run through Astro's image pipeline.
+  Per-image optional block metadata `alt` and `caption` are used if present.
+- **Link / Media (embed) blocks** → outbound links (`{ url, title, description,
+  thumbnail }`). The **Are.na-served thumbnail is downloaded locally** (like any
+  image, so the build never depends on a remote URL) and shown next to the link.
+  Any work with a link block is automatically tagged **`web`**. Use these for
+  "live site", external references, videos, etc.
+- **Text / Channel blocks** → ignored (body text comes from Google Docs).
+
+The block's class is authoritative, so a Link block's thumbnail is downloaded as
+a *link* thumbnail, never mistaken for an uploaded artwork image.
+
+### Classification tags
+
+A single tag axis: **`identity`, `editorial`, `poster`, `type`, `web`**. Set the
+channel's `tags` metadata to a comma-separated subset, e.g. `identity, poster`.
+A work can carry multiple tags. `web` is added automatically when the work has a
+link block (you don't need to type it). Unknown tags are warned about and
+dropped. The detail page lists tags; the **index page has a tag-filter** (plain
+inline JS toggling `data-tags`, no framework) that shows only the tags actually
+in use.
 
 ### Work channel custom metadata (Are.na v3)
 
@@ -146,10 +168,13 @@ present.
 | `client` | `ttt` | client |
 | `doc_id` | `1AbC…xyz` | Google Doc ID for the body (the hybrid join key) |
 | `order` | `1` | sort order (ascending number) |
+| `tags` | `identity, poster` | comma-separated subset of `identity/editorial/poster/type/web`; `web` auto-added for link works |
+| `cover` | `2` | 1-based index of the image to use as the index thumbnail; defaults to the first image (or first link thumbnail for web-only works) |
 | `published` | `true` | `false` excludes the work from the build |
 
 Missing metadata falls back to defaults. `published=false` skips the work. A
-non-numeric `order` logs a warning and uses the default.
+non-numeric `order` logs a warning and uses the default. Unknown `tags` tokens
+are warned about and dropped.
 
 ---
 
@@ -157,9 +182,10 @@ non-numeric `order` logs a warning and uses the default.
 
 1. In Are.na, **create a work channel** and connect it into the index channel.
    (Or extend `scripts/setup-arena.ts`.)
-2. Add **image blocks** to the channel.
+2. Add **image blocks** to the channel (one or many — all become this work's
+   images, in order). Add **link blocks** for live sites / external references.
 3. Set the channel's **custom metadata** (`slug`, `title`, `year`, `doc_id`,
-   `order`, …).
+   `order`, `tags`, …).
 4. Write the body in a **Google Doc**: Korean → a line with just `---` →
    English. **Share it (Viewer) with the service-account email.** Put the Doc ID
    into the channel's `doc_id` metadata.
