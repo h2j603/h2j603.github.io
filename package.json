@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.1.0",
   "private": true,
-  "description": "Portfolio site (hyuk.xyz) with an Are.na + Google Docs hybrid backend, built at compile time into a static Astro site.",
+  "description": "Portfolio site (hyuk.xyz) with an Are.na backend, built at compile time into a static Astro site.",
   "scripts": {
     "setup:arena": "tsx scripts/setup-arena.ts",
     "build:data": "tsx scripts/build-data.ts",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "astro": "^5.6.1",
-    "googleapis": "^148.0.0",
+    "marked": "^15.0.7",
     "zod": "^3.24.2"
   },
   "devDependencies": {
