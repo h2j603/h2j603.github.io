@@ -38,6 +38,7 @@ function bitmapUrl(block: any): string | null {
 export type BlockKind =
   | { kind: 'image'; url: string }
   | { kind: 'link'; url: string; title: string; description: string; thumbnailUrl: string | null }
+  | { kind: 'text'; content: string }
   | { kind: 'skip' };
 
 /**
@@ -47,7 +48,9 @@ export type BlockKind =
  * - Link / Media (embed) blocks → an outbound link AND its Are.na-served
  *   thumbnail (downloaded locally like any image, so the build never depends on
  *   a remote URL). A work with any link block is treated as a `web` work.
- * - Text / Channel / anything else → skip (body text comes from Google Docs).
+ * - Text blocks → body copy (Markdown). The 1st text block is the Korean body,
+ *   the 2nd is the English body.
+ * - Channel / anything else → skip.
  *
  * The class field is authoritative; we fall back to URL shape only when the
  * class is missing, so a Link block's thumbnail is never mistaken for an
@@ -75,7 +78,15 @@ export function classifyBlock(block: any): BlockKind {
     return url ? { kind: 'image', url } : { kind: 'skip' };
   }
 
-  if (cls === 'text' || cls === 'channel') return { kind: 'skip' };
+  if (cls === 'text') {
+    // Are.na stores text blocks as Markdown under `content`.
+    const content = block?.content ?? block?.content_html ?? '';
+    return typeof content === 'string' && content.trim()
+      ? { kind: 'text', content }
+      : { kind: 'skip' };
+  }
+
+  if (cls === 'channel') return { kind: 'skip' };
 
   // No/unknown class: only treat as image if there's a genuine uploaded image,
   // and there's no link source that would mark it as a Link block.

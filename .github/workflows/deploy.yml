@@ -28,12 +28,11 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - name: Build (fetch Are.na + Docs, then astro build)
+      - name: Build (fetch Are.na, then astro build)
         run: npm run build
         env:
           ARENA_TOKEN: ${{ secrets.ARENA_TOKEN }}
           ARENA_INDEX_CHANNEL: ${{ secrets.ARENA_INDEX_CHANNEL }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

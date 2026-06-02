@@ -1,12 +1,13 @@
 /**
- * Orchestrator: combine Are.na (structure + images + metadata) with Google Docs
- * (body text) into the validated `Work[]` that the site renders.
+ * Orchestrator: turn each Are.na work channel (images + link blocks + text
+ * blocks + description metadata) into the validated `Work[]` that the site
+ * renders. Are.na is the only backend.
  *
- * Error isolation is the rule: a single bad work channel or Doc is logged and
- * skipped, never fatal. A summary is returned for the caller to print.
+ * Error isolation is the rule: a single bad work channel is logged and skipped,
+ * never fatal. A summary is returned for the caller to print.
  */
 import { getChannel, getChannelContents, parseDescriptionMetadata } from './arena.js';
-import { fetchDoc } from './docs.js';
+import { markdownToHtml } from './body.js';
 import {
   downloadImages,
   downloadFile,
@@ -101,6 +102,7 @@ async function buildOne(
   const blocks = await getChannelContents(channel.id);
   const imageBlocks: BlockImage[] = [];
   const linkBlocks: { link: Omit<WorkLink, 'thumbnail'>; thumbnailUrl: string | null }[] = [];
+  const textBlocks: string[] = [];
   for (const b of blocks) {
     const c = classifyBlock(b);
     if (c.kind === 'image') {
@@ -114,6 +116,8 @@ async function buildOne(
         link: { url: c.url, title: c.title, description: c.description },
         thumbnailUrl: c.thumbnailUrl,
       });
+    } else if (c.kind === 'text') {
+      textBlocks.push(c.content);
     }
   }
 
@@ -154,22 +158,23 @@ async function buildOne(
     cover = links.find((l) => l.thumbnail)?.thumbnail ?? '';
   }
 
-  if (stats.downloaded || stats.skipped || stats.failed || links.length) {
-    console.log(
-      `  ${slug}: images +${stats.downloaded} cached:${stats.skipped} failed:${stats.failed} links:${links.length} tags:[${tags.join(',')}]`,
-    );
+  // Body from Are.na text blocks (Markdown): 1st = Korean, 2nd = English.
+  const bodyKo = markdownToHtml(textBlocks[0] ?? '', `${ctx} ko`);
+  const bodyEn = markdownToHtml(textBlocks[1] ?? '', `${ctx} en`);
+  if (textBlocks.length > 2) {
+    warn(`${ctx}: ${textBlocks.length} text blocks found; only the first two (ko, en) are used`);
   }
 
-  // Body from Google Docs (optional).
-  let bodyKo = '';
-  let bodyEn = '';
-  const docId = meta.doc_id?.trim();
-  if (docId && !/placeholder|replace_with/i.test(docId)) {
-    try {
-      ({ bodyKo, bodyEn } = await fetchDoc(docId));
-    } catch (err: any) {
-      warn(`${ctx}: Doc ${docId} failed: ${err.message}`);
-    }
+  if (
+    stats.downloaded ||
+    stats.skipped ||
+    stats.failed ||
+    links.length ||
+    textBlocks.length
+  ) {
+    console.log(
+      `  ${slug}: images +${stats.downloaded} cached:${stats.skipped} failed:${stats.failed} links:${links.length} text:${textBlocks.length} tags:[${tags.join(',')}]`,
+    );
   }
 
   const parsed = workSchema.safeParse({
