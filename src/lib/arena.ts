@@ -80,13 +80,23 @@ export interface ArenaChannel {
   id: number;
   slug: string;
   title: string;
+  /** The channel's description text (Are.na "metadata"/description field). */
+  description: string;
 }
 
 export async function getChannel(slugOrId: string | number): Promise<ArenaChannel | null> {
   try {
     const c = await request(`/channels/${encodeURIComponent(String(slugOrId))}`);
     if (!c || !c.id) return null;
-    return { id: c.id, slug: c.slug, title: c.title };
+    // Are.na has spelled the description field a few ways across versions.
+    const description =
+      c.description ?? c.metadata?.description ?? c.about ?? '';
+    return {
+      id: c.id,
+      slug: c.slug,
+      title: c.title,
+      description: typeof description === 'string' ? description : '',
+    };
   } catch (err: any) {
     if (String(err.message).includes(' 404 ')) return null;
     throw err;
@@ -99,18 +109,31 @@ export async function getChannelContents(slugOrId: string | number): Promise<Jso
 }
 
 /**
- * Custom metadata for a channel as a flat key→value string map.
- * Reads the list endpoint and normalises the various possible field names.
+ * Parse a channel description into a flat key→value map.
+ *
+ * Each metadata line looks like `key: value`. Keys are lowercased and trimmed.
+ * Lines without a colon (free-form prose) are ignored, so you can mix a human
+ * description with the structured fields. The first colon splits key/value, so
+ * values may themselves contain colons (e.g. URLs).
+ *
+ * Example description:
+ *   title: ≪british≫ Poster
+ *   year: 2026
+ *   tags: identity, poster
+ *   doc_id: 1AbC...xyz
  */
-export async function getChannelMetadata(
-  slugOrId: string | number,
-): Promise<Record<string, string>> {
-  const list = await getAll(`/channels/${encodeURIComponent(String(slugOrId))}/metadata`);
+export function parseDescriptionMetadata(description: string): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const m of list) {
-    const key = m.key ?? m.name;
-    const value = m.value ?? m.content ?? '';
-    if (typeof key === 'string' && key) out[key] = value == null ? '' : String(value);
+  for (const rawLine of (description ?? '').split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    const colon = line.indexOf(':');
+    if (colon < 1) continue; // no colon, or starts with colon → not a field
+    const key = line.slice(0, colon).trim().toLowerCase();
+    const value = line.slice(colon + 1).trim();
+    // Keys are simple identifiers; ignore lines whose "key" has spaces (prose).
+    if (!/^[a-z0-9_]+$/.test(key)) continue;
+    out[key] = value;
   }
   return out;
 }
@@ -132,19 +155,26 @@ export async function createChannel(
   // Response may be the channel directly or wrapped.
   const ch = c.channel ?? c;
   if (!ch?.id) throw new Error(`createChannel: unexpected response ${JSON.stringify(c)}`);
-  return { id: ch.id, slug: ch.slug, title: ch.title };
+  return { id: ch.id, slug: ch.slug, title: ch.title, description: ch.description ?? '' };
 }
 
-export async function createMetadatum(
+/** Render a key→value map as the `key: value` lines we store in a description. */
+export function formatDescriptionMetadata(meta: Record<string, string>): string {
+  return Object.entries(meta)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join('\n');
+}
+
+/** Overwrite a channel's description text. */
+export async function setChannelDescription(
   channel: string | number,
-  key: string,
-  value: string,
+  description: string,
 ): Promise<void> {
   const token = requireArenaToken();
-  await request(`/channels/${encodeURIComponent(String(channel))}/metadata`, {
-    method: 'POST',
+  await request(`/channels/${encodeURIComponent(String(channel))}`, {
+    method: 'PUT',
     token,
-    body: JSON.stringify({ key, value }),
+    body: JSON.stringify({ description }),
   });
 }
 
