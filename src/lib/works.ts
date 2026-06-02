@@ -5,7 +5,7 @@
  * Error isolation is the rule: a single bad work channel or Doc is logged and
  * skipped, never fatal. A summary is returned for the caller to print.
  */
-import { getChannel, getChannelContents, getChannelMetadata } from './arena.js';
+import { getChannel, getChannelContents, parseDescriptionMetadata } from './arena.js';
 import { fetchDoc } from './docs.js';
 import {
   downloadImages,
@@ -82,7 +82,7 @@ async function buildOne(
     warn(`channel "${ref}" not found`);
     return { work: null, skipped: false };
   }
-  const meta = await getChannelMetadata(channel.id);
+  const meta = parseDescriptionMetadata(channel.description);
 
   if (meta.published?.toLowerCase() === 'false') {
     return { work: null, skipped: true };

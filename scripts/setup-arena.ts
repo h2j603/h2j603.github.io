@@ -3,20 +3,21 @@
  *
  *   - ensures the index channel exists (slug from ARENA_INDEX_CHANNEL)
  *   - ensures 1–2 sample work channels exist, connected into the index
- *   - fills each sample work channel with the custom metadata the build reads
- *     (doc_id is a placeholder you replace later)
+ *   - writes each sample work's metadata into its channel DESCRIPTION as
+ *     `key: value` lines (the build reads metadata from the description, which
+ *     you can edit directly in the Are.na UI). doc_id is a placeholder.
  *   - prints every channel's slug + URL so you can open them and add images
  *
- * Re-running is safe: existing channels are detected by slug and reused, and
- * metadata keys that are already present are left untouched.
+ * Re-running is safe: existing channels are detected by slug and reused; a
+ * channel that already has a description is left untouched.
  *
  * Requires a WRITE-scope ARENA_TOKEN and network access to api.are.na.
  */
 import {
   getChannel,
-  getChannelMetadata,
   createChannel,
-  createMetadatum,
+  setChannelDescription,
+  formatDescriptionMetadata,
   connectChannel,
   type ArenaChannel,
 } from '../src/lib/arena.js';
@@ -71,16 +72,15 @@ async function ensureChannel(slug: string, title: string): Promise<ArenaChannel>
   return created;
 }
 
-async function ensureMetadata(channel: ArenaChannel, meta: Record<string, string>) {
-  const current = await getChannelMetadata(channel.id);
-  for (const [key, value] of Object.entries(meta)) {
-    if (key in current) {
-      console.log(`  = metadata ${key} already set (${current[key]})`);
-      continue;
-    }
-    await createMetadatum(channel.id, key, value);
-    console.log(`  + metadata ${key} = ${value}`);
+async function ensureDescription(channel: ArenaChannel, meta: Record<string, string>) {
+  if (channel.description.trim()) {
+    console.log('  = description already set, leaving it untouched');
+    return;
   }
+  const description = formatDescriptionMetadata(meta);
+  await setChannelDescription(channel.id, description);
+  console.log('  + wrote description metadata:');
+  for (const line of description.split('\n')) console.log(`      ${line}`);
 }
 
 async function main() {
@@ -92,7 +92,7 @@ async function main() {
   for (const sample of SAMPLE_WORKS) {
     console.log(`\n== Sample work: ${sample.metadata.slug} ==`);
     const work = await ensureChannel(sample.metadata.slug, sample.title);
-    await ensureMetadata(work, sample.metadata);
+    await ensureDescription(work, sample.metadata);
 
     // Connect into the index channel (best-effort; undocumented body shape).
     try {
@@ -114,10 +114,12 @@ async function main() {
   }
   console.log('\nNext:');
   console.log('  1. Open each work channel and add image blocks.');
-  console.log('  2. Create a Google Doc per work (Korean → "---" → English),');
+  console.log('  2. Edit the channel DESCRIPTION (in the Are.na UI) to adjust the');
+  console.log('     `key: value` metadata lines — title, year, tags, cover, etc.');
+  console.log('  3. Create a Google Doc per work (Korean → "---" → English),');
   console.log('     share it (Viewer) with your service-account email, and put');
-  console.log("     its ID into the channel's `doc_id` metadata.");
-  console.log('  3. Run `npm run build`.');
+  console.log("     its ID into the description's `doc_id:` line.");
+  console.log('  4. Run `npm run build`.');
 }
 
 main().catch((err) => {
