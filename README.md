@@ -156,12 +156,30 @@ dropped. The detail page lists tags; the **index page has a tag-filter** (plain
 inline JS toggling `data-tags`, no framework) that shows only the tags actually
 in use.
 
-### Work channel custom metadata (Are.na v3)
+### Work metadata — in the channel **description**
+
+There's no separate "metadata" box in the Are.na UI, so a work's structured
+fields live in the **channel description** as `key: value` lines (edit it right
+in Are.na: channel → Edit → Description). The build parses these lines; any
+free-form prose line (no colon, or a key with spaces) is ignored, so you can mix
+a human description with the fields.
+
+```
+title: ≪british≫ Poster
+year: 2026
+medium: 디지털 프린트
+size: 420×594mm
+client: ttt
+doc_id: 1AbC...xyz
+order: 1
+tags: identity, poster
+cover: 2
+```
 
 | key | example | purpose |
 |---|---|---|
 | `slug` | `british-poster` | URL path; falls back to the channel slug |
-| `title` | `≪british≫ Poster` | title |
+| `title` | `≪british≫ Poster` | title (falls back to the channel title) |
 | `year` | `2026` | year |
 | `medium` | `디지털 프린트` | medium |
 | `size` | `420×594mm` | dimensions |
@@ -172,9 +190,12 @@ in use.
 | `cover` | `2` | 1-based index of the image to use as the index thumbnail; defaults to the first image (or first link thumbnail for web-only works) |
 | `published` | `true` | `false` excludes the work from the build |
 
-Missing metadata falls back to defaults. `published=false` skips the work. A
-non-numeric `order` logs a warning and uses the default. Unknown `tags` tokens
-are warned about and dropped.
+All keys are optional. Missing fields fall back to defaults. `published: false`
+skips the work. A non-numeric `order` logs a warning and uses the default.
+Unknown `tags` tokens are warned about and dropped. Keys are case-insensitive.
+
+`scripts/setup-arena.ts` seeds each sample channel's description with these
+lines; after that you edit them directly in Are.na.
 
 ---
 
@@ -184,8 +205,8 @@ are warned about and dropped.
    (Or extend `scripts/setup-arena.ts`.)
 2. Add **image blocks** to the channel (one or many — all become this work's
    images, in order). Add **link blocks** for live sites / external references.
-3. Set the channel's **custom metadata** (`slug`, `title`, `year`, `doc_id`,
-   `order`, `tags`, …).
+3. Fill in the channel **description** with the `key: value` metadata lines
+   (`slug`, `title`, `year`, `doc_id`, `order`, `tags`, `cover`, …).
 4. Write the body in a **Google Doc**: Korean → a line with just `---` →
    English. **Share it (Viewer) with the service-account email.** Put the Doc ID
    into the channel's `doc_id` metadata.
@@ -243,8 +264,14 @@ env vars above as repo **secrets**. Confirm the custom domain is set to
   short. Confirm against the live spec (`https://api.are.na/v3/openapi`) on first
   run with open network and tighten if needed. The READ path (build) is the
   least likely to differ.
+- **Metadata lives in the channel description, not Are.na "custom metadata".**
+  v3 custom metadata has no editing box in the Are.na UI, so we store the
+  `key: value` fields in the description instead (read via `GET /channels/{id}`,
+  written by `setup-arena.ts` via `PUT /channels/{id}` with `{ description }`).
+  This means everything is editable directly in Are.na. Confirm the description
+  read/write field names against the live API on first run.
 - **Connecting a child channel into the index** (`POST /channels/{id}/blocks`)
   is the one write whose body is most uncertain. `setup-arena.ts` tries a few
   shapes and, if they all fail, prints a "connect it in the Are.na UI" fallback —
-  channel + metadata creation still succeed. Adjust `connectChannel()` in
-  `src/lib/arena.ts` once you've confirmed the real shape.
+  channel creation + the description write still succeed. Adjust
+  `connectChannel()` in `src/lib/arena.ts` once you've confirmed the real shape.
