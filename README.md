@@ -1,18 +1,20 @@
-# hyuk.xyz — portfolio (Are.na + Google Docs hybrid backend)
+# hyuk.xyz — portfolio (Are.na backend)
 
-A static [Astro](https://astro.build) site whose content lives in two places and
-is baked in **at build time** (no runtime API calls):
+A static [Astro](https://astro.build) site whose content lives entirely in
+**Are.na** and is baked in **at build time** (no runtime API calls). One Are.na
+channel per work holds everything:
 
-- **Are.na** — the work list, images, and per-work metadata.
-- **Google Docs** — the long-form body text for each work (one Doc per work,
-  Korean body → `---` → English body).
+- **image blocks** → the work's images,
+- **text blocks** (Markdown) → the body copy (1st block = Korean, 2nd = English),
+- **link blocks** → outbound links + their Are.na thumbnails,
+- the **channel description** → the structured metadata (`key: value` lines).
 
 Reference architecture: a flat set of static pages, one page per work, Korean
 body followed by English body.
 
 > **Status: architecture / data-pipeline scaffold.** Layout is intentionally
-> unstyled — the pages exist only to prove data flows from both backends onto
-> the page. Styling is a later step.
+> unstyled — the pages exist only to prove data flows onto the page. Styling is
+> a later step.
 >
 > The previous site is preserved under [`old/`](old/) (including the
 > "under construction" page as `old/under-construction.html`).
@@ -41,10 +43,8 @@ normal `npm run build` works.
 Are.na index channel ──┐
   (lists work channels) │
                         ├─ scripts/build-data.ts ──► src/data/works.json ──► Astro pages ──► dist/
-Are.na work channels ──┤        (build time)              (snapshot)         (index + [slug])
-  images + metadata     │
-Google Docs (doc_id) ──┘
-  body text ─ split ko/en ─ converted to clean HTML
+Are.na work channels ──┘        (build time)              (snapshot)         (index + [slug])
+  images + text(ko/en) + links + description metadata
 ```
 
 `npm run build` runs `scripts/build-data.ts` **before** `astro build` so that:
@@ -56,10 +56,10 @@ Google Docs (doc_id) ──┘
 | File | Responsibility |
 |---|---|
 | `src/lib/config.ts` | env access + constants |
-| `src/lib/arena.ts` | Are.na v3 client (read + the few write calls setup needs) |
-| `src/lib/docs.ts` | Google Docs (service-account) fetch → ko/en split → semantic HTML |
-| `src/lib/images.ts` | classify blocks (image vs link), download images, skip-cache |
-| `src/lib/works.ts` | orchestrate Are.na + Docs + images into validated `Work[]` |
+| `src/lib/arena.ts` | Are.na v3 client (read + the few write calls setup needs) + description-metadata parser |
+| `src/lib/body.ts` | Markdown (Are.na text block) → clean semantic HTML |
+| `src/lib/images.ts` | classify blocks (image / link / text), download images, skip-cache |
+| `src/lib/works.ts` | orchestrate Are.na blocks + metadata into validated `Work[]` |
 | `src/lib/schema.ts` | the `Work` zod schema (single source of truth) |
 | `src/lib/site-data.ts` | page-side: read the snapshot + resolve image assets |
 | `scripts/build-data.ts` | the build-time data step (`--dry-run` to check without writing) |
@@ -74,7 +74,7 @@ Google Docs (doc_id) ──┘
 npm install
 cp .env.example .env          # then fill in the values (see below)
 npm run setup:arena           # one-time: create the Are.na structure
-# ... add images + doc_id metadata in Are.na, write the Docs (see workflow) ...
+# ... in Are.na: add image blocks, text blocks (ko, en), and the description ...
 npm run build                 # fetch everything + build the static site → dist/
 npm run preview               # serve dist/ locally
 ```
@@ -95,7 +95,6 @@ GitHub Actions deploy.
 |---|---|---|
 | `ARENA_TOKEN` | yes | Are.na v3 API token. **Write scope** to run `setup:arena`; read scope is enough for `build`. |
 | `ARENA_INDEX_CHANNEL` | yes | Slug of the index channel. Default `works`. |
-| `GOOGLE_SERVICE_ACCOUNT_JSON` | for bodies | Service-account key: a file path, raw JSON, or base64 JSON. |
 | `ARENA_API_BASE` | no | Defaults to `https://api.are.na/v3`. |
 | `ARENA_AUTH_SCHEME` | no | Authorization scheme prefix, defaults to `Bearer`. |
 
@@ -105,19 +104,6 @@ GitHub Actions deploy.
 
 Are.na → Settings → **Developers / Applications** → create an application →
 generate a **personal access token with write scope**. Put it in `ARENA_TOKEN`.
-
-### Getting a Google service account (for Docs bodies)
-
-1. [Google Cloud Console](https://console.cloud.google.com) → create/select a project.
-2. **APIs & Services → Library** → enable **Google Docs API** (and **Google
-   Drive API** if you later list/lookup Docs).
-3. **APIs & Services → Credentials → Create credentials → Service account.**
-4. Open the service account → **Keys → Add key → Create new key → JSON.** Download it.
-5. Point `GOOGLE_SERVICE_ACCOUNT_JSON` at the file (e.g. `./service-account.json`,
-   already gitignored), or paste the JSON / base64 of it into the env var. For
-   the GitHub secret, base64 is easiest: `base64 -w0 service-account.json`.
-6. **Share each work's Doc** (Viewer) with the service-account email
-   (`...@...iam.gserviceaccount.com`) — otherwise the build can't read it.
 
 ---
 
@@ -141,7 +127,11 @@ Each work is its own channel. Blocks are handled **by class**, in channel order:
   image, so the build never depends on a remote URL) and shown next to the link.
   Any work with a link block is automatically tagged **`web`**. Use these for
   "live site", external references, videos, etc.
-- **Text / Channel blocks** → ignored (body text comes from Google Docs).
+- **Text blocks** → the body copy, written in **Markdown**. The **1st text block
+  is the Korean body, the 2nd is the English body.** Extra text blocks beyond the
+  first two are ignored (with a warning).
+- **Channel blocks** → ignored inside a work channel (they only matter in the
+  index).
 
 The block's class is authoritative, so a Link block's thumbnail is downloaded as
 a *link* thumbnail, never mistaken for an uploaded artwork image.
@@ -170,7 +160,6 @@ year: 2026
 medium: 디지털 프린트
 size: 420×594mm
 client: ttt
-doc_id: 1AbC...xyz
 order: 1
 tags: identity, poster
 cover: 2
@@ -184,7 +173,6 @@ cover: 2
 | `medium` | `디지털 프린트` | medium |
 | `size` | `420×594mm` | dimensions |
 | `client` | `ttt` | client |
-| `doc_id` | `1AbC…xyz` | Google Doc ID for the body (the hybrid join key) |
 | `order` | `1` | sort order (ascending number) |
 | `tags` | `identity, poster` | comma-separated subset of `identity/editorial/poster/type/web`; `web` auto-added for link works |
 | `cover` | `2` | 1-based index of the image to use as the index thumbnail; defaults to the first image (or first link thumbnail for web-only works) |
@@ -205,29 +193,34 @@ lines; after that you edit them directly in Are.na.
    (Or extend `scripts/setup-arena.ts`.)
 2. Add **image blocks** to the channel (one or many — all become this work's
    images, in order). Add **link blocks** for live sites / external references.
-3. Fill in the channel **description** with the `key: value` metadata lines
-   (`slug`, `title`, `year`, `doc_id`, `order`, `tags`, `cover`, …).
-4. Write the body in a **Google Doc**: Korean → a line with just `---` →
-   English. **Share it (Viewer) with the service-account email.** Put the Doc ID
-   into the channel's `doc_id` metadata.
+3. Add **text blocks** for the body (Markdown): the **1st** is the Korean body,
+   the **2nd** is the English body.
+4. Fill in the channel **description** with the `key: value` metadata lines
+   (`slug`, `title`, `year`, `order`, `tags`, `cover`, …).
 5. Trigger a rebuild → redeploy: push to `main`, or run the **deploy workflow**
    manually (Actions → "Build & Deploy to GitHub Pages" → *Run workflow*). This
-   is your "rebuild" button for Are.na/Docs changes that didn't touch the repo.
+   is your "rebuild" button for Are.na changes that didn't touch the repo.
 
 ---
 
-## Google Docs body conversion
+## Body text (Markdown in Are.na text blocks)
 
-- The body is split on a line containing only `---` (or `***`/`___`): everything
-  before is `bodyKo`, everything after is `bodyEn`. No separator → all of it is
-  `bodyKo`.
-- Output is **clean, unstyled, semantic HTML** only: `<h1>`–`<h6>`, `<p>`,
-  `<ul>`/`<ol>`/`<li>`, `<strong>`, `<em>`, `<u>`, `<a>`. The site's CSS owns all
-  styling.
-- Things that can't be represented faithfully (footnotes, inline objects/images,
-  equations, tables, page breaks) are **skipped with a warning**. The converter
-  never emits a broken `[object Object]` string (a real failure mode of the old
-  docx pipeline — guarded against here and covered by a test).
+- The 1st text block in a channel is the Korean body, the 2nd is the English
+  body. Write them in normal **Markdown**:
+
+  | you type | you get |
+  |---|---|
+  | `**굵게**` | **bold** |
+  | `*기울임*` | *italic* |
+  | `[텍스트](https://…)` | a link |
+  | `## 소제목` | a heading |
+  | `- 항목` / `1. 항목` | a bullet / numbered list |
+
+- Output is **clean, unstyled, semantic HTML** (`<h1>`–`<h6>`, `<p>`,
+  `<ul>`/`<ol>`/`<li>`, `<strong>`, `<em>`, `<a>`). The site's CSS owns all
+  styling. The converter only ever receives a string and guards its output
+  against the `[object Object]` marker (a real failure mode of the old docx
+  pipeline — covered by a test).
 
 ---
 
@@ -247,8 +240,8 @@ Deploys to **GitHub Pages** with the custom domain **hyuk.xyz**
 `.github/workflows/deploy.yml`:
 
 - runs on push to `main` and on manual dispatch,
-- runs `npm run build` (the GitHub runner has open internet, so the Are.na/Docs
-  fetch works there), then deploys `dist/`.
+- runs `npm run build` (the GitHub runner has open internet, so the Are.na fetch
+  works there), then deploys `dist/`.
 
 One-time setup: repo **Settings → Pages → Source = GitHub Actions**, and add the
 env vars above as repo **secrets**. Confirm the custom domain is set to
