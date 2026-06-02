@@ -5,7 +5,7 @@
  *   - ensures 1–2 sample work channels exist, connected into the index
  *   - writes each sample work's metadata into its channel DESCRIPTION as
  *     `key: value` lines (the build reads metadata from the description, which
- *     you can edit directly in the Are.na UI). doc_id is a placeholder.
+ *     you can edit directly in the Are.na UI).
  *   - prints every channel's slug + URL so you can open them and add images
  *
  * Re-running is safe: existing channels are detected by slug and reused; a
@@ -33,7 +33,6 @@ const SAMPLE_WORKS = [
       medium: '디지털 프린트',
       size: '420×594mm',
       client: 'ttt',
-      doc_id: 'REPLACE_WITH_GOOGLE_DOC_ID',
       order: '1',
       tags: 'identity, poster',
       published: 'true',
@@ -48,7 +47,6 @@ const SAMPLE_WORKS = [
       medium: '웹사이트',
       size: '',
       client: '',
-      doc_id: 'REPLACE_WITH_GOOGLE_DOC_ID',
       order: '2',
       tags: '',
       published: 'true',
@@ -114,11 +112,10 @@ async function main() {
   }
   console.log('\nNext:');
   console.log('  1. Open each work channel and add image blocks.');
-  console.log('  2. Edit the channel DESCRIPTION (in the Are.na UI) to adjust the');
+  console.log('  2. Add Text blocks for the body (Markdown): the 1st text block');
+  console.log('     is the Korean body, the 2nd is the English body.');
+  console.log('  3. Edit the channel DESCRIPTION (in the Are.na UI) to adjust the');
   console.log('     `key: value` metadata lines — title, year, tags, cover, etc.');
-  console.log('  3. Create a Google Doc per work (Korean → "---" → English),');
-  console.log('     share it (Viewer) with your service-account email, and put');
-  console.log("     its ID into the description's `doc_id:` line.");
   console.log('  4. Run `npm run build`.');
 }
 

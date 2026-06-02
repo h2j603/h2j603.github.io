@@ -120,7 +120,7 @@ export async function getChannelContents(slugOrId: string | number): Promise<Jso
  *   title: ≪british≫ Poster
  *   year: 2026
  *   tags: identity, poster
- *   doc_id: 1AbC...xyz
+ *   cover: 2
  */
 export function parseDescriptionMetadata(description: string): Record<string, string> {
   const out: Record<string, string> = {};

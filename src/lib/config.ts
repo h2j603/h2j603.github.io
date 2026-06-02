@@ -31,10 +31,6 @@ export function requireArenaToken(): string {
   return t;
 }
 
-export function getGoogleServiceAccountRaw(): string | undefined {
-  return process.env.GOOGLE_SERVICE_ACCOUNT_JSON || undefined;
-}
-
 /** Local directory (relative to repo root) where downloaded images are cached. */
 export const ASSETS_WORKS_DIR = 'src/assets/works';
 
