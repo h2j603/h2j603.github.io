@@ -1,21 +1,22 @@
 /**
  * Minimal Are.na v3 client.
  *
- * ⚠ The v3 OpenAPI spec (https://api.are.na/v3/openapi) could not be read from
- * the build sandbox where this was authored (the host is blocked there), so the
- * endpoint *paths* below follow Are.na's documented conventions and the client
- * is written defensively: responses are read tolerantly (several historical key
- * spellings accepted) and write-request bodies try a couple of shapes. When you
- * first run this with real network access, confirm the paths/bodies against the
- * live spec and tighten as needed. The READ path (build) is the important one
- * and is the least likely to differ.
+ * Endpoints / shapes are verified against the live OpenAPI spec
+ * (https://api.are.na/v3/openapi):
  *
- *   GET    /channels/{channel}                 — fetch a channel
- *   GET    /channels/{channel}/contents        — list blocks (paginated)
- *   GET    /channels/{channel}/metadata        — list custom metadata
- *   POST   /channels                           — create channel
- *   POST   /channels/{channel}/metadata        — create metadatum {key,value}
- *   POST   /channels/{channel}/blocks          — add/connect a block
+ *   GET    /channels/{id}                — fetch a channel (id or slug)
+ *   GET    /channels/{id}/contents       — list blocks + sub-channels (paginated)
+ *   POST   /channels                     — create a channel
+ *   PUT    /channels/{id}                — update channel (incl. description)
+ *   POST   /connections                  — connect an existing channel/block
+ *
+ * Notes:
+ * - List responses are `{ data: [...], total_pages, current_page, ... }`.
+ * - Pagination uses `page` / `per` (per ≤ 100).
+ * - Block discrimination is `block.type` (PascalCase: Text / Image / Link /
+ *   Attachment / Embed / PendingBlock / Channel).
+ * - `description` on Channel reads as `MarkdownContent` (`{markdown, html,
+ *   plain}`) or null, but writes as a plain string.
  */
 import {
   ARENA_API_BASE,
@@ -49,7 +50,7 @@ async function request(
     try {
       data = JSON.parse(text);
     } catch {
-      /* non-JSON body; leave as null and let the status check report it */
+      /* non-JSON body; let the status check report */
     }
   }
   if (!res.ok) {
@@ -59,28 +60,35 @@ async function request(
   return data ?? {};
 }
 
-/** Pull every page of a list endpoint into one array. */
+/** Pull every page of a list endpoint (`{ data: [...] }`) into one array. */
 async function getAll(path: string): Promise<Json[]> {
   const items: Json[] = [];
   for (let page = 1; ; page++) {
     const sep = path.includes('?') ? '&' : '?';
-    const data = await request(`${path}${sep}page=${page}&per=${PER_PAGE}`);
-    // Are.na list payloads have used a few key names over the years.
-    const batch: Json[] =
-      data.contents ?? data.blocks ?? data.channels ?? data.metadata ?? [];
+    const res = await request(`${path}${sep}page=${page}&per=${PER_PAGE}`);
+    const batch: Json[] = Array.isArray(res.data) ? res.data : [];
     items.push(...batch);
     if (batch.length < PER_PAGE) break;
-    // Safety valve against a misbehaving/non-paginated endpoint.
-    if (page > 100) break;
+    if (page > 100) break; // safety valve
   }
   return items;
+}
+
+/**
+ * Read a Markdown-content field that may be a `MarkdownContent` object
+ * (`{markdown, html, plain}`), a plain string, or null. Returns the Markdown.
+ */
+export function readMarkdown(field: any): string {
+  if (typeof field === 'string') return field;
+  if (typeof field?.markdown === 'string') return field.markdown;
+  return '';
 }
 
 export interface ArenaChannel {
   id: number;
   slug: string;
   title: string;
-  /** The channel's description text (Are.na "metadata"/description field). */
+  /** Channel description as Markdown text. */
   description: string;
 }
 
@@ -88,14 +96,11 @@ export async function getChannel(slugOrId: string | number): Promise<ArenaChanne
   try {
     const c = await request(`/channels/${encodeURIComponent(String(slugOrId))}`);
     if (!c || !c.id) return null;
-    // Are.na has spelled the description field a few ways across versions.
-    const description =
-      c.description ?? c.metadata?.description ?? c.about ?? '';
     return {
       id: c.id,
       slug: c.slug,
       title: c.title,
-      description: typeof description === 'string' ? description : '',
+      description: readMarkdown(c.description),
     };
   } catch (err: any) {
     if (String(err.message).includes(' 404 ')) return null;
@@ -103,7 +108,7 @@ export async function getChannel(slugOrId: string | number): Promise<ArenaChanne
   }
 }
 
-/** All blocks in a channel, in channel order. */
+/** All blocks (and sub-channels) in a channel, in channel order. */
 export async function getChannelContents(slugOrId: string | number): Promise<Json[]> {
   return getAll(`/channels/${encodeURIComponent(String(slugOrId))}/contents`);
 }
@@ -152,10 +157,13 @@ export async function createChannel(
     token,
     body: JSON.stringify({ title, visibility }),
   });
-  // Response may be the channel directly or wrapped.
-  const ch = c.channel ?? c;
-  if (!ch?.id) throw new Error(`createChannel: unexpected response ${JSON.stringify(c)}`);
-  return { id: ch.id, slug: ch.slug, title: ch.title, description: ch.description ?? '' };
+  if (!c?.id) throw new Error(`createChannel: unexpected response ${JSON.stringify(c)}`);
+  return {
+    id: c.id,
+    slug: c.slug,
+    title: c.title,
+    description: readMarkdown(c.description),
+  };
 }
 
 /** Render a key→value map as the `key: value` lines we store in a description. */
@@ -179,33 +187,23 @@ export async function setChannelDescription(
 }
 
 /**
- * Connect an existing channel into a parent channel as a channel-block.
+ * Connect an existing channel into a parent channel as a sub-channel.
  *
- * The exact request body for POST /channels/{channel}/blocks is the part of the
- * write API most likely to differ from these guesses, so we try the
- * historically-correct connection shapes in order. If all fail we throw, and
- * the caller falls back to a printed "connect it manually in the UI"
- * instruction — channel creation still succeeds.
+ * Uses POST /v3/connections — the connectable is the child channel, the target
+ * is the parent. The parent ID must be a numeric channel ID (not a slug).
  */
 export async function connectChannel(
-  parent: string | number,
+  parentId: number,
   childId: number,
 ): Promise<void> {
   const token = requireArenaToken();
-  const base = `/channels/${encodeURIComponent(String(parent))}/blocks`;
-  const attempts: Json[] = [
-    { connectable_type: 'Channel', connectable_id: childId },
-    { connectable: { type: 'Channel', id: childId } },
-    { source: { type: 'Channel', id: childId } },
-  ];
-  let lastErr: unknown;
-  for (const body of attempts) {
-    try {
-      await request(base, { method: 'POST', token, body: JSON.stringify(body) });
-      return;
-    } catch (err) {
-      lastErr = err;
-    }
-  }
-  throw lastErr instanceof Error ? lastErr : new Error('connectChannel failed');
+  await request('/connections', {
+    method: 'POST',
+    token,
+    body: JSON.stringify({
+      connectable_id: childId,
+      connectable_type: 'Channel',
+      channel_ids: [parentId],
+    }),
+  });
 }
