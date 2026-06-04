@@ -6,7 +6,12 @@
  * Error isolation is the rule: a single bad work channel is logged and skipped,
  * never fatal. A summary is returned for the caller to print.
  */
-import { getChannel, getChannelContents, parseDescriptionMetadata } from './arena.js';
+import {
+  getChannel,
+  getChannelContents,
+  parseDescriptionMetadata,
+  readMarkdown,
+} from './arena.js';
 import { markdownToHtml } from './body.js';
 import {
   downloadImages,
@@ -27,19 +32,14 @@ export interface BuildSummary {
 }
 
 function blockIsChannel(block: any): boolean {
-  const t = block?.class ?? block?.base_class ?? block?.type;
-  return typeof t === 'string' && t.toLowerCase() === 'channel';
+  // Per the v3 spec, a sub-channel appears in channel contents as a Channel
+  // object with `type: 'Channel'`.
+  return block?.type === 'Channel';
 }
 
-/** Resolve the child channel's slug/id from an index-channel block. */
+/** Resolve the child channel's slug/id from an index-channel entry. */
 function channelRefFromBlock(block: any): string | number | null {
-  return (
-    block?.slug ??
-    block?.channel?.slug ??
-    block?.id ??
-    block?.channel?.id ??
-    null
-  );
+  return block?.slug ?? block?.id ?? null;
 }
 
 function num(
@@ -108,8 +108,13 @@ async function buildOne(
     if (c.kind === 'image') {
       imageBlocks.push({
         url: c.url,
-        alt: b?.metadata?.alt ?? b?.alt ?? '',
-        caption: b?.metadata?.caption ?? b?.description ?? '',
+        // BlockImage.alt_text carries the upload's alt; fall back to the
+        // block's title/description (description is MarkdownContent).
+        alt:
+          (typeof b?.image?.alt_text === 'string' && b.image.alt_text) ||
+          (typeof b?.title === 'string' && b.title) ||
+          '',
+        caption: readMarkdown(b?.description),
       });
     } else if (c.kind === 'link') {
       linkBlocks.push({
