@@ -62,7 +62,7 @@ async function ensureChannel(slug: string, title: string): Promise<ArenaChannel>
     console.log(`= reuse channel "${existing.slug}" (#${existing.id})`);
     return existing;
   }
-  const created = await createChannel(title, 'public');
+  const created = await createChannel(title, 'private');
   console.log(`+ created channel "${created.slug}" (#${created.id}) from title "${title}"`);
   if (created.slug !== slug) {
     console.log(`  note: requested slug "${slug}" but Are.na assigned "${created.slug}".`);
