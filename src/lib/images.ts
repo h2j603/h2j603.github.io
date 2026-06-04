@@ -8,26 +8,33 @@
 import { mkdir, writeFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ASSETS_WORKS_DIR } from './config.js';
+import { readMarkdown } from './arena.js';
 import type { WorkImage } from './schema.js';
 
-/** The class of an Are.na block, lowercased. Spellings vary by API version. */
-function blockClass(block: any): string {
-  const t = block?.class ?? block?.base_class ?? block?.type;
-  return typeof t === 'string' ? t.toLowerCase() : '';
+/**
+ * Block type discriminator. Per the v3 spec, this is `block.type` and uses
+ * PascalCase values: Text, Image, Link, Attachment, Embed, PendingBlock, Channel.
+ */
+function blockType(block: any): string {
+  const t = block?.type;
+  return typeof t === 'string' ? t : '';
 }
 
 /**
- * Best available bitmap URL on a block — the uploaded image for Image blocks,
- * or the Are.na-served preview/thumbnail for Link/Media blocks (both live under
- * the same `image.{original,large,display}` shape).
+ * Best available bitmap URL on a block.
+ *
+ * `BlockImage` has `src` (original) plus `small / medium / large / square`
+ * resized versions (each an `ImageVersion` with `src` and `src_2x`). For
+ * download we want the highest available resolution.
  */
 function bitmapUrl(block: any): string | null {
   const img = block?.image;
+  if (!img) return null;
   const candidates = [
-    img?.original?.url,
-    img?.large?.url,
-    img?.display?.url,
-    block?.attachment?.url,
+    img.src,           // BlockImage original
+    img.large?.src,    // ImageVersion
+    img.medium?.src,
+    img.square?.src,
   ];
   for (const c of candidates) {
     if (typeof c === 'string' && /^https?:\/\//.test(c)) return c;
@@ -44,58 +51,45 @@ export type BlockKind =
 /**
  * Classify a work-channel block.
  *
- * - Image / uploaded blocks → download as artwork.
- * - Link / Media (embed) blocks → an outbound link AND its Are.na-served
- *   thumbnail (downloaded locally like any image, so the build never depends on
- *   a remote URL). A work with any link block is treated as a `web` work.
- * - Text blocks → body copy (Markdown). The 1st text block is the Korean body,
- *   the 2nd is the English body.
- * - Channel / anything else → skip.
- *
- * The class field is authoritative; we fall back to URL shape only when the
- * class is missing, so a Link block's thumbnail is never mistaken for an
- * uploaded artwork image.
+ * - Image → uploaded artwork (downloaded locally).
+ * - Link / Embed → an outbound link AND its Are.na-served thumbnail (downloaded
+ *   locally like any image, so the build never depends on a remote URL). A
+ *   work with any link block is treated as a `web` work.
+ * - Text → body copy (Markdown). The 1st text block is the Korean body, the
+ *   2nd is the English body.
+ * - Attachment / PendingBlock / Channel sub-channels / anything else → skip.
  */
 export function classifyBlock(block: any): BlockKind {
-  const cls = blockClass(block);
+  const t = blockType(block);
 
-  if (cls === 'link' || cls === 'media') {
-    const url = block?.source?.url ?? block?.source_url ?? block?.url;
+  if (t === 'Link' || t === 'Embed') {
+    const url = block?.source?.url;
     if (typeof url === 'string' && /^https?:\/\//.test(url)) {
+      const title =
+        (typeof block?.title === 'string' && block.title) ||
+        (typeof block?.source?.title === 'string' && block.source.title) ||
+        '';
       return {
         kind: 'link',
         url,
-        title: block?.title ?? block?.generated_title ?? '',
-        description: block?.description ?? '',
+        title,
+        description: readMarkdown(block?.description),
         thumbnailUrl: bitmapUrl(block),
       };
     }
     return { kind: 'skip' };
   }
 
-  if (cls === 'image' || cls === 'attachment') {
+  if (t === 'Image') {
     const url = bitmapUrl(block);
     return url ? { kind: 'image', url } : { kind: 'skip' };
   }
 
-  if (cls === 'text') {
-    // Are.na stores text blocks as Markdown under `content`.
-    const content = block?.content ?? block?.content_html ?? '';
-    return typeof content === 'string' && content.trim()
-      ? { kind: 'text', content }
-      : { kind: 'skip' };
+  if (t === 'Text') {
+    const content = readMarkdown(block?.content);
+    return content.trim() ? { kind: 'text', content } : { kind: 'skip' };
   }
 
-  if (cls === 'channel') return { kind: 'skip' };
-
-  // No/unknown class: only treat as image if there's a genuine uploaded image,
-  // and there's no link source that would mark it as a Link block.
-  if (!cls) {
-    const hasLinkSource =
-      typeof (block?.source?.url ?? block?.source_url) === 'string';
-    const url = bitmapUrl(block);
-    if (url && !hasLinkSource) return { kind: 'image', url };
-  }
   return { kind: 'skip' };
 }
 
