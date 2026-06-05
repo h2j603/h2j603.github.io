@@ -16,6 +16,12 @@ export const ARENA_AUTH_SCHEME = process.env.ARENA_AUTH_SCHEME ?? 'Bearer';
 
 export const ARENA_INDEX_CHANNEL = process.env.ARENA_INDEX_CHANNEL ?? 'works';
 
+/** 좌측 인트로(About) 채널의 슬러그 — 텍스트 블록들이 hr로 구분되어 표시됨. */
+export const ARENA_INTRO_CHANNEL = process.env.ARENA_INTRO_CHANNEL ?? 'hyuk-intro';
+
+/** 좌측 footer 채널의 슬러그 — 텍스트 블록들이 hr로 구분되어 표시됨. */
+export const ARENA_FOOTER_CHANNEL = process.env.ARENA_FOOTER_CHANNEL ?? 'hyuk-footer';
+
 export function getArenaToken(): string | undefined {
   return process.env.ARENA_TOKEN || undefined;
 }
@@ -36,3 +42,9 @@ export const ASSETS_WORKS_DIR = 'src/assets/works';
 
 /** Where the build-time data snapshot is written. */
 export const DATA_FILE = 'src/data/works.json';
+
+/** 좌측 인트로 블록 데이터가 저장되는 파일 (JSON 배열 — 각 블록의 lang/html). */
+export const INTRO_FILE = 'src/data/intro.json';
+
+/** 좌측 footer 블록 데이터가 저장되는 파일. */
+export const FOOTER_FILE = 'src/data/footer.json';

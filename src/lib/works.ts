@@ -13,6 +13,7 @@ import {
   readMarkdown,
 } from './arena.js';
 import { markdownToHtml } from './body.js';
+import { parseMarker } from './intro.js';
 import {
   downloadImages,
   downloadFile,
@@ -102,14 +103,12 @@ async function buildOne(
   const blocks = await getChannelContents(channel.id);
   const imageBlocks: BlockImage[] = [];
   const linkBlocks: { link: Omit<WorkLink, 'thumbnail'>; thumbnailUrl: string | null }[] = [];
-  const textBlocks: string[] = [];
+  const textBlocks: { lang: 'ko' | 'en' | null; markdown: string }[] = [];
   for (const b of blocks) {
     const c = classifyBlock(b);
     if (c.kind === 'image') {
       imageBlocks.push({
         url: c.url,
-        // BlockImage.alt_text carries the upload's alt; fall back to the
-        // block's title/description (description is MarkdownContent).
         alt:
           (typeof b?.image?.alt_text === 'string' && b.image.alt_text) ||
           (typeof b?.title === 'string' && b.title) ||
@@ -122,7 +121,8 @@ async function buildOne(
         thumbnailUrl: c.thumbnailUrl,
       });
     } else if (c.kind === 'text') {
-      textBlocks.push(c.content);
+      const { lang, rest } = parseMarker(c.content);
+      if (rest.trim()) textBlocks.push({ lang, markdown: rest });
     }
   }
 
@@ -163,12 +163,14 @@ async function buildOne(
     cover = links.find((l) => l.thumbnail)?.thumbnail ?? '';
   }
 
-  // Body from Are.na text blocks (Markdown): 1st = Korean, 2nd = English.
-  const bodyKo = markdownToHtml(textBlocks[0] ?? '', `${ctx} ko`);
-  const bodyEn = markdownToHtml(textBlocks[1] ?? '', `${ctx} en`);
-  if (textBlocks.length > 2) {
-    warn(`${ctx}: ${textBlocks.length} text blocks found; only the first two (ko, en) are used`);
-  }
+  // 텍스트 블록들을 HTML로 변환 (마커 분류는 이미 됨). 채널 순서 보존.
+  const bodyBlocks = textBlocks.map((tb, i) => ({
+    lang: tb.lang,
+    html: markdownToHtml(tb.markdown, `${ctx} block ${i + 1}`),
+  }));
+  // 호환: bodyKo/En은 마커 매칭 블록들을 join (라이브러리 등 외부 쓰임 대비).
+  const bodyKo = bodyBlocks.filter((b) => b.lang === 'ko').map((b) => b.html).join('\n');
+  const bodyEn = bodyBlocks.filter((b) => b.lang === 'en').map((b) => b.html).join('\n');
 
   if (
     stats.downloaded ||
@@ -194,6 +196,7 @@ async function buildOne(
     cover,
     bodyKo,
     bodyEn,
+    bodyBlocks,
     images,
     links,
   });

@@ -1,75 +1,386 @@
 ---
-// Work index — list every published work, ordered by `order`.
-// Shows a cover thumbnail per work, and a (no-style, JS-only) tag filter.
-// Intentionally UNSTYLED: this page only proves the data pipeline + features.
+// 인덱스 — 3-col split:
+//   left   : 인트로 + 푸터
+//   center : 작품 카드들 (상단에 태그 필터)
+//   right  : 카테고리별 표 (Web / Graphic) — 행 클릭 시 카드로 스크롤
 import { Image } from 'astro:assets';
-import { getWorks, resolveImage } from '../lib/site-data.js';
+import Base from '../layouts/Base.astro';
+import { getWorks, resolveImage, getIntro, getFooter, groupBilingual } from '../lib/site-data.js';
 import { TAGS } from '../lib/schema.js';
 
 const works = getWorks();
-// Only show filter buttons for tags that actually occur.
 const usedTags = TAGS.filter((t) => works.some((w) => w.tags.includes(t)));
+
+function categoryOf(w: (typeof works)[number]): string {
+  const t = w.tags.find((x) => x !== 'web');
+  if (t) return t.charAt(0).toUpperCase() + t.slice(1);
+  if (w.tags.includes('web')) return 'Web';
+  return '—';
+}
+
+const introGroups = getIntro();
+const footerGroups = getFooter();
 ---
 
-<!doctype html>
-<html lang="ko">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Works</title>
-  </head>
-  <body>
-    <h1>Works</h1>
+<Base title="hyuk.xyz">
+  <div class="stripe-top" aria-hidden="true">
+    <div class="stripe-row">
+      {Array.from({ length: 60 }).map((_, i) => (
+        <div class={`cell ${i % 2 === 0 ? 'purple' : 'brown'}`}></div>
+      ))}
+    </div>
+    <div class="stripe-row">
+      {Array.from({ length: 60 }).map((_, i) => (
+        <div class={`cell ${i % 2 === 0 ? 'brown' : 'purple'}`}></div>
+      ))}
+    </div>
+  </div>
+  <div class="three-col">
 
-    {usedTags.length > 0 && (
-      <nav aria-label="Filter by tag">
-        <button type="button" data-filter="all" aria-pressed="true">All</button>
-        {usedTags.map((t) => (
-          <button type="button" data-filter={t} aria-pressed="false">{t}</button>
-        ))}
-      </nav>
-    )}
+    {/* ──────────── 좌측: 인트로 ──────────── */}
+    <div class="third left">
+      <div class="content intro">
+        <h2>Why Hyuk Jang<br />made this Website?</h2>
 
-    {works.length === 0 && <p>No works yet. Run <code>npm run build</code>.</p>}
+        {introGroups.length > 0 && (
+          <div class="intro-body">
+            {
+              introGroups.map((g, i) => (
+                <>
+                  {i > 0 && <hr />}
+                  {g.ko && g.en ? (
+                    <div class="bilingual">
+                      <div class="ko-body" lang="ko" set:html={g.ko} />
+                      <div class="en-body" lang="en" set:html={g.en} />
+                    </div>
+                  ) : g.ko ? (
+                    <div lang="ko" set:html={g.ko} />
+                  ) : (
+                    <div lang="en" set:html={g.en} />
+                  )}
+                </>
+              ))
+            }
+          </div>
+        )}
 
-    <ul id="works">
-      {
-        works.map((w) => {
-          const cover = w.cover ? resolveImage(w.cover) : undefined;
-          return (
-            <li data-tags={w.tags.join(' ')}>
-              <a href={`/works/${w.slug}/`}>
-                {cover && <Image src={cover} alt={w.title || w.slug} width={160} height={160} />}
-                {w.title || w.slug}
-              </a>
-              {w.year && <span> — {w.year}</span>}
-              {w.medium && <span> · {w.medium}</span>}
-              {w.tags.length > 0 && <span> [{w.tags.join(', ')}]</span>}
-            </li>
-          );
-        })
-      }
-    </ul>
+        {footerGroups.length > 0 && (
+          <>
+            <hr />
+            <footer>
+              {
+                footerGroups.map((g, i) => (
+                  <>
+                    {i > 0 && <hr />}
+                    {g.ko && g.en ? (
+                      <div class="bilingual">
+                        <div class="ko-body" lang="ko" set:html={g.ko} />
+                        <div class="en-body" lang="en" set:html={g.en} />
+                      </div>
+                    ) : g.ko ? (
+                      <div lang="ko" set:html={g.ko} />
+                    ) : (
+                      <div lang="en" set:html={g.en} />
+                    )}
+                  </>
+                ))
+              }
+            </footer>
+          </>
+        )}
+      </div>
+    </div>
 
-    <script is:inline>
-      // No-framework tag filter: toggle <li> visibility by data-tags.
-      (function () {
-        const nav = document.querySelector('nav[aria-label="Filter by tag"]');
-        if (!nav) return;
-        const items = Array.from(document.querySelectorAll('#works > li'));
-        nav.addEventListener('click', function (e) {
-          const btn = e.target.closest('button[data-filter]');
-          if (!btn) return;
-          const filter = btn.getAttribute('data-filter');
-          nav.querySelectorAll('button[data-filter]').forEach(function (b) {
-            b.setAttribute('aria-pressed', String(b === btn));
-          });
-          items.forEach(function (li) {
-            const tags = (li.getAttribute('data-tags') || '').split(' ');
-            li.hidden = filter !== 'all' && !tags.includes(filter);
-          });
+    {/* ──────────── 중앙: 작품 카드 (한 번에 하나만 — 기본은 첫 작품) ──────────── */}
+    <div class="third center">
+      <div class="content">
+        {
+          works.map((w) => {
+            const cover = w.cover ? resolveImage(w.cover) : undefined;
+            const externalUrl = w.links[0]?.url;
+            const isWeb = w.tags.includes('web');
+            const hasMedia = (isWeb && externalUrl) || cover;
+            return (
+              <article class="work-card" id={w.slug} data-tags={w.tags.join(' ')} hidden>
+                <h2 class="card-title">{w.title || w.slug}</h2>
+                <p class="card-meta">
+                  {w.year}
+                  {w.tags.length > 0 && <> · {w.tags.join(' · ')}</>}
+                </p>
+
+                <hr />
+
+                {isWeb && externalUrl ? (
+                  <div class="iframe-wrap">
+                    <iframe
+                      src={externalUrl}
+                      class="embedded-iframe"
+                      title={w.title || w.slug}
+                      loading="lazy"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                ) : cover ? (
+                  <Image src={cover} alt={w.title || w.slug} widths={[420, 640, 960]} sizes="40vw" />
+                ) : null}
+
+                {hasMedia && w.bodyBlocks.length > 0 && <hr />}
+
+                {w.bodyBlocks.length > 0 && (
+                  <div class="card-body">
+                    {
+                      groupBilingual(w.bodyBlocks).map((g) => (
+                        g.ko && g.en ? (
+                          <div class="bilingual">
+                            <div lang="ko" set:html={g.ko} />
+                            <div lang="en" set:html={g.en} />
+                          </div>
+                        ) : g.ko ? (
+                          <div lang="ko" set:html={g.ko} />
+                        ) : (
+                          <div lang="en" set:html={g.en} />
+                        )
+                      ))
+                    }
+                  </div>
+                )}
+
+                {externalUrl && (hasMedia || w.bodyBlocks.length > 0) && <hr />}
+
+                {externalUrl && (
+                  <p>
+                    <a href={externalUrl} target="_blank" rel="noopener" class="card-link">
+                      {w.title || w.slug}
+                    </a>
+                  </p>
+                )}
+              </article>
+            );
+          })
+        }
+
+      </div>
+    </div>
+
+    {/* ──────────── 우측: 태그 필터 + 표 ──────────── */}
+    <div class="third right">
+      <div class="content">
+
+        {usedTags.length > 0 && (
+          <nav class="card-filter" aria-label="Filter by tag">
+            <a href="#" class="filter-link" data-filter="all" data-active="true">All</a>
+            {usedTags.map((t) => (
+              <a href="#" class="filter-link" data-filter={t} data-active="false">{t}</a>
+            ))}
+          </nav>
+        )}
+
+        {works.length > 0 ? (
+          <table class="sontable">
+            <tbody>
+              {works.map((w) => (
+                <tr data-slug={w.slug} data-tags={w.tags.join(' ')}>
+                  <td><a href={`#${w.slug}`}>{w.title || w.slug}</a></td>
+                  <td>{w.year || '—'}</td>
+                  <td>{categoryOf(w)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p>아직 작품이 없습니다.</p>
+        )}
+      </div>
+    </div>
+
+  </div>
+
+  <script is:inline>
+    // (1) 좌측 태그 필터 → 우측 표 행만 토글
+    // (2) hash 변경 → 가운데에 해당 카드 한 개만 표시 + 활성 행 표시
+    (function () {
+      var filter = document.querySelector('.card-filter');
+      var cards = Array.from(document.querySelectorAll('.work-card'));
+      var rows = Array.from(document.querySelectorAll('tr[data-slug]'));
+      var center = document.querySelector('.three-col .center');
+
+      function applyFilter(tag) {
+        rows.forEach(function (tr) {
+          var tags = (tr.getAttribute('data-tags') || '').split(' ');
+          tr.hidden = tag !== 'all' && tags.indexOf(tag) === -1;
         });
-      })();
-    </script>
-  </body>
-</html>
+        if (filter) {
+          filter.querySelectorAll('[data-filter]').forEach(function (a) {
+            a.setAttribute('data-active', String(a.getAttribute('data-filter') === tag));
+          });
+        }
+      }
+
+      function applyHash() {
+        var slug = (location.hash || '').replace(/^#/, '');
+        if (!slug || !cards.some(function (c) { return c.id === slug; })) {
+          slug = cards.length > 0 ? cards[0].id : '';
+        }
+        cards.forEach(function (c) {
+          c.hidden = c.id !== slug;
+        });
+        rows.forEach(function (tr) {
+          tr.setAttribute('data-active', String(tr.getAttribute('data-slug') === slug));
+        });
+        if (center) center.scrollTop = 0;
+      }
+
+      if (filter) {
+        filter.addEventListener('click', function (e) {
+          var a = e.target.closest('[data-filter]');
+          if (!a) return;
+          e.preventDefault();
+          applyFilter(a.getAttribute('data-filter'));
+        });
+      }
+
+      // 휠/터치패드 스크롤 → 카드 내부 끝까지 스크롤되면 다음/이전 작품으로 전환.
+      // 표 필터가 걸려 있으면 표에 보이는 작품만 순회.
+      function visibleSlugs() {
+        return rows.filter(function (tr) { return !tr.hidden; })
+                   .map(function (tr) { return tr.getAttribute('data-slug'); });
+      }
+      function currentSlug() {
+        return (location.hash || '').replace(/^#/, '');
+      }
+      function goRelative(delta) {
+        var list = visibleSlugs();
+        if (list.length === 0) return false;
+        var cur = currentSlug();
+        var idx = list.indexOf(cur);
+        var next;
+        if (idx < 0) next = delta > 0 ? list[0] : list[list.length - 1];
+        else next = list[idx + delta];
+        if (!next) return false;
+        location.hash = '#' + next;
+        return true;
+      }
+
+      var wheelLock = false;
+      if (center) {
+        center.addEventListener('wheel', function (e) {
+          if (wheelLock) return;
+          // 끝/시작 도달 후 약간의 버퍼 — 본문 끝에서 휠 1번엔 안 넘어가고
+          // 2번 (lock 풀린 다음) 의도적 휠에 다음으로
+          var atBottom = center.scrollTop + center.clientHeight >= center.scrollHeight - 4;
+          var atTop = center.scrollTop <= 0;
+          if (e.deltaY > 0 && atBottom) {
+            if (goRelative(1)) {
+              e.preventDefault();
+              wheelLock = true;
+              setTimeout(function () { wheelLock = false; }, 700);
+            }
+          } else if (e.deltaY < 0 && atTop) {
+            if (goRelative(-1)) {
+              e.preventDefault();
+              wheelLock = true;
+              setTimeout(function () { wheelLock = false; }, 700);
+            }
+          }
+        }, { passive: false });
+
+        // 키보드 단축키 — ↑/↓ 와 PageUp/PageDown 으로도 이동
+        window.addEventListener('keydown', function (e) {
+          if (e.target && /input|textarea/i.test(e.target.tagName)) return;
+          if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+            if (goRelative(1)) e.preventDefault();
+          } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+            if (goRelative(-1)) e.preventDefault();
+          }
+        });
+      }
+
+      // @로 시작하는 링크 텍스트 → mention 클래스 (인물 아이콘 + 갈색)
+      function markMentions() {
+        var sel = '.intro a, .work-card .card-body a, .work-card .card-link';
+        document.querySelectorAll(sel).forEach(function (a) {
+          var t = (a.textContent || '').trim();
+          if (t.charAt(0) === '@') a.classList.add('mention');
+        });
+      }
+
+      // 한글 char만 .ko span으로 감싸기 (영문 baseline에 맞춰 미세 위치 조정용)
+      var KO_RE = /[ㄱ-힝]/;
+      function wrapKoreanIn(root) {
+        var skip = { SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, IFRAME: 1, TEXTAREA: 1 };
+        var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+          acceptNode: function (n) {
+            var p = n.parentNode;
+            if (!p) return NodeFilter.FILTER_REJECT;
+            if (skip[p.nodeName]) return NodeFilter.FILTER_REJECT;
+            if (p.classList && p.classList.contains('ko')) return NodeFilter.FILTER_REJECT;
+            if (!KO_RE.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+            return NodeFilter.FILTER_ACCEPT;
+          },
+        });
+        var nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach(function (node) {
+          var text = node.nodeValue;
+          var frag = document.createDocumentFragment();
+          var buf = '';
+          var isKo = false;
+          function flush() {
+            if (!buf) return;
+            if (isKo) {
+              var span = document.createElement('span');
+              span.className = 'ko';
+              span.textContent = buf;
+              frag.appendChild(span);
+            } else {
+              frag.appendChild(document.createTextNode(buf));
+            }
+            buf = '';
+          }
+          for (var i = 0; i < text.length; i++) {
+            var ch = text.charAt(i);
+            var ko = KO_RE.test(ch);
+            if (ko !== isKo) {
+              flush();
+              isKo = ko;
+            }
+            buf += ch;
+          }
+          flush();
+          node.parentNode.replaceChild(frag, node);
+        });
+      }
+      function wrapAllKorean() {
+        wrapKoreanIn(document.body);
+      }
+
+      // 마우스 트레일 — 움직일 때마다 보라/갈색 작은 블록 두 개가 떨어짐
+      var mouseThrottle = 0;
+      window.addEventListener('mousemove', function (e) {
+        var now = Date.now();
+        if (now - mouseThrottle < 40) return;
+        mouseThrottle = now;
+        spawnDrop(e.clientX - 6, e.clientY + 2, '#a966ff');
+        spawnDrop(e.clientX + 4, e.clientY + 6, '#775d4f');
+      });
+      function spawnDrop(x, y, color) {
+        var d = document.createElement('div');
+        d.className = 'mouse-drop';
+        d.style.left = x + 'px';
+        d.style.top = y + 'px';
+        d.style.background = color;
+        document.body.appendChild(d);
+        setTimeout(function () { d.remove(); }, 2000);
+      }
+
+      window.addEventListener('hashchange', applyHash);
+      document.addEventListener('DOMContentLoaded', applyHash);
+      document.addEventListener('DOMContentLoaded', markMentions);
+      document.addEventListener('DOMContentLoaded', wrapAllKorean);
+      applyFilter('all');
+      applyHash();
+      markMentions();
+      wrapAllKorean();
+    })();
+  </script>
+</Base>

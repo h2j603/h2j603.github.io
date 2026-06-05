@@ -1,0 +1,409 @@
+/* ───────────────────────────────────────────────────────────────────────
+   한글 폰트 (HakgyoansimBareondotum Regular)
+   baseline 정렬은 CSS metric override 대신 JS로 한글 char를 .ko span으로
+   감싸고 아래 CSS로 위치를 미세 조정한다.
+   ─────────────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'HakgyoansimBareondotum';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/HakgyoansimBareondotumR.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* 한글 char span — JS가 자동으로 감쌈. 영문 baseline에 맞춰 살짝 위로. */
+.ko {
+  display: inline-block;
+  transform: translateY(-0.08em);
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   디자인 토큰 — hyuk repo 원본을 lawngreen→#b362ff, orangered→#775d4f로 치환
+   ─────────────────────────────────────────────────────────────────────── */
+:root {
+  --bg: #ffffff;
+  --ink: #775d4f;          /* hyuk repo의 orangered → 브라운 */
+  --accent: #b362ff;       /* hyuk repo의 lawngreen → 보라 */
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   리셋 + 베이스 (hyuk repo 원본 그대로)
+   line-height / font-feature-settings / antialiased는 의도적으로 비움 —
+   원본과 동일한 렌더링 시각을 위해 브라우저 기본을 따른다.
+   ─────────────────────────────────────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  overflow: hidden;
+  font-size: 13.2px; /* 12px × 1.1 (전체 10% 키움) */
+  font-family: neue-haas-unica, 'HakgyoansimBareondotum', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+/* 텍스트 드래그 하이라이트 — 반투명 보라.
+   ::selection은 spec상 단색만 받음. */
+::selection {
+  background: rgba(179, 98, 255, 0.4);
+  color: var(--ink);
+}
+::-moz-selection {
+  background: rgba(179, 98, 255, 0.4);
+  color: var(--ink);
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   타이포 (원본 그대로)
+   ─────────────────────────────────────────────────────────────────────── */
+h2 {
+  font-family: t26-carbon, monospace;
+  font-weight: 100;
+  font-style: italic;
+  text-align: center;
+}
+p {
+  padding-top: 20px;
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   링크 — 기본은 underline italic, 표 안은 normal underline 없음 (원본 그대로)
+   ─────────────────────────────────────────────────────────────────────── */
+a {
+  text-decoration: underline;
+  font-style: italic;
+  color: inherit;
+}
+table a {
+  text-decoration: none;
+  font-style: normal;
+  color: inherit;
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   hr — 브라운 1px 라인
+   ─────────────────────────────────────────────────────────────────────── */
+hr {
+  border: none;
+  height: 1px;
+  background-color: var(--ink);
+  margin: 15px 0;
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   표 — 원본 그대로
+   ─────────────────────────────────────────────────────────────────────── */
+table {
+  width: 100%;
+  margin: auto;
+  margin-top: 20px;
+  margin-bottom: 50px;
+  text-align: left;
+  border-top: 0;
+}
+table,
+tr,
+td,
+th {
+  border-top: 1px solid var(--ink);
+  border-collapse: collapse;
+  padding: 10px;
+}
+/* 행 hover — lawngreen → 보라(#b362ff)로 치환된 그라디언트 */
+table tr:hover {
+  background: linear-gradient(to bottom, var(--accent), white);
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   이미지 / iframe (원본 그대로 + 비율 유지 보강)
+   ─────────────────────────────────────────────────────────────────────── */
+img {
+  width: 100%;
+  height: auto; /* Astro Image가 width/height attr를 박아도 비율 유지 */
+}
+iframe {
+  width: 100%;
+  height: 300px;
+  border: none;
+  display: block;
+  margin: 20px 0;
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   페이지 상단 줄무늬 띠 — 보라(#a966ff) + 갈색(#775d4f) alternating.
+   위·아래 두 줄, 아래 줄은 반 칸 offset (시안 자산 4ㄹ.png 참조).
+   ─────────────────────────────────────────────────────────────────────── */
+.stripe-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+.stripe-row {
+  display: flex;
+  height: 33px;
+  overflow: hidden;
+}
+.stripe-row .cell {
+  /* 60셀 균등 분배. grow 0, shrink 1 — hover 시 다른 셀이 줄어듦. */
+  flex: 0 1 calc(100% / 60);
+  min-width: 0;
+  transition: flex-basis 0.25s ease;
+}
+.stripe-row .cell.purple { background: #a966ff; }
+.stripe-row .cell.brown  { background: #775d4f; }
+/* hover 셀: basis 7.8125% (= 일반 셀의 정확히 5배), shrink 0 (안 줄어듦) */
+.stripe-row .cell:hover  { flex: 0 0 7.8125%; }
+
+/* 마우스 트레일 — 작은 블록이 아래로 떨어지면서 사라짐 */
+.mouse-drop {
+  position: fixed;
+  width: 5px;
+  height: 5px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: drop-fall 2s cubic-bezier(0.4, 0, 0.7, 1) forwards;
+}
+@keyframes drop-fall {
+  0%   { transform: translateY(0); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(220px); opacity: 0; }
+}
+
+/* 3-Column이 띠 만큼 아래로 밀려야 함 (33 × 2 = 66) */
+.three-col .left,
+.three-col .center,
+.three-col .right {
+  top: 66px;
+  height: calc(100% - 66px);
+}
+
+
+/* ───────────────────────────────────────────────────────────────────────
+   3-Column Split (.three-col 래퍼로 감싸서 .third 클래스 적용)
+   ─────────────────────────────────────────────────────────────────────── */
+.three-col .third {
+  position: absolute;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.three-col .third::-webkit-scrollbar { display: none; }
+
+.three-col .left {
+  background-color: white;
+  width: 30%;
+  left: 0;
+  border-right: 1px solid var(--ink);
+  overflow-y: hidden;
+}
+.three-col .center {
+  background-color: white;
+  left: 30%;
+  width: 40%;
+  border-right: 1px solid var(--ink);
+}
+.three-col .right {
+  background-color: white;
+  left: 70%;
+  width: 30%;
+  /* 표가 길어지면 스크롤 가능하게 */
+}
+.three-col .content {
+  /* 작품 카드들이 세로로 쌓이므로 auto */
+}
+
+/* 표 행 활성 상태 — 링크 텍스트 아래 라인.
+   text-decoration: underline은 한글 inline-block .ko span을 못 통과해 공백만
+   밑줄로 보였음. border-bottom으로 a 박스 전체에 일관된 라인. */
+table tr[data-active='true'] a {
+  border-bottom: 1px solid currentColor;
+}
+
+/* 인물 멘션(@) 링크 — 화살표 대신 인물 아이콘 + 채도 높은 갈색 */
+.intro a.mention,
+.work-card .card-body a.mention,
+.work-card .card-link.mention {
+  color: #b87333;
+}
+.intro a.mention::before,
+.work-card .card-body a.mention::before,
+.work-card .card-link.mention::before {
+  content: '';
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  background-color: currentColor;
+  mask: url('/icons/user.svg') no-repeat center / contain;
+  -webkit-mask: url('/icons/user.svg') no-repeat center / contain;
+  vertical-align: -1px;
+  margin-right: 3px;
+}
+.intro a.mention:hover,
+.work-card .card-body a.mention:hover,
+.work-card .card-link.mention:hover {
+  background: linear-gradient(to bottom, #b87333, white);
+  color: var(--accent);
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   태그 필터 — 우측 표 위 pill 버튼
+   ─────────────────────────────────────────────────────────────────────── */
+.card-filter {
+  text-align: left;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.card-filter .filter-link {
+  display: inline-block;
+  padding: 2px 10px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  text-decoration: none;
+  font-style: normal;
+  line-height: 1.4;
+}
+.card-filter .filter-link[data-active='true'] {
+  background: linear-gradient(to bottom, var(--accent), white);
+  border-color: var(--accent);
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   작품 카드 — 가운데 컬럼 (한 번에 하나만 표시)
+   ─────────────────────────────────────────────────────────────────────── */
+.work-card {
+  /* 본문 다 읽고 더 스크롤할 수 있는 여유 — 다음 작품으로 너무 빨리 안 넘어가게 */
+  padding-bottom: 40vh;
+}
+.work-card .card-title {
+  /* 본문 폰트 + 한 단계 굵게(500) + 왼쪽 정렬 */
+  font-family: neue-haas-unica, 'HakgyoansimBareondotum', sans-serif;
+  font-weight: 500;
+  font-style: normal;
+  text-align: left;
+  margin-bottom: 4px;
+  color: var(--ink);
+
+  /* 드래그 선택 차단 */
+  user-select: none;
+  -webkit-user-select: none;
+}
+.work-card .card-meta {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 4px 0 12px;
+  padding-top: 0;
+}
+.work-card .card-body p {
+  padding-top: 14px;
+}
+
+/* 작품 카드 본문 — 그룹 사이 hr 없이 적당한 여백만 */
+.work-card .card-body > * + * {
+  margin-top: 16px;
+}
+
+/* 한·영 좌우 병기 — 영어 왼쪽 / 한국어 오른쪽 */
+.bilingual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.bilingual > [lang='en'] { order: 1; }
+.bilingual > [lang='ko'] { order: 2; }
+@media (max-width: 720px) {
+  .bilingual { grid-template-columns: 1fr; gap: 10px; }
+}
+.bilingual > div > p:first-child { padding-top: 0; }
+
+/* 좌측 인트로 h2 아래 여백 — 본문과 띄움 */
+.intro > h2 {
+  margin-bottom: 24px;
+}
+
+/* 인트로 본문 + footer — About과 같은 위계.
+   블록 간 / hr 위아래 간격 균등. 글로벌 `p { padding-top: 20px }` reset. */
+.intro-body > p,
+.intro > footer > p {
+  padding-top: 0;
+}
+.intro-body > p + p,
+.intro > footer > p + p {
+  margin-top: 12px;
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   본문 안 하이퍼링크 — 연한 회색 pill + 보라 텍스트 + ↗ 아이콘
+   적용: 좌측 인트로 본문(.intro > p) / 작품 카드 본문(.card-body)
+   제외: 표(table a), 태그 필터(.card-filter), footer, 카드 하단 Click to visit
+   ─────────────────────────────────────────────────────────────────────── */
+.intro a,
+.work-card .card-body a,
+.work-card .card-link {
+  display: inline-block;
+  padding: 0 8px 0 5px;
+  background: #ececec;
+  border-radius: 999px;
+  color: var(--accent);
+  text-decoration: none;
+  font-style: normal;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.intro a::before,
+.work-card .card-body a::before,
+.work-card .card-link::before {
+  content: '↗';
+  margin-right: 2px;
+  display: inline-block;
+  font-size: 0.8em;
+  font-weight: 700;
+  vertical-align: 1px;
+}
+.intro a:hover,
+.work-card .card-body a:hover,
+.work-card .card-link:hover {
+  background: linear-gradient(to bottom, var(--accent), white);
+  color: var(--ink);
+}
+
+/* anchor 스크롤 위로 살짝 띄움 */
+[id] { scroll-margin-top: 18px; }
+
+.embedded-iframe {
+  width: 100%;
+  height: 300px;
+  border: none;
+  display: block;
+  margin: 20px 0;
+}
+
+/* iframe 페이지를 데스크탑 사이즈로 렌더해 축소 — 페이지 전체가 한눈에. */
+.iframe-wrap {
+  position: relative;
+  width: 100%;
+  padding-top: 65%;
+  overflow: hidden;
+  margin: 20px 0;
+}
+.iframe-wrap .embedded-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 250%;             /* 컨테이너의 2.5배 폭으로 페이지 렌더 */
+  height: 250%;
+  transform: scale(0.4);   /* 다시 40%로 축소 → wrapper 영역에 fit */
+  transform-origin: top left;
+  margin: 0;
+}
