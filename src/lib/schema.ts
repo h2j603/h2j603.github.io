@@ -45,10 +45,17 @@ export const workSchema = z.object({
    * else the first image, else the first link thumbnail.
    */
   cover: z.string().default(''),
-  /** Korean body, already converted to clean semantic HTML. */
+  /** Korean body — 마커 ##ko 텍스트 블록들을 join. 호환용. */
   bodyKo: z.string().default(''),
-  /** English body, already converted to clean semantic HTML. */
+  /** English body — 마커 ##en 텍스트 블록들을 join. 호환용. */
   bodyEn: z.string().default(''),
+  /**
+   * 텍스트 블록들을 채널 순서대로 보관. lang은 ##ko / ##en 마커 결과.
+   * 페이지에서 ko→en 짝이면 2단, 그 외 1단으로 렌더.
+   */
+  bodyBlocks: z
+    .array(z.object({ lang: z.enum(['ko', 'en']).nullable(), html: z.string() }))
+    .default([]),
   images: z.array(imageSchema).default([]),
   links: z.array(linkSchema).default([]),
 });
