@@ -6,7 +6,10 @@ name: Build & Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-  workflow_dispatch: {} # manual trigger = your "rebuild" button (Are.na/Docs changes)
+  workflow_dispatch: {} # 수동 트리거 = "지금 다시 빌드"
+  schedule:
+    # 30분마다 자동 재빌드 — Are.na 변경 사항이 시간 안에 hyuk.xyz로 반영됨
+    - cron: '*/30 * * * *'
 
 permissions:
   contents: read
@@ -33,6 +36,8 @@ jobs:
         env:
           ARENA_TOKEN: ${{ secrets.ARENA_TOKEN }}
           ARENA_INDEX_CHANNEL: ${{ secrets.ARENA_INDEX_CHANNEL }}
+          ARENA_INTRO_CHANNEL: ${{ secrets.ARENA_INTRO_CHANNEL }}
+          ARENA_FOOTER_CHANNEL: ${{ secrets.ARENA_FOOTER_CHANNEL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
