@@ -5,8 +5,10 @@ node_modules/
 dist/
 .astro/
 
-# generated build data (fetched from Are.na + Google Docs at build time)
+# generated build data (fetched from Are.na at build time)
 src/data/works.json
+src/data/intro.json
+src/data/footer.json
 
 # downloaded images (re-fetched at build time; skip-cached locally)
 src/assets/works/*/
