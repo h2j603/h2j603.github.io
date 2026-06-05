@@ -21,38 +21,11 @@ import {
   connectChannel,
   type ArenaChannel,
 } from '../src/lib/arena.js';
-import { ARENA_INDEX_CHANNEL, requireArenaToken } from '../src/lib/config.js';
+import { ARENA_INDEX_CHANNEL, ARENA_INTRO_CHANNEL, ARENA_FOOTER_CHANNEL, requireArenaToken } from '../src/lib/config.js';
 
-const SAMPLE_WORKS = [
-  {
-    title: 'British Poster (sample)',
-    metadata: {
-      slug: 'british-poster',
-      title: '≪british≫ Poster',
-      year: '2026',
-      medium: '디지털 프린트',
-      size: '420×594mm',
-      client: 'ttt',
-      order: '1',
-      tags: 'identity, poster',
-      published: 'true',
-    },
-  },
-  {
-    title: 'Second Work (sample)',
-    metadata: {
-      slug: 'second-work',
-      title: 'Second Work',
-      year: '2025',
-      medium: '웹사이트',
-      size: '',
-      client: '',
-      order: '2',
-      tags: '',
-      published: 'true',
-    },
-  },
-];
+// setup:arena 재실행 시 sample 작품을 추가로 만들지 않기 위해 비워둠.
+// 실제 작품은 Are.na UI에서 직접 채널을 만들고 인덱스에 연결해 관리.
+const SAMPLE_WORKS: { title: string; metadata: Record<string, string> }[] = [];
 
 const url = (slug: string) => `https://www.are.na/channel/${slug}`;
 
@@ -102,6 +75,34 @@ async function main() {
           `    Open ${url(work.slug)} and add it to the "${index.slug}" channel manually.`,
       );
     }
+  }
+
+  console.log('\n== Intro channel (About) ==');
+  const intro = await getChannel(ARENA_INTRO_CHANNEL);
+  if (intro) {
+    console.log(`  = intro 채널 재사용 "${intro.slug}" (#${intro.id})`);
+  } else {
+    const created = await createChannel('About', 'private');
+    console.log(`  + intro 채널 생성 "${created.slug}" (#${created.id})`);
+    if (created.slug !== ARENA_INTRO_CHANNEL) {
+      console.log(`    note: 요청 슬러그 "${ARENA_INTRO_CHANNEL}" → Are.na가 "${created.slug}" 할당`);
+      console.log(`    .env의 ARENA_INTRO_CHANNEL을 "${created.slug}"로 업데이트 필요`);
+    }
+    console.log(`  → 텍스트 블록을 여러 개 추가하면 페이지 좌측에 hr로 구분되어 표시됨`);
+  }
+
+  console.log('\n== Footer channel ==');
+  const footer = await getChannel(ARENA_FOOTER_CHANNEL);
+  if (footer) {
+    console.log(`  = footer 채널 재사용 "${footer.slug}" (#${footer.id})`);
+  } else {
+    const created = await createChannel('Footer', 'private');
+    console.log(`  + footer 채널 생성 "${created.slug}" (#${created.id})`);
+    if (created.slug !== ARENA_FOOTER_CHANNEL) {
+      console.log(`    note: 요청 슬러그 "${ARENA_FOOTER_CHANNEL}" → Are.na가 "${created.slug}" 할당`);
+      console.log(`    .env의 ARENA_FOOTER_CHANNEL을 "${created.slug}"로 업데이트 필요`);
+    }
+    console.log(`  → 텍스트 블록을 여러 개 추가하면 페이지 좌측 footer에 hr로 구분되어 표시됨`);
   }
 
   console.log('\n──────── done ────────');

@@ -103,7 +103,9 @@ export async function getChannel(slugOrId: string | number): Promise<ArenaChanne
       description: readMarkdown(c.description),
     };
   } catch (err: any) {
-    if (String(err.message).includes(' 404 ')) return null;
+    const msg = String(err.message);
+    // 404 = 채널 없음, 403 = 다른 유저가 점유한 비공개 채널 → 둘 다 "내 게 아님"으로 처리
+    if (msg.includes(' 404 ') || msg.includes(' 403 ')) return null;
     throw err;
   }
 }
@@ -205,5 +207,37 @@ export async function connectChannel(
       connectable_type: 'Channel',
       channel_ids: [parentId],
     }),
+  });
+}
+
+/** Delete a channel (irreversible). */
+export async function deleteChannel(channelId: number): Promise<void> {
+  const token = requireArenaToken();
+  await request(`/channels/${channelId}`, { method: 'DELETE', token });
+}
+
+/**
+ * Create a Link/Image/Embed block in a channel.
+ *
+ * Uses POST /v3/blocks — Are.na infers the block type from the value:
+ *   - URL → Link / Image / Embed (auto-scraped, thumbnail generated)
+ *   - plain text → Text block
+ */
+export async function createBlock(
+  channelId: number,
+  value: string,
+  options: { title?: string; description?: string } = {},
+): Promise<Json> {
+  const token = requireArenaToken();
+  const body: Json = {
+    value,
+    channel_ids: [channelId],
+  };
+  if (options.title) body.title = options.title;
+  if (options.description) body.description = options.description;
+  return request('/blocks', {
+    method: 'POST',
+    token,
+    body: JSON.stringify(body),
   });
 }

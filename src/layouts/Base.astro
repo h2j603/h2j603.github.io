@@ -1,0 +1,53 @@
+---
+// hyuk repo의 디자인을 원본 그대로 복제 — Typekit 폰트 + 한글 woff2 포함.
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <title>{title}</title>
+
+    {/* Typekit — neue-haas-unica (body), t26-carbon (h2) */}
+    <link rel="stylesheet" href="https://use.typekit.net/rhy6are.css" />
+
+    {/* Typekit JS loader (원본과 동일 — wf-loading 등 lifecycle 관리) */}
+    <script is:inline>
+      (function (d) {
+        var config = { kitId: 'fpx8ely', scriptTimeout: 3000, async: true },
+          h = d.documentElement,
+          t = setTimeout(function () {
+            h.className = h.className.replace(/\bwf-loading\b/g, '') + ' wf-inactive';
+          }, config.scriptTimeout),
+          tk = d.createElement('script'),
+          f = false,
+          s = d.getElementsByTagName('script')[0],
+          a;
+        h.className += ' wf-loading';
+        tk.src = 'https://use.typekit.net/' + config.kitId + '.js';
+        tk.async = true;
+        tk.onload = tk.onreadystatechange = function () {
+          a = this.readyState;
+          if (f || (a && a != 'complete' && a != 'loaded')) return;
+          f = true;
+          clearTimeout(t);
+          try {
+            // eslint-disable-next-line no-undef
+            Typekit.load(config);
+          } catch (e) {}
+        };
+        s.parentNode.insertBefore(tk, s);
+      })(document);
+    </script>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
