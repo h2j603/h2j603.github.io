@@ -163,12 +163,12 @@ iframe {
 /* hover 셀: 다른 셀의 5배 폭 (basis 5× var(--cell-w)), shrink 0 */
 .stripe-row .cell:hover  { flex: 0 0 calc(var(--cell-w) * 5); }
 
-/* 3-Column이 띠 만큼 아래로 밀려야 함 (24 × 2 = 48, + 여유 8px) */
+/* 3-Column이 띠 만큼 아래로 밀려야 함 (24 × 2 = 48, + 안전 여유 32px = 80px) */
 .three-col .left,
 .three-col .center,
 .three-col .right {
-  top: 56px;
-  height: calc(100% - 56px);
+  top: 80px;
+  height: calc(100% - 80px);
 }
 
 
@@ -181,13 +181,10 @@ iframe {
   overflow-y: auto;
   overflow-x: hidden;
   padding: 20px;
-}
-/* 좌측·우측만 스크롤바 숨김. 가운데(.center)는 명시적 제외해서 width:10px 살림. */
-.three-col .third:not(.center) {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.three-col .third:not(.center)::-webkit-scrollbar { display: none; }
+.three-col .third::-webkit-scrollbar { display: none; }
 
 .three-col .left {
   background-color: white;
@@ -224,7 +221,7 @@ iframe {
   .three-col {
     display: flex;
     flex-direction: column;
-    padding-top: 56px;
+    padding-top: 80px;
   }
   .three-col .left { display: none; }
   .three-col .third {
