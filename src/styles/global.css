@@ -455,18 +455,17 @@ table.sontable .col-cat { width: 110px; }
   margin: 0;
 }
 
-/* 기본 화면 모자이크 — 셀이 위에서 우수수 떨어져 자기 자리로 */
-.default-state {
-  overflow: hidden;
-}
+/* 기본 화면 모자이크 — 셀이 모래알처럼 천천히 화면 아래로 떨어져 사라짐.
+   shape는 처음엔 그대로 있다가 시간이 지나며 무너짐. */
 .default-state .stripe-mosaic > div {
-  animation: cell-fall 0.9s cubic-bezier(0.34, 0.05, 0.42, 1) backwards;
+  animation: cell-drop 2.5s cubic-bezier(0.42, 0, 1, 1) forwards;
+  /* animation-delay는 JS에서 셀마다 random 부여 */
 }
-@keyframes cell-fall {
+@keyframes cell-drop {
   from {
-    transform: translateY(-120vh);
+    transform: translateY(0);
   }
   to {
-    transform: translateY(0);
+    transform: translateY(120vh);
   }
 }
