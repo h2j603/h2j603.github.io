@@ -257,18 +257,41 @@ const defaultMosaic = fs.readFileSync(
         }
       }
 
-      // 모자이크 셀이 모래알처럼 화면 아래로 떨어져 사라짐.
-      // 페이지 로드 시 자동 시작 안 함 — 화면 첫 클릭 때 trigger.
-      // duration 4s, delay range 22s (이전 5s/28s 대비 20% 빠름).
+      // 모자이크 셀이 오른쪽 위 → 왼쪽 아래 대각선 순서로 떨어짐.
+      // 100% 순차는 아니고 일부 셀은 예외 (random jitter).
+      // duration 4s, delay range ~20s.
       function triggerMosaicFall() {
         if (!defaultEl) return;
         var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
+        // 셀 위치 max 계산
+        var maxRow = 1, maxCol = 1;
+        var positions = [];
         cells.forEach(function (d) {
-          d.style.animation = 'none';
-          void d.offsetWidth; // reflow
-          d.style.animation = 'cell-drop 4s cubic-bezier(0.95, 0, 1, 0.45) forwards';
-          // 0 쪽으로 강하게 쏠린 분포 — 처음에 우수수, 마지막은 띄엄띄엄
-          d.style.animationDelay = (Math.pow(Math.random(), 5) * 22).toFixed(3) + 's';
+          var ga = (d.style.gridArea || '').replace(/\s/g, '');
+          var parts = ga.split('/');
+          var row = parseInt(parts[0], 10) || 1;
+          var col = parseInt(parts[1], 10) || 1;
+          positions.push({ d: d, row: row, col: col });
+          if (row > maxRow) maxRow = row;
+          if (col > maxCol) maxCol = col;
+        });
+        var maxProgress = (maxCol - 1) + (maxRow - 1);
+        positions.forEach(function (p) {
+          p.d.style.animation = 'none';
+          void p.d.offsetWidth; // reflow
+          p.d.style.animation = 'cell-drop 4s cubic-bezier(0.95, 0, 1, 0.45) forwards';
+          // 우상 → 좌하 대각선 진행도 (0~1)
+          var progress = ((maxCol - p.col) + (p.row - 1)) / maxProgress;
+          var delay;
+          if (Math.random() < 0.12) {
+            // 12% 예외 — 순서 무시, 완전 random
+            delay = Math.random() * 20;
+          } else {
+            // 진행도 기반 + 작은 jitter
+            delay = progress * 18 + (Math.random() - 0.5) * 2.5;
+          }
+          if (delay < 0) delay = 0;
+          p.d.style.animationDelay = delay.toFixed(3) + 's';
         });
       }
       // 셀을 다시 정적 상태(자기 자리)로 되돌림
