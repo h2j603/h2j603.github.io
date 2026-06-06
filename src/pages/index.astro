@@ -123,8 +123,6 @@ const defaultMosaic = fs.readFileSync(
                   {w.tags.length > 0 && <> · {w.tags.join(' · ')}</>}
                 </p>
 
-                <hr />
-
                 {isWeb && externalUrl ? (
                   <div class="iframe-wrap">
                     <iframe
@@ -175,8 +173,6 @@ const defaultMosaic = fs.readFileSync(
                     }
                   </div>
                 )}
-
-                {externalUrl && (hasMedia || w.bodyBlocks.length > 0) && <hr />}
 
                 {externalUrl && (
                   <p>
