@@ -46,6 +46,9 @@
   }
   .three-col .center .work-card { display: none; }
 
+  /* 제목 칸을 표 왼쪽 끝(= 위 컨트롤 All과 같은 라인)에 flush 정렬 */
+  table.sontable td:first-child { padding-left: 0; }
+
   /* ── 표 아코디언 — 행 탭 시 그 아래로 작업이 펼쳐짐 ── */
   tr[data-slug] { scroll-margin-top: 56px; }
   .accordion-detail > td {
