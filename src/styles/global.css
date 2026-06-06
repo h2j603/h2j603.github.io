@@ -437,13 +437,14 @@ table.sontable .col-cat { width: 110px; }
 .intro a,
 .work-card .card-body a,
 .work-card .card-link {
-  /* 항상 inline-block + nowrap = 한 줄 pill (데스크탑은 전체 표시).
-     모바일(≤600px, mobile.css)에선 여기에 max-width+overflow를 더해
-     본문 폭을 넘는 긴 라벨을 말줄임표로 자른다.
-     base를 inline으로 두면 모바일 override(inline-block)와 display가 충돌해
-     번들 순서에 따라 inline으로 덮이고, inline은 overflow/max-width를 무시해
-     말줄임표가 안 먹는다 → base부터 inline-block으로 고정. */
-  display: inline-block;
+  /* inline + box-decoration-break:clone — 줄바꿈 시 각 줄 조각마다 pill 배경·
+     둥근 모서리·padding이 따로 적용된다(줄별로 나뉜 pill).
+     데스크탑은 white-space:nowrap이라 한 줄(fragment 없음), 모바일(mobile.css)은
+     white-space:normal로 단어 단위 줄바꿈 → 줄별 pill.
+     display는 base/모바일 동일(inline)이라 번들 순서 충돌 없음. */
+  display: inline;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
   padding: 1px 8px 1px 5px;
   background: #ececec;
   border-radius: 999px;

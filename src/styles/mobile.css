@@ -58,14 +58,13 @@
   }
 
   /* 본문 링크 pill — 모바일에선 단어(어절) 단위로 줄바꿈 허용.
-     inline-block(base) + white-space:normal이면 본문 폭에 맞춰 내부에서
-     줄바꿈되며 넘치지 않는다. max-width:100%로 본문 폭을 넘지 않게 한 번 더 가둠.
+     base가 inline + box-decoration-break:clone이라 줄별로 각각 pill이 된다.
+     inline은 컨테이너(본문) 폭에서 자동 줄바꿈되어 넘치지 않음.
      아이콘과 첫 단어는 global.css의 ::before(display:inline)로 붙어있게 보장.
      (데스크탑은 global.css에서 nowrap 한 줄 전체 표시) */
   .work-card .card-body a,
   .work-card .card-link {
     white-space: normal;
-    max-width: 100%;
   }
 
   /* 작품 카드 — 표에서 클릭 시 stripe 가리지 않게 보정 */
