@@ -116,16 +116,10 @@ th {
   padding: 10px;
 }
 /* 행 hover — lawngreen → 보라(#b362ff)로 치환된 그라디언트.
-   페이드를 행 높이에 비례시키면 모바일에서 제목이 2줄로 줄바꿈될 때
-   그라디언트가 늘어나 아랫줄이 흰색으로 바램 → 하이라이트가 끊겨 보임.
-   바닥에서 고정 거리(1.2em)만 페이드 → 줄 수와 무관하게 텍스트는 꽉 채움. */
-table tr:hover {
-  background: linear-gradient(
-    to bottom,
-    var(--accent) 0,
-    var(--accent) calc(100% - 1.2em),
-    white 100%
-  );
+   배경을 <tr>에 주면 iOS Safari가 행 전체 폭으로 칠하지 않고 오른쪽을
+   잘라먹어 여백이 남는다. 셀(td)에 직접 배경을 줘서 full-width 보장. */
+table tr:hover td {
+  background: linear-gradient(to bottom, var(--accent), white);
 }
 
 /* ───────────────────────────────────────────────────────────────────────
