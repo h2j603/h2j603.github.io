@@ -571,24 +571,28 @@ const defaultMosaic = fs.readFileSync(
         }
       });
 
-      // 떨어지는 중 mousemove — 마우스 가까이 가는 셀은 즉시 떨어짐 시작
+      // 떨어지는 중 mousemove — 마우스 주위 원형 영역의 셀들이 낱개로 자연스럽게 떨어짐
       var moveThrottle = 0;
       document.addEventListener('mousemove', function (e) {
         if (!defaultEl || defaultEl.dataset.falling !== '1') return;
         var now = Date.now();
         if (now - moveThrottle < 60) return;
         moveThrottle = now;
-        var nearRadius = 180; // 180px 안의 셀 즉시 trigger
+        var nearRadius = 200; // 200px 원형 영역
         var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
         cells.forEach(function (d) {
           if (d.dataset.fast === '1') return;
           var rect = d.getBoundingClientRect();
-          if (rect.top > window.innerHeight + 50) return; // 이미 떨어진 셀
+          if (rect.top > window.innerHeight + 50) return;
           var cx = rect.left + rect.width / 2;
           var cy = rect.top + rect.height / 2;
           var dist = Math.hypot(cx - e.clientX, cy - e.clientY);
           if (dist < nearRadius) {
-            d.style.animationDelay = '0s';
+            // 즉시 0s가 아니라 짧은 random delay — 낱개로 자연스럽게.
+            // 가까울수록 빨리, 먼 셀은 약간 늦게.
+            var ratio = dist / nearRadius;
+            var delay = Math.random() * 0.5 + ratio * 0.6;
+            d.style.animationDelay = delay.toFixed(3) + 's';
             d.dataset.fast = '1';
           }
         });
