@@ -75,6 +75,33 @@ function parseTags(value: string | undefined, warn: (m: string) => void, ctx: st
   return [...seen];
 }
 
+/**
+ * 이미지 그리드 레이아웃 파싱.
+ * `layout: 2,1,3` → [2, 1, 3]. 합이 imageCount와 일치해야 적용됨.
+ * 일치 안 하면 경고 + 빈 배열 반환 (기본 1단 stack으로 fallback).
+ */
+function parseLayout(
+  value: string | undefined,
+  imageCount: number,
+  warn: (m: string) => void,
+  ctx: string,
+): number[] {
+  if (!value) return [];
+  const cols = value
+    .split(/[,\s]+/)
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .map((t) => parseInt(t, 10))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  if (cols.length === 0) return [];
+  const sum = cols.reduce((a, b) => a + b, 0);
+  if (sum !== imageCount) {
+    warn(`${ctx}: layout "${value}" sum=${sum} ≠ images=${imageCount} — ignored`);
+    return [];
+  }
+  return cols;
+}
+
 async function buildOne(
   ref: string | number,
   warn: (m: string) => void,
@@ -206,6 +233,7 @@ async function buildOne(
     bodyEn,
     bodyBlocks,
     images,
+    imageLayout: parseLayout(meta.layout, images.length, warn, ctx),
     links,
   });
   if (!parsed.success) {

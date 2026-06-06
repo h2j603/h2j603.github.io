@@ -60,6 +60,9 @@ export const workSchema = z.object({
     .array(z.object({ lang: z.enum(['ko', 'en']).nullable(), html: z.string() }))
     .default([]),
   images: z.array(imageSchema).default([]),
+  /** 이미지 그리드 레이아웃 — 각 행의 column 개수 배열. 예: [2,1,3] = 2단/1단/3단 순서.
+      Are.na description `layout: 2,1,3` 으로 입력. 합이 images.length면 적용, 아니면 무시. */
+  imageLayout: z.array(z.number().int().positive()).default([]),
   links: z.array(linkSchema).default([]),
 });
 
