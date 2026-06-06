@@ -67,6 +67,12 @@
     white-space: normal;
   }
 
+  /* 본문 영어/한글 설명 사이 간격 — 설명↔웹사이트링크 간격(20px)과 동일하게 넓힘.
+     (모바일에선 bilingual이 1단으로 쌓이며 EN→KO 순) */
+  .work-card .card-body .bilingual {
+    gap: 20px;
+  }
+
   /* 작품 카드 — 표에서 클릭 시 stripe 가리지 않게 보정 */
   .work-card { scroll-margin-top: 70px; }
   .work-card:not(:last-child) {
