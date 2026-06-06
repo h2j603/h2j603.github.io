@@ -57,18 +57,15 @@
     margin-left: auto;
   }
 
-  /* 본문 링크 pill — 모바일에선 줄바꿈하지 않고(nowrap 유지), 본문 폭
-     (max-width:100%)을 넘는 긴 라벨은 말줄임표로 자른다.
-     overflow:hidden이 inline-block baseline을 bottom edge로 바꾸므로
-     vertical-align:bottom으로 주변 텍스트와 세로 정렬 보정.
+  /* 본문 링크 pill — 모바일에선 단어(어절) 단위로 줄바꿈 허용.
+     inline-block(base) + white-space:normal이면 본문 폭에 맞춰 내부에서
+     줄바꿈되며 넘치지 않는다. max-width:100%로 본문 폭을 넘지 않게 한 번 더 가둠.
+     아이콘과 첫 단어는 global.css의 ::before(display:inline)로 붙어있게 보장.
      (데스크탑은 global.css에서 nowrap 한 줄 전체 표시) */
   .work-card .card-body a,
   .work-card .card-link {
-    display: inline-block;
+    white-space: normal;
     max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    vertical-align: bottom;
   }
 
   /* 작품 카드 — 표에서 클릭 시 stripe 가리지 않게 보정 */
