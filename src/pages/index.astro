@@ -301,15 +301,16 @@ const defaultMosaic = fs.readFileSync(
       function applyHash() {
         var slug = (location.hash || '').replace(/^#/, '');
         var hasSlug = slug && cards.some(function (c) { return c.id === slug; });
-        // 모든 작품 카드 항상 보임 — 한 줄로 이어진 스크롤.
-        // hash가 있으면 그 카드로 scroll, 없으면 맨 위.
+        var isMobile = window.matchMedia('(max-width: 767px)').matches;
         if (hasSlug) {
           var target = document.getElementById(slug);
-          if (target && center) {
-            center.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
-          }
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
-          if (center) center.scrollTo({ top: 0, behavior: 'smooth' });
+          if (isMobile) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else if (center) {
+            center.scrollTo({ top: 0, behavior: 'smooth' });
+          }
         }
       }
 
@@ -385,25 +386,21 @@ const defaultMosaic = fs.readFileSync(
       }
 
       // 스크롤 위치에 따라 표 active 행 + URL hash 갱신.
-      // IntersectionObserver — 화면 중앙에 가장 가까운 카드 감지.
+      // 데스크탑: root는 center (scroll container). 모바일: viewport.
       if (center && 'IntersectionObserver' in window) {
-        var io = new IntersectionObserver(function (entries) {
-          var best = null;
-          var bestRatio = 0;
-          entries.forEach(function (e) {
-            if (e.intersectionRatio > bestRatio) {
-              bestRatio = e.intersectionRatio;
-              best = e.target;
-            }
-          });
-          // 현재 활성 카드 중 가장 많이 보이는 걸 선택
+        var ioIsMobile = window.matchMedia('(max-width: 767px)').matches;
+        var ioRoot = ioIsMobile ? null : center;
+        var io = new IntersectionObserver(function () {
+          var rootEl = ioIsMobile ? null : center;
+          var rootRect = rootEl
+            ? rootEl.getBoundingClientRect()
+            : { top: 0, bottom: window.innerHeight };
           var active = null;
           var activeRatio = 0;
           cards.forEach(function (c) {
             var rect = c.getBoundingClientRect();
-            var centerRect = center.getBoundingClientRect();
-            var visTop = Math.max(rect.top, centerRect.top);
-            var visBottom = Math.min(rect.bottom, centerRect.bottom);
+            var visTop = Math.max(rect.top, rootRect.top);
+            var visBottom = Math.min(rect.bottom, rootRect.bottom);
             var vis = Math.max(0, visBottom - visTop);
             if (vis > activeRatio) {
               activeRatio = vis;
@@ -415,12 +412,11 @@ const defaultMosaic = fs.readFileSync(
             rows.forEach(function (tr) {
               tr.setAttribute('data-active', String(tr.getAttribute('data-slug') === slug));
             });
-            // URL hash silently 갱신 (scroll 트리거 없이)
             if (location.hash !== '#' + slug) {
               history.replaceState(null, '', '#' + slug);
             }
           }
-        }, { root: center, threshold: [0, 0.25, 0.5, 0.75, 1] });
+        }, { root: ioRoot, threshold: [0, 0.25, 0.5, 0.75, 1] });
         cards.forEach(function (c) { io.observe(c); });
       }
 
