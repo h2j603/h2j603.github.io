@@ -159,19 +159,20 @@ iframe {
 /* hover 셀: 다른 셀의 5배 폭 (basis 5× var(--cell-w)), shrink 0 */
 .stripe-row .cell:hover  { flex: 0 0 calc(var(--cell-w) * 5); }
 
-/* 마우스 트레일 — 작은 블록이 아래로 떨어지면서 사라짐 */
+/* 마우스 트레일 — 작은 블록이 아래로 떨어지면서 사라짐.
+   모자이크 셀과 같은 가속도 곡선. */
 .mouse-drop {
   position: fixed;
   width: 5px;
   height: 5px;
   pointer-events: none;
   z-index: 9999;
-  animation: drop-fall 2s cubic-bezier(0.4, 0, 0.7, 1) forwards;
+  animation: drop-fall 2.2s cubic-bezier(0.95, 0, 1, 0.45) forwards;
 }
 @keyframes drop-fall {
   0%   { transform: translateY(0); opacity: 1; }
-  80%  { opacity: 1; }
-  100% { transform: translateY(220px); opacity: 0; }
+  85%  { opacity: 1; }
+  100% { transform: translateY(600px); opacity: 0; }
 }
 
 /* 3-Column이 띠 만큼 아래로 밀려야 함 (20 × 3 = 60) */
