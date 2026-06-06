@@ -443,17 +443,15 @@ table.sontable .col-cat { width: 110px; }
   margin: 0;
 }
 
-/* 기본 화면 모자이크 — 셀이 모래알처럼 천천히 화면 아래로 떨어져 사라짐.
-   shape는 처음엔 그대로 있다가 시간이 지나며 무너짐.
-   viewport 전체에 깔리되 클릭은 뒤로 통과.
+/* 기본 화면 모자이크 — 화면 정중앙에 박힘.
+   페이지 로드 시 정적. 화면 아무데나 첫 클릭 시 떨어지기 시작.
+   viewport 전체에 깔리되 클릭은 뒤로 통과 (pointer-events:none).
    작품 선택해도 hidden 안 함 — 떨어질 때까지 그대로 화면에 남음. */
 .default-state {
   position: fixed;
-  top: 80px;          /* stripe-top 60 + .content padding 20 — 작품 제목과 같은 y */
-  left: 0;
-  width: 100vw;
+  inset: 0;
   display: flex;
-  align-items: flex-start;
+  align-items: center;       /* 정중앙 */
   justify-content: center;
   z-index: 50;
   pointer-events: none;
@@ -482,13 +480,10 @@ table.sontable .col-cat { width: 110px; }
   font-weight: 700;
 }
 .default-state .stripe-mosaic {
-  width: 80vw;
-  max-width: 80vw;
+  width: 88vw;
+  max-width: 88vw;
 }
-.default-state .stripe-mosaic > div {
-  animation: cell-drop 5s cubic-bezier(0.95, 0, 1, 0.45) forwards;
-  /* animation-delay는 JS에서 셀마다 random 부여 */
-}
+/* 셀의 animation은 JS triggerMosaicFall()에서만 부여 — 기본은 정적. */
 @keyframes cell-drop {
   from {
     transform: translateY(0);
