@@ -117,9 +117,13 @@ th {
 }
 /* 행 hover — lawngreen → 보라(#b362ff)로 치환된 그라디언트.
    배경을 <tr>에 주면 iOS Safari가 행 전체 폭으로 칠하지 않고 오른쪽을
-   잘라먹어 여백이 남는다. 셀(td)에 직접 배경을 줘서 full-width 보장. */
-table tr:hover td {
-  background: linear-gradient(to bottom, var(--accent), white);
+   잘라먹어 여백이 남는다. 셀(td)에 직접 배경을 줘서 full-width 보장.
+   @media (hover: hover) — 터치 기기(모바일)에선 호버 잔상(sticky)이 남아
+   지저분하므로 실제 호버 가능한 기기(데스크탑)에서만 적용. */
+@media (hover: hover) {
+  table tr:hover td {
+    background: linear-gradient(to bottom, var(--accent), white);
+  }
 }
 
 /* ───────────────────────────────────────────────────────────────────────
