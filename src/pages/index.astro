@@ -3,6 +3,8 @@
 //   left   : 인트로 + 푸터
 //   center : 작품 카드들 (상단에 태그 필터)
 //   right  : 카테고리별 표 (Web / Graphic) — 행 클릭 시 카드로 스크롤
+import fs from 'node:fs';
+import path from 'node:path';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import { getWorks, resolveImage, getIntro, getFooter, groupBilingual } from '../lib/site-data.js';
@@ -20,6 +22,12 @@ function categoryOf(w: (typeof works)[number]): string {
 
 const introGroups = getIntro();
 const footerGroups = getFooter();
+
+// 작품 선택 안 한 기본 화면용 모자이크 (stripe-mosaic 도구로 만든 단일 SVG → 셀 그리드)
+const defaultMosaic = fs.readFileSync(
+  path.join(process.cwd(), 'src/data/default-mosaic.html'),
+  'utf-8',
+);
 ---
 
 <Base title="hyuk.xyz">
@@ -84,9 +92,14 @@ const footerGroups = getFooter();
       </div>
     </div>
 
-    {/* ──────────── 중앙: 작품 카드 (한 번에 하나만 — 기본은 첫 작품) ──────────── */}
+    {/* ──────────── 중앙: 작품 카드 (한 번에 하나만 — 기본은 모자이크) ──────────── */}
     <div class="third center">
       <div class="content">
+        {/* 기본 화면 — 아무 작업 선택 안 한 상태. 표에서 작품 클릭하면 가려짐. */}
+        <div class="default-state" id="__default" hidden>
+          <Fragment set:html={defaultMosaic} />
+        </div>
+
         {
           works.map((w) => {
             const cover = w.cover ? resolveImage(w.cover) : undefined;
@@ -189,11 +202,17 @@ const footerGroups = getFooter();
               ))}
             </nav>
           )}
+          <button type="button" class="sort-toggle" data-order="desc">↓</button>
           <button type="button" class="lang-toggle" data-lang="ko">EN</button>
         </div>
 
         {works.length > 0 ? (
           <table class="sontable">
+            <colgroup>
+              <col class="col-title" />
+              <col class="col-year" />
+              <col class="col-cat" />
+            </colgroup>
             <tbody>
               {works.map((w) => (
                 <tr data-slug={w.slug} data-tags={w.tags.join(' ')}>
@@ -224,6 +243,7 @@ const footerGroups = getFooter();
       var cards = Array.from(document.querySelectorAll('.work-card'));
       var rows = Array.from(document.querySelectorAll('tr[data-slug]'));
       var center = document.querySelector('.three-col .center');
+      var defaultEl = document.getElementById('__default');
 
       function applyFilter(tag) {
         rows.forEach(function (tr) {
@@ -239,15 +259,19 @@ const footerGroups = getFooter();
 
       function applyHash() {
         var slug = (location.hash || '').replace(/^#/, '');
-        if (!slug || !cards.some(function (c) { return c.id === slug; })) {
-          slug = cards.length > 0 ? cards[0].id : '';
+        var hasSlug = slug && cards.some(function (c) { return c.id === slug; });
+        if (!hasSlug) {
+          // 기본 화면 — 모자이크 표시, 모든 작품 숨김, 표 활성 행 없음
+          if (defaultEl) defaultEl.hidden = false;
+          cards.forEach(function (c) { c.hidden = true; });
+          rows.forEach(function (tr) { tr.setAttribute('data-active', 'false'); });
+        } else {
+          if (defaultEl) defaultEl.hidden = true;
+          cards.forEach(function (c) { c.hidden = c.id !== slug; });
+          rows.forEach(function (tr) {
+            tr.setAttribute('data-active', String(tr.getAttribute('data-slug') === slug));
+          });
         }
-        cards.forEach(function (c) {
-          c.hidden = c.id !== slug;
-        });
-        rows.forEach(function (tr) {
-          tr.setAttribute('data-active', String(tr.getAttribute('data-slug') === slug));
-        });
         // 브라우저 native anchor scroll 무력화 (다음 프레임에서도)
         if (center) center.scrollTop = 0;
         requestAnimationFrame(function () {
@@ -276,6 +300,30 @@ const footerGroups = getFooter();
           applyFilter(a.getAttribute('data-filter'));
         });
       }
+
+      // 표 정렬 — Year 기준. 기본 내림차순(최신 위), 클릭 시 토글.
+      function sortTable(order) {
+        var tbody = document.querySelector('table.sontable tbody');
+        if (!tbody) return;
+        var trs = Array.from(tbody.querySelectorAll('tr'));
+        trs.sort(function (a, b) {
+          var ya = parseInt((a.children[1] || {}).textContent || '0', 10) || 0;
+          var yb = parseInt((b.children[1] || {}).textContent || '0', 10) || 0;
+          return order === 'desc' ? yb - ya : ya - yb;
+        });
+        trs.forEach(function (tr) { tbody.appendChild(tr); });
+      }
+      var sortToggle = document.querySelector('.sort-toggle');
+      if (sortToggle) {
+        sortToggle.addEventListener('click', function () {
+          var cur = sortToggle.getAttribute('data-order') || 'desc';
+          var next = cur === 'desc' ? 'asc' : 'desc';
+          sortToggle.setAttribute('data-order', next);
+          sortToggle.textContent = next === 'desc' ? '↓' : '↑';
+          sortTable(next);
+        });
+      }
+      sortTable('desc');
 
       // 표 제목 한·영 토글 — EN 버튼 클릭하면 표의 a 텍스트가 영어로
       var langToggle = document.querySelector('.lang-toggle');
