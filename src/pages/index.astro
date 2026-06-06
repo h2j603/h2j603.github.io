@@ -120,6 +120,22 @@ const footerGroups = getFooter();
                       allowfullscreen
                     ></iframe>
                   </div>
+                ) : w.images.length > 0 ? (
+                  <div class="card-images">
+                    {
+                      w.images.map((img) => {
+                        const asset = resolveImage(img.localPath);
+                        return asset ? (
+                          <Image
+                            src={asset}
+                            alt={img.alt || w.title || w.slug}
+                            widths={[420, 640, 960]}
+                            sizes="40vw"
+                          />
+                        ) : null;
+                      })
+                    }
+                  </div>
                 ) : cover ? (
                   <Image src={cover} alt={w.title || w.slug} widths={[420, 640, 960]} sizes="40vw" />
                 ) : null}
