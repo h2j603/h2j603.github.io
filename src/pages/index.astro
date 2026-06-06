@@ -36,17 +36,21 @@ const defaultMosaic = fs.readFileSync(
 ---
 
 <Base title="hyuk.xyz">
-  <div class="stripe-top" aria-hidden="true">
-    <div class="stripe-row"></div>
-    <div class="stripe-row"></div>
+  <div class="stripe-top">
+    <div class="stripe-row" aria-hidden="true"></div>
+    <div class="stripe-row" aria-hidden="true"></div>
+    <nav class="top-nav" aria-label="Main">
+      <a href="#" class="nav-pill" data-nav="home">/home</a>
+      <a href="#" class="nav-pill" data-nav="about">/about</a>
+      <a href="#" class="nav-pill" data-nav="works">/works</a>
+      <button type="button" class="nav-pill nav-lang" data-lang="ko">/en</button>
+    </nav>
   </div>
   <div class="three-col">
 
     {/* ──────────── 좌측: 인트로 ──────────── */}
     <div class="third left">
       <div class="content intro">
-        <h2><a href="#" class="home-link" data-home>hyuk.xyz</a>/about</h2>
-
         {introGroups.length > 0 && (
           <div class="intro-body">
             {
@@ -123,8 +127,6 @@ const defaultMosaic = fs.readFileSync(
                   {w.tags.length > 0 && <> · {w.tags.join(' · ')}</>}
                 </p>
 
-                <hr />
-
                 {isWeb && externalUrl ? (
                   <div class="iframe-wrap">
                     <iframe
@@ -176,8 +178,6 @@ const defaultMosaic = fs.readFileSync(
                   </div>
                 )}
 
-                {externalUrl && (hasMedia || w.bodyBlocks.length > 0) && <hr />}
-
                 {externalUrl && (
                   <p>
                     <a href={externalUrl} target="_blank" rel="noopener" class="card-link">
@@ -207,7 +207,6 @@ const defaultMosaic = fs.readFileSync(
             </nav>
           )}
           <button type="button" class="sort-toggle" data-order="desc">↓</button>
-          <button type="button" class="lang-toggle" data-lang="ko">EN</button>
         </div>
 
         {works.length > 0 ? (
@@ -370,19 +369,43 @@ const defaultMosaic = fs.readFileSync(
       }
       sortTable('desc');
 
-      // 표 제목 한·영 토글 — EN 버튼 클릭하면 표의 a 텍스트가 영어로
-      var langToggle = document.querySelector('.lang-toggle');
+      // 표 제목 한·영 토글 — 상단 nav의 /en(ko) 버튼
+      var langToggle = document.querySelector('.nav-lang');
       if (langToggle) {
-        langToggle.addEventListener('click', function () {
+        langToggle.addEventListener('click', function (e) {
+          e.preventDefault();
           var cur = langToggle.getAttribute('data-lang') || 'ko';
           var next = cur === 'ko' ? 'en' : 'ko';
           langToggle.setAttribute('data-lang', next);
-          langToggle.textContent = next === 'ko' ? 'EN' : 'KO';
+          langToggle.textContent = next === 'ko' ? '/en' : '/ko';
           document.querySelectorAll('table.sontable a[data-ko]').forEach(function (a) {
             a.textContent = a.getAttribute('data-' + next) || '';
           });
         });
       }
+
+      // 상단 nav — home/about/works
+      var leftCol = document.querySelector('.three-col .left');
+      document.querySelectorAll('[data-nav]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          var target = a.getAttribute('data-nav');
+          if (target === 'home') {
+            if (location.hash) history.pushState(null, '', location.pathname);
+            if (center) center.scrollTo({ top: 0, behavior: 'smooth' });
+            if (defaultEl) {
+              defaultEl.hidden = false;
+              triggerMosaicFall();
+            }
+          } else if (target === 'about') {
+            if (leftCol) leftCol.scrollTo({ top: 0, behavior: 'smooth' });
+          } else if (target === 'works') {
+            if (cards[0] && center) {
+              center.scrollTo({ top: cards[0].offsetTop, behavior: 'smooth' });
+            }
+          }
+        });
+      });
 
       // 스크롤 위치에 따라 표 active 행 + URL hash 갱신.
       // IntersectionObserver — 화면 중앙에 가장 가까운 카드 감지.

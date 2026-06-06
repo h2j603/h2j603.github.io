@@ -146,6 +146,38 @@ iframe {
   right: 0;
   z-index: 100;
 }
+
+/* 상단 네비 — 윤곽선 pill, carbon 700 (Bold) */
+.top-nav {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 110;
+  pointer-events: none;        /* 셀 hover는 그대로 동작 */
+}
+.top-nav .nav-pill {
+  pointer-events: auto;
+  font-family: t26-carbon, monospace;
+  font-weight: 700;
+  font-style: normal;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  padding: 6px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: transparent;     /* fill 없음 — 윤곽선만 */
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+}
+.top-nav .nav-pill:hover {
+  background: var(--ink);
+  color: var(--bg);
+}
 .stripe-row {
   display: flex;
   height: 24px;
@@ -181,10 +213,13 @@ iframe {
   overflow-y: auto;
   overflow-x: hidden;
   padding: 20px;
+}
+/* 좌측·우측만 스크롤바 숨김. 가운데(.center)는 기본 스크롤바 노출. */
+.three-col .third:not(.center) {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.three-col .third::-webkit-scrollbar { display: none; }
+.three-col .third:not(.center)::-webkit-scrollbar { display: none; }
 
 .three-col .left {
   background-color: white;
@@ -198,18 +233,9 @@ iframe {
   left: 30%;
   width: 40%;
   border-right: 1px solid var(--ink);
-  /* 작업영역은 기본 스크롤바 노출 */
+  /* 작업영역은 OS 기본 스크롤바 */
   scrollbar-width: auto;
   -ms-overflow-style: auto;
-}
-.three-col .center::-webkit-scrollbar { width: 10px; height: 10px; }
-.three-col .center::-webkit-scrollbar-track { background: transparent; }
-.three-col .center::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.35);
-  border-radius: 5px;
-}
-.three-col .center::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.55);
 }
 .three-col .right {
   background-color: white;
