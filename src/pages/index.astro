@@ -10,7 +10,12 @@ import Base from '../layouts/Base.astro';
 import { getWorks, resolveImage, getIntro, getFooter, groupBilingual } from '../lib/site-data.js';
 import { TAGS } from '../lib/schema.js';
 
-const works = getWorks();
+const works = getWorks().slice().sort((a, b) => {
+  // 표 기본 정렬과 동일하게 — year desc (최신 위)
+  const ya = parseInt(a.year || '0', 10) || 0;
+  const yb = parseInt(b.year || '0', 10) || 0;
+  return yb - ya;
+});
 const usedTags = TAGS.filter((t) => works.some((w) => w.tags.includes(t)));
 
 function categoryOf(w: (typeof works)[number]): string {
@@ -106,7 +111,7 @@ const defaultMosaic = fs.readFileSync(
             const isWeb = w.tags.includes('web');
             const hasMedia = (isWeb && externalUrl) || cover;
             return (
-              <article class="work-card" id={w.slug} data-tags={w.tags.join(' ')}>
+              <article class="work-card" id={w.slug} data-tags={w.tags.join(' ')} data-year={w.year}>
                 <h2 class="card-title">
                   {w.titleEn && w.titleEn !== w.title && (
                     <span class="card-title-en" lang="en">{w.titleEn}</span>
@@ -330,16 +335,28 @@ const defaultMosaic = fs.readFileSync(
       }
 
       // 표 정렬 — Year 기준. 기본 내림차순(최신 위), 클릭 시 토글.
+      // 작품 카드 순서도 같이 reorder.
       function sortTable(order) {
         var tbody = document.querySelector('table.sontable tbody');
-        if (!tbody) return;
-        var trs = Array.from(tbody.querySelectorAll('tr'));
-        trs.sort(function (a, b) {
-          var ya = parseInt((a.children[1] || {}).textContent || '0', 10) || 0;
-          var yb = parseInt((b.children[1] || {}).textContent || '0', 10) || 0;
-          return order === 'desc' ? yb - ya : ya - yb;
-        });
-        trs.forEach(function (tr) { tbody.appendChild(tr); });
+        if (tbody) {
+          var trs = Array.from(tbody.querySelectorAll('tr'));
+          trs.sort(function (a, b) {
+            var ya = parseInt((a.children[1] || {}).textContent || '0', 10) || 0;
+            var yb = parseInt((b.children[1] || {}).textContent || '0', 10) || 0;
+            return order === 'desc' ? yb - ya : ya - yb;
+          });
+          trs.forEach(function (tr) { tbody.appendChild(tr); });
+        }
+        var content = document.querySelector('.three-col .center .content');
+        if (content) {
+          var cs = Array.from(content.querySelectorAll('.work-card'));
+          cs.sort(function (a, b) {
+            var ya = parseInt(a.dataset.year || '0', 10) || 0;
+            var yb = parseInt(b.dataset.year || '0', 10) || 0;
+            return order === 'desc' ? yb - ya : ya - yb;
+          });
+          cs.forEach(function (c) { content.appendChild(c); });
+        }
       }
       var sortToggle = document.querySelector('.sort-toggle');
       if (sortToggle) {
