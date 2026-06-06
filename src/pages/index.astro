@@ -109,7 +109,6 @@ const defaultMosaic = fs.readFileSync(
             const cover = w.cover ? resolveImage(w.cover) : undefined;
             const externalUrl = w.links[0]?.url;
             const isWeb = w.tags.includes('web');
-            const hasMedia = (isWeb && externalUrl) || cover;
             return (
               <article class="work-card" id={w.slug} data-tags={w.tags.join(' ')} data-year={w.year}>
                 <h2 class="card-title">
@@ -171,8 +170,6 @@ const defaultMosaic = fs.readFileSync(
                 ) : cover ? (
                   <Image src={cover} alt={w.title || w.slug} widths={[420, 640, 960]} sizes="40vw" />
                 ) : null}
-
-                {hasMedia && w.bodyBlocks.length > 0 && <hr />}
 
                 {w.bodyBlocks.length > 0 && (
                   <div class="card-body">
