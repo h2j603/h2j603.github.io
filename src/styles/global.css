@@ -289,14 +289,13 @@ table tr[data-active='true'] a {
    작품 카드 — 가운데 컬럼 (한 번에 하나만 표시)
    ─────────────────────────────────────────────────────────────────────── */
 .work-card {
-  /* 본문 다 읽고 더 스크롤할 수 있는 여유 — 다음 작품으로 너무 빨리 안 넘어가게 */
-  padding-bottom: 24vh;
+  padding-bottom: 4vh;
 }
-/* 작품 사이 구분선 + 위쪽 여백 */
+/* 작품 사이 구분선 + 위아래 여백 */
 .work-card + .work-card {
   border-top: 1px solid var(--ink);
-  padding-top: 12vh;
-  margin-top: 12vh;
+  padding-top: 3vh;
+  margin-top: 3vh;
 }
 
 .work-card .card-title {
