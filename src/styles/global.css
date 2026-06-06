@@ -114,9 +114,6 @@ th {
   border-top: 1px solid var(--ink);
   border-collapse: collapse;
   padding: 10px;
-  /* 제목이 길어 2줄이 되어도 year·tags 같은 1줄 셀은 가운데가 아니라
-     첫째 줄에 맞춰 위쪽 정렬 */
-  vertical-align: top;
 }
 /* 행 hover — lawngreen → 보라(#b362ff)로 치환된 그라디언트.
    배경을 <tr>에 주면 iOS Safari가 행 전체 폭으로 칠하지 않고 오른쪽을
