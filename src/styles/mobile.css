@@ -1,0 +1,72 @@
+/* ───────────────────────────────────────────────────────────────────────
+   모바일 전용 — 모든 룰은 반드시 @media 안에 두고, 데스크탑 룰은 절대 건드리지 않는다.
+   브레이크포인트: 600px. 맥북 등 일반 데스크탑은 폭 1000+로 절대 발동 안 됨.
+
+   레이아웃:
+   · 좌측 인트로(.left): 완전 숨김
+   · 우측 표(.right): 맨 위로 (order: 1)
+   · 가운데 작품 카드(.center): 그 아래 (order: 2), 세로 흐름
+   · 표 행 클릭 → 해당 카드로 자동 스크롤 (scroll-margin-top 으로 stripe 가림 보정)
+   ─────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  body {
+    overflow: auto;
+    /* 모바일에선 body 스크롤바 숨김 (OS 오버레이 사용) */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  body::-webkit-scrollbar { display: none; }
+
+  .three-col {
+    display: flex;
+    flex-direction: column;
+    padding-top: 60px; /* stripe-top(48) + 여유 12 */
+  }
+  .three-col .left { display: none; }
+  .three-col .third {
+    position: static;
+    width: 100%;
+    height: auto;
+    top: auto;
+    overflow: visible;
+    padding: 16px;
+  }
+  .three-col .right {
+    order: 1;
+    border-right: none;
+    border-bottom: 1px solid var(--ink);
+  }
+  .three-col .center {
+    order: 2;
+    border-right: none;
+  }
+
+  /* 표 위 컨트롤 — grid 풀고 flex로 (좁은 폭 적응) */
+  .table-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding-top: 0;
+  }
+  .table-controls > .card-filter { padding-left: 0; }
+  .table-controls > .sort-toggle,
+  .table-controls > .lang-toggle {
+    justify-self: auto;
+    margin-left: auto;
+  }
+
+  /* 작품 카드 — 표에서 클릭 시 stripe 가리지 않게 보정 */
+  .work-card { scroll-margin-top: 70px; }
+  .work-card + .work-card {
+    padding-top: 8vh;
+    margin-top: 8vh;
+  }
+
+  /* 모자이크 */
+  .default-state .stripe-mosaic {
+    width: 92vw;
+    max-width: 92vw;
+  }
+}

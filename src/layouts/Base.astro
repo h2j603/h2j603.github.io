@@ -1,6 +1,8 @@
 ---
 // hyuk repo의 디자인을 원본 그대로 복제 — Typekit 폰트 + 한글 woff2 포함.
 import '../styles/global.css';
+// 모바일 전용 — 모든 룰이 @media (max-width: 600px) 안에 격리. 데스크탑 영향 0.
+import '../styles/mobile.css';
 
 interface Props {
   title: string;
