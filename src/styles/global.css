@@ -319,6 +319,11 @@ table tr[data-active='true'] a {
   padding-top: 3vh;
   margin-top: 3vh;
 }
+/* 구분선 위·아래 여백이 margin-top/padding-top(동일값)으로만 결정되게,
+   카드 첫 자식의 위 margin·마지막 자식의 아래 margin을 0으로 제거한다.
+   (안 그러면 .iframe-wrap/.card-images의 margin이 끼어들어 위 여백이 더 커짐) */
+.work-card > :first-child { margin-top: 0; }
+.work-card > :last-child { margin-bottom: 0; }
 
 .work-card .card-title {
   font-family: neue-haas-unica, 'HakgyoansimBareondotum', sans-serif;
