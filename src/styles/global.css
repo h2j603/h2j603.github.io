@@ -432,9 +432,10 @@ table.sontable .col-cat { width: 110px; }
 .intro a,
 .work-card .card-body a,
 .work-card .card-link {
-  /* inline + box-decoration-break:clone — 링크 라벨이 길면 단어(어절) 단위로
-     줄바꿈되고, 각 줄 조각마다 pill 배경·둥근 모서리·padding이 그대로 적용된다.
-     (inline-block + white-space:nowrap이면 안 쪼개져 통째로 밀려났음) */
+  /* 데스크탑: white-space:nowrap으로 한 줄 유지(끊지 않음).
+     모바일(≤600px, mobile.css): white-space:normal로 단어(어절) 단위 줄바꿈.
+     inline + box-decoration-break:clone — wrap 시 각 줄 조각마다 pill 배경·
+     둥근 모서리·padding이 그대로 적용된다. */
   display: inline;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
@@ -445,6 +446,7 @@ table.sontable .col-cat { width: 110px; }
   text-decoration: none;
   font-style: normal;
   line-height: 1.4;
+  white-space: nowrap;
   word-break: keep-all;
 }
 .intro a::before,
