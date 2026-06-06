@@ -261,7 +261,61 @@ const defaultMosaic = fs.readFileSync(
       var center = document.querySelector('.three-col .center');
       var defaultEl = document.getElementById('__default');
 
+      // ── 모바일 아코디언 ──────────────────────────────────────────────
+      // 모바일에선 표가 메인. 행 탭 시 해당 .work-card를 그 행 바로 아래 detail
+      // 행(<td colspan=3>)으로 이동해 펼친다. 카드는 평소 .center(숨김 저장소)에
+      // 있다가 이동되므로 콘텐츠 중복이 없다. 데스크탑은 기존 동작 유지.
+      var mq = window.matchMedia('(max-width: 600px)');
+      function isMobile() { return mq.matches; }
+      var centerContent = document.querySelector('.three-col .center .content');
+      var accSlug = null; // 현재 열린 slug
+      var accRow = null;  // 현재 detail <tr>
+
+      function accClose() {
+        if (!accRow) return;
+        var card = accRow.querySelector('.work-card');
+        if (card && centerContent) centerContent.appendChild(card); // 저장소로 복귀
+        if (accRow.parentNode) accRow.parentNode.removeChild(accRow);
+        var tr = document.querySelector('tr[data-slug="' + accSlug + '"]');
+        if (tr) tr.setAttribute('data-active', 'false');
+        accRow = null;
+        accSlug = null;
+      }
+
+      function accOpen(slug) {
+        var tr = document.querySelector('tr[data-slug="' + slug + '"]');
+        var card = document.getElementById(slug);
+        if (!tr || !card) return;
+        accClose();
+        var detail = document.createElement('tr');
+        detail.className = 'accordion-detail';
+        var td = document.createElement('td');
+        td.colSpan = 3;
+        var panel = document.createElement('div');
+        panel.className = 'accordion-panel';
+        panel.appendChild(card);
+        td.appendChild(panel);
+        detail.appendChild(td);
+        tr.parentNode.insertBefore(detail, tr.nextSibling);
+        tr.setAttribute('data-active', 'true');
+        accSlug = slug;
+        accRow = detail;
+        // 슬라이드 다운 — 0 → 콘텐츠 높이, 끝나면 none(이미지 로드로 커져도 안 잘림)
+        requestAnimationFrame(function () {
+          panel.style.maxHeight = panel.scrollHeight + 'px';
+        });
+        panel.addEventListener('transitionend', function te(ev) {
+          if (ev.propertyName !== 'max-height') return;
+          panel.style.maxHeight = 'none';
+          panel.removeEventListener('transitionend', te);
+        });
+        setTimeout(function () {
+          tr.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 60);
+      }
+
       function applyFilter(tag) {
+        accClose();
         rows.forEach(function (tr) {
           var tags = (tr.getAttribute('data-tags') || '').split(' ');
           tr.hidden = tag !== 'all' && tags.indexOf(tag) === -1;
@@ -327,32 +381,34 @@ const defaultMosaic = fs.readFileSync(
 
       function applyHash() {
         var slug = (location.hash || '').replace(/^#/, '');
+        // 모바일은 아코디언이 hash/표시를 처리하므로 스크롤 로직 건너뜀.
+        if (isMobile()) return;
         var hasSlug = slug && cards.some(function (c) { return c.id === slug; });
-        // 모든 작품 카드 항상 보임 — 한 줄로 이어진 스크롤.
-        // hash가 있으면 그 카드로 scroll, 없으면 맨 위.
-        // 모바일(<=600px)에선 .center가 스크롤 컨테이너가 아니라 페이지 전체가
-        // 스크롤되므로 center.scrollTo는 무효 → window/scrollIntoView 사용.
-        var isMobile = window.matchMedia('(max-width: 600px)').matches;
         if (hasSlug) {
           var target = document.getElementById(slug);
-          if (target) {
-            if (isMobile) {
-              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else if (center) {
-              center.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
-            }
+          if (target && center) {
+            center.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
           }
-        } else if (isMobile) {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
         } else if (center) {
           center.scrollTo({ top: 0, behavior: 'smooth' });
         }
       }
 
-      // 표 행 클릭 시 브라우저의 anchor scroll 자체를 막기 (hashchange는 그대로 발동)
+      // 표 행 클릭 — 모바일: 아코디언 토글 / 데스크탑: 가운데 카드로 스크롤
       document.querySelectorAll('table.sontable a[href^="#"]').forEach(function (a) {
         a.addEventListener('click', function (e) {
           e.preventDefault();
+          var slug = (a.getAttribute('href') || '').replace(/^#/, '');
+          if (isMobile()) {
+            if (accSlug === slug) {
+              accClose();
+              if (location.hash) history.replaceState(null, '', location.pathname);
+            } else {
+              accOpen(slug);
+              history.replaceState(null, '', '#' + slug);
+            }
+            return;
+          }
           var href = a.getAttribute('href') || '';
           if (href && href !== location.hash) {
             history.pushState(null, '', href);
@@ -373,6 +429,7 @@ const defaultMosaic = fs.readFileSync(
       // 표 정렬 — Year 기준. 기본 내림차순(최신 위), 클릭 시 토글.
       // 작품 카드 순서도 같이 reorder.
       function sortTable(order) {
+        accClose(); // 정렬 전 아코디언 닫기 (detail 행이 재정렬되지 않게)
         var tbody = document.querySelector('table.sontable tbody');
         if (tbody) {
           var trs = Array.from(tbody.querySelectorAll('tr'));
@@ -422,7 +479,7 @@ const defaultMosaic = fs.readFileSync(
 
       // 스크롤 위치에 따라 표 active 행 + URL hash 갱신.
       // IntersectionObserver — 화면 중앙에 가장 가까운 카드 감지.
-      if (center && 'IntersectionObserver' in window) {
+      if (center && !isMobile() && 'IntersectionObserver' in window) {
         var io = new IntersectionObserver(function (entries) {
           var best = null;
           var bestRatio = 0;
@@ -554,6 +611,7 @@ const defaultMosaic = fs.readFileSync(
       document.querySelectorAll('[data-home]').forEach(function (a) {
         a.addEventListener('click', function (e) {
           e.preventDefault();
+          accClose();
           if (location.hash) {
             history.pushState(null, '', location.pathname);
           }
@@ -634,6 +692,11 @@ const defaultMosaic = fs.readFileSync(
         } else {
           triggerMosaicFall();
         }
+      }
+      // 모바일 딥링크 — #slug로 진입하면 해당 행 아코디언을 펼침
+      if (isMobile() && location.hash) {
+        var dlSlug = location.hash.replace(/^#/, '');
+        if (document.getElementById(dlSlug)) accOpen(dlSlug);
       }
     })();
   </script>
