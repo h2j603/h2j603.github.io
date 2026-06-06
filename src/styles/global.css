@@ -115,9 +115,17 @@ th {
   border-collapse: collapse;
   padding: 10px;
 }
-/* 행 hover — lawngreen → 보라(#b362ff)로 치환된 그라디언트 */
+/* 행 hover — lawngreen → 보라(#b362ff)로 치환된 그라디언트.
+   페이드를 행 높이에 비례시키면 모바일에서 제목이 2줄로 줄바꿈될 때
+   그라디언트가 늘어나 아랫줄이 흰색으로 바램 → 하이라이트가 끊겨 보임.
+   바닥에서 고정 거리(1.2em)만 페이드 → 줄 수와 무관하게 텍스트는 꽉 채움. */
 table tr:hover {
-  background: linear-gradient(to bottom, var(--accent), white);
+  background: linear-gradient(
+    to bottom,
+    var(--accent) 0,
+    var(--accent) calc(100% - 1.2em),
+    white 100%
+  );
 }
 
 /* ───────────────────────────────────────────────────────────────────────
