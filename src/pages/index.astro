@@ -259,11 +259,10 @@ const defaultMosaic = fs.readFileSync(
 
       // 모자이크 셀이 오른쪽 위 → 왼쪽 아래 대각선 순서로 떨어짐.
       // 100% 순차는 아니고 일부 셀은 예외 (random jitter).
-      // duration 4s, delay range ~20s.
-      function triggerMosaicFall() {
+      // 마우스 가까이 있는 셀은 base delay가 더 작음 (클릭 위치 기준).
+      function triggerMosaicFall(mouseX, mouseY) {
         if (!defaultEl) return;
         var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
-        // 셀 위치 max 계산
         var maxRow = 1, maxCol = 1;
         var positions = [];
         cells.forEach(function (d) {
@@ -276,6 +275,8 @@ const defaultMosaic = fs.readFileSync(
           if (col > maxCol) maxCol = col;
         });
         var maxProgress = (maxCol - 1) + (maxRow - 1);
+        // 마우스 영향력 반경 — viewport 대각선의 절반
+        var radius = Math.hypot(window.innerWidth, window.innerHeight) * 0.5;
         positions.forEach(function (p) {
           p.d.style.animation = 'none';
           void p.d.offsetWidth; // reflow
@@ -284,13 +285,22 @@ const defaultMosaic = fs.readFileSync(
           var progress = ((maxCol - p.col) + (p.row - 1)) / maxProgress;
           var delay;
           if (Math.random() < 0.12) {
-            // 12% 예외 — 순서 무시, 완전 random
             delay = Math.random() * 13;
           } else {
-            // 진행도 기반 + 작은 jitter
             delay = progress * 12 + (Math.random() - 0.5) * 1.7;
           }
           if (delay < 0) delay = 0;
+          // 마우스 거리 가중치 — 가까울수록 delay 축소
+          if (mouseX != null && mouseY != null) {
+            var rect = p.d.getBoundingClientRect();
+            var cx = rect.left + rect.width / 2;
+            var cy = rect.top + rect.height / 2;
+            var dist = Math.hypot(cx - mouseX, cy - mouseY);
+            var distFactor = Math.min(1, dist / radius); // 0(가까움) ~ 1(멀음)
+            // 가까운 셀: delay × 0.1, 먼 셀: delay × 1.0
+            delay = delay * (0.1 + 0.9 * distFactor);
+          }
+          p.d.dataset.baseDelay = delay.toFixed(3);
           p.d.style.animationDelay = delay.toFixed(3) + 's';
         });
       }
@@ -301,8 +311,11 @@ const defaultMosaic = fs.readFileSync(
         cells.forEach(function (d) {
           d.style.animation = 'none';
           d.style.animationDelay = '0s';
+          delete d.dataset.fast;
+          delete d.dataset.baseDelay;
         });
         defaultEl.dataset.waiting = '1';
+        defaultEl.dataset.falling = '';
       }
 
       function applyHash() {
@@ -549,12 +562,36 @@ const defaultMosaic = fs.readFileSync(
         });
       });
 
-      // 화면 아무데나 첫 클릭 → 모자이크 떨어짐 시작
-      document.addEventListener('click', function () {
+      // 화면 아무데나 첫 클릭 → 모자이크 떨어짐 시작 (클릭 위치 기준 가속)
+      document.addEventListener('click', function (e) {
         if (defaultEl && defaultEl.dataset.waiting === '1') {
           defaultEl.dataset.waiting = '';
-          triggerMosaicFall();
+          defaultEl.dataset.falling = '1';
+          triggerMosaicFall(e.clientX, e.clientY);
         }
+      });
+
+      // 떨어지는 중 mousemove — 마우스 가까이 가는 셀은 즉시 떨어짐 시작
+      var moveThrottle = 0;
+      document.addEventListener('mousemove', function (e) {
+        if (!defaultEl || defaultEl.dataset.falling !== '1') return;
+        var now = Date.now();
+        if (now - moveThrottle < 60) return;
+        moveThrottle = now;
+        var nearRadius = 180; // 180px 안의 셀 즉시 trigger
+        var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
+        cells.forEach(function (d) {
+          if (d.dataset.fast === '1') return;
+          var rect = d.getBoundingClientRect();
+          if (rect.top > window.innerHeight + 50) return; // 이미 떨어진 셀
+          var cx = rect.left + rect.width / 2;
+          var cy = rect.top + rect.height / 2;
+          var dist = Math.hypot(cx - e.clientX, cy - e.clientY);
+          if (dist < nearRadius) {
+            d.style.animationDelay = '0s';
+            d.dataset.fast = '1';
+          }
+        });
       });
 
       window.addEventListener('hashchange', applyHash);
