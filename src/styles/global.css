@@ -313,15 +313,18 @@ table tr[data-active='true'] a {
   width: 100%;
   height: auto;
 }
-/* 작품 사이 구분선 + 위아래 여백 */
+/* 작품 사이 구분선 + 위아래 여백 — margin 대신 padding으로만 잡는다.
+   margin-top을 쓰면 이전 카드 콘텐츠의 margin-bottom과 collapse돼 위 여백이
+   더 커진다(비대칭). 선 위 여백 = 이전 카드 padding-bottom,
+   선 아래 여백 = 다음 카드 padding-top — 둘 다 같은 값이라 대칭. */
+.work-card:not(:last-child) {
+  padding-bottom: 3vh;
+}
 .work-card + .work-card {
   border-top: 1px solid var(--ink);
   padding-top: 3vh;
-  margin-top: 3vh;
 }
-/* 구분선 위·아래 여백이 margin-top/padding-top(동일값)으로만 결정되게,
-   카드 첫 자식의 위 margin·마지막 자식의 아래 margin을 0으로 제거한다.
-   (안 그러면 .iframe-wrap/.card-images의 margin이 끼어들어 위 여백이 더 커짐) */
+/* padding 안으로 새어드는 자식 가장자리 margin 제거 (여백을 padding만으로 고정) */
 .work-card > :first-child { margin-top: 0; }
 .work-card > :last-child { margin-bottom: 0; }
 
