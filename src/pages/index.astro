@@ -268,9 +268,9 @@ const defaultMosaic = fs.readFileSync(
           // 강제 reflow → 같은 animation 다시 발동
           void d.offsetWidth;
           d.style.animation = '';
-          // 처음엔 많이, 나중엔 적게 떨어지도록 — 0에 쏠린 분포.
-          // pow(r, 3) → 대부분 0~5s 사이, 일부는 10s+ 까지 천천히.
-          d.style.animationDelay = (Math.pow(Math.random(), 3) * 18).toFixed(3) + 's';
+          // 처음엔 많이, 나중엔 적게 — 강하게 0 쪽으로 쏠린 분포.
+          // pow(r, 5) → 대부분 처음 3~4초 안에 우수수, 마지막 셀은 25초까지 띄엄띄엄.
+          d.style.animationDelay = (Math.pow(Math.random(), 5) * 28).toFixed(3) + 's';
         });
       }
 
