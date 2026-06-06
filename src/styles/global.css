@@ -163,13 +163,16 @@ iframe {
 /* hover 셀: 다른 셀의 5배 폭 (basis 5× var(--cell-w)), shrink 0 */
 .stripe-row .cell:hover  { flex: 0 0 calc(var(--cell-w) * 5); }
 
-/* 3-Column이 띠 만큼 아래로 밀려야 함 (24 × 2 = 48, + 충분한 여유 = 110px) */
+/* 3-Column이 띠 만큼 아래로 밀려야 함 (24 × 2 = 48, + 안전 여유 12px = 60px).
+   stripe-row line-height 등 시각적 미세 영향 대비. */
 .three-col .left,
 .three-col .center,
 .three-col .right {
-  top: 110px;
-  height: calc(100% - 110px);
+  top: 60px;
+  height: calc(100% - 60px);
 }
+/* stripe-row 안 line-height 잔여 픽셀 차단 — height: 24px 정확히 보장 */
+.stripe-row { line-height: 0; }
 
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -198,73 +201,18 @@ iframe {
   left: 30%;
   width: 40%;
   border-right: 1px solid var(--ink);
-  /* 작업영역은 notabook과 동일 — OS 기본 스크롤바, custom 룰 없음 */
+  /* 작업영역은 기본 스크롤바 노출 */
+  scrollbar-width: auto;
+  -ms-overflow-style: auto;
 }
-
-/* ───────────────────────────────────────────────────────────────────────
-   모바일 (≤767px) — 좌측 인트로 + 우측 표 영역을 세로 스택으로 재배치
-   · 좌측 인트로: 완전 숨김
-   · 우측 표: 맨 위 (sticky)
-   · 가운데 작품 카드: 세로 흐름으로 길게 나열
-   · 표 행 클릭 → 해당 카드로 자동 스크롤 (scroll-margin-top 으로 상단 띠 가림 보정)
-   ─────────────────────────────────────────────────────────────────────── */
-/* 600px 미만 — 모바일/좁은 viewport.
-   맥북 viewport는 1000+ 이므로 절대 발동 안 됨.
-   안전 우선: 데스크탑 룰 override 최소화. */
-@media (max-width: 600px) {
-  body {
-    overflow: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  body::-webkit-scrollbar { display: none; }
-  .three-col {
-    display: flex;
-    flex-direction: column;
-    padding-top: 110px;
-  }
-  .three-col .left { display: none; }
-  .three-col .third {
-    position: static;
-    width: 100%;
-    height: auto;
-    top: auto;
-    overflow: visible;
-    padding: 16px;
-  }
-  .three-col .right {
-    order: 1;
-    border-right: none;
-    border-bottom: 1px solid var(--ink);
-  }
-  .three-col .center {
-    order: 2;
-    border-right: none;
-  }
-  /* 표 위 컨트롤 — grid 풀고 flex로 (좁은 폭에 적응) */
-  .table-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    padding-top: 0;
-  }
-  .table-controls > .card-filter { padding-left: 0; }
-  .table-controls > .sort-toggle,
-  .table-controls > .lang-toggle {
-    justify-self: auto;
-    margin-left: auto;
-  }
-  /* 작품 카드 — 표에서 클릭 시 stripe 가리지 않게 보정 */
-  .work-card { scroll-margin-top: 60px; }
-  .work-card + .work-card {
-    padding-top: 4vh;
-    margin-top: 4vh;
-  }
-  .default-state .stripe-mosaic {
-    width: 92vw;
-    max-width: 92vw;
-  }
+.three-col .center::-webkit-scrollbar { width: 10px; height: 10px; }
+.three-col .center::-webkit-scrollbar-track { background: transparent; }
+.three-col .center::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 5px;
+}
+.three-col .center::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.55);
 }
 .three-col .right {
   background-color: white;
@@ -343,8 +291,8 @@ table tr[data-active='true'] a {
 /* 작품 사이 구분선 + 위쪽 여백 */
 .work-card + .work-card {
   border-top: 1px solid var(--ink);
-  padding-top: 5vh;
-  margin-top: 5vh;
+  padding-top: 12vh;
+  margin-top: 12vh;
 }
 
 .work-card .card-title {
