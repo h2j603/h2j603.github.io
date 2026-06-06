@@ -305,14 +305,14 @@ table tr[data-active='true'] a {
 .card-images {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 8px;
   /* 아래 margin은 0 — 미디어→설명 간격은 .card-body의 margin-top이 결정한다
      (한·영 설명 사이 간격과 동일하게 맞추기 위함). */
   margin: 12px 0 0;
 }
 .card-images .image-row {
   display: grid;
-  gap: 14px;
+  gap: 8px;
 }
 .card-images .image-row img {
   width: 100%;
@@ -405,7 +405,7 @@ table.sontable .col-cat { width: 110px; }
 .work-card .card-images {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 8px;
 }
 .work-card .card-images img {
   width: 100%;
