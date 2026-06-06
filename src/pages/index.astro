@@ -470,9 +470,9 @@ const defaultMosaic = fs.readFileSync(
         wrapKoreanIn(document.body);
       }
 
-      // 줄무늬 띠 — viewport 폭에 따라 셀 개수 동적 계산 (정사각형 비율 유지, 딱 들어맞음)
+      // 줄무늬 띠 — viewport 폭에 따라 셀 개수 동적 계산
       var CELL_HEIGHT = 20;
-      var CELL_RATIO = 1; // width / height — 1이면 정사각형
+      var CELL_RATIO = 0.5; // width / height — 0.5면 세로가 가로의 2배 길쭉
       function buildStripe() {
         var rows = document.querySelectorAll('.stripe-row');
         if (!rows.length) return;
