@@ -104,4 +104,13 @@
     width: 92vw;
     max-width: 92vw;
   }
+
+  /* 진입 인트로 — 모자이크가 전체화면을 덮어 메인을 가리고(다른 건 안 보임),
+     다 떨어지면 JS가 .intro 제거 + hidden 처리해 메인화면을 노출한다.
+     z-index는 stripe-top(100)보다 위. */
+  .default-state.intro {
+    z-index: 200;
+    background: var(--bg);
+    pointer-events: auto;
+  }
 }
