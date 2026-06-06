@@ -299,15 +299,18 @@ table tr[data-active='true'] a {
 }
 /* 이미지 그리드 — layout 필드 기반.
    예) layout: 2,1,3  →  image-row 3개 (2단/1단/3단). */
+/* 이미지 그리드 간격 — 행 사이(세로)와 열 사이(가로)를 같은 값으로 둬서
+   여러 장을 다양한 단으로 배치해도 상하좌우 간격이 일정하게 한다.
+   (.work-card .card-images의 gap도 같은 값으로 맞춰야 함) */
 .card-images {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
   margin: 12px 0;
 }
 .card-images .image-row {
   display: grid;
-  gap: 8px;
+  gap: 14px;
 }
 .card-images .image-row img {
   width: 100%;
