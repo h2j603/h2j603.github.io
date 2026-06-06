@@ -167,16 +167,16 @@ iframe {
   line-height: 1;
   letter-spacing: 0.02em;
   padding: 6px 14px;
-  border: 2px solid var(--ink);
+  border: 2px solid #000;
   border-radius: 999px;
   background: transparent;     /* fill 없음 — 윤곽선만 */
-  color: var(--ink);
+  color: #000;
   text-decoration: none;
   cursor: pointer;
 }
 .top-nav .nav-pill:hover {
-  background: var(--ink);
-  color: var(--bg);
+  background: #000;
+  color: #fff;
 }
 .stripe-row {
   display: flex;
