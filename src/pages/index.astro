@@ -275,8 +275,11 @@ const defaultMosaic = fs.readFileSync(
 
       // 모자이크 셀이 오른쪽 위 → 왼쪽 아래 대각선 순서로 떨어짐.
       // 100% 순차는 아니고 일부 셀은 예외 (random jitter).
-      function triggerMosaicFall() {
-        if (!defaultEl) return;
+      // speed: 1=기본, 1.5=1.5배 빠름(모바일 인트로). 전체 애니메이션 소요(ms) 반환.
+      function triggerMosaicFall(speed) {
+        if (!defaultEl) return 0;
+        speed = speed || 1;
+        var dur = 2.6 / speed;
         var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
         var maxRow = 1, maxCol = 1;
         var positions = [];
@@ -292,10 +295,11 @@ const defaultMosaic = fs.readFileSync(
           if (col > maxCol) maxCol = col;
         });
         var maxProgress = (maxCol - 1) + (maxRow - 1);
+        var maxDelay = 0;
         positions.forEach(function (p) {
           p.d.style.animation = 'none';
           void p.d.offsetWidth; // reflow
-          p.d.style.animation = 'cell-drop 2.6s cubic-bezier(0.95, 0, 1, 0.45) forwards';
+          p.d.style.animation = 'cell-drop ' + dur.toFixed(3) + 's cubic-bezier(0.95, 0, 1, 0.45) forwards';
           // 우상 → 좌하 대각선 진행도 (0~1)
           var progress = ((maxCol - p.col) + (p.row - 1)) / maxProgress;
           var delay;
@@ -305,9 +309,12 @@ const defaultMosaic = fs.readFileSync(
             delay = progress * 12 + (Math.random() - 0.5) * 1.7;
           }
           if (delay < 0) delay = 0;
+          delay = delay / speed;
+          if (delay > maxDelay) maxDelay = delay;
           p.d.style.animationDelay = delay.toFixed(3) + 's';
         });
         defaultEl.dataset.falling = '1';
+        return (maxDelay + dur) * 1000;
       }
 
       function applyHash() {
@@ -594,10 +601,22 @@ const defaultMosaic = fs.readFileSync(
       applyHash();
       markMentions();
       wrapAllKorean();
-      // 페이지 로드 시 모자이크 자동 시작
+      // 페이지 로드 시 모자이크 자동 시작.
+      // 모바일(≤600px): 인트로 모드 — 모자이크만 전체화면으로 1.5배 빠르게 떨어지고,
+      //   다 떨어지면 오버레이를 숨겨 메인화면 노출.
+      // 데스크탑: 기존처럼 배경 장식 오버레이.
       if (defaultEl) {
         defaultEl.hidden = false;
-        triggerMosaicFall();
+        if (window.matchMedia('(max-width: 600px)').matches) {
+          defaultEl.classList.add('intro');
+          var introTotal = triggerMosaicFall(1.5);
+          setTimeout(function () {
+            defaultEl.classList.remove('intro');
+            defaultEl.hidden = true;
+          }, introTotal + 150);
+        } else {
+          triggerMosaicFall();
+        }
       }
     })();
   </script>
