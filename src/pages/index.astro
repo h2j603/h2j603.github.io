@@ -318,13 +318,22 @@ const defaultMosaic = fs.readFileSync(
         var hasSlug = slug && cards.some(function (c) { return c.id === slug; });
         // 모든 작품 카드 항상 보임 — 한 줄로 이어진 스크롤.
         // hash가 있으면 그 카드로 scroll, 없으면 맨 위.
+        // 모바일(<=600px)에선 .center가 스크롤 컨테이너가 아니라 페이지 전체가
+        // 스크롤되므로 center.scrollTo는 무효 → window/scrollIntoView 사용.
+        var isMobile = window.matchMedia('(max-width: 600px)').matches;
         if (hasSlug) {
           var target = document.getElementById(slug);
-          if (target && center) {
-            center.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
+          if (target) {
+            if (isMobile) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else if (center) {
+              center.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
+            }
           }
-        } else {
-          if (center) center.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (isMobile) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (center) {
+          center.scrollTo({ top: 0, behavior: 'smooth' });
         }
       }
 
