@@ -73,6 +73,11 @@
     gap: 20px;
   }
 
+  /* 미디어(이미지/iframe)→설명 간격도 한·영 설명 사이 간격(20px)과 동일하게 */
+  .work-card .card-body {
+    margin-top: 20px;
+  }
+
   /* 작품 카드 — 표에서 클릭 시 stripe 가리지 않게 보정 */
   .work-card { scroll-margin-top: 70px; }
   .work-card:not(:last-child) {

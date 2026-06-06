@@ -306,7 +306,9 @@ table tr[data-active='true'] a {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin: 12px 0;
+  /* 아래 margin은 0 — 미디어→설명 간격은 .card-body의 margin-top이 결정한다
+     (한·영 설명 사이 간격과 동일하게 맞추기 위함). */
+  margin: 12px 0 0;
 }
 .card-images .image-row {
   display: grid;
@@ -386,6 +388,12 @@ table.sontable .col-cat { width: 110px; }
   letter-spacing: 0.06em;
   margin: 4px 0 12px;
   padding-top: 0;
+}
+
+/* 미디어(이미지/iframe)→설명 간격 — 한·영 설명 사이 간격(.bilingual gap)과
+   동일하게 맞춘다. 데스크탑 16px(=.bilingual gap), 모바일 20px(mobile.css). */
+.work-card .card-body {
+  margin-top: 16px;
 }
 
 /* 작품 카드 본문 — 그룹 사이 hr 없이 적당한 여백만 */
@@ -497,7 +505,8 @@ table.sontable .col-cat { width: 110px; }
   width: 100%;
   padding-top: 65%;
   overflow: hidden;
-  margin: 20px 0;
+  /* 아래 margin은 0 — 미디어→설명 간격은 .card-body의 margin-top이 결정한다. */
+  margin: 20px 0 0;
 }
 .iframe-wrap .embedded-iframe {
   position: absolute;
