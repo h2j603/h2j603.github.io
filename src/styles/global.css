@@ -432,9 +432,13 @@ table.sontable .col-cat { width: 110px; }
 .intro a,
 .work-card .card-body a,
 .work-card .card-link {
-  /* 데스크탑: 한 줄 유지(끊지 않음). 모바일(≤600px, mobile.css)에선
-     inline-block + max-width로 본문 폭 안에 가두고 단어(어절) 단위 줄바꿈. */
-  display: inline;
+  /* 항상 inline-block + nowrap = 한 줄 pill (데스크탑은 전체 표시).
+     모바일(≤600px, mobile.css)에선 여기에 max-width+overflow를 더해
+     본문 폭을 넘는 긴 라벨을 말줄임표로 자른다.
+     base를 inline으로 두면 모바일 override(inline-block)와 display가 충돌해
+     번들 순서에 따라 inline으로 덮이고, inline은 overflow/max-width를 무시해
+     말줄임표가 안 먹는다 → base부터 inline-block으로 고정. */
+  display: inline-block;
   padding: 1px 8px 1px 5px;
   background: #ececec;
   border-radius: 999px;
