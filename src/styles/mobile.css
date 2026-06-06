@@ -36,10 +36,34 @@
     order: 1;
     border-right: none;
   }
+  /* 가운데 카드 컬럼 — 콘텐츠 저장소로만 사용(평소엔 비어 보임).
+     모자이크(#__default)는 position:fixed라 여기 자식이어도 계속 보이므로
+     컬럼을 display:none 하지 않고, 안의 work-card만 숨긴다. */
   .three-col .center {
     order: 2;
     border-right: none;
+    padding: 0;
   }
+  .three-col .center .work-card { display: none; }
+
+  /* ── 표 아코디언 — 행 탭 시 그 아래로 작업이 펼쳐짐 ── */
+  tr[data-slug] { scroll-margin-top: 56px; }
+  .accordion-detail > td {
+    padding: 0;
+    border-top: 0;
+  }
+  .accordion-panel {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+  }
+  .accordion-detail .work-card {
+    display: block;
+    padding: 4px 2px 24px;
+  }
+  /* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 (미디어+본문만) */
+  .accordion-detail .card-title,
+  .accordion-detail .card-meta { display: none; }
 
   /* 표 위 컨트롤 — 모바일 2줄:
      1줄: All(왼쪽) ··· ↓·EN(오른쪽) / 2줄: 태그들(양쪽정렬) */
