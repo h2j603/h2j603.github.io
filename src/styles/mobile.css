@@ -46,11 +46,11 @@
   }
   .three-col .center .work-card { display: none; }
 
-  /* 제목 칸을 표 왼쪽 끝(= 위 컨트롤 All과 같은 라인)에 flush 정렬 */
-  table.sontable td:first-child { padding-left: 0; }
-
   /* ── 표 아코디언 — 행 탭 시 그 아래로 작업이 펼쳐짐 ── */
   tr[data-slug] { scroll-margin-top: 56px; }
+  /* tr/td 둘 다 border-top 제거 — tr 셀렉터의 border-top(1px)이
+     border-collapse에서 그려져 제목↔이미지 사이에 선으로 보였음 */
+  .accordion-detail,
   .accordion-detail > td {
     padding: 0;
     border-top: 0;
@@ -60,9 +60,10 @@
     overflow: hidden;
     transition: max-height 0.35s ease;
   }
+  /* 좌우 10px — 본문을 표 제목 왼쪽(셀 padding 10px)에 맞추고 오른쪽도 동일하게 */
   .accordion-detail .work-card {
     display: block;
-    padding: 4px 2px 24px;
+    padding: 4px 10px 24px;
   }
   /* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 (미디어+본문만) */
   .accordion-detail .card-title,
