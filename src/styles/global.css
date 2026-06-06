@@ -432,13 +432,9 @@ table.sontable .col-cat { width: 110px; }
 .intro a,
 .work-card .card-body a,
 .work-card .card-link {
-  /* 데스크탑: white-space:nowrap으로 한 줄 유지(끊지 않음).
-     모바일(≤600px, mobile.css): white-space:normal로 단어(어절) 단위 줄바꿈.
-     inline + box-decoration-break:clone — wrap 시 각 줄 조각마다 pill 배경·
-     둥근 모서리·padding이 그대로 적용된다. */
+  /* 데스크탑: 한 줄 유지(끊지 않음). 모바일(≤600px, mobile.css)에선
+     inline-block + max-width로 본문 폭 안에 가두고 단어(어절) 단위 줄바꿈. */
   display: inline;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
   padding: 1px 8px 1px 5px;
   background: #ececec;
   border-radius: 999px;
