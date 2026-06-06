@@ -152,8 +152,9 @@ iframe {
   overflow: hidden;
 }
 .stripe-row .cell {
-  /* JS가 row마다 --cell-w를 셋팅. shrink 1 — hover 시 다른 셀이 줄어듦. */
-  flex: 0 1 var(--cell-w, 1.667%);
+  /* JS가 row마다 --cell-w를 셋팅. grow 1 — rounding 잔여 분배해서 row 꽉 채움.
+     hover 시엔 일부 셀이 calc(...×5)로 늘어나면서 다른 셀이 줄어듦. */
+  flex: 1 1 var(--cell-w, 1.667%);
   min-width: 0;
   transition: flex-basis 0.25s ease;
 }
