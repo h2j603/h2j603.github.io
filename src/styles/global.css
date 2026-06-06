@@ -313,6 +313,17 @@ table tr[data-active='true'] a {
   margin-top: 16px;
 }
 
+/* 작품 카드의 이미지 시퀀스 — 여러 이미지를 세로로 쌓음 */
+.work-card .card-images {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.work-card .card-images img {
+  width: 100%;
+  height: auto;
+}
+
 /* 한·영 좌우 병기 — 영어 왼쪽 / 한국어 오른쪽 */
 .bilingual {
   display: grid;
