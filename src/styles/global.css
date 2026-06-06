@@ -44,6 +44,9 @@ body {
   font-style: normal;
   color: var(--ink);
   background: var(--bg);
+  /* 한글 어절(단어) 단위 줄바꿈. CJK 기본 글자단위 끊김 방지. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 /* 텍스트 드래그 하이라이트 — 포인트 보라 + 흰 텍스트 */
@@ -457,13 +460,26 @@ table.sontable .col-cat { width: 110px; }
 }
 .default-state[hidden] { display: none; }
 
-/* 인트로 제목 "hyuk.xyz/about"에서 hyuk.xyz 부분만 홈 링크 */
-.intro h2 .home-link {
+/* 인트로 제목 "hyuk.xyz/about"에서 hyuk.xyz 부분만 홈 링크.
+   .intro a의 pill·↗ 효과는 Are.na 본문 링크 전용 — 여기선 일반 텍스트로 reset.
+   호버 시 font-weight만 두껍게. */
+.intro h2 .home-link,
+.intro h2 .home-link:hover {
+  display: inline;
+  padding: 0;
+  background: none;
+  border-radius: 0;
   color: inherit;
   text-decoration: none;
+  font-style: inherit;
+  line-height: inherit;
+  white-space: inherit;
+}
+.intro h2 .home-link::before {
+  content: none;
 }
 .intro h2 .home-link:hover {
-  text-decoration: underline;
+  font-weight: 700;
 }
 .default-state .stripe-mosaic {
   width: 80vw;
