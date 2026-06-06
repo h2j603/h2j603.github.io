@@ -521,7 +521,7 @@ const defaultMosaic = fs.readFileSync(
         d.style.top = y + 'px';
         d.style.background = color;
         document.body.appendChild(d);
-        setTimeout(function () { d.remove(); }, 2000);
+        setTimeout(function () { d.remove(); }, 2200);
       }
 
       window.addEventListener('hashchange', applyHash);
