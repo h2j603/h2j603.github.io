@@ -64,6 +64,8 @@
   /* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 (미디어+본문만) */
   .accordion-detail .card-title,
   .accordion-detail .card-meta { display: none; }
+  /* 펼침 자체가 활성 표시이므로 활성 행 제목 밑줄(제목↔이미지 사이 윤곽선) 제거 */
+  table tr[data-active='true'] a { border-bottom: 0; }
 
   /* 표 위 컨트롤 — 모바일 2줄:
      1줄: All(왼쪽) ··· ↓·EN(오른쪽) / 2줄: 태그들(양쪽정렬) */
