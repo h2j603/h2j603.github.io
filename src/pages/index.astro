@@ -259,13 +259,14 @@ const defaultMosaic = fs.readFileSync(
 
       // 모자이크 셀이 오른쪽 위 → 왼쪽 아래 대각선 순서로 떨어짐.
       // 100% 순차는 아니고 일부 셀은 예외 (random jitter).
-      // 마우스 가까이 있는 셀은 base delay가 더 작음 (클릭 위치 기준).
-      function triggerMosaicFall(mouseX, mouseY) {
+      function triggerMosaicFall() {
         if (!defaultEl) return;
         var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
         var maxRow = 1, maxCol = 1;
         var positions = [];
         cells.forEach(function (d) {
+          delete d.dataset.fast;
+          delete d.dataset.skip;
           var ga = (d.style.gridArea || '').replace(/\s/g, '');
           var parts = ga.split('/');
           var row = parseInt(parts[0], 10) || 1;
@@ -275,8 +276,6 @@ const defaultMosaic = fs.readFileSync(
           if (col > maxCol) maxCol = col;
         });
         var maxProgress = (maxCol - 1) + (maxRow - 1);
-        // 마우스 영향력 반경 — viewport 대각선의 절반
-        var radius = Math.hypot(window.innerWidth, window.innerHeight) * 0.5;
         positions.forEach(function (p) {
           p.d.style.animation = 'none';
           void p.d.offsetWidth; // reflow
@@ -290,32 +289,9 @@ const defaultMosaic = fs.readFileSync(
             delay = progress * 12 + (Math.random() - 0.5) * 1.7;
           }
           if (delay < 0) delay = 0;
-          // 마우스 거리 가중치 — 가까울수록 delay 축소
-          if (mouseX != null && mouseY != null) {
-            var rect = p.d.getBoundingClientRect();
-            var cx = rect.left + rect.width / 2;
-            var cy = rect.top + rect.height / 2;
-            var dist = Math.hypot(cx - mouseX, cy - mouseY);
-            var distFactor = Math.min(1, dist / radius); // 0(가까움) ~ 1(멀음)
-            // 가까운 셀: delay × 0.1, 먼 셀: delay × 1.0
-            delay = delay * (0.1 + 0.9 * distFactor);
-          }
-          p.d.dataset.baseDelay = delay.toFixed(3);
           p.d.style.animationDelay = delay.toFixed(3) + 's';
         });
-      }
-      // 셀을 다시 정적 상태(자기 자리)로 되돌림
-      function resetMosaic() {
-        if (!defaultEl) return;
-        var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
-        cells.forEach(function (d) {
-          d.style.animation = 'none';
-          d.style.animationDelay = '0s';
-          delete d.dataset.fast;
-          delete d.dataset.baseDelay;
-        });
-        defaultEl.dataset.waiting = '1';
-        defaultEl.dataset.falling = '';
+        defaultEl.dataset.falling = '1';
       }
 
       function applyHash() {
@@ -545,55 +521,49 @@ const defaultMosaic = fs.readFileSync(
       document.addEventListener('DOMContentLoaded', buildStripe);
       buildStripe();
 
-      // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 정적 상태로 reset
-      // (다음 화면 클릭에 다시 떨어지기 시작)
+      // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작
       document.querySelectorAll('[data-home]').forEach(function (a) {
         a.addEventListener('click', function (e) {
           e.preventDefault();
-          e.stopPropagation(); // 아래 document click trigger 안 발동
           if (location.hash) {
             history.pushState(null, '', location.pathname);
           }
           applyHash();
           if (defaultEl) {
             defaultEl.hidden = false;
-            resetMosaic();
+            triggerMosaicFall();
           }
         });
       });
 
-      // 화면 아무데나 첫 클릭 → 모자이크 떨어짐 시작 (클릭 위치 기준 가속)
-      document.addEventListener('click', function (e) {
-        if (defaultEl && defaultEl.dataset.waiting === '1') {
-          defaultEl.dataset.waiting = '';
-          defaultEl.dataset.falling = '1';
-          triggerMosaicFall(e.clientX, e.clientY);
-        }
-      });
-
-      // 떨어지는 중 mousemove — 마우스 주위 원형 영역의 셀들이 낱개로 자연스럽게 떨어짐
+      // 떨어지는 중 mousemove — 마우스 주위 원형 영역의 셀들이 낱개로 자연스럽게 떨어짐.
+      // 영역에 들어온 셀 중 50%만 trigger, 나머지 절반은 영구히 영향 무시.
       var moveThrottle = 0;
       document.addEventListener('mousemove', function (e) {
         if (!defaultEl || defaultEl.dataset.falling !== '1') return;
         var now = Date.now();
         if (now - moveThrottle < 60) return;
         moveThrottle = now;
-        var nearRadius = 200; // 200px 원형 영역
+        var nearRadius = 110; // 좁은 원형 영역
         var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
         cells.forEach(function (d) {
-          if (d.dataset.fast === '1') return;
+          if (d.dataset.fast === '1' || d.dataset.skip === '1') return;
           var rect = d.getBoundingClientRect();
           if (rect.top > window.innerHeight + 50) return;
           var cx = rect.left + rect.width / 2;
           var cy = rect.top + rect.height / 2;
           var dist = Math.hypot(cx - e.clientX, cy - e.clientY);
           if (dist < nearRadius) {
-            // 즉시 0s가 아니라 짧은 random delay — 낱개로 자연스럽게.
-            // 가까울수록 빨리, 먼 셀은 약간 늦게.
-            var ratio = dist / nearRadius;
-            var delay = Math.random() * 0.5 + ratio * 0.6;
-            d.style.animationDelay = delay.toFixed(3) + 's';
-            d.dataset.fast = '1';
+            if (Math.random() < 0.5) {
+              // 떨어뜨림 — 가까울수록 빨리, 먼 셀은 약간 늦게
+              var ratio = dist / nearRadius;
+              var delay = Math.random() * 0.5 + ratio * 0.6;
+              d.style.animationDelay = delay.toFixed(3) + 's';
+              d.dataset.fast = '1';
+            } else {
+              // 마우스 영향 영구히 무시
+              d.dataset.skip = '1';
+            }
           }
         });
       });
@@ -606,10 +576,10 @@ const defaultMosaic = fs.readFileSync(
       applyHash();
       markMentions();
       wrapAllKorean();
-      // 페이지 로드 시 모자이크 보이게 + 정적 상태 (첫 클릭 대기)
+      // 페이지 로드 시 모자이크 자동 시작
       if (defaultEl) {
         defaultEl.hidden = false;
-        resetMosaic();
+        triggerMosaicFall();
       }
     })();
   </script>
