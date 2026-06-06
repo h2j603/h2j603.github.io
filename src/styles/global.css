@@ -441,6 +441,14 @@ table.sontable .col-cat { width: 110px; }
   font-style: normal;
   line-height: 1.4;
   white-space: nowrap;
+  /* pill은 줄바꿈이 안 되므로(white-space:nowrap) 링크 텍스트가 길면 통째로
+     다음 줄로 밀려 흐름이 깨진다. 최대 너비를 두고 말줄임표로 적당히 자른다.
+     overflow:hidden은 inline-block baseline을 bottom edge로 바꾸므로
+     vertical-align:bottom으로 주변 텍스트와 정렬 보정. */
+  max-width: min(100%, 18em);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
 }
 .intro a::before,
 .work-card .card-body a::before,
