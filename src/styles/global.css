@@ -21,7 +21,7 @@
    디자인 토큰 — hyuk repo 원본을 lawngreen→#b362ff, orangered→#775d4f로 치환
    ─────────────────────────────────────────────────────────────────────── */
 :root {
-  --bg: #ffffff;
+  --bg: #f4f4f4;
   --ink: #775d4f;          /* hyuk repo의 orangered → 브라운 */
   --accent: #b362ff;       /* hyuk repo의 lawngreen → 보라 */
 }
@@ -200,14 +200,14 @@ iframe {
 .three-col .third::-webkit-scrollbar { display: none; }
 
 .three-col .left {
-  background-color: white;
+  background-color: var(--bg);
   width: 30%;
   left: 0;
   border-right: 1px solid var(--ink);
   overflow-y: hidden;
 }
 .three-col .center {
-  background-color: white;
+  background-color: var(--bg);
   left: 30%;
   width: 40%;
   border-right: 1px solid var(--ink);
@@ -225,7 +225,7 @@ iframe {
   background: rgba(0, 0, 0, 0.55);
 }
 .three-col .right {
-  background-color: white;
+  background-color: var(--bg);
   left: 70%;
   width: 30%;
   /* 표가 길어지면 스크롤 가능하게 */
