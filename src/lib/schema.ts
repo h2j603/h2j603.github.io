@@ -31,7 +31,10 @@ export const tagSchema = z.enum(TAGS);
 
 export const workSchema = z.object({
   slug: z.string().min(1),
+  /** 한국어 제목 (채널 이름의 '/' 앞부분). */
   title: z.string().default(''),
+  /** 영어 제목 (채널 이름의 '/' 뒷부분). '/' 없으면 title과 같음. */
+  titleEn: z.string().default(''),
   year: z.string().default(''),
   medium: z.string().default(''),
   size: z.string().default(''),
