@@ -162,12 +162,12 @@ iframe {
 /* hover 셀: 다른 셀의 5배 폭 (basis 5× var(--cell-w)), shrink 0 */
 .stripe-row .cell:hover  { flex: 0 0 calc(var(--cell-w) * 5); }
 
-/* 3-Column이 띠 만큼 아래로 밀려야 함 (20 × 3 = 60) */
+/* 3-Column이 띠 만큼 아래로 밀려야 함 (20 × 2 = 40) */
 .three-col .left,
 .three-col .center,
 .three-col .right {
-  top: 60px;
-  height: calc(100% - 60px);
+  top: 40px;
+  height: calc(100% - 40px);
 }
 
 
@@ -326,7 +326,6 @@ table.sontable .col-cat { width: 110px; }
 .work-card .card-meta {
   font-size: 10px;
   letter-spacing: 0.06em;
-  text-transform: uppercase;
   margin: 4px 0 12px;
   padding-top: 0;
 }

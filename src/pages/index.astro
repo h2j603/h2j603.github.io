@@ -15,8 +15,8 @@ const usedTags = TAGS.filter((t) => works.some((w) => w.tags.includes(t)));
 
 function categoryOf(w: (typeof works)[number]): string {
   const t = w.tags.find((x) => x !== 'web');
-  if (t) return t.charAt(0).toUpperCase() + t.slice(1);
-  if (w.tags.includes('web')) return 'Web';
+  if (t) return t;
+  if (w.tags.includes('web')) return 'web';
   return '—';
 }
 
@@ -32,7 +32,6 @@ const defaultMosaic = fs.readFileSync(
 
 <Base title="hyuk.xyz">
   <div class="stripe-top" aria-hidden="true">
-    <div class="stripe-row"></div>
     <div class="stripe-row"></div>
     <div class="stripe-row"></div>
   </div>
