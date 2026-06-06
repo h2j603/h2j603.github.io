@@ -197,6 +197,11 @@ iframe {
   background-color: white;
   left: 30%;
   width: 40%;
+  /* 작업영역은 기본 스크롤바 노출 */
+  scrollbar-width: auto;
+  -ms-overflow-style: auto;
+}
+.three-col .center::-webkit-scrollbar { display: initial; width: 8px; }
   border-right: 1px solid var(--ink);
 }
 .three-col .right {
@@ -272,6 +277,12 @@ table tr[data-active='true'] a {
 .work-card {
   /* 본문 다 읽고 더 스크롤할 수 있는 여유 — 다음 작품으로 너무 빨리 안 넘어가게 */
   padding-bottom: 24vh;
+}
+/* 작품 사이 구분선 + 위쪽 여백 */
+.work-card + .work-card {
+  border-top: 1px solid var(--ink);
+  padding-top: 12vh;
+  margin-top: 12vh;
 }
 
 .work-card .card-title {

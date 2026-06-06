@@ -106,7 +106,7 @@ const defaultMosaic = fs.readFileSync(
             const isWeb = w.tags.includes('web');
             const hasMedia = (isWeb && externalUrl) || cover;
             return (
-              <article class="work-card" id={w.slug} data-tags={w.tags.join(' ')} hidden>
+              <article class="work-card" id={w.slug} data-tags={w.tags.join(' ')}>
                 <h2 class="card-title">
                   {w.titleEn && w.titleEn !== w.title && (
                     <span class="card-title-en" lang="en">{w.titleEn}</span>
@@ -296,23 +296,16 @@ const defaultMosaic = fs.readFileSync(
       function applyHash() {
         var slug = (location.hash || '').replace(/^#/, '');
         var hasSlug = slug && cards.some(function (c) { return c.id === slug; });
-        // 모자이크는 작품 선택과 무관하게 떨어질 때까지 그대로 둠.
-        // (페이지 로드 시 한 번만 보이게 + trigger 처리)
-        if (!hasSlug) {
-          cards.forEach(function (c) { c.hidden = true; });
-          rows.forEach(function (tr) { tr.setAttribute('data-active', 'false'); });
+        // 모든 작품 카드 항상 보임 — 한 줄로 이어진 스크롤.
+        // hash가 있으면 그 카드로 scroll, 없으면 맨 위.
+        if (hasSlug) {
+          var target = document.getElementById(slug);
+          if (target && center) {
+            center.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
+          }
         } else {
-          cards.forEach(function (c) { c.hidden = c.id !== slug; });
-          rows.forEach(function (tr) {
-            tr.setAttribute('data-active', String(tr.getAttribute('data-slug') === slug));
-          });
+          if (center) center.scrollTo({ top: 0, behavior: 'smooth' });
         }
-        // 브라우저 native anchor scroll 무력화 (다음 프레임에서도)
-        if (center) center.scrollTop = 0;
-        requestAnimationFrame(function () {
-          if (center) center.scrollTop = 0;
-          window.scrollTo(0, 0);
-        });
       }
 
       // 표 행 클릭 시 브라우저의 anchor scroll 자체를 막기 (hashchange는 그대로 발동)
@@ -374,60 +367,44 @@ const defaultMosaic = fs.readFileSync(
         });
       }
 
-      // 휠/터치패드 스크롤 → 카드 내부 끝까지 스크롤되면 다음/이전 작품으로 전환.
-      // 표 필터가 걸려 있으면 표에 보이는 작품만 순회.
-      function visibleSlugs() {
-        return rows.filter(function (tr) { return !tr.hidden; })
-                   .map(function (tr) { return tr.getAttribute('data-slug'); });
-      }
-      function currentSlug() {
-        return (location.hash || '').replace(/^#/, '');
-      }
-      function goRelative(delta) {
-        var list = visibleSlugs();
-        if (list.length === 0) return false;
-        var cur = currentSlug();
-        var idx = list.indexOf(cur);
-        var next;
-        if (idx < 0) next = delta > 0 ? list[0] : list[list.length - 1];
-        else next = list[idx + delta];
-        if (!next) return false;
-        location.hash = '#' + next;
-        return true;
-      }
-
-      var wheelLock = false;
-      if (center) {
-        center.addEventListener('wheel', function (e) {
-          if (wheelLock) return;
-          // 끝/시작 도달 후 약간의 버퍼 — 본문 끝에서 휠 1번엔 안 넘어가고
-          // 2번 (lock 풀린 다음) 의도적 휠에 다음으로
-          var atBottom = center.scrollTop + center.clientHeight >= center.scrollHeight - 4;
-          var atTop = center.scrollTop <= 0;
-          if (e.deltaY > 0 && atBottom) {
-            if (goRelative(1)) {
-              e.preventDefault();
-              wheelLock = true;
-              setTimeout(function () { wheelLock = false; }, 700);
+      // 스크롤 위치에 따라 표 active 행 + URL hash 갱신.
+      // IntersectionObserver — 화면 중앙에 가장 가까운 카드 감지.
+      if (center && 'IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          var best = null;
+          var bestRatio = 0;
+          entries.forEach(function (e) {
+            if (e.intersectionRatio > bestRatio) {
+              bestRatio = e.intersectionRatio;
+              best = e.target;
             }
-          } else if (e.deltaY < 0 && atTop) {
-            if (goRelative(-1)) {
-              e.preventDefault();
-              wheelLock = true;
-              setTimeout(function () { wheelLock = false; }, 700);
+          });
+          // 현재 활성 카드 중 가장 많이 보이는 걸 선택
+          var active = null;
+          var activeRatio = 0;
+          cards.forEach(function (c) {
+            var rect = c.getBoundingClientRect();
+            var centerRect = center.getBoundingClientRect();
+            var visTop = Math.max(rect.top, centerRect.top);
+            var visBottom = Math.min(rect.bottom, centerRect.bottom);
+            var vis = Math.max(0, visBottom - visTop);
+            if (vis > activeRatio) {
+              activeRatio = vis;
+              active = c;
+            }
+          });
+          if (active) {
+            var slug = active.id;
+            rows.forEach(function (tr) {
+              tr.setAttribute('data-active', String(tr.getAttribute('data-slug') === slug));
+            });
+            // URL hash silently 갱신 (scroll 트리거 없이)
+            if (location.hash !== '#' + slug) {
+              history.replaceState(null, '', '#' + slug);
             }
           }
-        }, { passive: false });
-
-        // 키보드 단축키 — ↑/↓ 와 PageUp/PageDown 으로도 이동
-        window.addEventListener('keydown', function (e) {
-          if (e.target && /input|textarea/i.test(e.target.tagName)) return;
-          if (e.key === 'ArrowDown' || e.key === 'PageDown') {
-            if (goRelative(1)) e.preventDefault();
-          } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-            if (goRelative(-1)) e.preventDefault();
-          }
-        });
+        }, { root: center, threshold: [0, 0.25, 0.5, 0.75, 1] });
+        cards.forEach(function (c) { io.observe(c); });
       }
 
       // @로 시작하는 링크 텍스트 → mention 클래스 (인물 아이콘 + 갈색)
