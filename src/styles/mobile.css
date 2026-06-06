@@ -41,19 +41,36 @@
     border-right: none;
   }
 
-  /* 표 위 컨트롤 — grid 풀고 flex로 (좁은 폭 적응) */
+  /* 표 위 컨트롤 — 모바일 3줄 왼쪽정렬:
+     1줄 All / 2줄 나머지 태그 / 3줄 ↓·EN */
   .table-controls {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    align-items: center;
+    align-items: flex-start;
+    justify-content: flex-start;
     padding-top: 0;
   }
-  .table-controls > .card-filter { padding-left: 0; }
+  /* card-filter가 한 줄을 다 차지 → ↓·EN 버튼이 다음 줄(3줄)로 내려감 */
+  .table-controls > .card-filter {
+    flex-basis: 100%;
+    padding-left: 0;
+  }
+  /* card-filter 내부: All(1줄) / 나머지 태그(2줄).
+     0높이 full-width ::after를 order로 All과 태그 사이에 끼워 줄바꿈 유도 */
+  .card-filter::after {
+    content: "";
+    flex-basis: 100%;
+    height: 0;
+    order: 1;
+  }
+  .card-filter .filter-link:not([data-filter='all']) {
+    order: 2;
+  }
+  /* ↓·EN 왼쪽정렬 (기존 margin-left:auto 제거) */
   .table-controls > .sort-toggle,
   .table-controls > .lang-toggle {
-    justify-self: auto;
-    margin-left: auto;
+    margin-left: 0;
   }
 
   /* 본문 링크 pill — 모바일에선 단어(어절) 단위로 줄바꿈 허용.
