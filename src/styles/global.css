@@ -145,6 +145,10 @@ iframe {
   left: 0;
   right: 0;
   z-index: 100;
+  /* row 사이 공백 텍스트 노드가 body line-height(~15px) 만큼 차지하지 않게 차단.
+     이게 시각적으로 stripe를 50~63px로 두껍게 보이게 만들던 진범. */
+  line-height: 0;
+  font-size: 0;
 }
 .stripe-row {
   display: flex;
