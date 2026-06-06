@@ -459,7 +459,9 @@ table.sontable .col-cat { width: 110px; }
   display: inline;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  padding: 1px 8px 1px 5px;
+  /* 상하 padding 0 — pill 높이(위아래여백)를 조금 줄임.
+     (inline pill 배경 높이는 line-height가 아니라 padding이 좌우함) */
+  padding: 0 8px 0 5px;
   background: #e8e8e8;
   border-radius: 999px;
   color: var(--accent);
