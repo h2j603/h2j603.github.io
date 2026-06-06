@@ -268,8 +268,9 @@ const defaultMosaic = fs.readFileSync(
           // 강제 reflow → 같은 animation 다시 발동
           void d.offsetWidth;
           d.style.animation = '';
-          // 0~6초 random delay — 셀이 흩어져서 떨어짐
-          d.style.animationDelay = (Math.random() * 6).toFixed(3) + 's';
+          // 처음엔 많이, 나중엔 적게 떨어지도록 — 0에 쏠린 분포.
+          // pow(r, 3) → 대부분 0~5s 사이, 일부는 10s+ 까지 천천히.
+          d.style.animationDelay = (Math.pow(Math.random(), 3) * 18).toFixed(3) + 's';
         });
       }
 
