@@ -554,7 +554,7 @@ const defaultMosaic = fs.readFileSync(
           var cy = rect.top + rect.height / 2;
           var dist = Math.hypot(cx - e.clientX, cy - e.clientY);
           if (dist < nearRadius) {
-            if (Math.random() < 0.5) {
+            if (Math.random() < 0.7) {
               // animation을 새로 부여 — delay만 바꾸면 elapsed가 누적돼서
               // duration 초과 시 final state(화면 밖)로 점프 = 사라져 보임.
               var ratio = dist / nearRadius;
