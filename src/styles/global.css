@@ -454,7 +454,9 @@ table.sontable .col-cat { width: 110px; }
 .work-card .card-link::before {
   content: '↗';
   margin-right: 2px;
-  display: inline-block;
+  /* inline 글리프로 둬서 아이콘과 첫 단어 사이에 줄바꿈 기회가 안 생기게 한다
+     (모바일에서 pill이 줄바꿈될 때 아이콘이 첫 단어와 붙어있도록). */
+  display: inline;
   font-size: 0.8em;
   font-weight: 700;
   vertical-align: 1px;
