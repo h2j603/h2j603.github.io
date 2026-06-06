@@ -555,9 +555,13 @@ const defaultMosaic = fs.readFileSync(
           var dist = Math.hypot(cx - e.clientX, cy - e.clientY);
           if (dist < nearRadius) {
             if (Math.random() < 0.5) {
-              // 떨어뜨림 — 가까울수록 빨리, 먼 셀은 약간 늦게
+              // animation을 새로 부여 — delay만 바꾸면 elapsed가 누적돼서
+              // duration 초과 시 final state(화면 밖)로 점프 = 사라져 보임.
               var ratio = dist / nearRadius;
               var delay = Math.random() * 0.5 + ratio * 0.6;
+              d.style.animation = 'none';
+              void d.offsetWidth; // reflow
+              d.style.animation = 'cell-drop 2.6s cubic-bezier(0.95, 0, 1, 0.45) forwards';
               d.style.animationDelay = delay.toFixed(3) + 's';
               d.dataset.fast = '1';
             } else {
