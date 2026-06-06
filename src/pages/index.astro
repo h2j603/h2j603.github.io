@@ -123,8 +123,6 @@ const defaultMosaic = fs.readFileSync(
                   {w.tags.length > 0 && <> · {w.tags.join(' · ')}</>}
                 </p>
 
-                <hr />
-
                 {isWeb && externalUrl ? (
                   <div class="iframe-wrap">
                     <iframe
@@ -137,19 +135,38 @@ const defaultMosaic = fs.readFileSync(
                   </div>
                 ) : w.images.length > 0 ? (
                   <div class="card-images">
-                    {
-                      w.images.map((img) => {
-                        const asset = resolveImage(img.localPath);
-                        return asset ? (
-                          <Image
-                            src={asset}
-                            alt={img.alt || w.title || w.slug}
-                            widths={[420, 640, 960]}
-                            sizes="40vw"
-                          />
-                        ) : null;
-                      })
-                    }
+                    {(() => {
+                      // imageLayout이 있으면 [cols, cols, ...] 그룹별로 grid row 생성.
+                      // 없거나 합 불일치면 그냥 stack (한 줄에 한 장).
+                      const layout =
+                        w.imageLayout && w.imageLayout.length > 0
+                          ? w.imageLayout
+                          : w.images.map(() => 1);
+                      const rows: { cols: number; imgs: typeof w.images }[] = [];
+                      let i = 0;
+                      for (const cols of layout) {
+                        rows.push({ cols, imgs: w.images.slice(i, i + cols) });
+                        i += cols;
+                      }
+                      return rows.map((row) => (
+                        <div
+                          class="image-row"
+                          style={`grid-template-columns: repeat(${row.cols}, 1fr)`}
+                        >
+                          {row.imgs.map((img) => {
+                            const asset = resolveImage(img.localPath);
+                            return asset ? (
+                              <Image
+                                src={asset}
+                                alt={img.alt || w.title || w.slug}
+                                widths={[420, 640, 960]}
+                                sizes={row.cols === 1 ? '40vw' : `${40 / row.cols}vw`}
+                              />
+                            ) : null;
+                          })}
+                        </div>
+                      ));
+                    })()}
                   </div>
                 ) : cover ? (
                   <Image src={cover} alt={w.title || w.slug} widths={[420, 640, 960]} sizes="40vw" />
@@ -175,8 +192,6 @@ const defaultMosaic = fs.readFileSync(
                     }
                   </div>
                 )}
-
-                {externalUrl && (hasMedia || w.bodyBlocks.length > 0) && <hr />}
 
                 {externalUrl && (
                   <p>
