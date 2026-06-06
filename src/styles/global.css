@@ -202,7 +202,15 @@ iframe {
   scrollbar-width: auto;
   -ms-overflow-style: auto;
 }
-.three-col .center::-webkit-scrollbar { display: initial; width: 8px; }
+.three-col .center::-webkit-scrollbar { width: 10px; height: 10px; }
+.three-col .center::-webkit-scrollbar-track { background: transparent; }
+.three-col .center::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 5px;
+}
+.three-col .center::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.55);
+}
 .three-col .right {
   background-color: white;
   left: 70%;
