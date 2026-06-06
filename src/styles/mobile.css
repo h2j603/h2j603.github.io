@@ -57,6 +57,16 @@
     margin-left: auto;
   }
 
+  /* 본문 링크 pill — 모바일에선 폭이 좁아 긴 라벨이 본문 너비를 넘는다.
+     inline-block + max-width:100%로 본문 폭 안에 가두고(넘지 않게),
+     단어(어절) 단위로 줄바꿈. (데스크탑은 global.css에서 nowrap 한 줄 유지) */
+  .work-card .card-body a,
+  .work-card .card-link {
+    display: inline-block;
+    max-width: 100%;
+    white-space: normal;
+  }
+
   /* 작품 카드 — 표에서 클릭 시 stripe 가리지 않게 보정 */
   .work-card { scroll-margin-top: 70px; }
   .work-card + .work-card {
