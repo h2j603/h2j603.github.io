@@ -115,8 +115,10 @@ th {
   border-collapse: collapse;
   padding: 10px;
 }
-/* 행 hover — lawngreen → 보라(#b362ff)로 치환된 그라디언트 */
-table tr:hover {
+/* 행 hover — lawngreen → 보라(#b362ff)로 치환된 그라디언트.
+   배경을 <tr>에 주면 iOS Safari가 행 전체 폭으로 칠하지 않고 오른쪽을
+   잘라먹어 여백이 남는다. 셀(td)에 직접 배경을 줘서 full-width 보장. */
+table tr:hover td {
   background: linear-gradient(to bottom, var(--accent), white);
 }
 
