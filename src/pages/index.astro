@@ -19,10 +19,10 @@ const works = getWorks().slice().sort((a, b) => {
 const usedTags = TAGS.filter((t) => works.some((w) => w.tags.includes(t)));
 
 function categoryOf(w: (typeof works)[number]): string {
-  const t = w.tags.find((x) => x !== 'web');
-  if (t) return t;
-  if (w.tags.includes('web')) return 'web';
-  return '—';
+  // 태그 전부 표시 — non-web 먼저, web은 맨 뒤. (표 카테고리 칸)
+  const nonWeb = w.tags.filter((x) => x !== 'web');
+  const ordered = w.tags.includes('web') ? [...nonWeb, 'web'] : nonWeb;
+  return ordered.length ? ordered.join(' · ') : '—';
 }
 
 const introGroups = getIntro();
