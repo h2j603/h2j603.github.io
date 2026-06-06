@@ -47,6 +47,15 @@
   .three-col .center .work-card { display: none; }
 
   /* ── 표 아코디언 — 행 탭 시 그 아래로 작업이 펼쳐짐 ── */
+  /* border-collapse(collapse)는 고DPI에서 일부 행 경계의 1px 테두리가
+     서브픽셀로 번져 "연한 회색 선"으로 보인다(작업 종류 무관, 위치 의존).
+     모바일은 separate 모델로 그려 seam 제거 — 행 구분선은 각 td border-top로
+     유지되고, table 자체 테두리는 끄고(td가 첫 줄도 그림) tr 테두리는 무시됨. */
+  table.sontable {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-top: 0;
+  }
   tr[data-slug] { scroll-margin-top: 56px; }
   /* tr/td 둘 다 border-top 제거 — tr 셀렉터의 border-top(1px)이
      border-collapse에서 그려져 제목↔이미지 사이에 선으로 보였음 */
