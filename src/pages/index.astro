@@ -257,21 +257,29 @@ const defaultMosaic = fs.readFileSync(
         }
       }
 
-      // 모자이크 셀이 모래알처럼 천천히 화면 아래로 떨어져 사라짐.
-      // 처음엔 모양 유지하다가 시간 지나며 무너짐.
-      // hidden 풀릴 때마다 animation 재시작.
+      // 모자이크 셀이 모래알처럼 화면 아래로 떨어져 사라짐.
+      // 페이지 로드 시 자동 시작 안 함 — 화면 첫 클릭 때 trigger.
+      // duration 4s, delay range 22s (이전 5s/28s 대비 20% 빠름).
       function triggerMosaicFall() {
         if (!defaultEl) return;
         var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
         cells.forEach(function (d) {
           d.style.animation = 'none';
-          // 강제 reflow → 같은 animation 다시 발동
-          void d.offsetWidth;
-          d.style.animation = '';
-          // 처음엔 많이, 나중엔 적게 — 강하게 0 쪽으로 쏠린 분포.
-          // pow(r, 5) → 대부분 처음 3~4초 안에 우수수, 마지막 셀은 25초까지 띄엄띄엄.
-          d.style.animationDelay = (Math.pow(Math.random(), 5) * 28).toFixed(3) + 's';
+          void d.offsetWidth; // reflow
+          d.style.animation = 'cell-drop 4s cubic-bezier(0.95, 0, 1, 0.45) forwards';
+          // 0 쪽으로 강하게 쏠린 분포 — 처음에 우수수, 마지막은 띄엄띄엄
+          d.style.animationDelay = (Math.pow(Math.random(), 5) * 22).toFixed(3) + 's';
         });
+      }
+      // 셀을 다시 정적 상태(자기 자리)로 되돌림
+      function resetMosaic() {
+        if (!defaultEl) return;
+        var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
+        cells.forEach(function (d) {
+          d.style.animation = 'none';
+          d.style.animationDelay = '0s';
+        });
+        defaultEl.dataset.waiting = '1';
       }
 
       function applyHash() {
@@ -501,19 +509,29 @@ const defaultMosaic = fs.readFileSync(
       document.addEventListener('DOMContentLoaded', buildStripe);
       buildStripe();
 
-      // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 reset
+      // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 정적 상태로 reset
+      // (다음 화면 클릭에 다시 떨어지기 시작)
       document.querySelectorAll('[data-home]').forEach(function (a) {
         a.addEventListener('click', function (e) {
           e.preventDefault();
+          e.stopPropagation(); // 아래 document click trigger 안 발동
           if (location.hash) {
             history.pushState(null, '', location.pathname);
           }
           applyHash();
           if (defaultEl) {
             defaultEl.hidden = false;
-            triggerMosaicFall();
+            resetMosaic();
           }
         });
+      });
+
+      // 화면 아무데나 첫 클릭 → 모자이크 떨어짐 시작
+      document.addEventListener('click', function () {
+        if (defaultEl && defaultEl.dataset.waiting === '1') {
+          defaultEl.dataset.waiting = '';
+          triggerMosaicFall();
+        }
       });
 
       window.addEventListener('hashchange', applyHash);
@@ -524,10 +542,10 @@ const defaultMosaic = fs.readFileSync(
       applyHash();
       markMentions();
       wrapAllKorean();
-      // 페이지 로드 시 모자이크 보이게 + 한 번만 떨어뜨림
+      // 페이지 로드 시 모자이크 보이게 + 정적 상태 (첫 클릭 대기)
       if (defaultEl) {
         defaultEl.hidden = false;
-        triggerMosaicFall();
+        resetMosaic();
       }
     })();
   </script>
