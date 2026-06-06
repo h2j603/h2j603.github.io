@@ -296,7 +296,7 @@ table tr[data-active='true'] a {
   -webkit-user-select: none;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
 }
 /* 영어 위 / 한국어 아래 — 둘 다 동등 위계 (같은 크기) */
 .work-card .card-title .card-title-en,
@@ -304,15 +304,19 @@ table tr[data-active='true'] a {
   line-height: 1.2;
 }
 
-/* 표 제목 한·영 토글 버튼 */
+/* 표 위 컨트롤 — 표 컬럼과 같은 grid (title / year / cat) */
 .table-controls {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 60px 110px;
   align-items: center;
-  gap: 12px;
   margin: 0;
 }
-.lang-toggle {
+.table-controls > .card-filter { padding-left: 10px; }
+.table-controls > .sort-toggle { justify-self: start; margin-left: 10px; }
+/* EN은 cat 칸의 우측 끝 — '종속'으로 보이지 않게 분명한 우측 정렬 */
+.table-controls > .lang-toggle { justify-self: end; }
+.lang-toggle,
+.sort-toggle {
   border: 1px solid var(--ink);
   border-radius: 999px;
   padding: 2px 10px;
@@ -323,18 +327,20 @@ table tr[data-active='true'] a {
   line-height: 1.4;
   flex-shrink: 0;
 }
-.lang-toggle:hover {
+.lang-toggle:hover,
+.sort-toggle:hover {
   background: linear-gradient(to bottom, var(--accent), white);
 }
+
+/* 표 컬럼 너비 — controls의 sort/lang 버튼과 grid-align 시키기 위해 고정 */
+table.sontable .col-year { width: 60px; }
+table.sontable .col-cat { width: 110px; }
 .work-card .card-meta {
   font-size: 10px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   margin: 4px 0 12px;
   padding-top: 0;
-}
-.work-card .card-body p {
-  padding-top: 14px;
 }
 
 /* 작품 카드 본문 — 그룹 사이 hr 없이 적당한 여백만 */
@@ -373,18 +379,15 @@ table tr[data-active='true'] a {
   font-size: 1.8em;
 }
 
-/* 인트로 본문 + footer — About과 같은 위계.
-   블록 간 / hr 위아래 간격 균등. 글로벌 `p { padding-top: 20px }` reset.
-   단독 블록 안 p들 사이도 통상 단락 간격(12px)만 적용. */
+/* 인트로 본문 + footer + 작품 카드 본문 — 엔터(p+p)와 줄바꿈(br)의 간격을
+   동일하게 유지. 글로벌 `p { padding-top: 20px }` 무력화.
+   line-height 고정 → pill(a inline-block)이 들어가도 p 높이 일정. */
 .intro-body p,
-.intro > footer p {
+.intro > footer p,
+.work-card .card-body p {
   padding-top: 0;
-}
-.intro-body > p + p,
-.intro-body > div > p + p,
-.intro > footer > p + p,
-.intro > footer > div > p + p {
-  margin-top: 12px;
+  margin-top: 0;
+  line-height: 1.5;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -404,13 +407,6 @@ table tr[data-active='true'] a {
   font-style: normal;
   line-height: 1.4;
   white-space: nowrap;
-}
-/* footer 안 pill은 한 줄에 하나씩이라 행간 더 — pill 사이 숨통 */
-.intro > footer p + p {
-  margin-top: 8px;
-}
-.intro > footer a {
-  line-height: 1.8;
 }
 .intro a::before,
 .work-card .card-body a::before,
@@ -457,4 +453,20 @@ table tr[data-active='true'] a {
   transform: scale(0.4);   /* 다시 40%로 축소 → wrapper 영역에 fit */
   transform-origin: top left;
   margin: 0;
+}
+
+/* 기본 화면 모자이크 — 셀이 위에서 우수수 떨어져 자기 자리로 */
+.default-state {
+  overflow: hidden;
+}
+.default-state .stripe-mosaic > div {
+  animation: cell-fall 0.9s cubic-bezier(0.34, 0.05, 0.42, 1) backwards;
+}
+@keyframes cell-fall {
+  from {
+    transform: translateY(-120vh);
+  }
+  to {
+    transform: translateY(0);
+  }
 }

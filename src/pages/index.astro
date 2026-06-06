@@ -257,12 +257,29 @@ const defaultMosaic = fs.readFileSync(
         }
       }
 
+      // 모자이크 셀별로 random delay 줘서 우수수 떨어지게.
+      // hidden 풀릴 때마다 animation 재시작.
+      function triggerMosaicFall() {
+        if (!defaultEl) return;
+        var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
+        cells.forEach(function (d) {
+          d.style.animation = 'none';
+          // 강제 reflow → 같은 animation 다시 발동
+          void d.offsetWidth;
+          d.style.animation = '';
+          d.style.animationDelay = (Math.random() * 0.7).toFixed(3) + 's';
+        });
+      }
+
       function applyHash() {
         var slug = (location.hash || '').replace(/^#/, '');
         var hasSlug = slug && cards.some(function (c) { return c.id === slug; });
         if (!hasSlug) {
           // 기본 화면 — 모자이크 표시, 모든 작품 숨김, 표 활성 행 없음
-          if (defaultEl) defaultEl.hidden = false;
+          if (defaultEl) {
+            defaultEl.hidden = false;
+            triggerMosaicFall();
+          }
           cards.forEach(function (c) { c.hidden = true; });
           rows.forEach(function (tr) { tr.setAttribute('data-active', 'false'); });
         } else {
