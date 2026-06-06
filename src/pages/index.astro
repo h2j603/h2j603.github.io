@@ -41,7 +41,7 @@ const defaultMosaic = fs.readFileSync(
     {/* ──────────── 좌측: 인트로 ──────────── */}
     <div class="third left">
       <div class="content intro">
-        <h2>hyuk.xyz/about</h2>
+        <h2><a href="#" class="home-link" data-home>hyuk.xyz</a>/about</h2>
 
         {introGroups.length > 0 && (
           <div class="intro-body">
@@ -277,16 +277,12 @@ const defaultMosaic = fs.readFileSync(
       function applyHash() {
         var slug = (location.hash || '').replace(/^#/, '');
         var hasSlug = slug && cards.some(function (c) { return c.id === slug; });
+        // 모자이크는 작품 선택과 무관하게 떨어질 때까지 그대로 둠.
+        // (페이지 로드 시 한 번만 보이게 + trigger 처리)
         if (!hasSlug) {
-          // 기본 화면 — 모자이크 표시, 모든 작품 숨김, 표 활성 행 없음
-          if (defaultEl) {
-            defaultEl.hidden = false;
-            triggerMosaicFall();
-          }
           cards.forEach(function (c) { c.hidden = true; });
           rows.forEach(function (tr) { tr.setAttribute('data-active', 'false'); });
         } else {
-          if (defaultEl) defaultEl.hidden = true;
           cards.forEach(function (c) { c.hidden = c.id !== slug; });
           rows.forEach(function (tr) {
             tr.setAttribute('data-active', String(tr.getAttribute('data-slug') === slug));
@@ -505,24 +501,20 @@ const defaultMosaic = fs.readFileSync(
       document.addEventListener('DOMContentLoaded', buildStripe);
       buildStripe();
 
-      // 마우스 트레일 — 움직일 때마다 보라/갈색 작은 블록 두 개가 떨어짐
-      var mouseThrottle = 0;
-      window.addEventListener('mousemove', function (e) {
-        var now = Date.now();
-        if (now - mouseThrottle < 40) return;
-        mouseThrottle = now;
-        spawnDrop(e.clientX - 6, e.clientY + 2, '#a966ff');
-        spawnDrop(e.clientX + 4, e.clientY + 6, '#775d4f');
+      // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 reset
+      document.querySelectorAll('[data-home]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          if (location.hash) {
+            history.pushState(null, '', location.pathname);
+          }
+          applyHash();
+          if (defaultEl) {
+            defaultEl.hidden = false;
+            triggerMosaicFall();
+          }
+        });
       });
-      function spawnDrop(x, y, color) {
-        var d = document.createElement('div');
-        d.className = 'mouse-drop';
-        d.style.left = x + 'px';
-        d.style.top = y + 'px';
-        d.style.background = color;
-        document.body.appendChild(d);
-        setTimeout(function () { d.remove(); }, 2200);
-      }
 
       window.addEventListener('hashchange', applyHash);
       document.addEventListener('DOMContentLoaded', applyHash);
@@ -532,6 +524,11 @@ const defaultMosaic = fs.readFileSync(
       applyHash();
       markMentions();
       wrapAllKorean();
+      // 페이지 로드 시 모자이크 보이게 + 한 번만 떨어뜨림
+      if (defaultEl) {
+        defaultEl.hidden = false;
+        triggerMosaicFall();
+      }
     })();
   </script>
 </Base>
