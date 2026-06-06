@@ -257,7 +257,8 @@ const defaultMosaic = fs.readFileSync(
         }
       }
 
-      // 모자이크 셀별로 random delay 줘서 우수수 떨어지게.
+      // 모자이크 셀이 모래알처럼 천천히 화면 아래로 떨어져 사라짐.
+      // 처음엔 모양 유지하다가 시간 지나며 무너짐.
       // hidden 풀릴 때마다 animation 재시작.
       function triggerMosaicFall() {
         if (!defaultEl) return;
@@ -267,7 +268,8 @@ const defaultMosaic = fs.readFileSync(
           // 강제 reflow → 같은 animation 다시 발동
           void d.offsetWidth;
           d.style.animation = '';
-          d.style.animationDelay = (Math.random() * 0.7).toFixed(3) + 's';
+          // 0~6초 random delay — 셀이 흩어져서 떨어짐
+          d.style.animationDelay = (Math.random() * 6).toFixed(3) + 's';
         });
       }
 
