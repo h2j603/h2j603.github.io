@@ -307,6 +307,9 @@ const defaultMosaic = fs.readFileSync(
         panel.addEventListener('transitionend', function te(ev) {
           if (ev.propertyName !== 'max-height') return;
           panel.style.maxHeight = 'none';
+          // overflow:hidden은 슬라이드 중에만 필요. 끝나면 visible로 풀어
+          // clip/합성 레이어 가장자리의 서브픽셀 seam(연한 회색 선)을 없앤다.
+          panel.style.overflow = 'visible';
           panel.removeEventListener('transitionend', te);
         });
         setTimeout(function () {
