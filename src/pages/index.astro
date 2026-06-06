@@ -279,16 +279,16 @@ const defaultMosaic = fs.readFileSync(
         positions.forEach(function (p) {
           p.d.style.animation = 'none';
           void p.d.offsetWidth; // reflow
-          p.d.style.animation = 'cell-drop 4s cubic-bezier(0.95, 0, 1, 0.45) forwards';
+          p.d.style.animation = 'cell-drop 2.6s cubic-bezier(0.95, 0, 1, 0.45) forwards';
           // 우상 → 좌하 대각선 진행도 (0~1)
           var progress = ((maxCol - p.col) + (p.row - 1)) / maxProgress;
           var delay;
           if (Math.random() < 0.12) {
             // 12% 예외 — 순서 무시, 완전 random
-            delay = Math.random() * 20;
+            delay = Math.random() * 13;
           } else {
             // 진행도 기반 + 작은 jitter
-            delay = progress * 18 + (Math.random() - 0.5) * 2.5;
+            delay = progress * 12 + (Math.random() - 0.5) * 1.7;
           }
           if (delay < 0) delay = 0;
           p.d.style.animationDelay = delay.toFixed(3) + 's';
