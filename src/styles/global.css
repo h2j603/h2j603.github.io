@@ -458,7 +458,7 @@ table.sontable .col-cat { width: 110px; }
 /* 기본 화면 모자이크 — 셀이 모래알처럼 천천히 화면 아래로 떨어져 사라짐.
    shape는 처음엔 그대로 있다가 시간이 지나며 무너짐. */
 .default-state .stripe-mosaic > div {
-  animation: cell-drop 5s cubic-bezier(0.7, 0, 0.95, 1) forwards;
+  animation: cell-drop 5s cubic-bezier(0.95, 0, 1, 0.45) forwards;
   /* animation-delay는 JS에서 셀마다 random 부여 */
 }
 @keyframes cell-drop {
@@ -466,6 +466,6 @@ table.sontable .col-cat { width: 110px; }
     transform: translateY(0);
   }
   to {
-    transform: translateY(120vh);
+    transform: translateY(200vh);
   }
 }
