@@ -184,9 +184,17 @@ async function buildOne(
     );
   }
 
+  // 채널 이름 "한국어 / English" 형식이면 split. '/' 없으면 둘 다 같은 값.
+  // channel.title을 우선해야 채널 이름 변경이 즉시 반영됨.
+  const rawTitle = channel.title || meta.title || slug;
+  const slashIdx = rawTitle.indexOf('/');
+  const titleKo = (slashIdx >= 0 ? rawTitle.slice(0, slashIdx) : rawTitle).trim();
+  const titleEn = (slashIdx >= 0 ? rawTitle.slice(slashIdx + 1) : rawTitle).trim();
+
   const parsed = workSchema.safeParse({
     slug,
-    title: meta.title || channel.title || slug,
+    title: titleKo,
+    titleEn,
     year: meta.year ?? '',
     medium: meta.medium ?? '',
     size: meta.size ?? '',

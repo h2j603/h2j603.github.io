@@ -10,10 +10,11 @@
   font-style: normal;
 }
 
-/* 한글 char span — JS가 자동으로 감쌈. 영문 baseline에 맞춰 살짝 위로. */
+/* 한글 char span — JS가 자동으로 감쌈. 영문 baseline에 맞춰 살짝 위로.
+   inline + position: relative top — 같은 라인 박스 공유 → ::selection이 일정한 사각형. */
 .ko {
-  display: inline-block;
-  transform: translateY(-0.08em);
+  position: relative;
+  top: -0.08em;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -45,15 +46,14 @@ body {
   background: var(--bg);
 }
 
-/* 텍스트 드래그 하이라이트 — 반투명 보라.
-   ::selection은 spec상 단색만 받음. */
+/* 텍스트 드래그 하이라이트 — 포인트 보라 + 흰 텍스트 */
 ::selection {
-  background: rgba(179, 98, 255, 0.4);
-  color: var(--ink);
+  background: var(--accent);
+  color: #fff;
 }
 ::-moz-selection {
-  background: rgba(179, 98, 255, 0.4);
-  color: var(--ink);
+  background: var(--accent);
+  color: #fff;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -145,19 +145,19 @@ iframe {
 }
 .stripe-row {
   display: flex;
-  height: 33px;
+  height: 20px;
   overflow: hidden;
 }
 .stripe-row .cell {
-  /* 60셀 균등 분배. grow 0, shrink 1 — hover 시 다른 셀이 줄어듦. */
-  flex: 0 1 calc(100% / 60);
+  /* JS가 row마다 --cell-w를 셋팅. shrink 1 — hover 시 다른 셀이 줄어듦. */
+  flex: 0 1 var(--cell-w, 1.667%);
   min-width: 0;
   transition: flex-basis 0.25s ease;
 }
 .stripe-row .cell.purple { background: #a966ff; }
 .stripe-row .cell.brown  { background: #775d4f; }
-/* hover 셀: basis 7.8125% (= 일반 셀의 정확히 5배), shrink 0 (안 줄어듦) */
-.stripe-row .cell:hover  { flex: 0 0 7.8125%; }
+/* hover 셀: 다른 셀의 5배 폭 (basis 5× var(--cell-w)), shrink 0 */
+.stripe-row .cell:hover  { flex: 0 0 calc(var(--cell-w) * 5); }
 
 /* 마우스 트레일 — 작은 블록이 아래로 떨어지면서 사라짐 */
 .mouse-drop {
@@ -174,12 +174,12 @@ iframe {
   100% { transform: translateY(220px); opacity: 0; }
 }
 
-/* 3-Column이 띠 만큼 아래로 밀려야 함 (33 × 2 = 66) */
+/* 3-Column이 띠 만큼 아래로 밀려야 함 (20 × 3 = 60) */
 .three-col .left,
 .three-col .center,
 .three-col .right {
-  top: 66px;
-  height: calc(100% - 66px);
+  top: 60px;
+  height: calc(100% - 60px);
 }
 
 
@@ -282,20 +282,49 @@ table tr[data-active='true'] a {
    ─────────────────────────────────────────────────────────────────────── */
 .work-card {
   /* 본문 다 읽고 더 스크롤할 수 있는 여유 — 다음 작품으로 너무 빨리 안 넘어가게 */
-  padding-bottom: 40vh;
+  padding-bottom: 24vh;
 }
+
 .work-card .card-title {
-  /* 본문 폰트 + 한 단계 굵게(500) + 왼쪽 정렬 */
   font-family: neue-haas-unica, 'HakgyoansimBareondotum', sans-serif;
   font-weight: 500;
   font-style: normal;
   text-align: left;
   margin-bottom: 4px;
   color: var(--ink);
-
-  /* 드래그 선택 차단 */
   user-select: none;
   -webkit-user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+/* 영어 위 / 한국어 아래 — 둘 다 동등 위계 (같은 크기) */
+.work-card .card-title .card-title-en,
+.work-card .card-title .card-title-ko {
+  line-height: 1.2;
+}
+
+/* 표 제목 한·영 토글 버튼 */
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+.lang-toggle {
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  padding: 2px 10px;
+  cursor: pointer;
+  font: inherit;
+  background: transparent;
+  color: var(--ink);
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+.lang-toggle:hover {
+  background: linear-gradient(to bottom, var(--accent), white);
 }
 .work-card .card-meta {
   font-size: 10px;
@@ -338,19 +367,23 @@ table tr[data-active='true'] a {
 }
 .bilingual > div > p:first-child { padding-top: 0; }
 
-/* 좌측 인트로 h2 아래 여백 — 본문과 띄움 */
+/* 좌측 인트로 h2 — 본문과 띄움 + 사이즈 키움 (기본 대비 20%) */
 .intro > h2 {
   margin-bottom: 24px;
+  font-size: 1.8em;
 }
 
 /* 인트로 본문 + footer — About과 같은 위계.
-   블록 간 / hr 위아래 간격 균등. 글로벌 `p { padding-top: 20px }` reset. */
-.intro-body > p,
-.intro > footer > p {
+   블록 간 / hr 위아래 간격 균등. 글로벌 `p { padding-top: 20px }` reset.
+   단독 블록 안 p들 사이도 통상 단락 간격(12px)만 적용. */
+.intro-body p,
+.intro > footer p {
   padding-top: 0;
 }
 .intro-body > p + p,
-.intro > footer > p + p {
+.intro-body > div > p + p,
+.intro > footer > p + p,
+.intro > footer > div > p + p {
   margin-top: 12px;
 }
 
@@ -363,7 +396,7 @@ table tr[data-active='true'] a {
 .work-card .card-body a,
 .work-card .card-link {
   display: inline-block;
-  padding: 0 8px 0 5px;
+  padding: 1px 8px 1px 5px;
   background: #ececec;
   border-radius: 999px;
   color: var(--accent);
@@ -371,6 +404,13 @@ table tr[data-active='true'] a {
   font-style: normal;
   line-height: 1.4;
   white-space: nowrap;
+}
+/* footer 안 pill은 한 줄에 하나씩이라 행간 더 — pill 사이 숨통 */
+.intro > footer p + p {
+  margin-top: 8px;
+}
+.intro > footer a {
+  line-height: 1.8;
 }
 .intro a::before,
 .work-card .card-body a::before,
