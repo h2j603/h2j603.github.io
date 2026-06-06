@@ -159,22 +159,6 @@ iframe {
 /* hover 셀: 다른 셀의 5배 폭 (basis 5× var(--cell-w)), shrink 0 */
 .stripe-row .cell:hover  { flex: 0 0 calc(var(--cell-w) * 5); }
 
-/* 마우스 트레일 — 작은 블록이 아래로 떨어지면서 사라짐.
-   모자이크 셀과 같은 가속도 곡선. */
-.mouse-drop {
-  position: fixed;
-  width: 5px;
-  height: 5px;
-  pointer-events: none;
-  z-index: 9999;
-  animation: drop-fall 2.2s cubic-bezier(0.95, 0, 1, 0.45) forwards;
-}
-@keyframes drop-fall {
-  0%   { transform: translateY(0); opacity: 1; }
-  85%  { opacity: 1; }
-  100% { transform: translateY(600px); opacity: 0; }
-}
-
 /* 3-Column이 띠 만큼 아래로 밀려야 함 (20 × 3 = 60) */
 .three-col .left,
 .three-col .center,
@@ -458,20 +442,32 @@ table.sontable .col-cat { width: 110px; }
 
 /* 기본 화면 모자이크 — 셀이 모래알처럼 천천히 화면 아래로 떨어져 사라짐.
    shape는 처음엔 그대로 있다가 시간이 지나며 무너짐.
-   가운데 영역이 아니라 viewport 전체에 깔리되 클릭은 뒤로 통과. */
+   viewport 전체에 깔리되 클릭은 뒤로 통과.
+   작품 선택해도 hidden 안 함 — 떨어질 때까지 그대로 화면에 남음. */
 .default-state {
   position: fixed;
-  inset: 0;
+  top: 80px;          /* stripe-top 60 + .content padding 20 — 작품 제목과 같은 y */
+  left: 0;
+  width: 100vw;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 50;
   pointer-events: none;
 }
 .default-state[hidden] { display: none; }
+
+/* 인트로 제목 "hyuk.xyz/about"에서 hyuk.xyz 부분만 홈 링크 */
+.intro h2 .home-link {
+  color: inherit;
+  text-decoration: none;
+}
+.intro h2 .home-link:hover {
+  text-decoration: underline;
+}
 .default-state .stripe-mosaic {
-  width: 100vw;
-  max-width: 100vw;
+  width: 80vw;
+  max-width: 80vw;
 }
 .default-state .stripe-mosaic > div {
   animation: cell-drop 5s cubic-bezier(0.95, 0, 1, 0.45) forwards;
