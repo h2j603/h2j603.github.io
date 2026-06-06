@@ -201,18 +201,7 @@ iframe {
   left: 30%;
   width: 40%;
   border-right: 1px solid var(--ink);
-  /* 작업영역은 기본 스크롤바 노출 */
-  scrollbar-width: auto;
-  -ms-overflow-style: auto;
-}
-.three-col .center::-webkit-scrollbar { width: 10px; height: 10px; }
-.three-col .center::-webkit-scrollbar-track { background: transparent; }
-.three-col .center::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.35);
-  border-radius: 5px;
-}
-.three-col .center::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.55);
+  /* 작업영역은 notabook과 동일 — OS 기본 스크롤바, custom 룰 없음 */
 }
 
 /* ───────────────────────────────────────────────────────────────────────
