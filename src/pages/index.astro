@@ -225,15 +225,13 @@ const defaultMosaic = fs.readFileSync(
         {works.length > 0 ? (
           <table class="sontable">
             <colgroup>
-              <col class="col-num" />
               <col class="col-title" />
               <col class="col-year" />
               <col class="col-cat" />
             </colgroup>
             <tbody>
-              {works.map((w, i) => (
+              {works.map((w) => (
                 <tr data-slug={w.slug} data-tags={w.tags.join(' ')}>
-                  <td class="num-cell">{i + 1}</td>
                   <td>
                     <a href={`#${w.slug}`} data-ko={w.title || w.slug} data-en={w.titleEn || w.title || w.slug}>
                       {w.title || w.slug}
@@ -426,8 +424,8 @@ const defaultMosaic = fs.readFileSync(
         if (tbody) {
           var trs = Array.from(tbody.querySelectorAll('tr'));
           trs.sort(function (a, b) {
-            var ya = parseInt((a.children[2] || {}).textContent || '0', 10) || 0;
-            var yb = parseInt((b.children[2] || {}).textContent || '0', 10) || 0;
+            var ya = parseInt((a.children[1] || {}).textContent || '0', 10) || 0;
+            var yb = parseInt((b.children[1] || {}).textContent || '0', 10) || 0;
             return order === 'desc' ? yb - ya : ya - yb;
           });
           trs.forEach(function (tr) { tbody.appendChild(tr); });

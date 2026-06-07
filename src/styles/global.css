@@ -354,17 +354,17 @@ table tr[data-active='true'] a {
   line-height: 1.2;
 }
 
-/* 표 위 컨트롤 — 표 컬럼과 같은 grid (num / title / year / cat) */
+/* 표 위 컨트롤 — 표 컬럼과 같은 grid (title / year / cat) */
 .table-controls {
   display: grid;
-  grid-template-columns: 34px 1fr 60px 110px;
+  grid-template-columns: 1fr 60px 110px;
   align-items: center;
   margin: 0;
 }
-.table-controls > .card-filter { grid-column: 2; padding-left: 10px; }
-.table-controls > .sort-toggle { grid-column: 3; justify-self: start; margin-left: 10px; }
+.table-controls > .card-filter { padding-left: 10px; }
+.table-controls > .sort-toggle { justify-self: start; margin-left: 10px; }
 /* EN은 cat 칸의 우측 끝 — '종속'으로 보이지 않게 분명한 우측 정렬 */
-.table-controls > .lang-toggle { grid-column: 4; justify-self: end; }
+.table-controls > .lang-toggle { justify-self: end; }
 .lang-toggle,
 .sort-toggle {
   border: 1px solid var(--ink);
@@ -382,12 +382,9 @@ table tr[data-active='true'] a {
   background: linear-gradient(to bottom, var(--accent), var(--bg));
 }
 
-/* 표 컬럼 너비 — num/year는 controls의 grid와 맞춰 고정.
+/* 표 컬럼 너비 — year는 controls의 sort 버튼과 grid-align 위해 고정.
    category는 고정 폭을 빼서 내용(가장 긴 카테고리)에 맞춰 자동 크기 →
    짧은 행의 과도한 우측 빈 공간 제거(가장 긴 행이 우측 끝에 닿음, 좌우 여백 대칭). */
-table.sontable .col-num { width: 34px; }
-/* 작업번호 — 최신작업부터 1 (제목과의 간격 위해 우측 padding 축소) */
-table.sontable td.num-cell { padding-right: 6px; }
 table.sontable .col-year { width: 60px; }
 .work-card .card-meta {
   font-size: 10px;
