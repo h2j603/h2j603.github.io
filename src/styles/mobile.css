@@ -64,12 +64,6 @@
     padding: 0;
     border-top: 0;
   }
-  .accordion-panel {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s ease;
-  }
-  /* 좌우 10px — 본문을 표 제목 왼쪽(셀 padding 10px)에 맞추고 오른쪽도 동일하게 */
   /* 좌우 10px — 본문을 표 제목 왼쪽(셀 padding 10px)에 맞추고 오른쪽도 동일하게.
      상단 8px = 제목↔이미지 간격 (아래 미디어 margin-top 0과 합쳐 일정하게) */
   .accordion-detail .work-card {
@@ -85,8 +79,6 @@
   /* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 (미디어+본문만) */
   .accordion-detail .card-title,
   .accordion-detail .card-meta { display: none; }
-  /* 펼침 자체가 활성 표시이므로 활성 행 제목 밑줄(제목↔이미지 사이 윤곽선) 제거 */
-  table tr[data-active='true'] a { border-bottom: 0; }
 
   /* 표 위 컨트롤 — 모바일 2줄:
      1줄: All(왼쪽) ··· ↓·EN(오른쪽) / 2줄: 태그들(양쪽정렬) */
