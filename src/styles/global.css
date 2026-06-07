@@ -383,6 +383,9 @@ table tr[data-active='true'] a {
 /* 표 컬럼 너비 — controls의 sort/lang 버튼과 grid-align 시키기 위해 고정 */
 table.sontable .col-year { width: 60px; }
 table.sontable .col-cat { width: 110px; }
+/* 양끝정렬 — 제목은 왼쪽, 카테고리(마지막 칸)는 오른쪽 끝에 붙여 표 폭을 꽉 채움.
+   (위 컨트롤의 EN 버튼이 오른쪽 끝인 것과 정렬. 여러 태그는 한 덩어리라 · 간격 유지) */
+table.sontable td:nth-child(3) { text-align: right; }
 .work-card .card-meta {
   font-size: 10px;
   letter-spacing: 0.06em;
