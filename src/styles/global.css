@@ -8,6 +8,8 @@
   src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/HakgyoansimBareondotumR.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
+  /* 폰트 로딩 중에도 대체 글꼴로 텍스트 즉시 표시 (FOIT 방지) */
+  font-display: swap;
 }
 
 /* 한글 char span — JS가 자동으로 감쌈. 영문 baseline에 맞춰 살짝 위로.
