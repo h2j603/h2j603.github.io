@@ -662,24 +662,12 @@ const defaultMosaic = fs.readFileSync(
       //   다 떨어지면 오버레이를 숨겨 메인화면 노출.
       // 데스크탑: 기존처럼 배경 장식 오버레이.
       if (defaultEl) {
-        defaultEl.hidden = false;
         if (window.matchMedia('(max-width: 600px)').matches) {
-          defaultEl.classList.add('intro');
-          // 모바일 인트로 — 빠르고 텐션 높게(짧은 낙하시간 + 강한 ease),
-          // 늦게 떨어지는 셀(stragger)·wave delay 축소.
-          var introTotal = triggerMosaicFall({
-            dur: 0.8,
-            spread: 4.5,
-            jitter: 0.6,
-            stragProb: 0.05,
-            stragMax: 4.5,
-            ease: 'cubic-bezier(0.7, 0, 0.9, 0.25)',
-          });
-          setTimeout(function () {
-            defaultEl.classList.remove('intro');
-            defaultEl.hidden = true;
-          }, introTotal + 150);
+          // 임시: 테스트 방해되어 모바일 인트로(모자이크 전체화면) 숨김.
+          // 복원하려면 아래 데스크탑 분기처럼 intro 모드로 되돌리면 됨.
+          defaultEl.hidden = true;
         } else {
+          defaultEl.hidden = false;
           triggerMosaicFall();
         }
       }
