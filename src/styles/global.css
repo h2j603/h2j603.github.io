@@ -23,7 +23,7 @@
    디자인 토큰 — hyuk repo 원본을 lawngreen→#b362ff, orangered→#775d4f로 치환
    ─────────────────────────────────────────────────────────────────────── */
 :root {
-  --bg: #f4f4f4;
+  --bg: #ffffff;
   --ink: #775d4f;          /* hyuk repo의 orangered → 브라운 */
   --accent: #b362ff;       /* hyuk repo의 lawngreen → 보라 */
 }
@@ -465,7 +465,7 @@ table.sontable .col-year { width: 60px; }
   /* 상하 padding 0 — pill 높이(위아래여백)를 조금 줄임.
      (inline pill 배경 높이는 line-height가 아니라 padding이 좌우함) */
   padding: 0 8px 0 5px;
-  background: #e8e8e8;
+  background: #ececec;
   border-radius: 999px;
   color: var(--accent);
   text-decoration: none;
