@@ -443,11 +443,6 @@ table.sontable .col-cat { width: 110px; }
   line-height: 1.65;
 }
 
-/* 작품 설명 본문 — 둘째 문단(p)부터 첫 줄 들여쓰기. 첫 문단은 flush. */
-.work-card .card-body p + p {
-  text-indent: 1em;
-}
-
 /* ───────────────────────────────────────────────────────────────────────
    본문 안 하이퍼링크 — 연한 회색 pill + 보라 텍스트 + ↗ 아이콘
    적용: 좌측 인트로 본문(.intro > p) / 작품 카드 본문(.card-body)
