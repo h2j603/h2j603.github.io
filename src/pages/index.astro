@@ -40,10 +40,18 @@ const defaultMosaic = fs.readFileSync(
     <div class="stripe-row"></div>
     <div class="stripe-row"></div>
   </div>
+
+  {/* 모바일 전용 상단 헤더 — 스트라이프 영역에 carbon 700. 데스크탑엔 숨김. */}
+  <header class="mobile-header">
+    <a href="#" class="mh-link mh-home" data-home>Hyuk Jang</a>
+    <a href="#" class="mh-link mh-about" data-about>about</a>
+  </header>
+
   <div class="three-col">
 
-    {/* ──────────── 좌측: 인트로 ──────────── */}
+    {/* ──────────── 좌측: 인트로 (모바일에선 about 오버레이로 표시) ──────────── */}
     <div class="third left">
+      <button type="button" class="about-close" data-about-close aria-label="Close about">✕</button>
       <div class="content intro">
         <h2><a href="#" class="home-link" data-home>hyuk.xyz</a>/about</h2>
 
@@ -610,11 +618,27 @@ const defaultMosaic = fs.readFileSync(
       document.addEventListener('DOMContentLoaded', buildStripe);
       buildStripe();
 
-      // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작
+      // 모바일 about 오버레이 토글 (데스크탑 .left 인트로를 전체화면으로)
+      function closeAbout() { document.body.classList.remove('about-open'); }
+      document.querySelectorAll('[data-about]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          document.body.classList.toggle('about-open');
+        });
+      });
+      document.querySelectorAll('[data-about-close]').forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.preventDefault();
+          closeAbout();
+        });
+      });
+
+      // hyuk.xyz / Hyuk Jang 클릭 → 홈(작품 선택 해제) + about 닫기 + 모자이크 재시작
       document.querySelectorAll('[data-home]').forEach(function (a) {
         a.addEventListener('click', function (e) {
           e.preventDefault();
           accClose();
+          closeAbout();
           if (location.hash) {
             history.pushState(null, '', location.pathname);
           }

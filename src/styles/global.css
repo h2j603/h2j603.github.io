@@ -234,6 +234,10 @@ iframe {
   /* 작품 카드들이 세로로 쌓이므로 auto */
 }
 
+/* 모바일 전용 헤더 / about 닫기 버튼 — 데스크탑은 숨김 (모바일은 mobile.css) */
+.mobile-header,
+.about-close { display: none; }
+
 /* 표 행 활성 상태 — 링크 텍스트 아래 라인.
    text-decoration: underline은 한글 inline-block .ko span을 못 통과해 공백만
    밑줄로 보였음. border-bottom으로 a 박스 전체에 일관된 라인. */
