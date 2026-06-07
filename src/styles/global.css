@@ -380,9 +380,10 @@ table tr[data-active='true'] a {
   background: linear-gradient(to bottom, var(--accent), var(--bg));
 }
 
-/* 표 컬럼 너비 — controls의 sort/lang 버튼과 grid-align 시키기 위해 고정 */
+/* 표 컬럼 너비 — year는 controls의 sort 버튼과 grid-align 위해 고정.
+   category는 고정 폭을 빼서 내용(가장 긴 카테고리)에 맞춰 자동 크기 →
+   짧은 행의 과도한 우측 빈 공간 제거(가장 긴 행이 우측 끝에 닿음, 좌우 여백 대칭). */
 table.sontable .col-year { width: 60px; }
-table.sontable .col-cat { width: 110px; }
 .work-card .card-meta {
   font-size: 10px;
   letter-spacing: 0.06em;
