@@ -34,12 +34,12 @@
   .mobile-header .mh-link {
     pointer-events: auto;
     font-family: t26-carbon, monospace;
-    font-weight: 700;
+    font-weight: 300;        /* 얇게 */
     font-style: normal;
-    font-size: 16px;
+    font-size: 21px;         /* 키움 */
     line-height: 1;
     text-decoration: none;
-    color: #4a382e;          /* 스트라이프 브라운(#775d4f)보다 더 어두운 브라운 */
+    color: #141414;          /* 거의 블랙 */
   }
 
   /* ── about 오버레이 — 데스크탑 .left(인트로/footer)를 전체화면으로 ── */
