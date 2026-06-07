@@ -96,7 +96,9 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding-top: 0;
+    /* 좌우 10px 안쪽 = 표 셀 padding(10px)과 동일 → 태그·컨트롤이 표 본문과
+       같은 좌우 라인에 맞음 (기존엔 컨테이너 끝까지 더 퍼져 있었음) */
+    padding: 0 10px;
   }
   /* card-filter 박스를 해제 → All·태그가 table-controls의 직접 flex 항목처럼 동작 */
   .table-controls > .card-filter {
