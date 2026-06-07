@@ -39,7 +39,7 @@
     font-size: 16px;
     line-height: 1;
     text-decoration: none;
-    color: #4a382e;          /* 스트라이프 브라운(#775d4f)보다 더 어두운 브라운 */
+    color: #fff;             /* 스트라이프(보라/갈색) 위 가독성 */
   }
 
   /* ── about 오버레이 — 데스크탑 .left(인트로/footer)를 전체화면으로 ── */
