@@ -300,21 +300,8 @@ const defaultMosaic = fs.readFileSync(
         tr.setAttribute('data-active', 'true');
         accSlug = slug;
         accRow = detail;
-        // 슬라이드 다운 — 0 → 콘텐츠 높이, 끝나면 none(이미지 로드로 커져도 안 잘림)
-        requestAnimationFrame(function () {
-          panel.style.maxHeight = panel.scrollHeight + 'px';
-        });
-        panel.addEventListener('transitionend', function te(ev) {
-          if (ev.propertyName !== 'max-height') return;
-          panel.style.maxHeight = 'none';
-          // overflow:hidden은 슬라이드 중에만 필요. 끝나면 visible로 풀어
-          // clip/합성 레이어 가장자리의 서브픽셀 seam(연한 회색 선)을 없앤다.
-          panel.style.overflow = 'visible';
-          panel.removeEventListener('transitionend', te);
-        });
-        setTimeout(function () {
-          tr.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 60);
+        // 이펙트 없이 즉시 펼침. 펼친 행이 보이게만 스크롤(애니메이션 없음).
+        tr.scrollIntoView({ block: 'start' });
       }
 
       function applyFilter(tag) {
