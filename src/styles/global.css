@@ -38,7 +38,15 @@
   padding: 0;
   box-sizing: border-box;
 }
+/* 페이지(documentElement) 자체 스크롤 봉쇄 — 3컬럼은 각자 내부 스크롤만.
+   html에 overflow:hidden이 없으면 anchor 점프/스크롤로 컬럼 전체가 위로 밀려
+   상단 fixed 스트라이프 뒤로 들어가 좌측 제목 등이 가려진다. */
+html {
+  height: 100%;
+  overflow: hidden;
+}
 body {
+  height: 100%;
   overflow: hidden;
   font-size: 13.2px; /* 12px × 1.1 (전체 10% 키움) */
   font-family: neue-haas-unica, 'HakgyoansimBareondotum', sans-serif;
@@ -190,6 +198,14 @@ iframe {
 /* ───────────────────────────────────────────────────────────────────────
    3-Column Split (.three-col 래퍼로 감싸서 .third 클래스 적용)
    ─────────────────────────────────────────────────────────────────────── */
+/* 래퍼를 viewport에 고정 — absolute 컬럼들의 기준(containing block)을 명확히
+   해서 컬럼이 항상 stripe(48px) 아래 top:60px 자리에 머무르게 한다.
+   stripe-top(z:100)보다 아래 z-index. */
+.three-col {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
 .three-col .third {
   position: absolute;
   height: 100%;

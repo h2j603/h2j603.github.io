@@ -10,7 +10,15 @@
    ─────────────────────────────────────────────────────────────────────── */
 
 @media (max-width: 600px) {
+  /* 데스크탑은 페이지 스크롤을 봉쇄(html/body overflow:hidden)하고 컬럼만
+     내부 스크롤하지만, 모바일은 표+카드가 세로로 길게 흐르므로 페이지 전체가
+     자연 스크롤돼야 한다. 데스크탑 전역값을 모바일에서 되돌린다. */
+  html {
+    height: auto;
+    overflow: visible;
+  }
   body {
+    height: auto;
     overflow: auto;
     /* 모바일에선 body 스크롤바 숨김 (OS 오버레이 사용) */
     scrollbar-width: none;
@@ -19,6 +27,10 @@
   body::-webkit-scrollbar { display: none; }
 
   .three-col {
+    /* 데스크탑의 position:fixed를 해제 — 모바일은 흐름(flow) 안에서 세로 스크롤 */
+    position: static;
+    inset: auto;
+    z-index: auto;
     display: flex;
     flex-direction: column;
     padding-top: 60px; /* stripe-top(48) + 여유 12 */
