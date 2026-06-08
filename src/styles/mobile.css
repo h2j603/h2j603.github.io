@@ -44,19 +44,14 @@
     overflow: visible;
     padding: 16px;
   }
-  .three-col .right {
-    order: 1;
-    border-right: none;
-  }
-  /* 가운데 카드 컬럼 — 콘텐츠 저장소로만 사용(평소엔 비어 보임).
-     모자이크(#__default)는 position:fixed라 여기 자식이어도 계속 보이므로
-     컬럼을 display:none 하지 않고, 안의 work-card만 숨긴다. */
+  /* 표가 center로 이동 → right는 빈 컬럼이므로 모바일에선 숨김 */
+  .three-col .right { display: none; }
+  /* center가 표+아코디언 메인 (work-card 저장소 숨김은 global 공통 규칙이 처리) */
   .three-col .center {
-    order: 2;
+    order: 1;
     border-right: none;
     padding: 0;
   }
-  .three-col .center .work-card { display: none; }
 
   /* ── 표 아코디언 — 행 탭 시 그 아래로 작업이 펼쳐짐 ── */
   /* border-collapse(collapse)는 고DPI에서 일부 행 경계의 1px 테두리가
@@ -69,6 +64,8 @@
     border-top: 0;
   }
   tr[data-slug] { scroll-margin-top: 56px; }
+  /* 표 제목 폰트는 모바일에서 본문 크기 그대로 (데스크탑만 키움) */
+  table.sontable tr[data-slug] td { font-size: 13.2px; }
   /* tr/td 둘 다 border-top 제거 — tr 셀렉터의 border-top(1px)이
      border-collapse에서 그려져 제목↔이미지 사이에 선으로 보였음 */
   .accordion-detail,
@@ -103,6 +100,9 @@
     /* 좌우 10px 안쪽 = 표 셀 padding(10px)과 동일 → 태그·컨트롤이 표 본문과
        같은 좌우 라인에 맞음 (기존엔 컨테이너 끝까지 더 퍼져 있었음) */
     padding: 0 10px;
+    /* 모바일은 body 스크롤이라 데스크탑 sticky 해제 (안 그러면 stripe 뒤로 붙음) */
+    position: static;
+    margin: 0;
   }
   /* card-filter 박스를 해제 → All·태그가 table-controls의 직접 flex 항목처럼 동작 */
   .table-controls > .card-filter {
@@ -137,6 +137,11 @@
   .work-card .card-body .bilingual {
     gap: 20px;
   }
+  /* 모바일은 ko/en 둘 다 표시 — 데스크탑 언어 토글 숨김 규칙을 무효화 */
+  .three-col .center[data-lang='ko'] .bilingual > [lang='en'],
+  .three-col .center[data-lang='en'] .bilingual > [lang='ko'] {
+    display: block;
+  }
 
   /* 미디어(이미지/iframe)→설명 간격도 한·영 설명 사이 간격(20px)과 동일하게 */
   .work-card .card-body {
@@ -152,18 +157,4 @@
     padding-top: 8vh;
   }
 
-  /* 모자이크 */
-  .default-state .stripe-mosaic {
-    width: 92vw;
-    max-width: 92vw;
-  }
-
-  /* 진입 인트로 — 모자이크가 전체화면을 덮어 메인을 가리고(다른 건 안 보임),
-     다 떨어지면 JS가 .intro 제거 + hidden 처리해 메인화면을 노출한다.
-     z-index는 stripe-top(100)보다 위. */
-  .default-state.intro {
-    z-index: 200;
-    background: var(--bg);
-    pointer-events: auto;
-  }
 }

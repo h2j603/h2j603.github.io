@@ -95,6 +95,10 @@ table a {
   font-style: normal;
   color: inherit;
 }
+/* 표 제목 안 한글(.ko)의 baseline 미세 이동(top:-0.08em)을 무효화 —
+   한글 행과 영문 행의 글자 수직 위치를 통일해 행 사이 여백을 균일하게 한다.
+   (본문/제목의 .ko baseline 정렬은 표 밖에선 그대로 유지) */
+table.sontable td .ko { top: 0; }
 
 /* ───────────────────────────────────────────────────────────────────────
    hr — 브라운 1px 라인
@@ -131,7 +135,8 @@ th {
    @media (hover: hover) — 터치 기기(모바일)에선 호버 잔상(sticky)이 남아
    지저분하므로 실제 호버 가능한 기기(데스크탑)에서만 적용. */
 @media (hover: hover) {
-  table tr:hover td {
+  /* 펼쳐진(active) 행과 그 아래 detail(카드) 행에는 hover 그라디언트 미적용 */
+  table tr:not([data-active='true']):not(.accordion-detail):hover td {
     background: linear-gradient(to bottom, var(--accent), var(--bg));
   }
 }
@@ -229,6 +234,9 @@ iframe {
   left: 30%;
   width: 40%;
   border-right: 1px solid var(--ink);
+  /* 상단 패딩 0 — sticky 태그영역(.table-controls)이 최상단을 차지하고 자체
+     padding-top으로 stripe 간격을 잡는다 (스크롤 콘텐츠가 위로 안 비침) */
+  padding-top: 0;
   /* 작업영역은 기본 스크롤바 노출 */
   scrollbar-width: auto;
   -ms-overflow-style: auto;
@@ -300,6 +308,7 @@ table tr[data-active='true'] a {
   padding: 2px 10px;
   border: 1px solid var(--ink);
   border-radius: 999px;
+  background: var(--bg); /* sticky 시 뒤 표 글자 가림 */
   text-decoration: none;
   font-style: normal;
   line-height: 1.4;
@@ -371,16 +380,24 @@ table tr[data-active='true'] a {
 }
 
 /* 표 위 컨트롤 — 2줄 레이아웃 (태그가 늘어도 줄 단위로 깔끔히 정리).
-   1줄: All(왼쪽) ··· ↓·EN(오른쪽) / 2줄: 나머지 태그들(양쪽정렬).
-   좌우 10px 안쪽 = 표 셀 padding과 동일 → 컨트롤·태그가 표 본문과 같은 라인. */
+   1줄: All(왼쪽) ··· ↓·EN(오른쪽) / 2줄: 나머지 태그들(왼쪽정렬).
+   justify-content:flex-start + sort-toggle의 margin-left:auto 조합 →
+   1줄 ↓·EN만 오른쪽으로 밀리고 2줄 태그는 왼쪽부터 채워진다.
+   padding 0 → All·EN 양끝이 표 가로선(테이블 너비)의 좌우 끝과 맞는다. */
 .table-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 6px;
+  /* center 스크롤 시 상단 고정 — 영역 배경은 없고(투명), 각 태그/버튼 pill의
+     배경색만으로 글자를 가린다. 표는 pill 사이로 비치며 스크롤된다.
+     z-index로 pill을 표 행 위에 둔다. */
+  position: sticky;
+  top: 0;
+  z-index: 2;
   margin: 0;
-  padding: 0 10px;
+  padding: 20px 0 8px;
 }
 /* card-filter 박스 해제 → All·태그가 table-controls의 직접 flex 항목으로 동작 */
 .table-controls > .card-filter { display: contents; }
@@ -397,6 +414,35 @@ table tr[data-active='true'] a {
   height: 0;
 }
 .card-filter .filter-link:not([data-filter='all']) { order: 4; }
+
+/* ───────────────────────────────────────────────────────────────────────
+   표 아코디언 (데스크탑·모바일 공통) — 표 행 클릭 시 그 아래 detail 행에
+   카드(이미지+본문)가 펼쳐진다. work-card는 평소 .center .content에 저장(숨김)
+   돼 있다가 JS(accOpen)가 detail로 이동시킨다.
+   ─────────────────────────────────────────────────────────────────────── */
+/* 저장소 카드 숨김 — content 직접 자식(저장소)만 숨기고, 표 안 detail로 이동한
+   카드는 보이게 한다. (`.center .work-card`로 넓게 잡으면 펼친 카드까지 숨는다) */
+.three-col .center > .content > .work-card { display: none; }
+/* border-collapse:separate — 행 사이 detail 삽입 시 셀 경계가 깔끔.
+   구분선은 각 td border-top로 유지, table 자체 테두리는 끔 */
+table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; }
+/* 데스크탑 표 제목 폰트 — 표가 center 메인 콘텐츠가 됐으므로 키움.
+   화면 폭에 따라 가변(clamp): 좁은 데스크탑 14px ~ 넓은 화면 18px, 기준 ~1.15vw.
+   tr[data-slug] 행(제목/연도/분류)만 — 펼친 카드(.accordion-detail) 본문은 제외.
+   (모바일은 mobile.css에서 본문 크기로 되돌림) */
+table.sontable tr[data-slug] td { font-size: clamp(14px, 1.15vw, 18px); }
+/* 펼칠 때 행이 상단 stripe(48px) 뒤로 가지 않게 보정 */
+tr[data-slug] { scroll-margin-top: 60px; }
+.accordion-detail,
+.accordion-detail > td { padding: 0; border-top: 0; }
+/* 펼쳐진 카드 — 좌우 10px = 표 제목 셀 padding과 동일 라인, 상단 8px 간격 */
+.accordion-detail .work-card { display: block; padding: 8px 10px 24px; }
+/* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 (미디어+본문만) */
+.accordion-detail .card-title,
+.accordion-detail .card-meta { display: none; }
+/* 메타가 숨겨져 미디어가 첫 요소이므로 위 margin 제거 (간격은 work-card padding-top) */
+.accordion-detail .card-images,
+.accordion-detail .iframe-wrap { margin-top: 0; }
 .lang-toggle,
 .sort-toggle {
   border: 1px solid var(--ink);
@@ -404,7 +450,7 @@ table tr[data-active='true'] a {
   padding: 2px 10px;
   cursor: pointer;
   font: inherit;
-  background: transparent;
+  background: var(--bg); /* sticky 시 뒤 표 글자 가림 */
   color: var(--ink);
   line-height: 1.4;
   flex-shrink: 0;
@@ -450,15 +496,16 @@ table.sontable .col-year { width: 60px; }
 /* 한·영 좌우 병기 — 영어 왼쪽 / 한국어 오른쪽 */
 .bilingual {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
   align-items: start;
 }
 .bilingual > [lang='en'] { order: 1; }
 .bilingual > [lang='ko'] { order: 2; }
-@media (max-width: 720px) {
-  .bilingual { grid-template-columns: 1fr; gap: 10px; }
-}
+/* 데스크탑 — 작품 본문은 2단 병기 대신 언어 토글(EN/KO)에 따라 현재 언어만 1단 표시.
+   (모바일은 mobile.css에서 ko/en 둘 다 stack으로 복원) */
+.three-col .center[data-lang='ko'] .bilingual > [lang='en'] { display: none; }
+.three-col .center[data-lang='en'] .bilingual > [lang='ko'] { display: none; }
 .bilingual > div > p:first-child { padding-top: 0; }
 
 /* 좌측 인트로 h2 — 본문과 띄움 + 사이즈 키움 (기본 대비 20%) */
@@ -488,9 +535,8 @@ table.sontable .col-year { width: 60px; }
 .work-card .card-link {
   /* inline + box-decoration-break:clone — 줄바꿈 시 각 줄 조각마다 pill 배경·
      둥근 모서리·padding이 따로 적용된다(줄별로 나뉜 pill).
-     데스크탑은 white-space:nowrap이라 한 줄(fragment 없음), 모바일(mobile.css)은
-     white-space:normal로 단어 단위 줄바꿈 → 줄별 pill.
-     display는 base/모바일 동일(inline)이라 번들 순서 충돌 없음. */
+     white-space:normal + word-break:keep-all — 짧은 링크는 한 줄, 너무 긴 링크는
+     어절(단어) 단위로 줄바꿈되어 본문 폭을 넘지 않는다(데스크탑·모바일 공통). */
   display: inline;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
@@ -503,7 +549,7 @@ table.sontable .col-year { width: 60px; }
   text-decoration: none;
   font-style: normal;
   line-height: 1.4;
-  white-space: nowrap;
+  white-space: normal;
   word-break: keep-all;
 }
 .intro a::before,
@@ -556,21 +602,6 @@ table.sontable .col-year { width: 60px; }
   margin: 0;
 }
 
-/* 기본 화면 모자이크 — 화면 정중앙에 박힘.
-   페이지 로드 시 정적. 화면 아무데나 첫 클릭 시 떨어지기 시작.
-   viewport 전체에 깔리되 클릭은 뒤로 통과 (pointer-events:none).
-   작품 선택해도 hidden 안 함 — 떨어질 때까지 그대로 화면에 남음. */
-.default-state {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;       /* 정중앙 */
-  justify-content: center;
-  z-index: 50;
-  pointer-events: none;
-}
-.default-state[hidden] { display: none; }
-
 /* 인트로 제목 "hyuk.xyz/about"에서 hyuk.xyz 부분만 홈 링크.
    .intro a의 pill·↗ 효과는 Are.na 본문 링크 전용 — 여기선 일반 텍스트로 reset.
    호버 시 font-weight만 두껍게. */
@@ -592,16 +623,26 @@ table.sontable .col-year { width: 60px; }
 .intro h2 .home-link:hover {
   font-weight: 700;
 }
+
+/* 기본 화면 모자이크 — 화면 정중앙 fixed 오버레이.
+   페이지 로드 시 자동 낙하. pointer-events:none이라 클릭은 뒤(표)로 통과.
+   z-index 50 = 상단 stripe(100) 아래, 3컬럼(1) 위. */
+.default-state {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  pointer-events: none;
+}
+.default-state[hidden] { display: none; }
 .default-state .stripe-mosaic {
   width: 88vw;
   max-width: 88vw;
 }
 /* 셀의 animation은 JS triggerMosaicFall()에서만 부여 — 기본은 정적. */
 @keyframes cell-drop {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(200vh);
-  }
+  from { transform: translateY(0); }
+  to { transform: translateY(200vh); }
 }
