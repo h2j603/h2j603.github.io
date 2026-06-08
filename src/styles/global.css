@@ -370,17 +370,33 @@ table tr[data-active='true'] a {
   line-height: 1.2;
 }
 
-/* 표 위 컨트롤 — 표 컬럼과 같은 grid (title / year / cat) */
+/* 표 위 컨트롤 — 2줄 레이아웃 (태그가 늘어도 줄 단위로 깔끔히 정리).
+   1줄: All(왼쪽) ··· ↓·EN(오른쪽) / 2줄: 나머지 태그들(양쪽정렬).
+   좌우 10px 안쪽 = 표 셀 padding과 동일 → 컨트롤·태그가 표 본문과 같은 라인. */
 .table-controls {
-  display: grid;
-  grid-template-columns: 1fr 60px 110px;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
+  gap: 6px;
   margin: 0;
+  padding: 0 10px;
 }
-.table-controls > .card-filter { padding-left: 10px; }
-.table-controls > .sort-toggle { justify-self: start; margin-left: 10px; }
-/* EN은 cat 칸의 우측 끝 — '종속'으로 보이지 않게 분명한 우측 정렬 */
-.table-controls > .lang-toggle { justify-self: end; }
+/* card-filter 박스 해제 → All·태그가 table-controls의 직접 flex 항목으로 동작 */
+.table-controls > .card-filter { display: contents; }
+/* 시각 순서: All(0) → ↓(1) → EN(2) → 줄바꿈(3) → 태그(4).
+   sort-toggle의 margin-left:auto가 ↓·EN을 1줄 오른쪽으로 밀고, 그 auto 여백이
+   1줄을 다 먹으므로 space-between은 2줄(태그)에만 작용 → 태그가 양쪽정렬된다. */
+.card-filter .filter-link[data-filter='all'] { order: 0; }
+.table-controls > .sort-toggle { order: 1; margin-left: auto; }
+.table-controls > .lang-toggle { order: 2; }
+.table-controls::after {
+  content: "";
+  order: 3;
+  flex-basis: 100%;
+  height: 0;
+}
+.card-filter .filter-link:not([data-filter='all']) { order: 4; }
 .lang-toggle,
 .sort-toggle {
   border: 1px solid var(--ink);
