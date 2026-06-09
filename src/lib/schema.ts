@@ -57,7 +57,16 @@ export const workSchema = z.object({
    * 페이지에서 ko→en 짝이면 2단, 그 외 1단으로 렌더.
    */
   bodyBlocks: z
-    .array(z.object({ lang: z.enum(['ko', 'en']).nullable(), html: z.string() }))
+    .array(
+      z.object({
+        lang: z.enum(['ko', 'en']).nullable(),
+        html: z.string(),
+        /** 이 블록의 마크다운 각주(`[^id]: 내용`)들. 본문엔 `[^id]` 마커가 남는다. */
+        footnotes: z
+          .array(z.object({ id: z.string(), html: z.string() }))
+          .default([]),
+      }),
+    )
     .default([]),
   images: z.array(imageSchema).default([]),
   /** 이미지 그리드 레이아웃 — 각 행의 column 개수 배열. 예: [2,1,3] = 2단/1단/3단 순서.

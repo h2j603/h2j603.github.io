@@ -16,7 +16,7 @@
    inline + position: relative top — 같은 라인 박스 공유 → ::selection이 일정한 사각형. */
 .ko {
   position: relative;
-  top: -0.08em;
+  top: -0.12em;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -109,6 +109,11 @@ hr {
   background-color: var(--ink);
   margin: 15px 0;
 }
+/* about/footer(.left) 가로선 — .third padding(20px)을 상쇄해 컬럼 전체 너비로 */
+.intro hr {
+  margin-left: -20px;
+  margin-right: -20px;
+}
 
 /* ───────────────────────────────────────────────────────────────────────
    표 — 원본 그대로
@@ -129,18 +134,12 @@ th {
   border-collapse: collapse;
   padding: 10px;
 }
-/* 행 hover — lawngreen → 보라(#b362ff)로 치환된 그라디언트.
-   배경을 <tr>에 주면 iOS Safari가 행 전체 폭으로 칠하지 않고 오른쪽을
-   잘라먹어 여백이 남는다. 셀(td)에 직접 배경을 줘서 full-width 보장.
-   @media (hover: hover) — 터치 기기(모바일)에선 호버 잔상(sticky)이 남아
-   지저분하므로 실제 호버 가능한 기기(데스크탑)에서만 적용. */
+/* 행 hover — active(펼침)와 동일한 밑줄(border-bottom). 데스크탑만. */
 @media (hover: hover) {
-  /* 펼쳐진(active) 행과 그 아래 detail(카드) 행에는 hover 그라디언트 미적용 */
-  table tr:not([data-active='true']):not(.accordion-detail):hover td {
-    background: linear-gradient(to bottom, var(--accent), var(--bg));
+  table tr[data-slug]:hover td a {
+    border-bottom: 1px solid currentColor;
   }
 }
-
 /* ───────────────────────────────────────────────────────────────────────
    이미지 / iframe (원본 그대로 + 비율 유지 보강)
    ─────────────────────────────────────────────────────────────────────── */
@@ -193,8 +192,8 @@ iframe {
 .three-col .left,
 .three-col .center,
 .three-col .right {
-  top: 60px;
-  height: calc(100% - 60px);
+  top: 84px; /* stripe 3줄(24×3=72) + 여유 12 */
+  height: calc(100% - 84px);
 }
 /* stripe-row 안 line-height 잔여 픽셀 차단 — height: 24px 정확히 보장 */
 .stripe-row { line-height: 0; }
@@ -222,21 +221,51 @@ iframe {
 }
 .three-col .third::-webkit-scrollbar { display: none; }
 
+/* 컬럼 세로 구분선 — three-col 안 absolute, 화면 전체 높이.
+   z-index 6: 네비(table-head z5)·이미지(z4) 모두 위 → 끊김 없음(세로선>네비>이미지).
+   three-col(z1) 안이라 stripe(z100) 구간에선 띠 뒤로 가려진다(상단부는 col-divider-top). */
+.col-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--ink);
+  z-index: 6;
+  pointer-events: none;
+}
+.col-divider.d1 { left: 20%; }
+.col-divider.d2 { left: 80%; }
+/* 표 컬럼 기준선 — center(20~80%) 안에서 제목 60%/연도 20%/분류 20% 경계 */
+.col-divider.d3 { left: 32%; }
+.col-divider.d4 { left: 68%; }
+/* 세로선 상단부 — stripe 구간(0~84px)을 띠 위로 지난다 (fixed, z200). */
+.col-divider-top {
+  position: fixed;
+  top: 0;
+  height: 84px;
+  width: 1px;
+  background: var(--ink);
+  z-index: 200; /* stripe-top(100) 위 */
+  pointer-events: none;
+}
+.col-divider-top.d1 { left: 20%; }
+.col-divider-top.d2 { left: 80%; }
+.col-divider-top.d3 { left: 32%; }
+.col-divider-top.d4 { left: 68%; }
+
 .three-col .left {
   background-color: var(--bg);
-  width: 30%;
+  width: 20%;
   left: 0;
-  border-right: 1px solid var(--ink);
   overflow-y: hidden;
 }
 .three-col .center {
   background-color: var(--bg);
-  left: 30%;
-  width: 40%;
-  border-right: 1px solid var(--ink);
-  /* 상단 패딩 0 — sticky 태그영역(.table-controls)이 최상단을 차지하고 자체
-     padding-top으로 stripe 간격을 잡는다 (스크롤 콘텐츠가 위로 안 비침) */
-  padding-top: 0;
+  left: 20%;
+  width: 60%;
+  /* 좌우 패딩 0 — 표가 center(20~80%)를 꽉 채워 컬럼 경계가 정확히 56%/68%에
+     오게 한다(세로 구분선 d3/d4와 정렬). 상단 0은 sticky 태그영역용. */
+  padding: 0 0 20px;
   /* 작업영역은 기본 스크롤바 노출 */
   scrollbar-width: auto;
   -ms-overflow-style: auto;
@@ -252,8 +281,8 @@ iframe {
 }
 .three-col .right {
   background-color: var(--bg);
-  left: 70%;
-  width: 30%;
+  left: 80%;
+  width: 20%;
   /* 표가 길어지면 스크롤 가능하게 */
 }
 .three-col .content {
@@ -267,7 +296,7 @@ table tr[data-active='true'] a {
   border-bottom: 1px solid currentColor;
 }
 
-/* 인물 멘션(@) 링크 — 화살표 대신 인물 아이콘 + 채도 높은 갈색 */
+/* 인물 멘션(@) 링크 — 화살표 대신 인물 아이콘 + 채도 높은 갈색 (예전 스타일) */
 .intro a.mention,
 .work-card .card-body a.mention,
 .work-card .card-link.mention {
@@ -305,17 +334,17 @@ table tr[data-active='true'] a {
 }
 .card-filter .filter-link {
   display: inline-block;
-  padding: 2px 10px;
-  border: 1px solid var(--ink);
-  border-radius: 999px;
+  font-family: t26-carbon, monospace;
+  font-size: 18px;
   background: var(--bg); /* sticky 시 뒤 표 글자 가림 */
   text-decoration: none;
   font-style: normal;
   line-height: 1.4;
+  color: var(--ink);
 }
+/* 선택된 태그 — pill 대신 밑줄로 강조 */
 .card-filter .filter-link[data-active='true'] {
-  background: linear-gradient(to bottom, var(--accent), var(--bg));
-  border-color: var(--accent);
+  text-decoration: underline;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -379,41 +408,35 @@ table tr[data-active='true'] a {
   line-height: 1.2;
 }
 
-/* 표 위 컨트롤 — 2줄 레이아웃 (태그가 늘어도 줄 단위로 깔끔히 정리).
-   1줄: All(왼쪽) ··· ↓·EN(오른쪽) / 2줄: 나머지 태그들(왼쪽정렬).
-   justify-content:flex-start + sort-toggle의 margin-left:auto 조합 →
-   1줄 ↓·EN만 오른쪽으로 밀리고 2줄 태그는 왼쪽부터 채워진다.
-   padding 0 → All·EN 양끝이 표 가로선(테이블 너비)의 좌우 끝과 맞는다. */
-.table-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-  /* center 스크롤 시 상단 고정 — 영역 배경은 없고(투명), 각 태그/버튼 pill의
-     배경색만으로 글자를 가린다. 표는 pill 사이로 비치며 스크롤된다.
-     z-index로 pill을 표 행 위에 둔다. */
+/* 표 헤더(컨트롤 + hr) — center 스크롤 시 통째로 상단 고정.
+   center padding-top:0이라 헤더가 최상단을 차지하고, padding-top으로 stripe 간격 +
+   스크롤 콘텐츠 가림 배경을 만든다. */
+.table-head {
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: 5; /* 작품 이미지/iframe(z4)보다 위 — 스크롤 시 헤더가 미디어를 가린다 */
+  background: var(--bg);
   margin: 0;
-  padding: 20px 0 8px;
+  padding-top: 20px;
 }
-/* card-filter 박스 해제 → All·태그가 table-controls의 직접 flex 항목으로 동작 */
-.table-controls > .card-filter { display: contents; }
-/* 시각 순서: All(0) → ↓(1) → EN(2) → 줄바꿈(3) → 태그(4).
-   sort-toggle의 margin-left:auto가 ↓·EN을 1줄 오른쪽으로 밀고, 그 auto 여백이
-   1줄을 다 먹으므로 space-between은 2줄(태그)에만 작용 → 태그가 양쪽정렬된다. */
-.card-filter .filter-link[data-filter='all'] { order: 0; }
-.table-controls > .sort-toggle { order: 1; margin-left: auto; }
-.table-controls > .lang-toggle { order: 2; }
-.table-controls::after {
-  content: "";
-  order: 3;
-  flex-basis: 100%;
-  height: 0;
+.table-head-hr { margin: 8px 0 0; }
+/* 컨트롤 한 줄 — 표 컬럼 그리드(60/20/20)에 맞춰: All·태그=제목칸, ↓=연도칸, EN=분류칸.
+   각 칸 안 요소는 좌측 정렬 + padding-left 10px로 표 셀 텍스트와 같은 라인. */
+.table-controls {
+  display: grid;
+  grid-template-columns: 20% 60% 20%;
+  align-items: center;
+  margin: 0;
 }
-.card-filter .filter-link:not([data-filter='all']) { order: 4; }
+/* 표 컬럼 순서에 맞춤(HTML 순서 = ↓ / All·태그 / EN): 연도칸 / 제목칸 / 분류칸 */
+.table-controls > .sort-toggle { justify-self: start; margin-left: 10px; }
+.table-controls > .card-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-left: 10px;
+}
+.table-controls > .lang-toggle { justify-self: start; margin-left: 10px; }
 
 /* ───────────────────────────────────────────────────────────────────────
    표 아코디언 (데스크탑·모바일 공통) — 표 행 클릭 시 그 아래 detail 행에
@@ -425,45 +448,129 @@ table tr[data-active='true'] a {
 .three-col .center > .content > .work-card { display: none; }
 /* border-collapse:separate — 행 사이 detail 삽입 시 셀 경계가 깔끔.
    구분선은 각 td border-top로 유지, table 자체 테두리는 끔 */
-table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; }
+/* padding:0 — table,td 공통 padding(10px)이 표를 좌우로 들여 세로선과 어긋나게 함.
+   table 자체 padding을 0으로 해 td 경계 = 세로선(d1/d3/d4/d2)에 정확히 맞춘다. */
+table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; padding: 0; }
+/* 표 맨 위 가로선 제거 — 필터/정렬 후에도 "보이는 첫 행"의 td 윗 테두리 없앰(JS가 클래스 부여) */
+table.sontable tr[data-slug].first-visible td { border-top: 0; }
 /* 데스크탑 표 제목 폰트 — 표가 center 메인 콘텐츠가 됐으므로 키움.
    화면 폭에 따라 가변(clamp): 좁은 데스크탑 14px ~ 넓은 화면 18px, 기준 ~1.15vw.
    tr[data-slug] 행(제목/연도/분류)만 — 펼친 카드(.accordion-detail) 본문은 제외.
    (모바일은 mobile.css에서 본문 크기로 되돌림) */
 table.sontable tr[data-slug] td { font-size: clamp(14px, 1.15vw, 18px); }
 /* 펼칠 때 행이 상단 stripe(48px) 뒤로 가지 않게 보정 */
-tr[data-slug] { scroll-margin-top: 60px; }
+tr[data-slug] { scroll-margin-top: 84px; }
+/* 표 분류(cat) 칸 — 태그를 pill 없이 텍스트로, 왼끝 정렬(d4 선 기준), · 구분. */
+.cat-cell { text-align: left; }
+.cat-cell .cat-tag { color: var(--ink); white-space: nowrap; }
+.cat-cell .cat-tag + .cat-tag::before { content: ' · '; }
+
+/* ───────────────────────────────────────────────────────────────────────
+   각주 — 본문 마커(fn-ref) + 우측(.right) 패널
+   ─────────────────────────────────────────────────────────────────────── */
+.fn-data { display: none; } /* 저장용; JS가 .right로 복제 */
+.fn-ref { font-size: 0.7em; vertical-align: super; line-height: 0; }
+/* 마커는 본문 a의 pill 스타일을 받지 않게 (specificity 맞춤) */
+.work-card .card-body .fn-ref a,
+.intro .fn-ref a {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0; /* 번호 숨기고 ■로 표시 */
+}
+/* 마커는 번호 대신 작은 정사각형 (↗ 아이콘도 제거) */
+.work-card .card-body .fn-ref a::before,
+.intro .fn-ref a::before { content: '■'; font-size: 9px; }
+.fn-ref a:hover { text-decoration: underline; }
+.fn-panel-title {
+  font-family: t26-carbon, monospace;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  text-align: left;
+  margin-bottom: 14px;
+}
+.fn-panel-list { list-style: none; margin: 0; padding: 0; }
+.fn-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink);
+  scroll-margin-top: 20px;
+  transition: background 0.3s;
+}
+.fn-num { color: var(--accent); flex-shrink: 0; font-size: 0; line-height: 1.6; }
+.fn-num::before { content: '■'; font-size: 9px; }
+.fn-item.fn-hl { background: #efe3ff; } /* 마커 클릭 시 잠깐 강조 */
 .accordion-detail,
 .accordion-detail > td { padding: 0; border-top: 0; }
 /* 펼쳐진 카드 — 좌우 10px = 표 제목 셀 padding과 동일 라인, 상단 8px 간격 */
-.accordion-detail .work-card { display: block; padding: 8px 10px 24px; }
-/* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 (미디어+본문만) */
+/* 아코디언 펼침을 표 3컬럼 그리드(20/60/20)에 맞춰 배치:
+   규격=연도칸(1), 이미지·본문=제목칸(2), web 링크=분류칸(3). */
+.accordion-detail .work-card {
+  display: grid;
+  grid-template-columns: 20% 60% 20%;
+  align-items: start;
+  row-gap: 14px;
+  padding: 8px 0 24px;
+}
+/* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 */
 .accordion-detail .card-title,
 .accordion-detail .card-meta { display: none; }
-/* 메타가 숨겨져 미디어가 첫 요소이므로 위 margin 제거 (간격은 work-card padding-top) */
+/* 이미지/iframe: 제목칸 위(row1). 규격·본문·링크: 같은 행(row2) 윗쪽 정렬 — 같은 위계. */
 .accordion-detail .card-images,
-.accordion-detail .iframe-wrap { margin-top: 0; }
+.accordion-detail .iframe-wrap {
+  grid-column: 2;
+  grid-row: 1;
+  margin-top: 0;
+  padding: 0; /* 이미지·iframe은 제목칸 너비를 꽉 채움 (텍스트만 좌우 여백) */
+}
+/* grid에선 padding-top:65% aspect 기법이 안 먹어 높이가 0 → aspect-ratio로 높이 확보 */
+.accordion-detail .iframe-wrap { aspect-ratio: 100 / 65; }
+.accordion-detail .card-spec { grid-column: 1; grid-row: 2; padding: 0 10px; }
+/* specificity 높임 — .work-card .card-body{margin-top:16}이 뒤에서 덮는 것 방지 */
+.accordion-detail .work-card .card-body { grid-column: 2; grid-row: 2; padding: 0 10px; margin-top: 0; }
+.accordion-detail .card-link-wrap { grid-column: 3; grid-row: 2; padding: 0 10px; margin: 0; }
+/* 규격·링크는 본문과 같은 크기·스타일 */
+/* 규격·본문·링크 폰트 크기 통일 */
+.accordion-detail .card-spec,
+.accordion-detail .work-card .card-body,
+.accordion-detail .card-link,
+.accordion-detail .card-link-wrap { font-size: 14.5px; }
+.accordion-detail .card-spec p { padding-top: 0; margin-top: 0; line-height: 1.5; }
+.accordion-detail .card-spec p + p { margin-top: 4px; }
+/* 작품 이미지/iframe은 세로 구분선(z3) 위 레이어 — 펼친 카드 미디어가 선을 가린다 */
+.work-card .card-images,
+.work-card .iframe-wrap { position: relative; z-index: 4; }
 .lang-toggle,
 .sort-toggle {
-  border: 1px solid var(--ink);
-  border-radius: 999px;
-  padding: 2px 10px;
   cursor: pointer;
-  font: inherit;
+  font-family: t26-carbon, monospace;
+  font-size: 18px;
   background: var(--bg); /* sticky 시 뒤 표 글자 가림 */
   color: var(--ink);
   line-height: 1.4;
   flex-shrink: 0;
+  border: none;
+  padding: 0;
 }
 .lang-toggle:hover,
 .sort-toggle:hover {
-  background: linear-gradient(to bottom, var(--accent), var(--bg));
+  text-decoration: underline;
 }
 
 /* 표 컬럼 너비 — year는 controls의 sort 버튼과 grid-align 위해 고정.
    category는 고정 폭을 빼서 내용(가장 긴 카테고리)에 맞춰 자동 크기 →
    짧은 행의 과도한 우측 빈 공간 제거(가장 긴 행이 우측 끝에 닿음, 좌우 여백 대칭). */
-table.sontable .col-year { width: 60px; }
+/* 표 컬럼 폭 고정 — 내용에 따라 칸이 움직이지 않게 명확한 비율(3:1:1). */
+table.sontable { table-layout: fixed; }
+table.sontable .col-title { width: 60%; }
+table.sontable .col-year  { width: 20%; }
+table.sontable .col-cat   { width: 20%; }
 .work-card .card-meta {
   font-size: 10px;
   letter-spacing: 0.06em;
@@ -473,6 +580,10 @@ table.sontable .col-year { width: 60px; }
 
 /* 미디어(이미지/iframe)→설명 간격 — 한·영 설명 사이 간격(.bilingual gap)과
    동일하게 맞춘다. 데스크탑 16px(=.bilingual gap), 모바일 20px(mobile.css). */
+.work-card .card-body,
+.work-card .card-link {
+  font-size: 14.5px; /* 본문 + 웹링크(웹 작업) 동일 크기, 기본보다 조금 키움 */
+}
 .work-card .card-body {
   margin-top: 16px;
 }
@@ -502,10 +613,10 @@ table.sontable .col-year { width: 60px; }
 }
 .bilingual > [lang='en'] { order: 1; }
 .bilingual > [lang='ko'] { order: 2; }
-/* 데스크탑 — 작품 본문은 2단 병기 대신 언어 토글(EN/KO)에 따라 현재 언어만 1단 표시.
-   (모바일은 mobile.css에서 ko/en 둘 다 stack으로 복원) */
-.three-col .center[data-lang='ko'] .bilingual > [lang='en'] { display: none; }
-.three-col .center[data-lang='en'] .bilingual > [lang='ko'] { display: none; }
+/* 데스크탑 — 작품 본문·about·footer 모두 2단 병기 대신 언어 토글(EN/KO)에 따라
+   현재 언어만 1단 표시. (모바일은 mobile.css에서 ko/en 둘 다 stack으로 복원) */
+.three-col[data-lang='ko'] .bilingual > [lang='en'] { display: none; }
+.three-col[data-lang='en'] .bilingual > [lang='ko'] { display: none; }
 .bilingual > div > p:first-child { padding-top: 0; }
 
 /* 좌측 인트로 h2 — 본문과 띄움 + 사이즈 키움 (기본 대비 20%) */
@@ -540,11 +651,10 @@ table.sontable .col-year { width: 60px; }
   display: inline;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  /* 상하 padding 0 — pill 높이(위아래여백)를 조금 줄임.
-     (inline pill 배경 높이는 line-height가 아니라 padding이 좌우함) */
-  padding: 0 8px 0 5px;
+  /* 상하 padding 0 — pill 높이(위아래여백)를 조금 줄임. 좌우는 컴팩트하게. */
+  padding: 0 6px;
   background: #ececec;
-  border-radius: 999px;
+  border-radius: 999px; /* 둥근 모서리 (예전 스타일) */
   color: var(--accent);
   text-decoration: none;
   font-style: normal;
