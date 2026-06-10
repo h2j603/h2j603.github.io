@@ -23,9 +23,49 @@
    디자인 토큰 — hyuk repo 원본을 lawngreen→#b362ff, orangered→#775d4f로 치환
    ─────────────────────────────────────────────────────────────────────── */
 :root {
+  color-scheme: light;
   --bg: #ffffff;
   --ink: #775d4f;          /* hyuk repo의 orangered → 브라운 */
   --accent: #b362ff;       /* hyuk repo의 lawngreen → 보라 */
+  --pill-bg: #ececec;      /* 본문 링크 pill 배경 */
+  --mention: #b87333;      /* @멘션 링크 */
+  --fn-hl: #efe3ff;        /* 각주 클릭 강조 */
+  --scrollbar: rgba(0, 0, 0, 0.35);
+  --scrollbar-hover: rgba(0, 0, 0, 0.55);
+  --muted: #a08d80;
+  /* 상세 페이지([slug].astro)가 참조하는 별칭 */
+  --line: var(--ink);
+  --brown: var(--ink);
+}
+
+/* 다크 팔레트 — 따뜻한 근검정 배경 + 밝은 브라운 잉크 + 살짝 밝힌 보라.
+   수동 토글(html[data-theme]) > 시스템 설정(prefers-color-scheme) 순으로 적용.
+   상단 줄무늬·모자이크(#a966ff/#775d4f)는 브랜드 띠라 양쪽 테마 공통. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #171311;
+  --ink: #c9b5a5;
+  --accent: #c389ff;
+  --pill-bg: #2c2521;
+  --mention: #d28e4d;
+  --fn-hl: #3c2a59;
+  --scrollbar: rgba(255, 255, 255, 0.35);
+  --scrollbar-hover: rgba(255, 255, 255, 0.55);
+  --muted: #8a7567;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #171311;
+    --ink: #c9b5a5;
+    --accent: #c389ff;
+    --pill-bg: #2c2521;
+    --mention: #d28e4d;
+    --fn-hl: #3c2a59;
+    --scrollbar: rgba(255, 255, 255, 0.35);
+    --scrollbar-hover: rgba(255, 255, 255, 0.55);
+    --muted: #8a7567;
+  }
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -275,11 +315,11 @@ iframe {
 .three-col .center::-webkit-scrollbar { width: 10px; height: 10px; }
 .three-col .center::-webkit-scrollbar-track { background: transparent; }
 .three-col .center::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--scrollbar);
   border-radius: 5px;
 }
 .three-col .center::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--scrollbar-hover);
 }
 .three-col .right {
   background-color: var(--bg);
@@ -302,7 +342,7 @@ table tr[data-active='true'] a {
 .intro a.mention,
 .work-card .card-body a.mention,
 .work-card .card-link.mention {
-  color: #b87333;
+  color: var(--mention);
 }
 .intro a.mention::before,
 .work-card .card-body a.mention::before,
@@ -320,7 +360,7 @@ table tr[data-active='true'] a {
 .intro a.mention:hover,
 .work-card .card-body a.mention:hover,
 .work-card .card-link.mention:hover {
-  background: linear-gradient(to bottom, #b87333, var(--bg));
+  background: linear-gradient(to bottom, var(--mention), var(--bg));
   color: var(--accent);
 }
 
@@ -521,7 +561,7 @@ tr[data-slug] { scroll-margin-top: 84px; }
 .fn-num { display: none; } /* 번호 ■ 제거 — 안착 네모가 대체 */
 /* 각주 사이 가로 구분선 (about처럼) — padding-top은 위 24px 유지 */
 .fn-item + .fn-item { border-top: 1px solid var(--ink); }
-.fn-item.fn-hl { background: #efe3ff; } /* 마커 클릭 시 잠깐 강조 */
+.fn-item.fn-hl { background: var(--fn-hl); } /* 마커 클릭 시 잠깐 강조 */
 /* 각주 연결선 — 마커 ■ ↔ 각주 ■ 보라선 (세로선 z6 위) */
 .fn-links {
   position: fixed;
@@ -573,7 +613,8 @@ tr[data-slug] { scroll-margin-top: 84px; }
 .work-card .card-images,
 .work-card .iframe-wrap { position: relative; z-index: 4; }
 .lang-toggle,
-.sort-toggle {
+.sort-toggle,
+.theme-toggle {
   cursor: pointer;
   font-family: t26-carbon, monospace;
   font-size: 18px;
@@ -585,8 +626,16 @@ tr[data-slug] { scroll-margin-top: 84px; }
   padding: 0;
 }
 .lang-toggle:hover,
-.sort-toggle:hover {
+.sort-toggle:hover,
+.theme-toggle:hover {
   text-decoration: underline;
+}
+/* 다크모드 토글 — 분류칸(3) 오른끝. 같은 칸 왼끝의 EN/KO와 마주 본다. */
+.table-controls > .theme-toggle {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  margin-right: 10px;
 }
 
 /* 표 컬럼 너비 — year는 controls의 sort 버튼과 grid-align 위해 고정.
@@ -699,7 +748,7 @@ table.sontable .col-cat   { width: 20%; }
   -webkit-box-decoration-break: clone;
   /* 상하 padding 0 — pill 높이(위아래여백)를 조금 줄임. 좌우는 컴팩트하게. */
   padding: 0 6px;
-  background: #ececec;
+  background: var(--pill-bg);
   border-radius: 999px; /* 둥근 모서리 (예전 스타일) */
   color: var(--accent);
   text-decoration: none;
