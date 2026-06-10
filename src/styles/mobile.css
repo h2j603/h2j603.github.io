@@ -90,6 +90,8 @@
   /* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 (미디어+본문만) */
   .accordion-detail .card-title,
   .accordion-detail .card-meta { display: none; }
+  /* 규격+링크 — 모바일은 2단 대신 세로로 쌓음 (좁아서) */
+  .accordion-detail .card-meta-row { flex-direction: column; gap: 6px; }
 
   /* 모바일은 body 스크롤 → 헤더 고정 해제, 컨트롤은 grid 대신 2줄 flex로 되돌림 */
   .table-head { position: static; }

@@ -12,7 +12,7 @@ import {
   parseDescriptionMetadata,
   readMarkdown,
 } from './arena.js';
-import { markdownToHtml, markdownToHtmlWithFootnotes } from './body.js';
+import { markdownToHtml } from './body.js';
 import { parseMarker } from './intro.js';
 import {
   downloadImages,
@@ -191,13 +191,9 @@ async function buildOne(
   }
 
   // 텍스트 블록들을 HTML로 변환 (마커 분류는 이미 됨). 채널 순서 보존.
-  // 각주(`[^id]`)는 분리해 block.footnotes로, 본문엔 클릭 마커만 남긴다.
   const bodyBlocks = textBlocks.map((tb, i) => {
-    const { html, footnotes } = markdownToHtmlWithFootnotes(
-      tb.markdown,
-      `${ctx} block ${i + 1}`,
-    );
-    return { lang: tb.lang, html, footnotes };
+    const html = markdownToHtml(tb.markdown, `${ctx} block ${i + 1}`);
+    return { lang: tb.lang, html };
   });
   // 호환: bodyKo/En은 마커 매칭 블록들을 join (라이브러리 등 외부 쓰임 대비).
   const bodyKo = bodyBlocks.filter((b) => b.lang === 'ko').map((b) => b.html).join('\n');
