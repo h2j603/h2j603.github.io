@@ -752,10 +752,6 @@ table.sontable .col-cat   { width: 20%; }
   justify-content: center;
   z-index: 50;
   pointer-events: none;
-  /* 레이어 스타일 곱하기 — 오버레이 전체(사각형들)를 뒤 페이지(표·텍스트)와 multiply.
-     셀 각각이 아니라 오버레이 레벨에 줘야 별도 스태킹 컨텍스트 안에 갇히지 않고
-     실제 뒤 콘텐츠와 섞인다. */
-  mix-blend-mode: multiply;
 }
 .default-state[hidden] { display: none; }
 .default-state .stripe-mosaic {
