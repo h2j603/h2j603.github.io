@@ -48,7 +48,7 @@ html {
 body {
   height: 100%;
   overflow: hidden;
-  font-size: 13.2px; /* 12px × 1.1 (전체 10% 키움) */
+  font-size: 15px; /* .left(인트로/about/footer)·.right 등 전역 프로즈 크기 */
   font-family: neue-haas-unica, 'HakgyoansimBareondotum', sans-serif;
   font-weight: 500; /* 400 → 500, 전체적으로 살짝 두껍게 */
   font-style: normal;
@@ -334,19 +334,24 @@ table tr[data-active='true'] a {
   flex-wrap: wrap;
   gap: 6px;
 }
+/* 네비 — carbon 폰트 + 속 빈 윤곽선 pill */
 .card-filter .filter-link {
   display: inline-block;
   font-family: t26-carbon, monospace;
-  font-size: 18px;
-  background: var(--bg); /* sticky 시 뒤 표 글자 가림 */
+  font-size: 23px;
+  line-height: 1;
+  padding: 5px 14px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--bg); /* 속 빈 윤곽선 (sticky 시 뒤 표 글자 가림) */
+  color: var(--ink);
   text-decoration: none;
   font-style: normal;
-  line-height: 1.4;
-  color: var(--ink);
 }
-/* 선택된 태그 — pill 대신 밑줄로 강조 */
+/* 선택된 태그 — 윤곽선 채움 */
 .card-filter .filter-link[data-active='true'] {
-  text-decoration: underline;
+  background: var(--ink);
+  color: var(--bg);
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -421,7 +426,7 @@ table tr[data-active='true'] a {
   margin: 0;
   padding-top: 20px;
 }
-.table-head-hr { margin: 8px 0 0; }
+.table-head-hr { margin: 3px 0 0; }
 /* 컨트롤 한 줄 — 표 컬럼 그리드(60/20/20)에 맞춰: All·태그=제목칸, ↓=연도칸, EN=분류칸.
    각 칸 안 요소는 좌측 정렬 + padding-left 10px로 표 셀 텍스트와 같은 라인. */
 .table-controls {
@@ -459,7 +464,12 @@ table.sontable tr[data-slug].first-visible td { border-top: 0; }
    화면 폭에 따라 가변(clamp): 좁은 데스크탑 14px ~ 넓은 화면 18px, 기준 ~1.15vw.
    tr[data-slug] 행(제목/연도/분류)만 — 펼친 카드(.accordion-detail) 본문은 제외.
    (모바일은 mobile.css에서 본문 크기로 되돌림) */
-table.sontable tr[data-slug] td { font-size: clamp(14px, 1.15vw, 18px); }
+table.sontable tr[data-slug] td { font-size: clamp(14px, 1.15vw, 18px); transition: color 0.15s; }
+/* 호버 — 행이 아니라 칸(셀) 단위로 보라색 */
+table.sontable tr[data-slug] td:hover,
+table.sontable tr[data-slug] td:hover a,
+table.sontable tr[data-slug] td:hover .cat-tag { color: var(--accent); }
+table.sontable tr[data-slug] td:hover .num-badge { color: var(--accent); border-color: var(--accent); }
 /* 펼칠 때 행이 상단 stripe(48px) 뒤로 가지 않게 보정 */
 tr[data-slug] { scroll-margin-top: 84px; }
 /* 표 분류(cat) 칸 — 태그를 pill 없이 텍스트로, 왼끝 정렬(d4 선 기준), · 구분. */
@@ -467,71 +477,6 @@ tr[data-slug] { scroll-margin-top: 84px; }
 .cat-cell .cat-tag { color: var(--ink); white-space: nowrap; }
 .cat-cell .cat-tag + .cat-tag::before { content: ' · '; }
 
-/* ───────────────────────────────────────────────────────────────────────
-   각주 — 본문 마커(fn-ref) + 우측(.right) 패널
-   ─────────────────────────────────────────────────────────────────────── */
-.fn-data { display: none; } /* 저장용; JS가 .right로 복제 */
-.fn-ref { font-size: 0.7em; vertical-align: super; line-height: 0; }
-/* 마커는 본문 a의 pill 스타일을 받지 않게 (specificity 맞춤) */
-.work-card .card-body .fn-ref a,
-.intro .fn-ref a {
-  background: none;
-  padding: 0;
-  border-radius: 0;
-  color: var(--accent);
-  text-decoration: none;
-  font-size: 0; /* 번호 숨기고 ■로 표시 */
-}
-/* 마커는 번호 대신 작은 정사각형 box (안착 네모와 동일한 스타일, ↗ 아이콘 제거) */
-.work-card .card-body .fn-ref a::before,
-.intro .fn-ref a::before {
-  content: '';
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background: var(--accent);
-  vertical-align: middle;
-}
-.fn-ref a:hover { text-decoration: underline; }
-.fn-panel-title {
-  font-family: t26-carbon, monospace;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  text-align: left;
-  margin-bottom: 14px;
-}
-.fn-panel-list { list-style: none; margin: 0; padding: 0; }
-.fn-item {
-  text-align: center; /* 가운데 정렬 */
-  padding-top: 24px;  /* 위에 안착 네모 자리 (모든 각주 동일 — 네모 간격 일정) */
-  margin-bottom: 18px;
-  /* 좌우 margin -20 + padding 20 → 구분선(border-top)이 .right 전체 너비로,
-     텍스트는 원래 폭 가운데 유지 (about 가로선과 동일 방식) */
-  margin-left: -20px;
-  margin-right: -20px;
-  padding-left: 20px;
-  padding-right: 20px;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--ink);
-  scroll-margin-top: 20px;
-  transition: background 0.3s;
-}
-.fn-num { display: none; } /* 번호 ■ 제거 — 안착 네모가 대체 */
-/* 각주 사이 가로 구분선 (about처럼) — padding-top은 위 24px 유지 */
-.fn-item + .fn-item { border-top: 1px solid var(--ink); }
-.fn-item.fn-hl { background: #efe3ff; } /* 마커 클릭 시 잠깐 강조 */
-/* 각주 연결선 — 마커 ■ ↔ 각주 ■ 보라선 (세로선 z6 위) */
-.fn-links {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 7;
-  pointer-events: none;
-}
-.fn-links line { stroke: var(--accent); stroke-width: 0.6; }
 .accordion-detail,
 .accordion-detail > td { padding: 0; border-top: 0; }
 /* 펼쳐진 카드 — 좌우 10px = 표 제목 셀 padding과 동일 라인, 상단 8px 간격 */
@@ -557,16 +502,16 @@ tr[data-slug] { scroll-margin-top: 84px; }
 }
 /* grid에선 padding-top:65% aspect 기법이 안 먹어 높이가 0 → aspect-ratio로 높이 확보 */
 .accordion-detail .iframe-wrap { aspect-ratio: 100 / 65; }
-.accordion-detail .card-spec { grid-column: 1; grid-row: 2; padding: 0 10px; }
+/* 규격(card-spec)은 이제 card-body 안 본문 위에 위치 — 본문과 같은 칸(제목칸)에 흐른다 */
 /* specificity 높임 — .work-card .card-body{margin-top:16}이 뒤에서 덮는 것 방지 */
 .accordion-detail .work-card .card-body { grid-column: 2; grid-row: 2; padding: 0 10px; margin-top: 0; }
 .accordion-detail .card-link-wrap { grid-column: 3; grid-row: 2; padding: 0 10px; margin: 0; }
-/* 규격·링크는 본문과 같은 크기·스타일 */
-/* 규격·본문·링크 폰트 크기 통일 */
-.accordion-detail .card-spec,
+/* 규격·본문·링크 폰트 크기 통일 (키움) */
 .accordion-detail .work-card .card-body,
 .accordion-detail .card-link,
-.accordion-detail .card-link-wrap { font-size: 14.5px; }
+.accordion-detail .card-link-wrap { font-size: 17px; }
+/* 규격 — 본문 위, 살짝 아래 간격 */
+.accordion-detail .card-spec { margin-bottom: 12px; }
 .accordion-detail .card-spec p { padding-top: 0; margin-top: 0; line-height: 1.5; }
 .accordion-detail .card-spec p + p { margin-top: 4px; }
 /* 작품 이미지/iframe은 세로 구분선(z3) 위 레이어 — 펼친 카드 미디어가 선을 가린다 */
@@ -628,7 +573,7 @@ table.sontable .col-cat   { width: 20%; }
    동일하게 맞춘다. 데스크탑 16px(=.bilingual gap), 모바일 20px(mobile.css). */
 .work-card .card-body,
 .work-card .card-link {
-  font-size: 14.5px; /* 본문 + 웹링크(웹 작업) 동일 크기, 기본보다 조금 키움 */
+  font-size: 16px; /* 본문 + 웹링크(웹 작업) 동일 크기 */
 }
 .work-card .card-body {
   margin-top: 16px;
@@ -797,6 +742,8 @@ table.sontable .col-cat   { width: 20%; }
   width: 88vw;
   max-width: 88vw;
 }
+/* 인트로 모자이크 사각형 — 레이어 스타일 곱하기(multiply)로 뒤 콘텐츠와 섞임 */
+.default-state .stripe-mosaic > div { mix-blend-mode: multiply; }
 /* 셀의 animation은 JS triggerMosaicFall()에서만 부여 — 기본은 정적. */
 @keyframes cell-drop {
   from { transform: translateY(0); }
