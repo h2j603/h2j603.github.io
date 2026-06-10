@@ -128,7 +128,6 @@ const defaultMosaic = fs.readFileSync(
               </nav>
             )}
             <button type="button" class="lang-toggle" data-lang="en">KO</button>
-            <button type="button" class="theme-toggle" aria-label="라이트/다크 테마 전환">☾</button>
           </div>
           <hr class="table-head-hr" />
         </div>
@@ -509,29 +508,6 @@ const defaultMosaic = fs.readFileSync(
           langToggle.textContent = next === 'ko' ? 'EN' : 'KO';
           applyLang(next);
         });
-      }
-
-      // 다크모드 토글 — 저장값(localStorage) > 시스템 설정 순.
-      // 첫 페인트 전 적용은 Base.astro <head> 인라인 스크립트가 담당.
-      // 버튼은 전환될 테마를 표시: 라이트일 때 ☾(→다크), 다크일 때 ☀(→라이트).
-      var themeToggle = document.querySelector('.theme-toggle');
-      if (themeToggle) {
-        var darkMq = window.matchMedia('(prefers-color-scheme: dark)');
-        var themeNow = function () {
-          var t = document.documentElement.getAttribute('data-theme');
-          return t || (darkMq.matches ? 'dark' : 'light');
-        };
-        var syncThemeIcon = function () {
-          themeToggle.textContent = themeNow() === 'dark' ? '☀' : '☾';
-        };
-        themeToggle.addEventListener('click', function () {
-          var next = themeNow() === 'dark' ? 'light' : 'dark';
-          document.documentElement.setAttribute('data-theme', next);
-          try { localStorage.setItem('theme', next); } catch (e) {}
-          syncThemeIcon();
-        });
-        if (darkMq.addEventListener) darkMq.addEventListener('change', syncThemeIcon);
-        syncThemeIcon();
       }
 
       // @로 시작하는 링크 텍스트 → mention 클래스 (인물 아이콘 + 갈색)
