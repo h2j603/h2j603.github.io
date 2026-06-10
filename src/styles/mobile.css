@@ -120,6 +120,8 @@
   .card-filter .filter-link[data-filter='all'] { order: 0; }
   .table-controls > .sort-toggle { order: 1; margin-left: auto; }
   .table-controls > .lang-toggle { order: 2; margin-left: 0; }
+  /* 테마 토글 — EN 오른쪽에 같은 줄로 (order 동률이면 DOM 순서 유지) */
+  .table-controls > .theme-toggle { order: 2; margin-right: 0; }
   .table-controls::after {
     content: "";
     order: 3;
