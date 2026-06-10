@@ -35,7 +35,17 @@
     flex-direction: column;
     padding-top: 84px; /* stripe-top 3줄(24×3=72) + 여유 12 */
   }
-  .three-col .left { display: none; }
+  /* 인트로/어바웃/연락처(.left) — 데스크탑은 좌측 컬럼, 모바일은 작품 아래로.
+     (예전엔 통째로 숨겼는데, 그러면 모바일 방문자가 소개·연락처를 영영 못 본다) */
+  .three-col .left {
+    order: 2;
+    border-top: 1px solid var(--ink);
+  }
+  /* 인트로 가로선 풀폭 — 데스크탑 패딩(20px)이 아닌 모바일 패딩(16px) 기준으로 상쇄 */
+  .intro hr {
+    margin-left: -16px;
+    margin-right: -16px;
+  }
   .three-col .third {
     position: static;
     width: 100%;
@@ -120,8 +130,6 @@
   .card-filter .filter-link[data-filter='all'] { order: 0; }
   .table-controls > .sort-toggle { order: 1; margin-left: auto; }
   .table-controls > .lang-toggle { order: 2; margin-left: 0; }
-  /* 테마 토글 — EN 오른쪽에 같은 줄로 (order 동률이면 DOM 순서 유지) */
-  .table-controls > .theme-toggle { order: 2; margin-right: 0; }
   .table-controls::after {
     content: "";
     order: 3;

@@ -15,8 +15,12 @@ API calls) and baked into static HTML.
 The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 `public/` so Astro copies it into `dist/`.
 
-> **Current phase: architecture/data-pipeline is done; the site is intentionally
-> UNSTYLED.** The pages only prove data flows. Styling is the next major phase.
+> **Current phase: live & styled.** Data pipeline done, deploy automated
+> (push + 30-min cron), design implemented: 3-column desktop layout (intro /
+> works table with accordion / right column reserved), top stripe band, falling
+> mosaic, KO·EN toggle. Single page — works open in-place via `#slug` hash
+> (the old `/works/[slug]` pages were removed). `/preview.html` is a dev tool
+> for checking desktop widths on mobile (robots-noindexed).
 
 ## Architecture (the decisions we made, in order)
 

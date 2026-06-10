@@ -1,0 +1,32 @@
+---
+// 404 — GitHub Pages가 404.html을 자동으로 서빙한다.
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="404 — hyuk.xyz" description="페이지를 찾을 수 없습니다.">
+  <main class="nf">
+    <h1>404</h1>
+    <p>페이지를 찾을 수 없습니다. / Page not found.</p>
+    <p><a href="/">← hyuk.xyz</a></p>
+  </main>
+</Base>
+
+<style>
+  /* global.css가 html/body 스크롤을 봉쇄하므로 fixed 풀스크린으로 중앙 배치 */
+  .nf {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    text-align: center;
+  }
+  .nf h1 {
+    font-family: t26-carbon, monospace;
+    font-size: 64px;
+    font-weight: 100;
+  }
+  .nf p { padding-top: 8px; }
+</style>

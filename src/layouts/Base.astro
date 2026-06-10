@@ -6,29 +6,37 @@ import '../styles/mobile.css';
 
 interface Props {
   title: string;
+  description?: string;
 }
-const { title } = Astro.props;
+const {
+  title,
+  description = 'hyuk — graphic design works: identity, editorial, poster, type, web.',
+} = Astro.props;
+const SITE = 'https://hyuk.xyz';
+const canonical = SITE + Astro.url.pathname;
 ---
 
 <!doctype html>
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    {/* user-scalable=no는 저시력 사용자의 핀치 줌을 막아 접근성 위반 — 쓰지 않는다 */}
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
-    {/* 저장된 테마를 첫 페인트 전에 적용 — 라이트↔다크 깜빡임(FOUC) 방지.
-        저장값 없으면 attribute를 안 달아 CSS가 시스템 설정(prefers-color-scheme)을 따른다. */}
-    <script is:inline>
-      (function () {
-        try {
-          var t = localStorage.getItem('theme');
-          if (t === 'dark' || t === 'light') {
-            document.documentElement.setAttribute('data-theme', t);
-          }
-        } catch (e) {}
-      })();
-    </script>
+    {/* 링크 공유 카드 (카톡·트위터·슬랙 등) — og.png는 scripts/make-og.mjs로 재생성 */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="hyuk.xyz" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={`${SITE}/og.png`} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
 
     {/* 외부 리소스 연결 미리 열기 — 폰트(Typekit·jsdelivr)·iframe(h2j603.github.io) 로딩 단축 */}
     <link rel="preconnect" href="https://use.typekit.net" crossorigin />

@@ -23,7 +23,6 @@
    디자인 토큰 — hyuk repo 원본을 lawngreen→#b362ff, orangered→#775d4f로 치환
    ─────────────────────────────────────────────────────────────────────── */
 :root {
-  color-scheme: light;
   --bg: #ffffff;
   --ink: #775d4f;          /* hyuk repo의 orangered → 브라운 */
   --accent: #b362ff;       /* hyuk repo의 lawngreen → 보라 */
@@ -31,38 +30,6 @@
   --mention: #b87333;      /* @멘션 링크 */
   --scrollbar: rgba(0, 0, 0, 0.35);
   --scrollbar-hover: rgba(0, 0, 0, 0.55);
-  --muted: #a08d80;
-  /* 상세 페이지([slug].astro)가 참조하는 별칭 */
-  --line: var(--ink);
-  --brown: var(--ink);
-}
-
-/* 다크 팔레트 — 따뜻한 근검정 배경 + 밝은 브라운 잉크 + 살짝 밝힌 보라.
-   수동 토글(html[data-theme]) > 시스템 설정(prefers-color-scheme) 순으로 적용.
-   상단 줄무늬·모자이크(#a966ff/#775d4f)는 브랜드 띠라 양쪽 테마 공통. */
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --bg: #171311;
-  --ink: #c9b5a5;
-  --accent: #c389ff;
-  --pill-bg: #2c2521;
-  --mention: #d28e4d;
-  --scrollbar: rgba(255, 255, 255, 0.35);
-  --scrollbar-hover: rgba(255, 255, 255, 0.55);
-  --muted: #8a7567;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    color-scheme: dark;
-    --bg: #171311;
-    --ink: #c9b5a5;
-    --accent: #c389ff;
-    --pill-bg: #2c2521;
-    --mention: #d28e4d;
-    --scrollbar: rgba(255, 255, 255, 0.35);
-    --scrollbar-hover: rgba(255, 255, 255, 0.55);
-    --muted: #8a7567;
-  }
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -563,8 +530,7 @@ tr[data-slug] { scroll-margin-top: 84px; }
 .work-card .card-images,
 .work-card .iframe-wrap { position: relative; z-index: 4; }
 .lang-toggle,
-.sort-toggle,
-.theme-toggle {
+.sort-toggle {
   cursor: pointer;
   font-family: t26-carbon, monospace;
   font-size: 18px;
@@ -576,16 +542,8 @@ tr[data-slug] { scroll-margin-top: 84px; }
   padding: 0;
 }
 .lang-toggle:hover,
-.sort-toggle:hover,
-.theme-toggle:hover {
+.sort-toggle:hover {
   text-decoration: underline;
-}
-/* 다크모드 토글 — 분류칸(3) 오른끝. 같은 칸 왼끝의 EN/KO와 마주 본다. */
-.table-controls > .theme-toggle {
-  grid-column: 3;
-  grid-row: 1;
-  justify-self: end;
-  margin-right: 10px;
 }
 
 /* 표 컬럼 너비 — year는 controls의 sort 버튼과 grid-align 위해 고정.
@@ -790,10 +748,6 @@ table.sontable .col-cat   { width: 20%; }
   justify-content: center;
   z-index: 50;
   pointer-events: none;
-  /* 레이어 스타일 곱하기 — 오버레이 전체(사각형들)를 뒤 페이지(표·텍스트)와 multiply.
-     셀 각각이 아니라 오버레이 레벨에 줘야 별도 스태킹 컨텍스트 안에 갇히지 않고
-     실제 뒤 콘텐츠와 섞인다. */
-  mix-blend-mode: multiply;
 }
 .default-state[hidden] { display: none; }
 .default-state .stripe-mosaic {
