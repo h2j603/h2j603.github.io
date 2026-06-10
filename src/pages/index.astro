@@ -234,12 +234,24 @@ const defaultMosaic = fs.readFileSync(
                 ) : null}
 
                 {(w.bodyBlocks.some((b) => b.lang === null && b.html) ||
-                  w.bodyBlocks.some((b) => b.lang !== null && b.html)) && (
+                  w.bodyBlocks.some((b) => b.lang !== null && b.html) ||
+                  externalUrl) && (
                   <div class="card-body">
-                    {/* 규격 — ko/en 마커 없는 텍스트(lang null). 본문 위에 표시 */}
-                    {w.bodyBlocks.filter((b) => b.lang === null && b.html).map((b) => (
-                      <div class="card-spec" set:html={b.html} />
-                    ))}
+                    {/* 규격(lang null) + 웹링크 — 본문 위. 둘 다 있으면(웹작업) 2단. */}
+                    {(w.bodyBlocks.some((b) => b.lang === null && b.html) || externalUrl) && (
+                      <div class="card-meta-row">
+                        {w.bodyBlocks.filter((b) => b.lang === null && b.html).map((b) => (
+                          <div class="card-spec" set:html={b.html} />
+                        ))}
+                        {externalUrl && (
+                          <p class="card-link-wrap">
+                            <a href={externalUrl} target="_blank" rel="noopener" class="card-link">
+                              {w.title || w.slug}
+                            </a>
+                          </p>
+                        )}
+                      </div>
+                    )}
                     {
                       groupBilingual(w.bodyBlocks.filter((b) => b.lang !== null)).map((g) => (
                         g.ko && g.en ? (
@@ -255,14 +267,6 @@ const defaultMosaic = fs.readFileSync(
                       ))
                     }
                   </div>
-                )}
-
-                {externalUrl && (
-                  <p class="card-link-wrap">
-                    <a href={externalUrl} target="_blank" rel="noopener" class="card-link">
-                      {w.title || w.slug}
-                    </a>
-                  </p>
                 )}
               </article>
             );
@@ -330,12 +334,18 @@ const defaultMosaic = fs.readFileSync(
         tr.scrollIntoView({ block: 'start' });
       }
 
-      // 필터/정렬 후 "보이는 첫 행"에 .first-visible (표 맨 위 가로선 제거용)
+      // 필터/정렬 후 "보이는 첫 행"에 .first-visible (표 맨 위 가로선 제거용) +
+      // 보이는 행에 보라/갈색 교차 클래스(.row-a/.row-b) — 호버 배경색 줄무늬용.
       function markFirstVisible() {
         var all = document.querySelectorAll('tr[data-slug]');
-        all.forEach(function (tr) { tr.classList.remove('first-visible'); });
+        var firstDone = false, vi = 0;
         for (var i = 0; i < all.length; i++) {
-          if (!all[i].hidden) { all[i].classList.add('first-visible'); break; }
+          var tr = all[i];
+          tr.classList.remove('first-visible', 'row-a', 'row-b');
+          if (tr.hidden) continue;
+          if (!firstDone) { tr.classList.add('first-visible'); firstDone = true; }
+          tr.classList.add(vi % 2 === 0 ? 'row-a' : 'row-b');
+          vi++;
         }
       }
 
