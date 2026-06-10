@@ -147,7 +147,7 @@ const defaultMosaic = fs.readFileSync(
                   <td class="num-cell"><span class="num-badge">{i + 1}</span></td>
                   <td>{w.year || '—'}</td>
                   <td>
-                    <a href={`#${w.slug}`} data-ko={w.title || w.slug} data-en={w.titleEn || w.title || w.slug}>
+                    <a href={`#${w.slug}`} aria-expanded="false" data-ko={w.title || w.slug} data-en={w.titleEn || w.title || w.slug}>
                       {w.title || w.slug}
                     </a>
                   </td>
@@ -292,6 +292,8 @@ const defaultMosaic = fs.readFileSync(
       var rows = Array.from(document.querySelectorAll('tr[data-slug]'));
       var center = document.querySelector('.three-col .center');
       var defaultEl = document.getElementById('__default');
+      // 모션 최소화 설정 — 모자이크 낙하 등 장식 애니메이션을 끈다
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       // ── 표 아코디언 (데스크탑·모바일 공통) ──────────────────────────
       // 표가 메인. 행 클릭 시 해당 .work-card를 그 행 바로 아래 detail
@@ -307,7 +309,11 @@ const defaultMosaic = fs.readFileSync(
         if (card && centerContent) centerContent.appendChild(card); // 저장소로 복귀
         if (accRow.parentNode) accRow.parentNode.removeChild(accRow);
         var tr = document.querySelector('tr[data-slug="' + accSlug + '"]');
-        if (tr) tr.setAttribute('data-active', 'false');
+        if (tr) {
+          tr.setAttribute('data-active', 'false');
+          var link = tr.querySelector('a[href^="#"]');
+          if (link) link.setAttribute('aria-expanded', 'false');
+        }
         accRow = null;
         accSlug = null;
       }
@@ -328,6 +334,8 @@ const defaultMosaic = fs.readFileSync(
         detail.appendChild(td);
         tr.parentNode.insertBefore(detail, tr.nextSibling);
         tr.setAttribute('data-active', 'true');
+        var trLink = tr.querySelector('a[href^="#"]');
+        if (trLink) trLink.setAttribute('aria-expanded', 'true');
         accSlug = slug;
         accRow = detail;
         // 이펙트 없이 즉시 펼침. 펼친 행이 보이게만 스크롤(애니메이션 없음).
@@ -609,7 +617,7 @@ const defaultMosaic = fs.readFileSync(
             history.pushState(null, '', location.pathname);
           }
           applyHash();
-          if (defaultEl) {
+          if (defaultEl && !reduceMotion) {
             defaultEl.hidden = false;
             triggerMosaicFall();
           }
@@ -662,8 +670,10 @@ const defaultMosaic = fs.readFileSync(
       wrapAllKorean();
       // 페이지 로드 시 모자이크 자동 낙하 (데스크탑 배경 장식 오버레이).
       // 모바일(≤600px)은 표 아코디언 테스트 방해 방지로 숨김 유지.
+      // 모션 최소화 설정(prefers-reduced-motion) 사용자에겐 떨어지지 않는 오버레이가
+      // 화면을 영영 가리므로 아예 띄우지 않는다.
       if (defaultEl) {
-        if (window.matchMedia('(max-width: 600px)').matches) {
+        if (reduceMotion || window.matchMedia('(max-width: 600px)').matches) {
           defaultEl.hidden = true;
         } else {
           defaultEl.hidden = false;

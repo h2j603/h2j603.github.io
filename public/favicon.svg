@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 상단 스트라이프 띠의 셀 한 쌍 (보라+갈색, 세로 길쭉) -->
+  <rect x="0" y="0" width="16" height="32" fill="#a966ff"/>
+  <rect x="16" y="0" width="16" height="32" fill="#775d4f"/>
+</svg>
