@@ -42,6 +42,16 @@
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
   }
+  #path {
+    flex: 1 1 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    font: inherit;
+    background: #fff;
+    color: #000;
+    border: 1px solid #000;
+    padding: 4px 8px;
+  }
   #stage {
     box-sizing: border-box;
     width: 100%;
@@ -58,37 +68,82 @@
 </head>
 <body>
   <div id="toolbar">
-    <button data-w="1440" class="active">1440</button>
+    <button data-w="1440">1440</button>
     <button data-w="1024">1024</button>
     <button data-w="768">768</button>
     <button data-w="375">375</button>
+    <button id="zoom">100%</button>
     <button id="reload">새로고침</button>
     <span id="info"></span>
+    <input id="path" type="text" value="/" spellcheck="false"
+           autocomplete="off" autocapitalize="off" aria-label="경로">
   </div>
   <div id="stage">
-    <iframe id="frame" src="/" title="site preview"></iframe>
+    <iframe id="frame" title="site preview"></iframe>
   </div>
 <script>
   var BASE_H = 900;
-  var width = 1440;
 
   var frame = document.getElementById('frame');
   var stage = document.getElementById('stage');
   var info = document.getElementById('info');
   var toolbar = document.getElementById('toolbar');
+  var pathInput = document.getElementById('path');
+  var zoomBtn = document.getElementById('zoom');
+
+  // ?w=768&path=/works/foo 로 초기 상태 지정
+  var params = new URLSearchParams(location.search);
+  var width = parseInt(params.get('w'), 10);
+  if (!(width > 0)) width = 1440;
+  var initialPath = params.get('path');
+  if (!initialPath || initialPath[0] !== '/') initialPath = '/';
+  var fitMode = true;
+
+  function markActiveWidth() {
+    toolbar.querySelectorAll('button[data-w]').forEach(function (b) {
+      b.classList.toggle('active', parseInt(b.dataset.w, 10) === width);
+    });
+  }
+
+  function framePath() {
+    try {
+      var l = frame.contentWindow.location;
+      return l.pathname + l.search;
+    } catch (err) {
+      return pathInput.value || '/';
+    }
+  }
+
+  function syncQuery() {
+    var q = new URLSearchParams();
+    if (width !== 1440) q.set('w', width);
+    var p = framePath();
+    if (p !== '/') q.set('path', p);
+    var s = q.toString();
+    history.replaceState(null, '', location.pathname + (s ? '?' + s : ''));
+  }
 
   function apply() {
-    // stage의 좌우 1px 보더 안쪽에 정확히 맞춘다
-    var avail = document.documentElement.clientWidth - 2;
-    var scale = avail / width;
-    // 스케일된 iframe이 툴바 아래 화면을 채우도록 높이를 늘린다 (최소 900)
     var availH = window.innerHeight - toolbar.offsetHeight - 1;
-    var h = Math.max(BASE_H, availH / scale);
     frame.style.width = width + 'px';
-    frame.style.height = h + 'px';
-    frame.style.transform = 'scale(' + scale + ')';
-    stage.style.height = Math.round(h * scale) + 'px';
-    info.textContent = width + 'px · ' + Math.round(scale * 100) + '%';
+    if (fitMode) {
+      // stage의 좌우 1px 보더 안쪽에 정확히 맞춘다
+      var scale = (document.documentElement.clientWidth - 2) / width;
+      // 스케일된 iframe이 툴바 아래 화면을 채우도록 높이를 늘린다 (최소 900)
+      var h = Math.max(BASE_H, availH / scale);
+      frame.style.height = h + 'px';
+      frame.style.transform = 'scale(' + scale + ')';
+      stage.style.height = Math.round(h * scale) + 'px';
+      stage.style.overflowX = 'hidden';
+      info.textContent = width + 'px · ' + Math.round(scale * 100) + '%';
+    } else {
+      // 100% 모드: 실제 크기, stage 안에서만 가로 스크롤
+      frame.style.height = availH + 'px';
+      frame.style.transform = 'none';
+      stage.style.height = availH + 'px';
+      stage.style.overflowX = 'auto';
+      info.textContent = width + 'px · 100%';
+    }
   }
 
   toolbar.addEventListener('click', function (e) {
@@ -98,19 +153,41 @@
       try {
         frame.contentWindow.location.reload();
       } catch (err) {
-        frame.src = frame.src;
+        frame.src = pathInput.value;
       }
       return;
     }
+    if (btn.id === 'zoom') {
+      fitMode = !fitMode;
+      zoomBtn.classList.toggle('active', !fitMode);
+      apply();
+      return;
+    }
     width = parseInt(btn.dataset.w, 10);
-    toolbar.querySelectorAll('button[data-w]').forEach(function (b) {
-      b.classList.toggle('active', b === btn);
-    });
+    markActiveWidth();
     apply();
+    syncQuery();
+  });
+
+  pathInput.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var v = pathInput.value.trim();
+    if (v[0] !== '/') v = '/' + v;
+    frame.src = v;
+    pathInput.blur();
+  });
+
+  frame.addEventListener('load', function () {
+    if (document.activeElement !== pathInput) pathInput.value = framePath();
+    syncQuery();
   });
 
   window.addEventListener('resize', apply);
   window.addEventListener('orientationchange', apply);
+
+  markActiveWidth();
+  pathInput.value = initialPath;
+  frame.src = initialPath;
   apply();
 </script>
 </body>
