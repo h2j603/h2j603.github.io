@@ -334,13 +334,13 @@ table tr[data-active='true'] a {
   flex-wrap: wrap;
   gap: 6px;
 }
-/* 네비 — carbon 폰트 + 속 빈 윤곽선 pill */
+/* 네비 — carbon 폰트 + 속 빈 윤곽선 pill. 크기는 ↓·KO/EN 토글(18px)과 동일 */
 .card-filter .filter-link {
   display: inline-block;
   font-family: t26-carbon, monospace;
-  font-size: 23px;
+  font-size: 18px;
   line-height: 1;
-  padding: 5px 14px;
+  padding: 3px 11px;
   border: 1px solid var(--ink);
   border-radius: 999px;
   background: var(--bg); /* 속 빈 윤곽선 (sticky 시 뒤 표 글자 가림) */
@@ -464,12 +464,15 @@ table.sontable tr[data-slug].first-visible td { border-top: 0; }
    화면 폭에 따라 가변(clamp): 좁은 데스크탑 14px ~ 넓은 화면 18px, 기준 ~1.15vw.
    tr[data-slug] 행(제목/연도/분류)만 — 펼친 카드(.accordion-detail) 본문은 제외.
    (모바일은 mobile.css에서 본문 크기로 되돌림) */
-table.sontable tr[data-slug] td { font-size: clamp(14px, 1.15vw, 18px); transition: color 0.15s; }
-/* 호버 — 행이 아니라 칸(셀) 단위로 보라색 */
+table.sontable tr[data-slug] td { font-size: clamp(14px, 1.15vw, 18px); transition: background 0.12s, color 0.12s; }
+/* 호버 — 행이 아닌 칸(셀) 단위 배경 칠. 행마다 보라/갈색 교차(JS가 .row-a/.row-b 부여) */
+table.sontable tr.row-a td:hover { background: var(--accent); }
+table.sontable tr.row-b td:hover { background: var(--ink); }
+/* 칠한 칸 위 글자·뱃지는 흰색으로 가독성 확보 */
 table.sontable tr[data-slug] td:hover,
 table.sontable tr[data-slug] td:hover a,
-table.sontable tr[data-slug] td:hover .cat-tag { color: var(--accent); }
-table.sontable tr[data-slug] td:hover .num-badge { color: var(--accent); border-color: var(--accent); }
+table.sontable tr[data-slug] td:hover .cat-tag { color: var(--bg); }
+table.sontable tr[data-slug] td:hover .num-badge { color: var(--bg); border-color: var(--bg); }
 /* 펼칠 때 행이 상단 stripe(48px) 뒤로 가지 않게 보정 */
 tr[data-slug] { scroll-margin-top: 84px; }
 /* 표 분류(cat) 칸 — 태그를 pill 없이 텍스트로, 왼끝 정렬(d4 선 기준), · 구분. */
@@ -502,18 +505,22 @@ tr[data-slug] { scroll-margin-top: 84px; }
 }
 /* grid에선 padding-top:65% aspect 기법이 안 먹어 높이가 0 → aspect-ratio로 높이 확보 */
 .accordion-detail .iframe-wrap { aspect-ratio: 100 / 65; }
-/* 규격(card-spec)은 이제 card-body 안 본문 위에 위치 — 본문과 같은 칸(제목칸)에 흐른다 */
+/* 규격·웹링크는 이제 card-body 안 본문 위(.card-meta-row)에 — 본문과 같은 칸(제목칸)에 흐른다 */
 /* specificity 높임 — .work-card .card-body{margin-top:16}이 뒤에서 덮는 것 방지 */
 .accordion-detail .work-card .card-body { grid-column: 2; grid-row: 2; padding: 0 10px; margin-top: 0; }
-.accordion-detail .card-link-wrap { grid-column: 3; grid-row: 2; padding: 0 10px; margin: 0; }
 /* 규격·본문·링크 폰트 크기 통일 (키움) */
 .accordion-detail .work-card .card-body,
-.accordion-detail .card-link,
-.accordion-detail .card-link-wrap { font-size: 17px; }
-/* 규격 — 본문 위, 살짝 아래 간격 */
-.accordion-detail .card-spec { margin-bottom: 12px; }
+.accordion-detail .card-link { font-size: 17px; }
+/* 규격+링크 줄 — 본문 위. 둘 다 있으면(웹작업) 2단으로 나란히. */
+.accordion-detail .card-meta-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.accordion-detail .card-meta-row > * { flex: 1; margin: 0; }
 .accordion-detail .card-spec p { padding-top: 0; margin-top: 0; line-height: 1.5; }
 .accordion-detail .card-spec p + p { margin-top: 4px; }
+.accordion-detail .card-link-wrap { margin: 0; }
 /* 작품 이미지/iframe은 세로 구분선(z3) 위 레이어 — 펼친 카드 미디어가 선을 가린다 */
 .work-card .card-images,
 .work-card .iframe-wrap { position: relative; z-index: 4; }
@@ -736,14 +743,16 @@ table.sontable .col-cat   { width: 20%; }
   justify-content: center;
   z-index: 50;
   pointer-events: none;
+  /* 레이어 스타일 곱하기 — 오버레이 전체(사각형들)를 뒤 페이지(표·텍스트)와 multiply.
+     셀 각각이 아니라 오버레이 레벨에 줘야 별도 스태킹 컨텍스트 안에 갇히지 않고
+     실제 뒤 콘텐츠와 섞인다. */
+  mix-blend-mode: multiply;
 }
 .default-state[hidden] { display: none; }
 .default-state .stripe-mosaic {
   width: 88vw;
   max-width: 88vw;
 }
-/* 인트로 모자이크 사각형 — 레이어 스타일 곱하기(multiply)로 뒤 콘텐츠와 섞임 */
-.default-state .stripe-mosaic > div { mix-blend-mode: multiply; }
 /* 셀의 animation은 JS triggerMosaicFall()에서만 부여 — 기본은 정적. */
 @keyframes cell-drop {
   from { transform: translateY(0); }

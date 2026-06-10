@@ -44,10 +44,10 @@
   }
   #stage {
     box-sizing: border-box;
-    width: 100%;
     border: 1px solid #000;
     border-top: 0;
     overflow: hidden;
+    margin: 0 auto; /* 스케일된 기기 화면을 가운데 정렬 */
   }
   #frame {
     display: block;
@@ -69,7 +69,8 @@
     <iframe id="frame" src="/" title="site preview"></iframe>
   </div>
 <script>
-  var BASE_H = 900;
+  // 폭별 기기 뷰포트 높이 — 세로도 이 값으로 제한(무한정 길어지지 않게).
+  var DEVICE_H = { 1440: 900, 1024: 768, 768: 1024, 375: 812 };
   var width = 1440;
 
   var frame = document.getElementById('frame');
@@ -78,17 +79,17 @@
   var toolbar = document.getElementById('toolbar');
 
   function apply() {
-    // stage의 좌우 1px 보더 안쪽에 정확히 맞춘다
-    var avail = document.documentElement.clientWidth - 2;
-    var scale = avail / width;
-    // 스케일된 iframe이 툴바 아래 화면을 채우도록 높이를 늘린다 (최소 900)
+    var availW = document.documentElement.clientWidth - 2;
     var availH = window.innerHeight - toolbar.offsetHeight - 1;
-    var h = Math.max(BASE_H, availH / scale);
+    var h = DEVICE_H[width] || 900;
+    // 가로·세로 둘 다 화면 안에 들어오도록(contain) 스케일. 1배 초과 업스케일 금지.
+    var scale = Math.min(availW / width, availH / h, 1);
     frame.style.width = width + 'px';
     frame.style.height = h + 'px';
     frame.style.transform = 'scale(' + scale + ')';
+    stage.style.width = Math.round(width * scale) + 'px';
     stage.style.height = Math.round(h * scale) + 'px';
-    info.textContent = width + 'px · ' + Math.round(scale * 100) + '%';
+    info.textContent = width + '×' + h + ' · ' + Math.round(scale * 100) + '%';
   }
 
   toolbar.addEventListener('click', function (e) {
