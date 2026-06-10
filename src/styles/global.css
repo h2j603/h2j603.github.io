@@ -50,7 +50,7 @@ body {
   overflow: hidden;
   font-size: 13.2px; /* 12px × 1.1 (전체 10% 키움) */
   font-family: neue-haas-unica, 'HakgyoansimBareondotum', sans-serif;
-  font-weight: 400;
+  font-weight: 500; /* 400 → 500, 전체적으로 살짝 두껍게 */
   font-style: normal;
   color: var(--ink);
   background: var(--bg);
@@ -480,9 +480,16 @@ tr[data-slug] { scroll-margin-top: 84px; }
   text-decoration: none;
   font-size: 0; /* 번호 숨기고 ■로 표시 */
 }
-/* 마커는 번호 대신 작은 정사각형 (↗ 아이콘도 제거) */
+/* 마커는 번호 대신 작은 정사각형 box (안착 네모와 동일한 스타일, ↗ 아이콘 제거) */
 .work-card .card-body .fn-ref a::before,
-.intro .fn-ref a::before { content: '■'; font-size: 9px; }
+.intro .fn-ref a::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  vertical-align: middle;
+}
 .fn-ref a:hover { text-decoration: underline; }
 .fn-panel-title {
   font-family: t26-carbon, monospace;
@@ -494,18 +501,35 @@ tr[data-slug] { scroll-margin-top: 84px; }
 }
 .fn-panel-list { list-style: none; margin: 0; padding: 0; }
 .fn-item {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+  text-align: center; /* 가운데 정렬 */
+  padding-top: 24px;  /* 위에 안착 네모 자리 (모든 각주 동일 — 네모 간격 일정) */
+  margin-bottom: 18px;
+  /* 좌우 margin -20 + padding 20 → 구분선(border-top)이 .right 전체 너비로,
+     텍스트는 원래 폭 가운데 유지 (about 가로선과 동일 방식) */
+  margin-left: -20px;
+  margin-right: -20px;
+  padding-left: 20px;
+  padding-right: 20px;
   font-size: 13px;
   line-height: 1.55;
   color: var(--ink);
   scroll-margin-top: 20px;
   transition: background 0.3s;
 }
-.fn-num { color: var(--accent); flex-shrink: 0; font-size: 0; line-height: 1.6; }
-.fn-num::before { content: '■'; font-size: 9px; }
+.fn-num { display: none; } /* 번호 ■ 제거 — 안착 네모가 대체 */
+/* 각주 사이 가로 구분선 (about처럼) — padding-top은 위 24px 유지 */
+.fn-item + .fn-item { border-top: 1px solid var(--ink); }
 .fn-item.fn-hl { background: #efe3ff; } /* 마커 클릭 시 잠깐 강조 */
+/* 각주 연결선 — 마커 ■ ↔ 각주 ■ 보라선 (세로선 z6 위) */
+.fn-links {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 7;
+  pointer-events: none;
+}
+.fn-links line { stroke: var(--accent); stroke-width: 0.6; }
 .accordion-detail,
 .accordion-detail > td { padding: 0; border-top: 0; }
 /* 펼쳐진 카드 — 좌우 10px = 표 제목 셀 padding과 동일 라인, 상단 8px 간격 */
