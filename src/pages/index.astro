@@ -45,6 +45,7 @@ const defaultMosaic = fs.readFileSync(
   <div class="col-divider-top d2" aria-hidden="true"></div>
   <div class="col-divider-top d3" aria-hidden="true"></div>
   <div class="col-divider-top d4" aria-hidden="true"></div>
+  <div class="col-divider-top d5" aria-hidden="true"></div>
   <div class="three-col">
     {/* 세로 구분선 하단부 — center 구간. 표/텍스트 위, 작품 이미지/iframe 아래.
         d1/d2: 3구역 경계, d3/d4: 표 컬럼(제목|연도|분류) 기준선 */}
@@ -52,6 +53,7 @@ const defaultMosaic = fs.readFileSync(
     <div class="col-divider d2" aria-hidden="true"></div>
     <div class="col-divider d3" aria-hidden="true"></div>
     <div class="col-divider d4" aria-hidden="true"></div>
+    <div class="col-divider d5" aria-hidden="true"></div>
 
     {/* ──────────── 좌측: 인트로 ──────────── */}
     <div class="third left">
@@ -133,13 +135,16 @@ const defaultMosaic = fs.readFileSync(
         {works.length > 0 ? (
           <table class="sontable">
             <colgroup>
+              <col class="col-num" />
               <col class="col-year" />
               <col class="col-title" />
               <col class="col-cat" />
             </colgroup>
             <tbody>
-              {works.map((w) => (
+              {works.map((w, i) => (
                 <tr data-slug={w.slug} data-tags={w.tags.join(' ')}>
+                  {/* 카탈로그 번호 — 기본 정렬(연도 내림차순) 기준 고정. 정렬해도 행 따라 이동 */}
+                  <td class="num-cell"><span class="num-badge">{i + 1}</span></td>
                   <td>{w.year || '—'}</td>
                   <td>
                     <a href={`#${w.slug}`} data-ko={w.title || w.slug} data-en={w.titleEn || w.title || w.slug}>
@@ -426,7 +431,7 @@ const defaultMosaic = fs.readFileSync(
         var detail = document.createElement('tr');
         detail.className = 'accordion-detail';
         var td = document.createElement('td');
-        td.colSpan = 3;
+        td.colSpan = 4;
         var panel = document.createElement('div');
         panel.className = 'accordion-panel';
         panel.appendChild(card);
@@ -579,8 +584,9 @@ const defaultMosaic = fs.readFileSync(
         if (tbody) {
           var trs = Array.from(tbody.querySelectorAll('tr'));
           trs.sort(function (a, b) {
-            var ya = parseInt((a.children[0] || {}).textContent || '0', 10) || 0;
-            var yb = parseInt((b.children[0] || {}).textContent || '0', 10) || 0;
+            // children[0]=번호 칸, children[1]=연도 칸
+            var ya = parseInt((a.children[1] || {}).textContent || '0', 10) || 0;
+            var yb = parseInt((b.children[1] || {}).textContent || '0', 10) || 0;
             return order === 'desc' ? yb - ya : ya - yb;
           });
           trs.forEach(function (tr) { tbody.appendChild(tr); });

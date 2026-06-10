@@ -235,9 +235,10 @@ iframe {
 }
 .col-divider.d1 { left: 20%; }
 .col-divider.d2 { left: 80%; }
-/* 표 컬럼 기준선 — center(20~80%) 안에서 제목 60%/연도 20%/분류 20% 경계 */
-.col-divider.d3 { left: 32%; }
-.col-divider.d4 { left: 68%; }
+/* 표 컬럼 기준선 — center(20~80%) 안에서 번호 10/연도 10/제목 60/분류 20 경계 */
+.col-divider.d5 { left: 26%; } /* 번호|연도 */
+.col-divider.d3 { left: 32%; } /* 연도|제목 */
+.col-divider.d4 { left: 68%; } /* 제목|분류 */
 /* 세로선 상단부 — stripe 구간(0~84px)을 띠 위로 지난다 (fixed, z200). */
 .col-divider-top {
   position: fixed;
@@ -250,6 +251,7 @@ iframe {
 }
 .col-divider-top.d1 { left: 20%; }
 .col-divider-top.d2 { left: 80%; }
+.col-divider-top.d5 { left: 26%; }
 .col-divider-top.d3 { left: 32%; }
 .col-divider-top.d4 { left: 68%; }
 
@@ -592,9 +594,29 @@ tr[data-slug] { scroll-margin-top: 84px; }
    짧은 행의 과도한 우측 빈 공간 제거(가장 긴 행이 우측 끝에 닿음, 좌우 여백 대칭). */
 /* 표 컬럼 폭 고정 — 내용에 따라 칸이 움직이지 않게 명확한 비율(3:1:1). */
 table.sontable { table-layout: fixed; }
+table.sontable .col-num   { width: 10%; }
 table.sontable .col-title { width: 60%; }
-table.sontable .col-year  { width: 20%; }
+table.sontable .col-year  { width: 10%; }
 table.sontable .col-cat   { width: 20%; }
+
+/* 카탈로그 번호 글리프 — 둥근 윤곽선 안에 번호.
+   1자리=원, 2자리=스타디움(둥근 모서리)으로 자연스레 늘어남. 그림자 없음. */
+.num-cell { text-align: left; }
+.num-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.7em;
+  height: 1.7em;
+  padding: 0 0.4em;
+  box-sizing: border-box;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-family: t26-carbon, monospace;
+  font-size: 0.78em;
+  line-height: 1;
+  color: var(--ink);
+}
 .work-card .card-meta {
   font-size: 10px;
   letter-spacing: 0.06em;
