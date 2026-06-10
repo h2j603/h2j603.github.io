@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>desktop preview</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    overflow-x: hidden;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  #toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 8px;
+    background: #fff;
+    border-bottom: 1px solid #000;
+    font-size: 13px;
+  }
+  #toolbar button {
+    font: inherit;
+    background: #fff;
+    color: #000;
+    border: 1px solid #000;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  #toolbar button.active {
+    background: #000;
+    color: #fff;
+  }
+  #info {
+    margin-left: auto;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  #stage {
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid #000;
+    border-top: 0;
+    overflow: hidden;
+  }
+  #frame {
+    display: block;
+    border: 0;
+    transform-origin: top left;
+  }
+</style>
+</head>
+<body>
+  <div id="toolbar">
+    <button data-w="1440" class="active">1440</button>
+    <button data-w="1024">1024</button>
+    <button data-w="768">768</button>
+    <button data-w="375">375</button>
+    <button id="reload">새로고침</button>
+    <span id="info"></span>
+  </div>
+  <div id="stage">
+    <iframe id="frame" src="/" title="site preview"></iframe>
+  </div>
+<script>
+  var BASE_H = 900;
+  var width = 1440;
+
+  var frame = document.getElementById('frame');
+  var stage = document.getElementById('stage');
+  var info = document.getElementById('info');
+  var toolbar = document.getElementById('toolbar');
+
+  function apply() {
+    // stage의 좌우 1px 보더 안쪽에 정확히 맞춘다
+    var avail = document.documentElement.clientWidth - 2;
+    var scale = avail / width;
+    // 스케일된 iframe이 툴바 아래 화면을 채우도록 높이를 늘린다 (최소 900)
+    var availH = window.innerHeight - toolbar.offsetHeight - 1;
+    var h = Math.max(BASE_H, availH / scale);
+    frame.style.width = width + 'px';
+    frame.style.height = h + 'px';
+    frame.style.transform = 'scale(' + scale + ')';
+    stage.style.height = Math.round(h * scale) + 'px';
+    info.textContent = width + 'px · ' + Math.round(scale * 100) + '%';
+  }
+
+  toolbar.addEventListener('click', function (e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.id === 'reload') {
+      try {
+        frame.contentWindow.location.reload();
+      } catch (err) {
+        frame.src = frame.src;
+      }
+      return;
+    }
+    width = parseInt(btn.dataset.w, 10);
+    toolbar.querySelectorAll('button[data-w]').forEach(function (b) {
+      b.classList.toggle('active', b === btn);
+    });
+    apply();
+  });
+
+  window.addEventListener('resize', apply);
+  window.addEventListener('orientationchange', apply);
+  apply();
+</script>
+</body>
+</html>

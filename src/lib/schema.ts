@@ -61,10 +61,6 @@ export const workSchema = z.object({
       z.object({
         lang: z.enum(['ko', 'en']).nullable(),
         html: z.string(),
-        /** 이 블록의 마크다운 각주(`[^id]: 내용`)들. 본문엔 `[^id]` 마커가 남는다. */
-        footnotes: z
-          .array(z.object({ id: z.string(), html: z.string() }))
-          .default([]),
       }),
     )
     .default([]),

@@ -233,8 +233,13 @@ const defaultMosaic = fs.readFileSync(
                   <Image src={cover} alt={w.title || w.slug} widths={[420, 640, 960]} sizes="40vw" />
                 ) : null}
 
-                {w.bodyBlocks.some((b) => b.lang !== null && b.html) && (
+                {(w.bodyBlocks.some((b) => b.lang === null && b.html) ||
+                  w.bodyBlocks.some((b) => b.lang !== null && b.html)) && (
                   <div class="card-body">
+                    {/* 규격 — ko/en 마커 없는 텍스트(lang null). 본문 위에 표시 */}
+                    {w.bodyBlocks.filter((b) => b.lang === null && b.html).map((b) => (
+                      <div class="card-spec" set:html={b.html} />
+                    ))}
                     {
                       groupBilingual(w.bodyBlocks.filter((b) => b.lang !== null)).map((g) => (
                         g.ko && g.en ? (
@@ -251,10 +256,6 @@ const defaultMosaic = fs.readFileSync(
                     }
                   </div>
                 )}
-                {/* 규격 — ko/en 마커 없는 텍스트(lang null) → 연도 칸에 정렬 */}
-                {w.bodyBlocks.filter((b) => b.lang === null && b.html).map((b) => (
-                  <div class="card-spec" set:html={b.html} />
-                ))}
 
                 {externalUrl && (
                   <p class="card-link-wrap">
@@ -262,19 +263,6 @@ const defaultMosaic = fs.readFileSync(
                       {w.title || w.slug}
                     </a>
                   </p>
-                )}
-                {/* 각주 데이터 — lang별 숨김. JS가 펼침 시 현재 언어 것을 .right로 복제 */}
-                {w.bodyBlocks.map((b) =>
-                  b.footnotes.length > 0 ? (
-                    <ol class="fn-data" data-lang={b.lang ?? ''} hidden>
-                      {b.footnotes.map((f) => (
-                        <li class="fn-item" data-fn={f.id}>
-                          <span class="fn-num">{f.id}</span>
-                          <span class="fn-text" set:html={f.html} />
-                        </li>
-                      ))}
-                    </ol>
-                  ) : null,
                 )}
               </article>
             );
@@ -284,19 +272,12 @@ const defaultMosaic = fs.readFileSync(
       </div>
     </div>
 
-    {/* ──────────── 우측: 각주 패널 ──────────── */}
+    {/* ──────────── 우측: 비움 (추후 구상) ──────────── */}
     <div class="third right">
-      <div class="content">
-        <div class="fn-panel" id="__fnpanel" hidden>
-          <ol class="fn-panel-list"></ol>
-        </div>
-      </div>
+      <div class="content"></div>
     </div>
 
   </div>
-
-  {/* 각주 연결선 — 펼친 작품 본문 마커 ■ ↔ 우측 각주 ■ 보라선 (JS가 그림) */}
-  <svg class="fn-links" aria-hidden="true"></svg>
 
   <script is:inline>
     // (1) 좌측 태그 필터 → 우측 표 행만 토글
@@ -316,100 +297,6 @@ const defaultMosaic = fs.readFileSync(
       var accSlug = null; // 현재 열린 slug
       var accRow = null;  // 현재 detail <tr>
 
-      // 각주 패널 — 펼친 작품의 현재 언어 각주를 .right(fn-panel)에 렌더
-      var fnPanel = document.getElementById('__fnpanel');
-      var fnList = fnPanel ? fnPanel.querySelector('.fn-panel-list') : null;
-      // 모든 작품의 각주를 항상 .right에 표시 (펼침 무관). 마커 클릭 시 해당 작품·번호로 스크롤.
-      function renderFootnotes() {
-        if (!fnPanel || !fnList) return;
-        fnList.innerHTML = '';
-        var tc = document.querySelector('.three-col');
-        var lang = (tc && tc.getAttribute('data-lang')) || 'ko';
-        var any = false;
-        cards.forEach(function (card) {
-          var data = card.querySelector('.fn-data[data-lang="' + lang + '"]')
-            || card.querySelector('.fn-data');
-          var items = data ? data.querySelectorAll('.fn-item') : [];
-          items.forEach(function (it) {
-            var clone = it.cloneNode(true);
-            clone.id = 'fn-' + card.id + '-' + it.getAttribute('data-fn'); // 작품+번호 고유 id
-            fnList.appendChild(clone);
-            any = true;
-          });
-        });
-        fnPanel.hidden = !any;
-      }
-
-      // 각주 연결선 — 펼친 작품 본문 마커 ■ ↔ 우측 각주 ■ 보라선
-      var fnLinks = document.querySelector('.fn-links');
-      function drawLinks() {
-        if (!fnLinks) return;
-        fnLinks.innerHTML = '';
-        if (!accSlug || !accRow || !fnList) return;
-        var detailCard = accRow.querySelector('.work-card');
-        if (!detailCard) return;
-        var SVGNS = 'http://www.w3.org/2000/svg';
-        detailCard.querySelectorAll('.fn-ref').forEach(function (m) {
-          var a = m.getBoundingClientRect();
-          if (!a.width || !a.height) return; // 숨긴 언어(display:none)의 마커 skip — 천장(0,0) 선 방지
-          var fn = m.getAttribute('data-fn');
-          var tgt = fnList.querySelector('[id="fn-' + accSlug + '-' + fn + '"]');
-          if (!tgt) return;
-          var ftEl = tgt.querySelector('.fn-text') || tgt;
-          var b = ftEl.getBoundingClientRect();
-          var line = document.createElementNS(SVGNS, 'line');
-          line.setAttribute('x1', (a.left + a.width / 2).toFixed(1));
-          line.setAttribute('y1', (a.top + a.height / 2).toFixed(1));
-          line.setAttribute('x2', (b.left + b.width / 2).toFixed(1));   // 각주 텍스트 가운데
-          line.setAttribute('y2', (b.top - 18).toFixed(1));             // 각주 텍스트 위 (안착 번호 box)
-          fnLinks.appendChild(line);
-        });
-      }
-
-      // 모자이크 셀 N개(각주 수만큼)를 낙하 대신 각주 ■ 위치로 날아가 안착시킨다.
-      function settleFootnoteCells() {
-        if (!defaultEl || defaultEl.hidden || !fnList) return; // 모자이크 숨김 상태면 좌표 부정확 → skip
-        var items = fnList.querySelectorAll('.fn-item');
-        var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
-        if (!cells.length) return;
-        items.forEach(function (item, i) {
-          // 이 각주(i)에 이미 안착한 셀이 있으면 재사용(언어 전환 시 위치만 갱신), 없으면 새로 선택
-          var cell = defaultEl.querySelector('.stripe-mosaic > div[data-fn-index="' + i + '"]');
-          var first = !cell;
-          if (first) {
-            cell = cells[(i * 7) % cells.length];
-            if (!cell || cell.dataset.footnote) return;
-            cell.style.animation = 'none';   // 낙하 취소
-            cell.style.transform = '';
-            cell.style.width = '16px';       // 번호 box 크기
-            cell.style.height = '16px';
-            var o = cell.getBoundingClientRect(); // 원위치 저장(transform 기준점)
-            cell.dataset.ox = (o.left + o.width / 2).toFixed(1);
-            cell.dataset.oy = (o.top + o.height / 2).toFixed(1);
-            cell.style.background = 'var(--accent)';
-            cell.style.zIndex = '60';
-            cell.dataset.footnote = '1';
-            cell.dataset.fnIndex = String(i);
-            // 보라 box에 흰 번호로 모핑 (안착 위치 그대로)
-            cell.textContent = String(i + 1);
-            cell.style.display = 'flex';
-            cell.style.alignItems = 'center';
-            cell.style.justifyContent = 'center';
-            cell.style.color = '#fff';
-            cell.style.fontSize = '10px';
-            cell.style.fontWeight = '700';
-            cell.style.lineHeight = '1';
-          }
-          var ft = item.querySelector('.fn-text') || item;
-          var ir = ft.getBoundingClientRect();
-          var ox = parseFloat(cell.dataset.ox), oy = parseFloat(cell.dataset.oy);
-          cell.style.transition = first ? 'transform 2.6s cubic-bezier(.4,0,.2,1)' : 'transform 0.5s ease';
-          cell.style.transform =
-            'translate(' + ((ir.left + ir.width / 2) - ox).toFixed(1) + 'px,' +
-            ((ir.top - 18) - oy).toFixed(1) + 'px)'; // 각주 텍스트 첫 줄 위(box가 안 겹치게)
-        });
-      }
-
       function accClose() {
         if (!accRow) return;
         var card = accRow.querySelector('.work-card');
@@ -419,8 +306,6 @@ const defaultMosaic = fs.readFileSync(
         if (tr) tr.setAttribute('data-active', 'false');
         accRow = null;
         accSlug = null;
-        renderFootnotes();
-        drawLinks();
       }
 
       function accOpen(slug) {
@@ -443,29 +328,7 @@ const defaultMosaic = fs.readFileSync(
         accRow = detail;
         // 이펙트 없이 즉시 펼침. 펼친 행이 보이게만 스크롤(애니메이션 없음).
         tr.scrollIntoView({ block: 'start' });
-        renderFootnotes();
-        drawLinks();
       }
-      // center 스크롤·창 리사이즈 시 연결선 좌표 갱신
-      if (center) center.addEventListener('scroll', drawLinks);
-      window.addEventListener('resize', drawLinks);
-
-      // 본문 각주 마커(fn-ref) 클릭 → .right 패널의 해당 각주를 맨 위로 스크롤 + 강조
-      document.addEventListener('click', function (e) {
-        var ref = e.target.closest('.fn-ref a');
-        if (!ref || !fnPanel) return;
-        e.preventDefault();
-        var sup = ref.closest('.fn-ref');
-        var fn = sup ? sup.getAttribute('data-fn') : '';
-        var card = ref.closest('.work-card');
-        var slug = card ? card.id : '';
-        var target = (fn && slug && fnList) ? fnList.querySelector('[id="fn-' + slug + '-' + fn + '"]') : null;
-        if (target) {
-          target.scrollIntoView({ block: 'start', behavior: 'smooth' });
-          target.classList.add('fn-hl');
-          setTimeout(function () { target.classList.remove('fn-hl'); }, 1600);
-        }
-      });
 
       // 필터/정렬 후 "보이는 첫 행"에 .first-visible (표 맨 위 가로선 제거용)
       function markFirstVisible() {
@@ -625,9 +488,6 @@ const defaultMosaic = fs.readFileSync(
         document.querySelectorAll('table.sontable a[data-ko]').forEach(function (a) {
           a.textContent = a.getAttribute('data-' + lang) || '';
         });
-        renderFootnotes();      // 언어 바뀌면 .right 각주 전체 재렌더
-        settleFootnoteCells();  // 안착 네모를 새 각주 위치로 이동
-        drawLinks();            // 연결선 갱신
       }
       if (langToggle) {
         applyLang(langToggle.getAttribute('data-lang') || 'ko'); // 초기 동기화
@@ -757,7 +617,7 @@ const defaultMosaic = fs.readFileSync(
         var nearRadius = 110; // 좁은 원형 영역
         var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
         cells.forEach(function (d) {
-          if (d.dataset.fast === '1' || d.dataset.skip === '1' || d.dataset.footnote === '1') return; // 각주 안착 셀은 안 떨어뜨림
+          if (d.dataset.fast === '1' || d.dataset.skip === '1') return;
           var rect = d.getBoundingClientRect();
           if (rect.top > window.innerHeight + 50) return;
           var cx = rect.left + rect.width / 2;
@@ -787,7 +647,6 @@ const defaultMosaic = fs.readFileSync(
       document.addEventListener('DOMContentLoaded', markMentions);
       document.addEventListener('DOMContentLoaded', wrapAllKorean);
       applyFilter('all');
-      renderFootnotes(); // 모든 각주를 .right에 항상 표시
       applyHash();
       markMentions();
       wrapAllKorean();
@@ -799,7 +658,6 @@ const defaultMosaic = fs.readFileSync(
         } else {
           defaultEl.hidden = false;
           triggerMosaicFall();
-          settleFootnoteCells(); // N개 셀은 낙하 대신 각주 ■ 위치로 안착
         }
       }
     })();
