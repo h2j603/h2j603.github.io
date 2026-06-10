@@ -122,3 +122,6 @@ The real Are.na work has NOT been done yet (the web sandbox blocked
   `npx tsx` if you change those modules.
 - Work on a feature branch; the default branch is `main`. Don't commit `.env`,
   `node_modules`, `dist/`, or `src/data/works.json` (all gitignored).
+- **Workflow (owner's standing instruction): always finish by opening a PR to
+  `main` AND merging it** — don't leave branches unmerged. Resolve conflicts
+  with `main` first if needed.
