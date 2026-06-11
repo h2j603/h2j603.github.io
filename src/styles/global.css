@@ -374,19 +374,18 @@ iframe {
   width: 20%;
   /* 표가 길어지면 스크롤 가능하게 */
 }
-/* 우측 컬럼 콘텐츠 — 맨 위 언어 토글, 그 아래 수집 링크. 모두 우측 정렬
-   (좌측 컬럼의 왼끝 정렬과 거울상) */
+/* 우측 컬럼 콘텐츠 — 수집 링크, 가운데 정렬 (좌측 인물 인덱스와 동일) */
 .three-col .right .content {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
 }
 /* 수집 링크 — Are.na links 채널의 링크 블록들. 항목 = 블록 전체가
    링크·호버 단위 (표 행과 같은 어법). */
 .link-list {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
 }
 /* 항목 사이 가로 구분선 — about hr처럼 컬럼 패딩(20px) 상쇄해 전체 폭 */
 .link-list hr {
@@ -397,7 +396,7 @@ iframe {
 .link-list a.link-item {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: 4px;
   width: calc(100% + 40px);
   margin: 0 -20px;
@@ -435,7 +434,7 @@ iframe {
 .link-desc {
   margin: 0;
   padding-top: 0;
-  text-align: right;
+  text-align: center;
   line-height: 1.5;
   text-wrap: pretty;
 }
@@ -447,17 +446,44 @@ iframe {
    좌측 인물 인덱스 — people 채널 ↔ 작품 관계. 이름(멘션 pill) + 카탈로그
    번호 뱃지(클릭 = 그 작품 열기). 인물 사이 hr은 .intro hr(전체 폭) 공유.
    ─────────────────────────────────────────────────────────────────────── */
+/* 블록 전체가 단위 — 우측 링크 블록과 같은 어법: 컬럼 전체 폭 띠 +
+   항목별 보라/갈색 교차 틴트 호버. 콘텐츠는 가운데 정렬. */
 .person {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
+  width: calc(100% + 40px);
+  margin: 0 -20px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+@media (hover: hover) {
+  .people-list .person:nth-of-type(odd):hover { background: var(--tint-accent); }
+  .people-list .person:nth-of-type(even):hover { background: var(--tint-brown); }
+  /* 틴트 위에서 이름 pill 속은 비치게 (우측 link-title과 동일) */
+  .people-list .person:hover .person-name { background: transparent; }
+}
+.person-desc {
+  margin: 0;
+  padding-top: 0;
+  text-align: center;
+  line-height: 1.5;
+  text-wrap: pretty;
 }
 .person-works {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 5px;
 }
+.people-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.people-list hr { align-self: stretch; } /* 가운데 정렬 컨테이너에서도 전체 폭 */
 /* 번호 뱃지가 .intro a(pill) 규칙을 상속받지 않게 — 표 뱃지와 동일 글리프로 */
 .intro a.num-badge {
   padding: 0 0.4em;

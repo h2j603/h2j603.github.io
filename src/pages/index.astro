@@ -117,7 +117,9 @@ const defaultMosaic = fs.readFileSync(
               return (
                 <>
                   {pi > 0 && <hr />}
-                  <div class="person">
+                  {/* 블록 전체가 단위 (우측 링크 블록과 동일) — 뱃지·이름은
+                      자체 링크, 그 밖을 누르면 JS가 인물 링크로 보낸다 */}
+                  <div class="person" data-url={p.url || undefined}>
                     <a
                       class="person-name mention"
                       href={p.url || '#'}
@@ -126,6 +128,8 @@ const defaultMosaic = fs.readFileSync(
                       data-ko={'@' + (p.nameKo || p.nameEn)}
                       data-en={'@' + (p.nameEn || p.nameKo)}
                     >@{p.nameEn || p.nameKo}</a>
+                    {/* 한 줄 소개 — 인물 블록 description의 desc: 키 */}
+                    {p.description && <p class="person-desc">{p.description}</p>}
                     {nums.length > 0 && (
                       <span class="person-works">
                         {nums.map((n) => (
@@ -637,6 +641,14 @@ const defaultMosaic = fs.readFileSync(
           if (!e.target.closest('.drawer-panel')) toggleDrawer(false);
         });
       }
+
+      // 인물 블록 — 이름·뱃지 밖을 누르면 인물 링크로 (우측 링크 블록과 동일 단위)
+      document.querySelectorAll('.person[data-url]').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          if (e.target.closest('a')) return; // 이름 pill·번호 뱃지는 자체 링크
+          window.open(el.getAttribute('data-url'), '_blank', 'noopener');
+        });
+      });
 
       // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작.
       // 홈 링크가 About 서랍 안에 있으므로 서랍도 닫는다.

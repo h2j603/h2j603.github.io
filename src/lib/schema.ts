@@ -92,6 +92,8 @@ export const personSchema = z.object({
   /** 인물의 대표 링크 — 매칭된 멘션의 href가 이걸로 통일된다. */
   url: z.string().default(''),
   role: z.string().default(''),
+  /** 한 줄 소개 — 블록 description의 `desc:` 키 (수집 링크와 동일 문법). */
+  description: z.string().default(''),
 });
 
 export const peopleFileSchema = z.array(personSchema);
