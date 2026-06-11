@@ -69,8 +69,8 @@
     order: 0;
     padding: 16px 10px 0;
   }
-  /* 단일 컬럼이라 세로 구분선 숨김 */
-  .col-divider, .col-divider-top { display: none; }
+  /* 단일 컬럼이라 세로 구분선 숨김. 띠 호버 트리거도 모바일엔 무의미 */
+  .col-divider, .stripe-hover-zone { display: none; }
   /* center가 표+아코디언 메인 (work-card 저장소 숨김은 global 공통 규칙이 처리) */
   .three-col .center {
     order: 1;
@@ -89,12 +89,21 @@
     border-top: 0;
   }
   tr[data-slug] { scroll-margin-top: 80px; }
-  /* 표 컬럼 폭 — 데스크탑 비율(10/10/60/20)은 좁은 폭에서 연도 "2026"이
-     "20/26"으로 줄바꿈됨. 번호·연도에 최소폭을 더 주고 제목에서 회수한다. */
+  /* 연도 열 — 모바일에선 표시하지 않음 (좁은 폭에서 줄바꿈/공간 낭비).
+     td에 display:none을 쓰면 table-layout:fixed에서 셀이 한 칸씩 밀려
+     컬럼 폭이 어긋나므로, 열 폭 0 + 셀 내용물 제거로 접는다. */
   table.sontable .col-num   { width: 13%; }
-  table.sontable .col-year  { width: 16%; }
-  table.sontable .col-title { width: 47%; }
-  table.sontable .col-cat   { width: 24%; }
+  table.sontable .col-year  { width: 0; }
+  table.sontable .col-title { width: 60%; }
+  table.sontable .col-cat   { width: 27%; }
+  table.sontable tr[data-slug] td:nth-child(2) {
+    padding: 0;
+    font-size: 0;
+    overflow: hidden;
+  }
+  /* 표 분류 칸 — 태그 묶음이 칸 폭을 넘으면 영역 밖으로 삐져나가 레이아웃이
+     깨짐(데스크탑 nowrap 규칙). 모바일은 칸 안에서 줄바꿈 허용. */
+  .cat-cell .cat-tag { white-space: normal; }
   /* tr/td 둘 다 border-top 제거 — tr 셀렉터의 border-top(1px)이
      border-collapse에서 그려져 제목↔이미지 사이에 선으로 보였음 */
   .accordion-detail,
@@ -141,9 +150,9 @@
     display: block;
   }
 
-  /* 미디어(이미지/iframe)→설명 간격도 한·영 설명 사이 간격(20px)과 동일하게 */
+  /* 미디어(이미지/iframe)→설명(본문) 간격 — 20px은 너무 좁아 32px로 확대 */
   .work-card .card-body {
-    margin-top: 20px;
+    margin-top: 32px;
   }
 
   /* 작품 카드 — 표에서 클릭 시 stripe 가리지 않게 보정 */
