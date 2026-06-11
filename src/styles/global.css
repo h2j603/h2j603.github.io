@@ -172,9 +172,8 @@ iframe {
 /* ───────────────────────────────────────────────────────────────────────
    페이지 상단 줄무늬 띠 — 보라(#a966ff) + 갈색(#775d4f) alternating.
    타일 1개 = 18×36px, 기본은 위 2줄(72px)만 보이고 JS가 화면 높이만큼
-   줄을 미리 만들어 둔다. 호버(데스크탑) 또는 탭(터치, .open 클래스) 시
-   height가 100vh로 늘며 커튼처럼 내려와 화면 전체를 덮는다 —
-   타일 크기·비율은 그대로, 줄 수로 채움.
+   줄을 미리 만들어 둔다. 커튼은 아코디언 연동 전용 — 작업을 펼치면
+   해당 행 위까지 내려온다 (호버/탭 풀커튼은 폐기).
    ─────────────────────────────────────────────────────────────────────── */
 .stripe-top {
   position: fixed;
@@ -183,41 +182,16 @@ iframe {
   right: 0;
   z-index: 100;
   /* 높이·전환속도는 변수 — 아코디언 연동 JS가 --curtain-h(펼친 행 위까지)와
-     --curtain-t(스크롤 추적 시 짧은 전환)를 셋팅한다. 기본 72px / 0.5s.
-     호버 풀커튼(:hover 100vh)·터치(.open)는 셀렉터 우선순위가 높아 그대로 우선. */
+     --curtain-t(스크롤 추적 시 짧은 전환)를 셋팅한다. 기본 72px / 0.5s. */
   height: var(--curtain-h, 72px);
   overflow: hidden;
   transition: height var(--curtain-t, 0.5s) ease;
-  /* 장식 전용 — 펼쳐진 동안에도 클릭은 뒤 콘텐츠로 통과 (탭 토글 .open 제외) */
+  /* 장식 전용 — 클릭은 뒤 콘텐츠로 통과 (아코디언 커튼 .curtain-acc 제외) */
   pointer-events: none;
   /* row 사이 공백 텍스트 노드가 body line-height(~15px) 만큼 차지하지 않게 차단.
      이게 시각적으로 stripe를 50~63px로 두껍게 보이게 만들던 진범. */
   line-height: 0;
   font-size: 0;
-}
-/* 트리거 — 띠의 기본 영역(상단 72px)만. 띠 자체에 :hover를 걸면
-   펼쳐진 띠가 커서를 계속 덮어 영원히 안 닫히므로 트리거를 분리한다.
-   데스크탑은 호버, 터치 기기는 JS가 이 영역 탭으로 .open을 토글. */
-.stripe-hover-zone {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 72px;
-  z-index: 101;
-}
-@media (hover: hover) {
-  .stripe-hover-zone:hover + .stripe-top {
-    height: 100vh;
-    height: 100dvh;
-  }
-}
-/* 터치 기기 탭 토글 상태 — 펼친 동안엔 탭을 삼켜(pointer-events) 커튼 자체를
-   탭하면 닫히게 한다. 뒤 콘텐츠(표 링크 등) 오작동 방지. */
-.stripe-top.open {
-  height: 100vh;
-  height: 100dvh;
-  pointer-events: auto;
 }
 /* 아코디언 연동으로 내려온 커튼 — 클릭하면 작업이 닫히며 다시 올라간다.
    클릭을 받아야 하므로 pointer-events 활성 (wheel은 JS가 center로 전달). */
@@ -325,10 +299,21 @@ iframe {
   width: 20%;
   /* 표가 길어지면 스크롤 가능하게 */
 }
-/* 우측 컬럼 콘텐츠 — 언어 토글을 우상단 모서리에 */
+/* 우측 컬럼 콘텐츠 — 맨 위 언어 토글, 그 아래 수집 링크. 모두 우측 정렬
+   (좌측 컬럼의 왼끝 정렬과 거울상) */
 .three-col .right .content {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
+}
+/* 수집 링크 — Are.na links 채널의 링크 블록들. 본문 pill과 같은 어휘로
+   세로 스택 (Are.na 블록 쌓이듯). */
+.link-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 28px;
 }
 .three-col .content {
   /* 작품 카드들이 세로로 쌓이므로 auto */
@@ -468,18 +453,9 @@ tr[data-slug] { scroll-margin-top: 8px; }
 
 .accordion-detail,
 .accordion-detail > td { padding: 0; border-top: 0; }
-/* 펼침 애니메이션 — 패널 행 높이 0fr→1fr 전환(JS가 삽입 직후 .is-open 부여).
-   grid-rows 방식이라 이미지·iframe 높이를 몰라도 자연스럽게 열린다.
-   닫힘은 즉시 제거 — 행 전환(다른 행 클릭) 시퀀스가 꼬이지 않게. */
-.accordion-panel {
-  display: grid;
-  grid-template-rows: 0fr;
-  overflow: hidden;
-  transition: grid-template-rows 0.45s ease;
-}
-.accordion-panel.is-open { grid-template-rows: 1fr; }
-.accordion-panel > .work-card { min-height: 0; }
-/* 펼쳐진 카드 — 좌우 10px = 표 제목 셀 padding과 동일 라인, 상단 8px 간격 */
+/* 펼친 행 — 제목과 작품(미디어) 사이 여백 0: 제목 칸 아래 padding 제거 */
+table.sontable tr[data-active='true'] td { padding-bottom: 0; }
+/* 펼쳐진 카드 — 상단 0: 작품(미디어)이 제목 줄에 바로 붙는다 */
 /* 아코디언 펼침을 표 3컬럼 그리드(20/60/20)에 맞춰 배치:
    규격=연도칸(1), 이미지·본문=제목칸(2), web 링크=분류칸(3). */
 .accordion-detail .work-card {
@@ -487,7 +463,7 @@ tr[data-slug] { scroll-margin-top: 8px; }
   grid-template-columns: 20% 60% 20%;
   align-items: start;
   row-gap: 14px;
-  padding: 8px 0 24px;
+  padding: 0 0 24px;
 }
 /* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 */
 .accordion-detail .card-title,
@@ -635,7 +611,8 @@ table.sontable .col-cat   { width: 20%; }
    ─────────────────────────────────────────────────────────────────────── */
 .intro a,
 .work-card .card-body a,
-.work-card .card-link {
+.work-card .card-link,
+.link-list a {
   /* inline + box-decoration-break:clone — 줄바꿈 시 각 줄 조각마다 pill 윤곽선·
      둥근 모서리·padding이 따로 적용된다(줄별로 나뉜 pill).
      white-space:normal + word-break:keep-all — 짧은 링크는 한 줄, 너무 긴 링크는
@@ -658,7 +635,8 @@ table.sontable .col-cat   { width: 20%; }
 }
 .intro a::before,
 .work-card .card-body a::before,
-.work-card .card-link::before {
+.work-card .card-link::before,
+.link-list a::before {
   content: '↗';
   margin-right: 3px;
   /* inline 글리프로 둬서 아이콘과 첫 단어 사이에 줄바꿈 기회가 안 생기게 한다
@@ -671,14 +649,16 @@ table.sontable .col-cat   { width: 20%; }
 }
 .intro a:hover,
 .work-card .card-body a:hover,
-.work-card .card-link:hover {
+.work-card .card-link:hover,
+.link-list a:hover {
   background: var(--accent);
   color: var(--ink);
 }
 /* 칠 위에선 ↗도 블랙 (보라 위 보라 방지) */
 .intro a:hover::before,
 .work-card .card-body a:hover::before,
-.work-card .card-link:hover::before {
+.work-card .card-link:hover::before,
+.link-list a:hover::before {
   color: var(--ink);
 }
 

@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import { getWorks, resolveImage, getIntro, getFooter, groupBilingual } from '../lib/site-data.js';
+import { getWorks, resolveImage, getIntro, getFooter, getLinks, groupBilingual } from '../lib/site-data.js';
 
 const works = getWorks().slice().sort((a, b) => {
   // 표 정렬 — year desc (최신 위). 정렬 토글이 없으므로 빌드 시 고정.
@@ -24,6 +24,8 @@ function orderedTagsOf(w: (typeof works)[number]): string[] {
 
 const introGroups = getIntro();
 const footerGroups = getFooter();
+// 우측 컬럼 수집 링크 — Are.na links 채널의 링크 블록들 (채널 순서)
+const siteLinks = getLinks();
 
 // 작품 선택 안 한 기본 화면용 모자이크 (stripe-mosaic 도구로 만든 단일 SVG → 셀 그리드)
 const defaultMosaic = fs.readFileSync(
@@ -33,9 +35,8 @@ const defaultMosaic = fs.readFileSync(
 ---
 
 <Base title="hyuk.xyz">
-  {/* 호버 트리거(상단 72px) — 바로 다음 형제 .stripe-top을 커튼처럼 100vh로 펼침 */}
-  <div class="stripe-hover-zone" aria-hidden="true"></div>
-  {/* 줄(.stripe-row)은 JS buildStripe가 화면 높이만큼 생성 — 기본 노출은 위 72px */}
+  {/* 줄(.stripe-row)은 JS buildStripe가 화면 높이만큼 생성 — 기본 노출은 위 72px.
+      아코디언을 펼치면 해당 행 위까지 커튼으로 내려온다 */}
   <div class="stripe-top" aria-hidden="true"></div>
   <div class="three-col">
     {/* 세로 구분선 하단부 — center 구간. 표/텍스트 위, 작품 이미지/iframe 아래.
@@ -252,10 +253,17 @@ const defaultMosaic = fs.readFileSync(
       </div>
     </div>
 
-    {/* ──────────── 우측: 언어 토글 (우상단 모서리) — 나머지는 추후 구상 ──────────── */}
+    {/* ──────────── 우측: 언어 토글 + 수집 링크 (Are.na links 채널) ──────────── */}
     <div class="third right">
       <div class="content">
         <button type="button" class="lang-toggle" data-lang="en">KO</button>
+        {siteLinks.length > 0 && (
+          <nav class="link-list" aria-label="collected links">
+            {siteLinks.map((l) => (
+              <a href={l.url} target="_blank" rel="noopener">{l.title || l.url}</a>
+            ))}
+          </nav>
+        )}
       </div>
     </div>
 
@@ -305,9 +313,6 @@ const defaultMosaic = fs.readFileSync(
         tr.setAttribute('data-active', 'true');
         accSlug = slug;
         accRow = detail;
-        // 펼침 애니메이션 — 삽입 후 reflow 강제 → .is-open으로 0fr→1fr 전환
-        void panel.offsetHeight;
-        panel.classList.add('is-open');
         if (isMobileView()) {
           // 모바일: 펼친 행이 보이게 부드럽게 스크롤
           tr.scrollIntoView({ block: 'start', behavior: 'smooth' });
@@ -518,19 +523,7 @@ const defaultMosaic = fs.readFileSync(
       document.addEventListener('DOMContentLoaded', buildStripe);
       buildStripe();
 
-      // 커튼 — 터치 기기(hover 불가)는 탭으로 토글: 트리거 영역(상단 72px) 탭
-      // → 펼침, 펼쳐진 커튼(.open은 pointer-events:auto) 아무 데나 탭 → 닫힘.
-      // 데스크탑은 CSS :hover가 담당하므로 클릭 핸들러를 걸지 않는다.
       var stripeTopEl = document.querySelector('.stripe-top');
-      var stripeZone = document.querySelector('.stripe-hover-zone');
-      if (stripeTopEl && stripeZone && !window.matchMedia('(hover: hover)').matches) {
-        stripeZone.addEventListener('click', function () {
-          stripeTopEl.classList.add('open');
-        });
-        stripeTopEl.addEventListener('click', function () {
-          stripeTopEl.classList.remove('open');
-        });
-      }
 
       // ── 커튼-아코디언 연동 (데스크탑) ──────────────────────────────
       // 작업을 펼치면 해당 행 위까지 커튼이 내려와 위 영역(다른 행·인트로 등)을

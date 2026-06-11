@@ -96,8 +96,21 @@ export const personSchema = z.object({
 
 export const peopleFileSchema = z.array(personSchema);
 
+/**
+ * 수집 링크 — Are.na `links` 채널의 링크 블록 1개 = 사이트 1개.
+ * 우측 컬럼에 채널 순서대로 쌓인다. title이 표시 이름.
+ */
+export const siteLinkSchema = z.object({
+  url: z.string().url(),
+  title: z.string().default(''),
+  description: z.string().default(''),
+});
+
+export const linksFileSchema = z.array(siteLinkSchema);
+
 export type WorkImage = z.infer<typeof imageSchema>;
 export type WorkLink = z.infer<typeof linkSchema>;
 export type Tag = z.infer<typeof tagSchema>;
 export type Work = z.infer<typeof workSchema>;
 export type Person = z.infer<typeof personSchema>;
+export type SiteLink = z.infer<typeof siteLinkSchema>;
