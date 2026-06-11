@@ -33,7 +33,6 @@
   --bg: #ffffff;
   --ink: #000000;          /* UI 잉크 — 브라운(#775d4f)에서 블랙으로. 줄무늬·모자이크 브라운은 유지 */
   --accent: #b362ff;       /* hyuk repo의 lawngreen → 보라 */
-  --pill-bg: #ececec;      /* 본문 링크 pill 배경 */
   --mention: #000000;      /* @멘션 링크 — 브라운 일괄 블랙 전환에 포함 */
   --scrollbar: rgba(0, 0, 0, 0.35);
   --scrollbar-hover: rgba(0, 0, 0, 0.55);
@@ -172,7 +171,10 @@ iframe {
 
 /* ───────────────────────────────────────────────────────────────────────
    페이지 상단 줄무늬 띠 — 보라(#a966ff) + 갈색(#775d4f) alternating.
-   위·아래 두 줄, 아래 줄은 반 칸 offset (시안 자산 4ㄹ.png 참조).
+   타일 1개 = 18×36px, 기본은 위 2줄(72px)만 보이고 JS가 화면 높이만큼
+   줄을 미리 만들어 둔다. 호버(데스크탑) 또는 탭(터치, .open 클래스) 시
+   height가 100vh로 늘며 커튼처럼 내려와 화면 전체를 덮는다 —
+   타일 크기·비율은 그대로, 줄 수로 채움.
    ─────────────────────────────────────────────────────────────────────── */
 .stripe-top {
   position: fixed;
@@ -180,29 +182,54 @@ iframe {
   left: 0;
   right: 0;
   z-index: 100;
+  height: 72px;
+  overflow: hidden;
+  transition: height 0.5s ease;
+  /* 장식 전용 — 펼쳐진 동안에도 클릭은 뒤 콘텐츠로 통과 (탭 토글 .open 제외) */
+  pointer-events: none;
   /* row 사이 공백 텍스트 노드가 body line-height(~15px) 만큼 차지하지 않게 차단.
      이게 시각적으로 stripe를 50~63px로 두껍게 보이게 만들던 진범. */
   line-height: 0;
   font-size: 0;
 }
+/* 트리거 — 띠의 기본 영역(상단 72px)만. 띠 자체에 :hover를 걸면
+   펼쳐진 띠가 커서를 계속 덮어 영원히 안 닫히므로 트리거를 분리한다.
+   데스크탑은 호버, 터치 기기는 JS가 이 영역 탭으로 .open을 토글. */
+.stripe-hover-zone {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  z-index: 101;
+}
+@media (hover: hover) {
+  .stripe-hover-zone:hover + .stripe-top {
+    height: 100vh;
+    height: 100dvh;
+  }
+}
+/* 터치 기기 탭 토글 상태 — 펼친 동안엔 탭을 삼켜(pointer-events) 커튼 자체를
+   탭하면 닫히게 한다. 뒤 콘텐츠(표 링크 등) 오작동 방지. */
+.stripe-top.open {
+  height: 100vh;
+  height: 100dvh;
+  pointer-events: auto;
+}
 .stripe-row {
   display: flex;
-  height: 24px;
+  height: 36px;
   overflow: hidden;
 }
 .stripe-row .cell {
-  /* JS가 row마다 --cell-w를 셋팅. grow 1 — rounding 잔여 분배해서 row 꽉 채움.
-     hover 시엔 일부 셀이 calc(...×5)로 늘어나면서 다른 셀이 줄어듦. */
+  /* JS가 row마다 --cell-w를 셋팅. grow 1 — rounding 잔여 분배해서 row 꽉 채움. */
   flex: 1 1 var(--cell-w, 1.667%);
   min-width: 0;
-  transition: flex-basis 0.25s ease;
 }
 .stripe-row .cell.purple { background: #a966ff; }
 .stripe-row .cell.brown  { background: #775d4f; }
-/* hover 셀: 다른 셀의 5배 폭 (basis 5× var(--cell-w)), shrink 0 */
-.stripe-row .cell:hover  { flex: 0 0 calc(var(--cell-w) * 5); }
 
-/* 3-Column — stripe 3줄(24×3=72px) 바로 아래, 여유 0.
+/* 3-Column — stripe 2줄(36×2=72px) 바로 아래, 여유 0.
    스크롤 콘텐츠가 띠 밑에서 바로 잘리므로 띠 아래 흰 띠(구 sticky 네비
    배경처럼 보이던 잔재)가 생기지 않는다. */
 .three-col .left,
@@ -239,7 +266,8 @@ iframe {
 
 /* 컬럼 세로 구분선 — three-col 안 absolute, 화면 전체 높이.
    z-index 6: 작품 이미지/iframe(z4) 위 → 끊김 없음(세로선>이미지).
-   three-col(z1) 안이라 stripe(z100) 구간에선 띠 뒤로 가려진다(상단부는 col-divider-top). */
+   three-col(z1) 안이라 stripe(z100)보다 항상 아래 레이어 — 띠 구간(상단 72px)과
+   호버로 펼쳐진 띠 뒤로 가려진다. (띠 위를 지나던 col-divider-top은 폐기) */
 .col-divider {
   position: absolute;
   top: 0;
@@ -255,21 +283,6 @@ iframe {
 .col-divider.d5 { left: 26%; } /* 번호|연도 */
 .col-divider.d3 { left: 32%; } /* 연도|제목 */
 .col-divider.d4 { left: 68%; } /* 제목|분류 */
-/* 세로선 상단부 — stripe 구간(0~72px)을 띠 위로 지난다 (fixed, z200). */
-.col-divider-top {
-  position: fixed;
-  top: 0;
-  height: 72px;
-  width: 1px;
-  background: var(--ink);
-  z-index: 200; /* stripe-top(100) 위 */
-  pointer-events: none;
-}
-.col-divider-top.d1 { left: 20%; }
-.col-divider-top.d2 { left: 80%; }
-.col-divider-top.d5 { left: 26%; }
-.col-divider-top.d3 { left: 32%; }
-.col-divider-top.d4 { left: 68%; }
 
 .three-col .left {
   background-color: var(--bg);
@@ -429,9 +442,13 @@ table.sontable tr[data-slug]:first-child td { border-top: 0; padding-top: 2px; }
 table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s; }
 /* 호버 — 행이 아닌 칸(셀) 단위 배경 칠. 행마다 보라/갈색 교차(빌드 시 .row-a/.row-b 부여).
    칠 색은 줄무늬 모티프(보라/브라운)라 잉크 블랙 전환과 무관하게 유지.
-   글자·뱃지는 색 반전 없이 블랙 그대로 둔다. */
-table.sontable tr.row-a td:hover { background: var(--accent); }
-table.sontable tr.row-b td:hover { background: #775d4f; }
+   글자·뱃지는 색 반전 없이 블랙 그대로 둔다.
+   @media (hover: hover) — 터치 기기(모바일)에선 탭 시 sticky hover로 칸이
+   칠해진 채 남는 문제가 있어 진짜 호버 가능한 기기에서만 적용. */
+@media (hover: hover) {
+  table.sontable tr.row-a td:hover { background: var(--accent); }
+  table.sontable tr.row-b td:hover { background: #775d4f; }
+}
 /* 펼칠 때 행이 컬럼(스크롤 컨테이너) 상단에서 살짝 떨어지게 —
    sticky 헤더가 없어졌으므로 작은 여백만 */
 tr[data-slug] { scroll-margin-top: 8px; }
