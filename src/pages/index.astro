@@ -259,12 +259,15 @@ const defaultMosaic = fs.readFileSync(
         <button type="button" class="lang-toggle" data-lang="en">KO</button>
         {siteLinks.length > 0 && (
           <nav class="link-list" aria-label="collected links">
-            {siteLinks.map((l) => (
-              <div class="link-item">
-                <a href={l.url} target="_blank" rel="noopener">{l.title || l.url}</a>
-                {/* 블록 description = 한 줄 메모 (Are.na에서 작성) */}
-                {l.description && <p class="link-desc">{l.description}</p>}
-              </div>
+            {siteLinks.map((l, i) => (
+              <>
+                {i > 0 && <hr />}
+                <div class="link-item">
+                  <a href={l.url} target="_blank" rel="noopener">{l.title || l.url}</a>
+                  {/* 블록 description의 첫 문장 (빌드 시 절삭) */}
+                  {l.description && <p class="link-desc">{l.description}</p>}
+                </div>
+              </>
             ))}
           </nav>
         )}
@@ -296,7 +299,7 @@ const defaultMosaic = fs.readFileSync(
         if (tr) tr.setAttribute('data-active', 'false');
         accRow = null;
         accSlug = null;
-        updateCurtain(); // 커튼 기본(72px)으로 복귀
+        curtainStop(); // 커튼 기본(72px)으로 복귀 (CSS 0.5s)
       }
 
       function accOpen(slug) {
@@ -531,12 +534,14 @@ const defaultMosaic = fs.readFileSync(
 
       // ── 커튼-아코디언 연동 (데스크탑) ──────────────────────────────
       // 작업을 펼치면 해당 행 위까지 커튼이 내려와 위 영역(다른 행·인트로 등)을
-      // 가린다. center 스크롤 시 행 위치를 따라 높이를 추적하고(짧은 전환으로
-      // 따라붙음), 닫으면 기본 72px로 복귀. 커튼은 pointer-events:none이라
-      // 커튼 아래 깔린 영역 위에서도 스크롤·클릭은 그대로 통과한다.
+      // 가린다. 모션은 CSS transition이 아니라 rAF 지수 수렴 루프 —
+      // 목표(행 윗변)가 글라이드·스크롤로 계속 움직여도 transition 재시작
+      // 없이 한 타임라인으로 부드럽게 따라붙는다(끊김 제거). 열려 있는 동안
+      // --curtain-t는 0s(JS가 모션 담당), 닫힘 복귀만 CSS 0.5s.
       var centerEl = document.querySelector('.three-col .center');
-      var curtainRaf = 0;
-      var curtainTrackT = null;
+      var curtainAnimRaf = 0;
+      var curtainH = 72;   // 현재 표시 높이 — 매 프레임 목표로 수렴
+      var curtainLastT = 0;
       function isMobileView() {
         return window.matchMedia('(max-width: 600px)').matches;
       }
@@ -544,25 +549,31 @@ const defaultMosaic = fs.readFileSync(
       function anchorY() {
         return Math.max(110, Math.round(window.innerHeight * 0.22));
       }
-      function updateCurtain() {
-        curtainRaf = 0;
-        if (!stripeTopEl) return;
+      // 커튼 변수는 :root에 — .stripe-top(높이)뿐 아니라 .left/.right의
+      // padding-top(커튼 끝 따라 밀림)도 같은 변수로 프레임 동기화된다.
+      var docEl = document.documentElement;
+      function curtainLoop(now) {
         var tr = accSlug && document.querySelector('tr[data-slug="' + accSlug + '"]');
-        if (!tr || isMobileView()) {
-          clearTimeout(curtainTrackT);
-          stripeTopEl.style.removeProperty('--curtain-t'); // 복귀는 기본 속도(0.5s)
-          stripeTopEl.style.removeProperty('--curtain-h');
-          stripeTopEl.classList.remove('curtain-acc'); // 클릭 받기 해제
-          return;
-        }
-        // 행 윗변까지 — 행(제목 줄)은 커튼 바로 아래 보인다. 72px 밑으론 안 줄고
-        // 행이 화면 밖으로 내려가면 화면 전체까지만.
-        var top = tr.getBoundingClientRect().top;
-        var h = Math.max(72, Math.min(top, window.innerHeight));
-        stripeTopEl.style.setProperty('--curtain-h', h.toFixed(0) + 'px');
+        if (!tr || isMobileView()) { curtainStop(); return; }
+        // 행 윗변까지 — 행(제목 줄)은 커튼 바로 아래. 72px 아래로 안 줄고
+        // 행이 화면 밖이면 화면 전체까지만.
+        var target = Math.max(72, Math.min(tr.getBoundingClientRect().top, window.innerHeight));
+        var dt = curtainLastT ? Math.min(64, now - curtainLastT) : 16;
+        curtainLastT = now;
+        var k = 1 - Math.exp(-dt / 110); // 지수 수렴 (~0.3s 체감)
+        curtainH += (target - curtainH) * k;
+        if (Math.abs(target - curtainH) < 0.5) curtainH = target;
+        docEl.style.setProperty('--curtain-h', curtainH.toFixed(1) + 'px');
+        curtainAnimRaf = requestAnimationFrame(curtainLoop);
       }
-      function scheduleCurtain() {
-        if (!curtainRaf) curtainRaf = requestAnimationFrame(updateCurtain);
+      function curtainStop() {
+        cancelAnimationFrame(curtainAnimRaf);
+        curtainAnimRaf = 0;
+        curtainLastT = 0;
+        curtainH = 72;
+        docEl.style.removeProperty('--curtain-t'); // 복귀는 CSS 기본(0.5s)
+        docEl.style.removeProperty('--curtain-h');
+        if (stripeTopEl) stripeTopEl.classList.remove('curtain-acc');
       }
       // center 스크롤 글라이드 — 목표 한계(scrollHeight)를 매 프레임 재계산.
       // 아코디언 패널이 0.45s 동안 자라며 스크롤 공간이 늘어나도 끝까지 따라간다.
@@ -586,14 +597,13 @@ const defaultMosaic = fs.readFileSync(
       }
       function curtainOpen() {
         if (!stripeTopEl) return;
-        // 첫 하강은 기본 속도(0.5s)로 우아하게 — 자리 잡으면 추적용 짧은 전환으로
-        stripeTopEl.style.removeProperty('--curtain-t');
         stripeTopEl.classList.add('curtain-acc'); // 커튼 클릭 → 닫기 활성
-        updateCurtain();
-        clearTimeout(curtainTrackT);
-        curtainTrackT = setTimeout(function () {
-          if (accSlug && stripeTopEl) stripeTopEl.style.setProperty('--curtain-t', '0.15s');
-        }, 550);
+        // JS 루프가 모션 담당 — CSS 전환은 꺼서 프레임 단위 재시작 끊김 방지
+        docEl.style.setProperty('--curtain-t', '0s');
+        // 현재 실제 높이에서 출발 (재오픈·복귀 중 오픈에도 점프 없음)
+        curtainH = stripeTopEl.getBoundingClientRect().height;
+        curtainLastT = 0;
+        if (!curtainAnimRaf) curtainAnimRaf = requestAnimationFrame(curtainLoop);
       }
       // ── 스크롤 넘김 — 열린 작업을 끝까지 지나치면 다음 작업으로 ─────────
       // 아래로 스크롤해 패널 바닥이 기준선(anchorY) 위로 올라가면 = 다 읽음
@@ -636,7 +646,6 @@ const defaultMosaic = fs.readFileSync(
         flipNext();
       }
       if (centerEl) {
-        centerEl.addEventListener('scroll', scheduleCurtain, { passive: true });
         centerEl.addEventListener('scroll', maybeFlip, { passive: true });
         // 하부 작품은 남은 콘텐츠가 부족해 패널 바닥이 기준선까지 못 올라간다
         // (스크롤이 끝에 닿으면 scroll 이벤트 자체가 안 옴) — 끝에서 휠을
@@ -655,7 +664,7 @@ const defaultMosaic = fs.readFileSync(
           { passive: true },
         );
       }
-      window.addEventListener('resize', scheduleCurtain);
+      // (커튼은 rAF 루프가 매 프레임 행 위치를 읽으므로 별도 resize 핸들러 불필요)
 
       // 내려온 커튼 클릭 → 작업 닫힘 + 커튼 상승. (curtain-acc일 때만 클릭을 받음)
       if (stripeTopEl) {

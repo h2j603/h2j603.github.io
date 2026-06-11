@@ -10,6 +10,17 @@ import { classifyBlock } from './images.js';
 import { siteLinkSchema, type SiteLink } from './schema.js';
 import { ARENA_LINKS_CHANNEL } from './config.js';
 
+/**
+ * 설명은 첫 문장만 — 마침표류(.!?…) 뒤에 공백/끝이 오는 지점까지.
+ * "Are.na"처럼 단어 안의 점(뒤에 공백 없음)은 문장 끝으로 안 본다.
+ * 줄바꿈·연속 공백은 한 칸으로 정리.
+ */
+export function firstSentence(text: string): string {
+  const t = text.trim().replace(/\s+/g, ' ');
+  const m = t.match(/^.*?[.!?…](?=\s|$)/);
+  return (m ? m[0] : t).trim();
+}
+
 export async function buildLinks(): Promise<SiteLink[]> {
   const ch = await getChannel(ARENA_LINKS_CHANNEL);
   if (!ch) {
@@ -24,7 +35,7 @@ export async function buildLinks(): Promise<SiteLink[]> {
     const parsed = siteLinkSchema.safeParse({
       url: c.url,
       title: c.title,
-      description: c.description,
+      description: firstSentence(c.description),
     });
     if (!parsed.success) {
       console.warn(`links: block ${b?.id} schema validation failed — skipped`);
