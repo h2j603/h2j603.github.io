@@ -69,9 +69,10 @@
     order: 0;
     padding: 16px 10px 0;
   }
-  /* 단일 컬럼이라 세로 구분선 숨김.
-     (stripe-hover-zone은 모바일에서도 살림 — 탭으로 커튼 토글) */
+  /* 단일 컬럼이라 세로 구분선 숨김 */
   .col-divider { display: none; }
+  /* 수집 링크는 데스크탑 전용 — 모바일에선 표 위 공간을 차지하지 않게 숨김 */
+  .link-list { display: none; }
   /* center가 표+아코디언 메인 (work-card 저장소 숨김은 global 공통 규칙이 처리) */
   .three-col .center {
     order: 1;
@@ -113,10 +114,10 @@
     border-top: 0;
   }
   /* 좌우 10px — 본문을 표 제목 왼쪽(셀 padding 10px)에 맞추고 오른쪽도 동일하게.
-     상단 8px = 제목↔이미지 간격 (아래 미디어 margin-top 0과 합쳐 일정하게) */
+     상단 0 = 제목과 작품 사이 여백 없음 (데스크탑과 동일) */
   .accordion-detail .work-card {
     display: block;
-    padding: 8px 10px 24px;
+    padding: 0 10px 24px;
   }
   /* 메타가 숨겨져 미디어가 첫 요소이므로, 미디어의 위 margin 제거 —
      제목↔이미지 간격은 work-card padding-top(8px)으로만 잡는다 */

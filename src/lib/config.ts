@@ -28,6 +28,11 @@ export const ARENA_FOOTER_CHANNEL = process.env.ARENA_FOOTER_CHANNEL ?? 'hyuk-fo
 export const ARENA_PEOPLE_CHANNEL =
   process.env.ARENA_PEOPLE_CHANNEL ?? 'people-vbm5erq60ra';
 
+/** 수집 링크 채널 슬러그 — 우측 컬럼에 표시되는 사이트 링크 모음.
+    'links'도 전역 점유라 접미사 붙은 실제 슬러그 사용 (채널 ID #5297302). */
+export const ARENA_LINKS_CHANNEL =
+  process.env.ARENA_LINKS_CHANNEL ?? 'links-fccchcri-lm';
+
 export function getArenaToken(): string | undefined {
   return process.env.ARENA_TOKEN || undefined;
 }
@@ -57,3 +62,6 @@ export const FOOTER_FILE = 'src/data/footer.json';
 
 /** 인물 레지스트리 스냅샷 파일 (관계형 데이터 — 우측 컬럼 등 향후 UI용). */
 export const PEOPLE_FILE = 'src/data/people.json';
+
+/** 수집 링크 스냅샷 파일 (우측 컬럼 렌더용). */
+export const LINKS_FILE = 'src/data/links.json';

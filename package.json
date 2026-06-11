@@ -7,6 +7,7 @@
   "scripts": {
     "setup:arena": "tsx scripts/setup-arena.ts",
     "setup:people": "tsx scripts/setup-people.ts",
+    "setup:links": "tsx scripts/setup-links.ts",
     "build:data": "tsx scripts/build-data.ts",
     "check:arena": "tsx scripts/build-data.ts --dry-run",
     "build": "tsx scripts/build-data.ts && astro build",
