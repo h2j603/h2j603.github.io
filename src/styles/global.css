@@ -173,10 +173,10 @@ iframe {
 }
 
 /* ───────────────────────────────────────────────────────────────────────
-   페이지 상단 줄무늬 띠 — 보라(#a966ff) + 갈색(#775d4f) alternating.
-   타일 1개 = 18×36px, 기본은 위 2줄(72px)만 보이고 JS가 화면 높이만큼
-   줄을 미리 만들어 둔다. 커튼은 아코디언 연동 전용 — 작업을 펼치면
-   해당 행 위까지 내려온다 (호버/탭 풀커튼은 폐기).
+   페이지 상단 줄무늬 띠 = About 서랍의 손잡이.
+   보라(#a966ff)+갈색(#775d4f) 타일 18×36px, 기본은 위 2줄(72px).
+   클릭하면 커튼이 전면(100dvh)으로 내려오고 그 위에 About 패널
+   (.about-drawer, 형제 레이어)이 인쇄된다 — "포스터의 뒷면".
    ─────────────────────────────────────────────────────────────────────── */
 .stripe-top {
   position: fixed;
@@ -184,84 +184,95 @@ iframe {
   left: 0;
   right: 0;
   z-index: 100;
-  /* 높이·전환속도는 변수 — 아코디언 연동 JS가 --curtain-h(펼친 행 위까지)와
-     --curtain-t(스크롤 추적 시 짧은 전환)를 셋팅한다. 기본 72px / 0.5s. */
-  height: var(--curtain-h, 72px);
+  height: 72px;
   overflow: hidden;
-  transition: height var(--curtain-t, 0.5s) ease;
-  /* 장식 전용 — 클릭은 뒤 콘텐츠로 통과 (아코디언 커튼 .curtain-acc 제외) */
-  pointer-events: none;
+  transition: height 0.5s ease;
+  cursor: pointer;
   /* row 사이 공백 텍스트 노드가 body line-height(~15px) 만큼 차지하지 않게 차단.
      이게 시각적으로 stripe를 50~63px로 두껍게 보이게 만들던 진범. */
   line-height: 0;
   font-size: 0;
 }
-/* 아코디언 연동으로 내려온 커튼 — 클릭하면 작업이 닫히며 다시 올라간다.
-   클릭을 받아야 하므로 pointer-events 활성 (wheel은 JS가 center로 전달). */
-.stripe-top.curtain-acc {
-  pointer-events: auto;
-  cursor: pointer;
+.stripe-top.open {
+  height: 100vh;
+  height: 100dvh;
 }
-/* 커튼 하단 상태줄 — 접힌 목차(가려진 번호) + 현재 작품 + 닫기.
-   커튼 밑변에 부착(top = --curtain-h, 자기 높이만큼 위로). 커튼이
-   열려 있을 때(.curtain-acc)만 표시. */
-.curtain-index {
-  display: none;
+/* 띠 우측 어포던스 — 서랍이 닫혀 있을 때만. 클릭은 띠로 통과(label 전용) */
+.curtain-tab {
   position: fixed;
-  left: 0;
-  right: 0;
-  top: var(--curtain-h, 72px);
-  transform: translateY(-100%);
+  top: 24px; /* 띠(72px) 세로 중앙 */
+  right: 20px;
+  z-index: 101;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 9px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--bg);
+  pointer-events: none; /* label 전용 — 클릭은 띠로 */
+  transition: opacity 0.25s ease;
+}
+.stripe-top.open ~ .curtain-tab { opacity: 0; }
+
+/* About 서랍 — 펼쳐진 커튼 위 패널 레이어. 레이어 자체는 클릭을 통과시켜
+   (천 클릭 = 닫기, stripe 핸들러) 패널만 클릭을 소화한다. */
+.about-drawer {
+  position: fixed;
+  inset: 0;
   z-index: 101; /* 커튼(100) 위 */
-  height: 30px;
-  align-items: center;
-  gap: 10px;
-  padding: 0 20px;
-  background: var(--bg);
-  border-top: 1px solid var(--ink);
-}
-.stripe-top.curtain-acc + .curtain-index { display: flex; }
-/* 접힌 목차 — 가려진 작품들의 번호 뱃지 (클릭 = 그 작품으로) */
-.ci-nums {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 96px 20px 60px;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0s 0.3s;
 }
-.ci-nums .num-badge {
-  cursor: pointer;
+.stripe-top.open ~ .about-drawer {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto; /* 레이어가 스크롤·클릭 받음 — 패널 밖 클릭은 JS가 닫기로 */
+  transition: opacity 0.3s ease 0.22s, visibility 0s;
+}
+/* 패널 — 커튼 천에 핀으로 꽂은 흰 종이 (포스터의 뒷면) */
+.drawer-panel {
+  position: relative;
+  width: min(620px, 92vw);
   background: var(--bg);
-  font-family: inherit;
-  font-size: calc(var(--fs) * 0.78);
+  border: 1px solid var(--ink);
+  padding: 28px 28px 32px;
 }
-.ci-nums .num-badge:hover { background: var(--tint-accent); }
-/* 현재 작품 + 닫기 — 우측 끝 */
-.ci-current {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  min-width: 0;
+.drawer-panel hr {
+  margin-left: -28px;
+  margin-right: -28px;
 }
-.ci-title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 40vw;
-}
-.ci-close {
+.drawer-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
   cursor: pointer;
   border: none;
   background: none;
   font-family: inherit;
   font-size: var(--fs);
   color: var(--ink);
-  padding: 0 3px;
   line-height: 1;
+  padding: 2px 4px;
 }
-.ci-close:hover { background: var(--tint-accent); }
+.drawer-close:hover { background: var(--tint-accent); }
+/* 서랍 안 본문 — 인트로/푸터와 같은 프로즈 리듬 */
+.drawer-panel p {
+  padding-top: 0;
+  margin-top: 0;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+/* 언어 — .three-col 밖이라 자체 data-lang으로 같은 규칙 적용 */
+.about-drawer[data-lang='ko'] .bilingual > [lang='en'] { display: none; }
+.about-drawer[data-lang='en'] .bilingual > [lang='ko'] { display: none; }
 .stripe-row {
   display: flex;
   height: 36px;
@@ -363,17 +374,6 @@ iframe {
   width: 20%;
   /* 표가 길어지면 스크롤 가능하게 */
 }
-/* 커튼이 내려오면 좌/우 컬럼 콘텐츠가 커튼 끝에 맞춰 밀려 내려간다 —
-   padding-top = 커튼높이(--curtain-h) − 컬럼시작(72) + 기본여백(20).
-   커튼 기본(72px)일 땐 20px = .third 기본 padding과 동일해 변화 없음.
-   전환 타이밍도 커튼과 같은 변수(--curtain-t)라 한 몸처럼 움직인다.
-   (center는 글라이드가 담당, 모바일은 mobile.css padding이 덮어씀) */
-.three-col .left,
-.three-col .right {
-  padding-top: calc(var(--curtain-h, 72px) - 52px);
-  transition: padding-top var(--curtain-t, 0.5s) ease;
-}
-
 /* 우측 컬럼 콘텐츠 — 맨 위 언어 토글, 그 아래 수집 링크. 모두 우측 정렬
    (좌측 컬럼의 왼끝 정렬과 거울상) */
 .three-col .right .content {
@@ -444,6 +444,48 @@ iframe {
   /* 작품 카드들이 세로로 쌓이므로 auto */
 }
 
+/* ───────────────────────────────────────────────────────────────────────
+   좌측 인물 인덱스 — people 채널 ↔ 작품 관계. 이름(멘션 pill) + 카탈로그
+   번호 뱃지(클릭 = 그 작품 열기). 인물 사이 hr은 .intro hr(전체 폭) 공유.
+   ─────────────────────────────────────────────────────────────────────── */
+.person {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.person-works {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+/* 번호 뱃지가 .intro a(pill) 규칙을 상속받지 않게 — 표 뱃지와 동일 글리프로 */
+.intro a.num-badge {
+  padding: 0 0.4em;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: calc(var(--fs) * 0.78);
+  text-decoration: none;
+  font-style: normal;
+}
+.intro a.num-badge::before { content: none; }
+.intro a.num-badge:hover { background: var(--tint-accent); color: var(--ink); }
+
+/* 작품이 열려 있는 동안 — 다른 행은 옅게. 목록(지도)은 보이되 시선만
+   열린 작품으로 모은다. 호버하면 그 행만 다시 또렷하게. */
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) td,
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) td a,
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) .cat-tag,
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) .num-badge {
+  color: rgba(0, 0, 0, 0.32);
+}
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']):hover td,
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']):hover td a,
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']):hover .cat-tag,
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']):hover .num-badge {
+  color: var(--ink);
+}
+
 /* 표 행 활성 상태 — 링크 텍스트 아래 라인.
    text-decoration: underline은 한글 inline-block .ko span을 못 통과해 공백만
    밑줄로 보였음. border-bottom으로 a 박스 전체에 일관된 라인. */
@@ -453,11 +495,13 @@ table tr[data-active='true'] a {
 
 /* 인물 멘션(@) 링크 — 화살표 대신 인물 아이콘 + 채도 높은 갈색 (예전 스타일) */
 .intro a.mention,
+.drawer-panel a.mention,
 .work-card .card-body a.mention,
 .work-card .card-link.mention {
   color: var(--mention);
 }
 .intro a.mention::before,
+.drawer-panel a.mention::before,
 .work-card .card-body a.mention::before,
 .work-card .card-link.mention::before {
   content: '';
@@ -474,6 +518,7 @@ table tr[data-active='true'] a {
 }
 /* 멘션 호버 — 일반 pill과 동일 (보라 틴트) */
 .intro a.mention:hover,
+.drawer-panel a.mention:hover,
 .work-card .card-body a.mention:hover,
 .work-card .card-link.mention:hover {
   background: var(--tint-accent);
@@ -659,7 +704,7 @@ table.sontable .col-cat   { width: 20%; }
   height: 1.7em;
   padding: 0 0.4em;
   box-sizing: border-box;
-  border: 1px solid var(--ink);
+  border: 1px solid currentColor; /* 디밍 시 원도 같이 옅어지게 */
   border-radius: 999px;
   /* carbon 폐기 — 서체는 본문 상속. 크기만 원 안에 맞게 비율 축소(장식 글리프) */
   font-size: 0.78em;
@@ -736,6 +781,7 @@ table.sontable .col-cat   { width: 20%; }
    제외: 표(table a)
    ─────────────────────────────────────────────────────────────────────── */
 .intro a,
+.drawer-panel a,
 .work-card .card-body a,
 .work-card .card-link {
   /* inline + box-decoration-break:clone — 줄바꿈 시 각 줄 조각마다 pill 윤곽선·
@@ -759,6 +805,7 @@ table.sontable .col-cat   { width: 20%; }
   transition: background 0.12s; /* 표 셀 호버와 같은 템포 */
 }
 .intro a::before,
+.drawer-panel a::before,
 .work-card .card-body a::before,
 .work-card .card-link::before {
   content: '↗';
@@ -773,6 +820,7 @@ table.sontable .col-cat   { width: 20%; }
 }
 /* 호버 — 옅은 보라 틴트 칠 (↗는 보라 유지, 틴트 위에서 충분히 보임) */
 .intro a:hover,
+.drawer-panel a:hover,
 .work-card .card-body a:hover,
 .work-card .card-link:hover {
   background: var(--tint-accent);
@@ -814,6 +862,8 @@ table.sontable .col-cat   { width: 20%; }
    .intro a의 pill·↗ 효과는 Are.na 본문 링크 전용 — 여기선 일반 텍스트로 reset.
    호버 시 font-weight만 두껍게. */
 .intro h2 .home-link,
+.drawer-panel h2 .home-link,
+.drawer-panel h2 .home-link:hover,
 .intro h2 .home-link:hover {
   display: inline;
   padding: 0;
@@ -826,10 +876,12 @@ table.sontable .col-cat   { width: 20%; }
   line-height: inherit;
   white-space: inherit;
 }
-.intro h2 .home-link::before {
+.intro h2 .home-link::before,
+.drawer-panel h2 .home-link::before {
   content: none;
 }
-.intro h2 .home-link:hover {
+.intro h2 .home-link:hover,
+.drawer-panel h2 .home-link:hover {
   font-weight: 700;
 }
 

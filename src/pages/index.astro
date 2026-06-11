@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import { getWorks, resolveImage, getIntro, getFooter, getLinks, groupBilingual } from '../lib/site-data.js';
+import { getWorks, resolveImage, getIntro, getFooter, getLinks, getPeople, groupBilingual } from '../lib/site-data.js';
 
 const works = getWorks().slice().sort((a, b) => {
   // 표 정렬 — year desc (최신 위). 정렬 토글이 없으므로 빌드 시 고정.
@@ -26,6 +26,8 @@ const introGroups = getIntro();
 const footerGroups = getFooter();
 // 우측 컬럼 수집 링크 — Are.na links 채널의 링크 블록들 (채널 순서)
 const siteLinks = getLinks();
+// 좌측 컬럼 인물 인덱스 — people 채널 ↔ work.people 관계 (번호 = 표의 카탈로그 번호)
+const people = getPeople();
 
 // 작품 선택 안 한 기본 화면용 모자이크 (stripe-mosaic 도구로 만든 단일 SVG → 셀 그리드)
 const defaultMosaic = fs.readFileSync(
@@ -36,33 +38,42 @@ const defaultMosaic = fs.readFileSync(
 
 <Base title="hyuk.xyz">
   {/* 줄(.stripe-row)은 JS buildStripe가 화면 높이만큼 생성 — 기본 노출은 위 72px.
-      아코디언을 펼치면 해당 행 위까지 커튼으로 내려온다 */}
-  <div class="stripe-top" aria-hidden="true"></div>
-  {/* 커튼 하단 상태줄 — 접힌 목차(가려진 작품 번호, 클릭=이동) + 현재 작품 + 닫기.
-      커튼이 열려 있을 때만 표시(.curtain-acc 인접 형제 셀렉터) */}
-  <div class="curtain-index">
-    <div class="ci-nums"></div>
-    <div class="ci-current">
-      <span class="ci-title"></span>
-      <button type="button" class="ci-close" aria-label="작품 닫기">✕</button>
-    </div>
-  </div>
-  <div class="three-col">
-    {/* 세로 구분선 하단부 — center 구간. 표/텍스트 위, 작품 이미지/iframe 아래.
-        d1/d2: 3구역 경계, d3/d4: 표 컬럼(제목|연도|분류) 기준선 */}
-    <div class="col-divider d1" aria-hidden="true"></div>
-    <div class="col-divider d2" aria-hidden="true"></div>
-    <div class="col-divider d3" aria-hidden="true"></div>
-    <div class="col-divider d4" aria-hidden="true"></div>
-    <div class="col-divider d5" aria-hidden="true"></div>
-
-    {/* ──────────── 좌측: 인트로 ──────────── */}
-    <div class="third left">
-      <div class="content intro">
-        {introGroups.length > 0 && (
-          <div class="intro-body">
+      띠 클릭 → 커튼이 전면으로 내려오고 그 위에 About 패널이 인쇄된다(서랍) */}
+  <div class="stripe-top" role="button" tabindex="0" aria-label="about 열기/닫기"></div>
+  {/* 띠 우측 어포던스 — 서랍이 닫혀 있을 때만 보임 */}
+  <span class="curtain-tab" aria-hidden="true">about ↓</span>
+  {/* About 서랍 — 커튼(형제) 위에 얹히는 패널 레이어. 천 클릭은 통과시켜
+      stripe 토글로 가고, 패널 자신만 클릭을 소화한다. */}
+  <div class="about-drawer" data-lang="en">
+    <div class="drawer-panel">
+      <button type="button" class="drawer-close" aria-label="닫기">✕</button>
+      {introGroups.length > 0 && (
+        <div class="intro-body">
+          {
+            introGroups.map((g, i) => (
+              <>
+                {i > 0 && <hr />}
+                {g.ko && g.en ? (
+                  <div class="bilingual">
+                    <div class="ko-body" lang="ko" set:html={g.ko} />
+                    <div class="en-body" lang="en" set:html={g.en} />
+                  </div>
+                ) : g.ko ? (
+                  <div lang="ko" set:html={g.ko} />
+                ) : (
+                  <div lang="en" set:html={g.en} />
+                )}
+              </>
+            ))
+          }
+        </div>
+      )}
+      {footerGroups.length > 0 && (
+        <>
+          <hr />
+          <footer>
             {
-              introGroups.map((g, i) => (
+              footerGroups.map((g, i) => (
                 <>
                   {i > 0 && <hr />}
                   {g.ko && g.en ? (
@@ -78,32 +89,54 @@ const defaultMosaic = fs.readFileSync(
                 </>
               ))
             }
-          </div>
-        )}
+          </footer>
+        </>
+      )}
+    </div>
+  </div>
+  <div class="three-col">
+    {/* 세로 구분선 하단부 — center 구간. 표/텍스트 위, 작품 이미지/iframe 아래.
+        d1/d2: 3구역 경계, d3/d4: 표 컬럼(제목|연도|분류) 기준선 */}
+    <div class="col-divider d1" aria-hidden="true"></div>
+    <div class="col-divider d2" aria-hidden="true"></div>
+    <div class="col-divider d3" aria-hidden="true"></div>
+    <div class="col-divider d4" aria-hidden="true"></div>
+    <div class="col-divider d5" aria-hidden="true"></div>
 
-        {footerGroups.length > 0 && (
-          <>
-            <hr />
-            <footer>
-              {
-                footerGroups.map((g, i) => (
-                  <>
-                    {i > 0 && <hr />}
-                    {g.ko && g.en ? (
-                      <div class="bilingual">
-                        <div class="ko-body" lang="ko" set:html={g.ko} />
-                        <div class="en-body" lang="en" set:html={g.en} />
-                      </div>
-                    ) : g.ko ? (
-                      <div lang="ko" set:html={g.ko} />
-                    ) : (
-                      <div lang="en" set:html={g.en} />
+    {/* ──────────── 좌측: 인물 인덱스 — 함께한 사람들 (people 채널 ↔ 작품 관계).
+        어바웃·연락처는 상단 띠(About 서랍)로 이사 ──────────── */}
+    <div class="third left">
+      <div class="content intro">
+        {people.length > 0 && (
+          <div class="people-list">
+            {people.map((p, pi) => {
+              const nums = works
+                .map((w, i) => (w.people.includes(p.slug) ? i + 1 : 0))
+                .filter((n) => n > 0);
+              return (
+                <>
+                  {pi > 0 && <hr />}
+                  <div class="person">
+                    <a
+                      class="person-name mention"
+                      href={p.url || '#'}
+                      target="_blank"
+                      rel="noopener"
+                      data-ko={'@' + (p.nameKo || p.nameEn)}
+                      data-en={'@' + (p.nameEn || p.nameKo)}
+                    >@{p.nameEn || p.nameKo}</a>
+                    {nums.length > 0 && (
+                      <span class="person-works">
+                        {nums.map((n) => (
+                          <a class="num-badge" href={'#' + works[n - 1].slug} aria-label={'작품 ' + n + ' 열기'}>{n}</a>
+                        ))}
+                      </span>
                     )}
-                  </>
-                ))
-              }
-            </footer>
-          </>
+                  </div>
+                </>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>
@@ -315,7 +348,6 @@ const defaultMosaic = fs.readFileSync(
         }
         accRow = null;
         accSlug = null;
-        curtainStop(); // 커튼 기본(72px)으로 복귀 (CSS 0.5s)
       }
 
       function accOpen(slug) {
@@ -341,11 +373,9 @@ const defaultMosaic = fs.readFileSync(
           tr.scrollIntoView({ block: 'start', behavior: 'smooth' });
         } else {
           // 데스크탑 시점 이동 — 행을 화면 상단 ~22% 지점(anchorY)으로 글라이드.
-          // 커튼이 스크롤을 추적하므로 따라 내려와 그 라인에 안착.
           // (브라우저 smooth scrollTo는 호출 시점의 스크롤 한계로 clamp돼서,
           //  패널이 자라며 생기는 공간을 못 따라감 → 수동 글라이드 사용)
           glideCenterBy(tr.getBoundingClientRect().top - anchorY(), 500);
-          curtainOpen();
         }
       }
 
@@ -433,10 +463,13 @@ const defaultMosaic = fs.readFileSync(
       // 그 언어만 1단으로 표시됨 (양쪽 컬럼 모두 포함하려고 center 대신 three-col)
       function applyLang(lang) {
         if (threeCol) threeCol.setAttribute('data-lang', lang);
-        document.querySelectorAll('table.sontable a[data-ko]').forEach(function (a) {
+        // About 서랍(.three-col 밖 형제 레이어)도 같은 언어 규칙을 타게
+        var drawer = document.querySelector('.about-drawer');
+        if (drawer) drawer.setAttribute('data-lang', lang);
+        // 표 제목 + 좌측 인물 이름 — data-ko/en 스왑
+        document.querySelectorAll('table.sontable a[data-ko], .person-name[data-ko]').forEach(function (a) {
           a.textContent = a.getAttribute('data-' + lang) || '';
         });
-        renderCurtainIndex(true); // 커튼 상태줄 제목도 현재 언어로
       }
       if (langToggle) {
         applyLang(langToggle.getAttribute('data-lang') || 'ko'); // 초기 동기화
@@ -548,160 +581,69 @@ const defaultMosaic = fs.readFileSync(
       buildStripe();
 
       var stripeTopEl = document.querySelector('.stripe-top');
-
-      // ── 커튼-아코디언 연동 (데스크탑) ──────────────────────────────
-      // 작업을 펼치면 해당 행 위까지 커튼이 내려와 위 영역(다른 행·인트로 등)을
-      // 가린다. 모션은 단일 클럭: 하강은 글라이드와 같은 진행도(glideP)로
-      // 보간하고, 글라이드가 끝나면 행 윗변에 1:1 고정(스무딩 없음) — 행·커튼·
-      // 좌우 밀림이 정확히 한 곡선으로 움직인다. 열려 있는 동안 --curtain-t는
-      // 0s(JS가 모션 담당), 닫힘 복귀만 CSS 0.5s.
       var centerEl = document.querySelector('.three-col .center');
-      var curtainAnimRaf = 0;
-      var curtainStartH = 72; // 하강 시작 높이 (열던 순간의 실제 높이)
       function isMobileView() {
         return window.matchMedia('(max-width: 600px)').matches;
       }
-      // 펼친 행이 안착하는 화면 기준선 — 상단 ~22% (커튼이 여기까지 내려옴)
+      // 펼친 행이 안착하는 화면 기준선 — 상단 ~22%
       function anchorY() {
         return Math.max(110, Math.round(window.innerHeight * 0.22));
       }
-      // 커튼 변수는 :root에 — .stripe-top(높이)뿐 아니라 .left/.right의
-      // padding-top(커튼 끝 따라 밀림)도 같은 변수로 프레임 동기화된다.
-      var docEl = document.documentElement;
-      function curtainLoop() {
-        var tr = accSlug && document.querySelector('tr[data-slug="' + accSlug + '"]');
-        if (!tr || isMobileView()) { curtainStop(); return; }
-        // 행 윗변까지 — 행(제목 줄)은 커튼 바로 아래. 72px 아래로 안 줄고
-        // 행이 화면 밖이면 화면 전체까지만.
-        var target = Math.max(72, Math.min(tr.getBoundingClientRect().top, window.innerHeight));
-        // 한 클럭: 글라이드 진행도(glideP, eased)로 시작높이→행윗변 보간.
-        // 글라이드 종료 후엔 1:1 — 스크롤 시 커튼이 행에 붙어 다닌다.
-        var h = glideP < 1 ? curtainStartH + (target - curtainStartH) * glideP : target;
-        docEl.style.setProperty('--curtain-h', h.toFixed(1) + 'px');
-        renderCurtainIndex(false);
-        curtainAnimRaf = requestAnimationFrame(curtainLoop);
-      }
-      function curtainStop() {
-        cancelAnimationFrame(curtainAnimRaf);
-        curtainAnimRaf = 0;
-        docEl.style.removeProperty('--curtain-t'); // 복귀는 CSS 기본(0.5s)
-        docEl.style.removeProperty('--curtain-h');
-        if (stripeTopEl) stripeTopEl.classList.remove('curtain-acc');
-        ciCovered = -1;
-      }
       // center 스크롤 글라이드 — 목표 한계(scrollHeight)를 매 프레임 재계산
       // (패널 삽입으로 스크롤 공간이 변해도 끝까지 따라간다).
-      // eased 진행도는 glideP로 공유 — 커튼 하강이 같은 클럭을 탄다.
       var glideRaf = 0;
-      var glideP = 1; // 0→1 (eased). 1 = 글라이드 없음/종료
       function glideCenterBy(delta, dur) {
         if (!centerEl) return;
         cancelAnimationFrame(glideRaf);
         var startTop = centerEl.scrollTop;
         var t0 = performance.now();
-        glideP = 0;
         function ease(t) { // easeInOutQuad
           return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
         }
         function step(now) {
           var t = Math.min(1, (now - t0) / dur);
-          glideP = ease(t);
           var max = centerEl.scrollHeight - centerEl.clientHeight;
           var target = Math.max(0, Math.min(startTop + delta, max));
-          centerEl.scrollTop = startTop + (target - startTop) * glideP;
+          centerEl.scrollTop = startTop + (target - startTop) * ease(t);
           if (t < 1) glideRaf = requestAnimationFrame(step);
-          else glideP = 1;
         }
         glideRaf = requestAnimationFrame(step);
       }
-      function curtainOpen() {
+
+      // ── 커튼 = About 서랍 ─────────────────────────────────────────
+      // 띠(.stripe-top)를 클릭하면 커튼이 전면(100dvh)으로 내려오고, 그 위에
+      // 어바웃·연락처 패널(.about-drawer, 형제 레이어)이 인쇄된다.
+      // 닫기: 천(패널 밖) 클릭 / ✕ / ESC. 상태는 .open 클래스 하나.
+      function drawerOpen() {
+        return stripeTopEl && stripeTopEl.classList.contains('open');
+      }
+      function toggleDrawer(force) {
         if (!stripeTopEl) return;
-        stripeTopEl.classList.add('curtain-acc'); // 커튼 클릭 → 닫기 활성
-        // JS 루프가 모션 담당 — CSS 전환은 꺼서 프레임 단위 재시작 끊김 방지
-        docEl.style.setProperty('--curtain-t', '0s');
-        // 현재 실제 높이에서 출발 (재오픈·복귀 중 오픈에도 점프 없음)
-        curtainStartH = stripeTopEl.getBoundingClientRect().height;
-        ciCovered = -1; // 상태줄 강제 갱신
-        if (!curtainAnimRaf) curtainAnimRaf = requestAnimationFrame(curtainLoop);
+        var open = typeof force === 'boolean' ? force : !drawerOpen();
+        stripeTopEl.classList.toggle('open', open);
       }
-      // (스크롤로 다음 작품 자동 넘김 기능은 폐기 — 행 클릭/커튼 클릭으로만 전환)
-      // (커튼은 rAF 루프가 매 프레임 행 위치를 읽으므로 별도 resize 핸들러 불필요)
-
-      // ── 커튼 상태줄 — 접힌 목차(가려진 번호) + 현재 작품 + 닫기 ─────────
-      // 커튼 밑변에 흰 띠로 부착(top: var(--curtain-h)). 가려진 행 수가
-      // 변할 때만 DOM 갱신 — curtainLoop에서 매 프레임 호출해도 가볍다.
-      var ciEl = document.querySelector('.curtain-index');
-      var ciNums = ciEl && ciEl.querySelector('.ci-nums');
-      var ciTitle = ciEl && ciEl.querySelector('.ci-title');
-      var ciCovered = -1;
-      function renderCurtainIndex(force) {
-        if (!ciEl || !ciNums || !accSlug || !stripeTopEl) return;
-        var rows = document.querySelectorAll('table.sontable tr[data-slug]');
-        var ch = stripeTopEl.getBoundingClientRect().height;
-        var covered = [];
-        for (var i = 0; i < rows.length; i++) {
-          if (rows[i].getAttribute('data-slug') === accSlug) continue;
-          if (rows[i].getBoundingClientRect().bottom <= ch + 1) covered.push(i);
-        }
-        if (!force && covered.length === ciCovered) return;
-        ciCovered = covered.length;
-        ciNums.innerHTML = '';
-        covered.forEach(function (i) {
-          var b = document.createElement('button');
-          b.type = 'button';
-          b.className = 'num-badge';
-          b.textContent = String(i + 1);
-          b.setAttribute('data-goto', rows[i].getAttribute('data-slug'));
-          b.setAttribute('aria-label', '작품 ' + (i + 1) + ' 열기');
-          ciNums.appendChild(b);
-        });
-        var curTr = document.querySelector('tr[data-slug="' + accSlug + '"]');
-        var curIdx = Array.prototype.indexOf.call(rows, curTr);
-        var a = curTr && curTr.querySelector('a');
-        if (ciTitle) {
-          ciTitle.textContent =
-            (curIdx >= 0 ? String(curIdx + 1) + ' · ' : '') + (a ? a.textContent.trim() : '');
-        }
-      }
-      if (ciEl) {
-        ciEl.addEventListener('click', function (e) {
-          var go = e.target.closest('[data-goto]');
-          if (go) {
-            var slug = go.getAttribute('data-goto');
-            accOpen(slug);
-            history.replaceState(null, '', '#' + slug);
-            return;
-          }
-          if (e.target.closest('.ci-close')) {
-            accClose();
-            if (location.hash) history.replaceState(null, '', location.pathname);
-          }
-        });
-      }
-
-      // 내려온 커튼 클릭 → 작업 닫힘 + 커튼 상승. (curtain-acc일 때만 클릭을 받음)
       if (stripeTopEl) {
-        stripeTopEl.addEventListener('click', function () {
-          if (!stripeTopEl.classList.contains('curtain-acc')) return;
-          accClose();
-          if (location.hash) history.replaceState(null, '', location.pathname);
+        // 닫힌 띠 클릭 = 열기. (열린 상태에선 서랍 레이어가 클릭을 받는다)
+        stripeTopEl.addEventListener('click', function () { toggleDrawer(); });
+      }
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && drawerOpen()) toggleDrawer(false);
+      });
+      var drawerEl = document.querySelector('.about-drawer');
+      if (drawerEl) {
+        drawerEl.addEventListener('click', function (e) {
+          if (e.target.closest('.drawer-close')) { toggleDrawer(false); return; }
+          // 패널 밖(천 위) 클릭 → 닫기
+          if (!e.target.closest('.drawer-panel')) toggleDrawer(false);
         });
-        // 커튼이 클릭을 받는 동안에도 휠 스크롤은 center로 전달 — 추적 인터랙션 유지
-        stripeTopEl.addEventListener(
-          'wheel',
-          function (e) {
-            if (stripeTopEl.classList.contains('curtain-acc') && centerEl) {
-              centerEl.scrollTop += e.deltaY;
-            }
-          },
-          { passive: true },
-        );
       }
 
-      // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작
+      // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작.
+      // 홈 링크가 About 서랍 안에 있으므로 서랍도 닫는다.
       document.querySelectorAll('[data-home]').forEach(function (a) {
         a.addEventListener('click', function (e) {
           e.preventDefault();
+          toggleDrawer(false);
           accClose();
           if (location.hash) {
             history.pushState(null, '', location.pathname);
