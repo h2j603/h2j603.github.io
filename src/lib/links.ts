@@ -5,7 +5,7 @@
  * 추가하면 다음 빌드에 반영된다. 블록 title이 표시 이름 (없으면 URL).
  * 채널이 없거나 비어 있으면 빈 배열 — 우측 컬럼엔 토글만 남는다.
  */
-import { getChannel, getChannelContents } from './arena.js';
+import { getChannel, getChannelContents, parseDescriptionMetadata } from './arena.js';
 import { classifyBlock } from './images.js';
 import { siteLinkSchema, type SiteLink } from './schema.js';
 import { ARENA_LINKS_CHANNEL } from './config.js';
@@ -21,6 +21,28 @@ export function firstSentence(text: string): string {
   return (m ? m[0] : t).trim();
 }
 
+/**
+ * 제목·설명 수동 지정 — 블록 description에 사이트 표준 key: value DSL.
+ *
+ *   title: 내가 정한 제목
+ *   desc: 내가 쓴 한 줄 설명
+ *
+ * 키가 하나라도 있으면 수동 모드: 스크랩된 설명은 무시하고 meta만 쓴다
+ * (title만 쓰면 설명 없음 = 자동 설명 끄기). 키가 없으면 자동 모드:
+ * 블록 title + 스크랩 설명의 첫 문장.
+ */
+export function deriveLink(
+  blockTitle: string,
+  blockDescription: string,
+): { title: string; description: string } {
+  const meta = parseDescriptionMetadata(blockDescription);
+  const manual = 'title' in meta || 'desc' in meta;
+  return {
+    title: (meta.title || blockTitle || '').trim(),
+    description: manual ? (meta.desc || '').trim() : firstSentence(blockDescription),
+  };
+}
+
 export async function buildLinks(): Promise<SiteLink[]> {
   const ch = await getChannel(ARENA_LINKS_CHANNEL);
   if (!ch) {
@@ -32,10 +54,11 @@ export async function buildLinks(): Promise<SiteLink[]> {
   for (const b of blocks) {
     const c = classifyBlock(b);
     if (c.kind !== 'link') continue;
+    const d = deriveLink(c.title, c.description);
     const parsed = siteLinkSchema.safeParse({
       url: c.url,
-      title: c.title,
-      description: firstSentence(c.description),
+      title: d.title,
+      description: d.description,
     });
     if (!parsed.success) {
       console.warn(`links: block ${b?.id} schema validation failed — skipped`);

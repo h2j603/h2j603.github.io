@@ -271,7 +271,8 @@ iframe {
   background-color: var(--bg);
   width: 20%;
   left: 0;
-  overflow-y: hidden;
+  /* 스크롤 가능 (.third의 auto 상속) — 커튼에 밀려 내려간 내용도 읽을 수 있게.
+     스크롤바는 .third 공통 규칙으로 숨김 */
 }
 .three-col .center {
   background-color: var(--bg);
@@ -317,25 +318,57 @@ iframe {
   flex-direction: column;
   align-items: flex-end;
 }
-/* 수집 링크 — Are.na links 채널의 링크 블록들. 본문 pill과 같은 어휘로
-   세로 스택 (Are.na 블록 쌓이듯). 항목 = pill + 설명(블록 description). */
+/* 수집 링크 — Are.na links 채널의 링크 블록들. 항목 = 블록 전체가
+   링크·호버 단위 (표 행과 같은 어법). */
 .link-list {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 10px;
   margin-top: 28px;
 }
 /* 항목 사이 가로 구분선 — about hr처럼 컬럼 패딩(20px) 상쇄해 전체 폭 */
 .link-list hr {
   align-self: stretch;
-  margin: 2px -20px;
+  margin: 0 -20px;
 }
-.link-item {
+/* 컬럼 패딩 상쇄해 전체 폭 띠 — 호버 시 띠가 통째로 칠해진다 */
+.link-list a.link-item {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
+  width: calc(100% + 40px);
+  margin: 0 -20px;
+  padding: 10px 20px;
+  text-decoration: none;
+  font-style: normal;
+  color: var(--ink);
+  transition: background 0.12s; /* 표 셀과 같은 템포 */
+}
+/* 호버 칠 — 표 행처럼 항목별 보라/갈색 교차 (hr 제외, a끼리 홀짝) */
+@media (hover: hover) {
+  .link-list a.link-item:nth-of-type(odd):hover { background: var(--accent); }
+  .link-list a.link-item:nth-of-type(even):hover { background: #775d4f; }
+  /* 칠 위에서 pill 속은 비치고 ↗는 블랙 (보라 위 보라 방지) */
+  .link-list a.link-item:hover .link-title { background: transparent; }
+  .link-list a.link-item:hover .link-title::before { color: var(--ink); }
+}
+/* 제목 — 본문 pill과 같은 윤곽선 어휘 (블록이 anchor라 span으로 분리) */
+.link-list .link-title {
+  display: inline-block;
+  padding: 0 7px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--bg);
+  line-height: 1.4;
+}
+.link-list .link-title::before {
+  content: '↗';
+  margin-right: 3px;
+  font-size: 0.8em;
+  font-weight: 700;
+  vertical-align: 1px;
+  color: var(--accent);
 }
 /* 설명 — 우측 정렬(컬럼 정렬과 동일), 전역 p padding 무력화 */
 .link-desc {
@@ -642,8 +675,7 @@ table.sontable .col-cat   { width: 20%; }
    ─────────────────────────────────────────────────────────────────────── */
 .intro a,
 .work-card .card-body a,
-.work-card .card-link,
-.link-list a {
+.work-card .card-link {
   /* inline + box-decoration-break:clone — 줄바꿈 시 각 줄 조각마다 pill 윤곽선·
      둥근 모서리·padding이 따로 적용된다(줄별로 나뉜 pill).
      white-space:normal + word-break:keep-all — 짧은 링크는 한 줄, 너무 긴 링크는
@@ -666,8 +698,7 @@ table.sontable .col-cat   { width: 20%; }
 }
 .intro a::before,
 .work-card .card-body a::before,
-.work-card .card-link::before,
-.link-list a::before {
+.work-card .card-link::before {
   content: '↗';
   margin-right: 3px;
   /* inline 글리프로 둬서 아이콘과 첫 단어 사이에 줄바꿈 기회가 안 생기게 한다
@@ -680,16 +711,14 @@ table.sontable .col-cat   { width: 20%; }
 }
 .intro a:hover,
 .work-card .card-body a:hover,
-.work-card .card-link:hover,
-.link-list a:hover {
+.work-card .card-link:hover {
   background: var(--accent);
   color: var(--ink);
 }
 /* 칠 위에선 ↗도 블랙 (보라 위 보라 방지) */
 .intro a:hover::before,
 .work-card .card-body a:hover::before,
-.work-card .card-link:hover::before,
-.link-list a:hover::before {
+.work-card .card-link:hover::before {
   color: var(--ink);
 }
 
