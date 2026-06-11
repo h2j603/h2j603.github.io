@@ -470,9 +470,9 @@ const defaultMosaic = fs.readFileSync(
       // 줄은 화면 전체(100vh)를 덮을 만큼 미리 만들어 두고 stripe-top의
       // height(72px ↔ 100vh, CSS transition)로만 노출량을 조절한다 —
       // 호버 시 타일 크기·비율 변형 없이 줄이 늘어나며 커튼처럼 내려온다.
-      var CELL_HEIGHT = 24;
+      var CELL_HEIGHT = 36; // 타일 확대 24→36 (커튼이 너무 촘촘했음). CSS .stripe-row height와 짝
       var CELL_RATIO = 0.5; // width / height — 0.5면 세로가 가로의 2배 길쭉
-      var STRIPE_BASE_ROWS = 3; // 기본 노출 3줄 = 72px (CSS .stripe-top height와 짝)
+      var STRIPE_BASE_ROWS = 2; // 기본 노출 2줄 = 72px (CSS .stripe-top height와 짝)
       function buildStripe() {
         var stripe = document.querySelector('.stripe-top');
         if (!stripe) return;
@@ -504,6 +504,20 @@ const defaultMosaic = fs.readFileSync(
       });
       document.addEventListener('DOMContentLoaded', buildStripe);
       buildStripe();
+
+      // 커튼 — 터치 기기(hover 불가)는 탭으로 토글: 트리거 영역(상단 72px) 탭
+      // → 펼침, 펼쳐진 커튼(.open은 pointer-events:auto) 아무 데나 탭 → 닫힘.
+      // 데스크탑은 CSS :hover가 담당하므로 클릭 핸들러를 걸지 않는다.
+      var stripeTopEl = document.querySelector('.stripe-top');
+      var stripeZone = document.querySelector('.stripe-hover-zone');
+      if (stripeTopEl && stripeZone && !window.matchMedia('(hover: hover)').matches) {
+        stripeZone.addEventListener('click', function () {
+          stripeTopEl.classList.add('open');
+        });
+        stripeTopEl.addEventListener('click', function () {
+          stripeTopEl.classList.remove('open');
+        });
+      }
 
       // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작
       document.querySelectorAll('[data-home]').forEach(function (a) {
