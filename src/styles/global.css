@@ -23,6 +23,7 @@
    디자인 토큰 — hyuk repo 원본을 lawngreen→#b362ff, orangered→#775d4f로 치환
    ─────────────────────────────────────────────────────────────────────── */
 :root {
+  /* 라이트 단일 테마 — 시스템 다크 설정에서도 강제 라이트 렌더 */
   color-scheme: light;
   --bg: #ffffff;
   --ink: #775d4f;          /* hyuk repo의 orangered → 브라운 */
@@ -35,34 +36,6 @@
   /* 상세 페이지([slug].astro)가 참조하는 별칭 */
   --line: var(--ink);
   --brown: var(--ink);
-}
-
-/* 다크 팔레트 — 따뜻한 근검정 배경 + 밝은 브라운 잉크 + 살짝 밝힌 보라.
-   수동 토글(html[data-theme]) > 시스템 설정(prefers-color-scheme) 순으로 적용.
-   상단 줄무늬·모자이크(#a966ff/#775d4f)는 브랜드 띠라 양쪽 테마 공통. */
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --bg: #171311;
-  --ink: #c9b5a5;
-  --accent: #c389ff;
-  --pill-bg: #2c2521;
-  --mention: #d28e4d;
-  --scrollbar: rgba(255, 255, 255, 0.35);
-  --scrollbar-hover: rgba(255, 255, 255, 0.55);
-  --muted: #8a7567;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    color-scheme: dark;
-    --bg: #171311;
-    --ink: #c9b5a5;
-    --accent: #c389ff;
-    --pill-bg: #2c2521;
-    --mention: #d28e4d;
-    --scrollbar: rgba(255, 255, 255, 0.35);
-    --scrollbar-hover: rgba(255, 255, 255, 0.55);
-    --muted: #8a7567;
-  }
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -259,7 +232,7 @@ iframe {
 .three-col .third::-webkit-scrollbar { display: none; }
 
 /* 컬럼 세로 구분선 — three-col 안 absolute, 화면 전체 높이.
-   z-index 6: 네비(table-head z5)·이미지(z4) 모두 위 → 끊김 없음(세로선>네비>이미지).
+   z-index 6: 작품 이미지/iframe(z4) 위 → 끊김 없음(세로선>이미지).
    three-col(z1) 안이라 stripe(z100) 구간에선 띠 뒤로 가려진다(상단부는 col-divider-top). */
 .col-divider {
   position: absolute;
@@ -303,7 +276,7 @@ iframe {
   left: 20%;
   width: 60%;
   /* 좌우 패딩 0 — 표가 center(20~80%)를 꽉 채워 컬럼 경계가 정확히 56%/68%에
-     오게 한다(세로 구분선 d3/d4와 정렬). 상단 0은 sticky 태그영역용. */
+     오게 한다(세로 구분선 d3/d4와 정렬). 상단 여백은 표 margin-top(20px)이 잡는다. */
   padding: 0 0 20px;
   /* 작업영역은 기본 스크롤바 노출 */
   scrollbar-width: auto;
@@ -323,6 +296,11 @@ iframe {
   left: 80%;
   width: 20%;
   /* 표가 길어지면 스크롤 가능하게 */
+}
+/* 우측 컬럼 콘텐츠 — 언어 토글을 우상단 모서리에 */
+.three-col .right .content {
+  display: flex;
+  justify-content: flex-end;
 }
 .three-col .content {
   /* 작품 카드들이 세로로 쌓이므로 auto */
@@ -359,36 +337,6 @@ table tr[data-active='true'] a {
 .work-card .card-link.mention:hover {
   background: linear-gradient(to bottom, var(--mention), var(--bg));
   color: var(--accent);
-}
-
-/* ───────────────────────────────────────────────────────────────────────
-   태그 필터 — 우측 표 위 pill 버튼
-   ─────────────────────────────────────────────────────────────────────── */
-.card-filter {
-  text-align: left;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-/* 네비 — carbon 폰트 + 속 빈 윤곽선 pill. 크기는 ↓·KO/EN 토글(18px)과 동일 */
-.card-filter .filter-link {
-  display: inline-block;
-  font-family: t26-carbon, monospace;
-  font-size: 18px;
-  line-height: 1;
-  padding: 3px 11px;
-  border: 1px solid var(--ink);
-  border-radius: 999px;
-  background: var(--bg); /* 속 빈 윤곽선 (sticky 시 뒤 표 글자 가림) */
-  color: var(--ink);
-  text-decoration: none;
-  font-style: normal;
-}
-/* 선택된 태그 — 윤곽선 채움 */
-.card-filter .filter-link[data-active='true'] {
-  background: var(--ink);
-  color: var(--bg);
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -452,36 +400,6 @@ table tr[data-active='true'] a {
   line-height: 1.2;
 }
 
-/* 표 헤더(컨트롤 + hr) — center 스크롤 시 통째로 상단 고정.
-   center padding-top:0이라 헤더가 최상단을 차지하고, padding-top으로 stripe 간격 +
-   스크롤 콘텐츠 가림 배경을 만든다. */
-.table-head {
-  position: sticky;
-  top: 0;
-  z-index: 5; /* 작품 이미지/iframe(z4)보다 위 — 스크롤 시 헤더가 미디어를 가린다 */
-  background: var(--bg);
-  margin: 0;
-  padding-top: 20px;
-}
-.table-head-hr { margin: 8px 0 0; }
-/* 컨트롤 한 줄 — 표 컬럼 그리드(60/20/20)에 맞춰: All·태그=제목칸, ↓=연도칸, EN=분류칸.
-   각 칸 안 요소는 좌측 정렬 + padding-left 10px로 표 셀 텍스트와 같은 라인. */
-.table-controls {
-  display: grid;
-  grid-template-columns: 20% 60% 20%;
-  align-items: center;
-  margin: 0;
-}
-/* 표 컬럼 순서에 맞춤(HTML 순서 = ↓ / All·태그 / EN): 연도칸 / 제목칸 / 분류칸 */
-.table-controls > .sort-toggle { justify-self: start; margin-left: 10px; }
-.table-controls > .card-filter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding-left: 10px;
-}
-.table-controls > .lang-toggle { justify-self: start; margin-left: 10px; }
-
 /* ───────────────────────────────────────────────────────────────────────
    표 아코디언 (데스크탑·모바일 공통) — 표 행 클릭 시 그 아래 detail 행에
    카드(이미지+본문)가 펼쳐진다. work-card는 평소 .center .content에 저장(숨김)
@@ -495,9 +413,9 @@ table tr[data-active='true'] a {
 /* padding:0 — table,td 공통 padding(10px)이 표를 좌우로 들여 세로선과 어긋나게 함.
    table 자체 padding을 0으로 해 td 경계 = 세로선(d1/d3/d4/d2)에 정확히 맞춘다. */
 table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; padding: 0; }
-/* 표 맨 위 가로선 제거 — 필터/정렬 후에도 "보이는 첫 행"의 td 윗 테두리 없앰(JS가 클래스 부여) */
-/* 첫 보이는 행 — 위 가로선 제거 + 상단 padding 축소(구분선↔표 시작 여백 줄임) */
-table.sontable tr[data-slug].first-visible td { border-top: 0; padding-top: 2px; }
+/* 첫 행 — 위 가로선 제거 + 상단 padding 축소(표 시작 여백 컴팩트).
+   필터·정렬이 없어 행 순서 고정 → :first-child로 충분 */
+table.sontable tr[data-slug]:first-child td { border-top: 0; padding-top: 2px; }
 /* 데스크탑 표 제목 폰트 — 표가 center 메인 콘텐츠가 됐으므로 키움.
    화면 폭에 따라 가변(clamp): 좁은 데스크탑 14px ~ 넓은 화면 18px, 기준 ~1.15vw.
    tr[data-slug] 행(제목/연도/분류)만 — 펼친 카드(.accordion-detail) 본문은 제외.
@@ -511,8 +429,9 @@ table.sontable tr[data-slug] td:hover,
 table.sontable tr[data-slug] td:hover a,
 table.sontable tr[data-slug] td:hover .cat-tag { color: var(--bg); }
 table.sontable tr[data-slug] td:hover .num-badge { color: var(--bg); border-color: var(--bg); }
-/* 펼칠 때 행이 상단 stripe(48px) 뒤로 가지 않게 보정 */
-tr[data-slug] { scroll-margin-top: 84px; }
+/* 펼칠 때 행이 컬럼(스크롤 컨테이너) 상단에서 살짝 떨어지게 —
+   sticky 헤더가 없어졌으므로 작은 여백만 */
+tr[data-slug] { scroll-margin-top: 8px; }
 /* 표 분류(cat) 칸 — 태그를 pill 없이 텍스트로, 왼끝 정렬(d4 선 기준), · 구분. */
 .cat-cell { text-align: left; }
 .cat-cell .cat-tag { color: var(--ink); white-space: nowrap; }
@@ -562,30 +481,20 @@ tr[data-slug] { scroll-margin-top: 84px; }
 /* 작품 이미지/iframe은 세로 구분선(z3) 위 레이어 — 펼친 카드 미디어가 선을 가린다 */
 .work-card .card-images,
 .work-card .iframe-wrap { position: relative; z-index: 4; }
-.lang-toggle,
-.sort-toggle,
-.theme-toggle {
+/* 언어 토글 — 우측 컬럼 우상단 (표 첫 행과 같은 높이대) */
+.lang-toggle {
   cursor: pointer;
   font-family: t26-carbon, monospace;
   font-size: 18px;
-  background: var(--bg); /* sticky 시 뒤 표 글자 가림 */
+  background: var(--bg);
   color: var(--ink);
   line-height: 1.4;
   flex-shrink: 0;
   border: none;
   padding: 0;
 }
-.lang-toggle:hover,
-.sort-toggle:hover,
-.theme-toggle:hover {
+.lang-toggle:hover {
   text-decoration: underline;
-}
-/* 다크모드 토글 — 분류칸(3) 오른끝. 같은 칸 왼끝의 EN/KO와 마주 본다. */
-.table-controls > .theme-toggle {
-  grid-column: 3;
-  grid-row: 1;
-  justify-self: end;
-  margin-right: 10px;
 }
 
 /* 표 컬럼 너비 — year는 controls의 sort 버튼과 grid-align 위해 고정.
@@ -684,7 +593,7 @@ table.sontable .col-cat   { width: 20%; }
 /* ───────────────────────────────────────────────────────────────────────
    본문 안 하이퍼링크 — 연한 회색 pill + 보라 텍스트 + ↗ 아이콘
    적용: 좌측 인트로 본문(.intro > p) / 작품 카드 본문(.card-body)
-   제외: 표(table a), 태그 필터(.card-filter), footer, 카드 하단 Click to visit
+   제외: 표(table a), footer, 카드 하단 Click to visit
    ─────────────────────────────────────────────────────────────────────── */
 .intro a,
 .work-card .card-body a,
