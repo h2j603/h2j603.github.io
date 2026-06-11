@@ -21,7 +21,8 @@ import {
   type BlockImage,
   type DownloadStats,
 } from './images.js';
-import { workSchema, TAGS, type Work, type WorkLink, type Tag } from './schema.js';
+import { workSchema, TAGS, type Work, type WorkLink, type Tag, type Person } from './schema.js';
+import { buildMentionIndex, rewriteMentions } from './people.js';
 import { ARENA_INDEX_CHANNEL } from './config.js';
 
 export interface BuildSummary {
@@ -105,6 +106,7 @@ function parseLayout(
 async function buildOne(
   ref: string | number,
   warn: (m: string) => void,
+  mentionIndex: Map<string, Person>,
 ): Promise<{ work: Work | null; skipped: boolean }> {
   const channel = await getChannel(ref);
   if (!channel) {
@@ -191,9 +193,12 @@ async function buildOne(
   }
 
   // 텍스트 블록들을 HTML로 변환 (마커 분류는 이미 됨). 채널 순서 보존.
+  // @멘션은 인물 레지스트리와 매칭해 재작성 — 블록 언어에 맞는 이름·대표 URL로
+  // 통일하고, 매칭된 슬러그를 work.people(관계형 조인 키)로 수집한다.
+  const matchedPeople = new Set<string>();
   const bodyBlocks = textBlocks.map((tb, i) => {
     const html = markdownToHtml(tb.markdown, `${ctx} block ${i + 1}`);
-    return { lang: tb.lang, html };
+    return { lang: tb.lang, html: rewriteMentions(html, tb.lang, mentionIndex, matchedPeople) };
   });
   // 호환: bodyKo/En은 마커 매칭 블록들을 join (라이브러리 등 외부 쓰임 대비).
   const bodyKo = bodyBlocks.filter((b) => b.lang === 'ko').map((b) => b.html).join('\n');
@@ -235,6 +240,7 @@ async function buildOne(
     images,
     imageLayout: parseLayout(meta.layout, images.length, warn, ctx),
     links,
+    people: [...matchedPeople],
   });
   if (!parsed.success) {
     warn(`${ctx}: schema validation failed: ${parsed.error.message}`);
@@ -243,12 +249,15 @@ async function buildOne(
   return { work: parsed.data, skipped: false };
 }
 
-export async function buildWorks(): Promise<{ works: Work[]; summary: BuildSummary }> {
+export async function buildWorks(
+  people: Person[] = [],
+): Promise<{ works: Work[]; summary: BuildSummary }> {
   const warnings: string[] = [];
   const warn = (m: string) => {
     warnings.push(m);
     console.warn(`  ⚠ ${m}`);
   };
+  const mentionIndex = buildMentionIndex(people);
 
   const index = await getChannel(ARENA_INDEX_CHANNEL);
   if (!index) {
@@ -273,7 +282,7 @@ export async function buildWorks(): Promise<{ works: Work[]; summary: BuildSumma
 
   for (const ref of refs) {
     try {
-      const { work, skipped } = await buildOne(ref, warn);
+      const { work, skipped } = await buildOne(ref, warn, mentionIndex);
       if (skipped) skippedUnpublished++;
       else if (work) works.push(work);
       else failed.push(String(ref));

@@ -69,11 +69,35 @@ export const workSchema = z.object({
       Are.na description `layout: 2,1,3` 으로 입력. 합이 images.length면 적용, 아니면 무시. */
   imageLayout: z.array(z.number().int().positive()).default([]),
   links: z.array(linkSchema).default([]),
+  /** 본문 @멘션에서 매칭된 인물 슬러그들 (등장 순서, 중복 제거) — 관계형 조인 키. */
+  people: z.array(z.string()).default([]),
 });
 
 export const worksFileSchema = z.array(workSchema);
+
+/**
+ * 인물 레지스트리 — Are.na `people` 채널의 링크 블록 1개 = 인물 1명.
+ * 블록 title = "한국어 / English" (작품 채널 이름과 같은 관례),
+ * 블록 description = `slug:` (필수에 준함) + `aliases:` (쉼표 구분, 표기 변형).
+ * 본문 @멘션이 빌드 타임에 이 레지스트리와 매칭된다.
+ */
+export const personSchema = z.object({
+  slug: z.string().min(1),
+  /** 한국어 이름 (title의 '/' 앞). */
+  nameKo: z.string().default(''),
+  /** 영어 이름 (title의 '/' 뒤). '/' 없으면 nameKo와 같음. */
+  nameEn: z.string().default(''),
+  /** 매칭에 추가로 쓰는 표기 변형들 (@핸들, 약칭 등). */
+  aliases: z.array(z.string()).default([]),
+  /** 인물의 대표 링크 — 매칭된 멘션의 href가 이걸로 통일된다. */
+  url: z.string().default(''),
+  role: z.string().default(''),
+});
+
+export const peopleFileSchema = z.array(personSchema);
 
 export type WorkImage = z.infer<typeof imageSchema>;
 export type WorkLink = z.infer<typeof linkSchema>;
 export type Tag = z.infer<typeof tagSchema>;
 export type Work = z.infer<typeof workSchema>;
+export type Person = z.infer<typeof personSchema>;
