@@ -110,35 +110,19 @@ const defaultMosaic = fs.readFileSync(
       <div class="content intro">
         {people.length > 0 && (
           <div class="people-list">
-            {people.map((p, pi) => {
-              const nums = works
-                .map((w, i) => (w.people.includes(p.slug) ? i + 1 : 0))
-                .filter((n) => n > 0);
+            {people.map((p) => {
+              // 클릭 = 이 인물이 참여한 작업으로 이동 (여러 개면 클릭마다 순환)
+              const pWorks = works.filter((w) => w.people.includes(p.slug)).map((w) => w.slug);
               return (
-                <>
-                  {pi > 0 && <hr />}
-                  {/* 블록 전체가 단위 (우측 링크 블록과 동일) — 뱃지·이름은
-                      자체 링크, 그 밖을 누르면 JS가 인물 링크로 보낸다 */}
-                  <div class="person" data-url={p.url || undefined}>
-                    <a
-                      class="person-name mention"
-                      href={p.url || '#'}
-                      target="_blank"
-                      rel="noopener"
-                      data-ko={'@' + (p.nameKo || p.nameEn)}
-                      data-en={'@' + (p.nameEn || p.nameKo)}
-                    >@{p.nameEn || p.nameKo}</a>
-                    {/* 한 줄 소개 — 인물 블록 description의 desc: 키 */}
-                    {p.description && <p class="person-desc">{p.description}</p>}
-                    {nums.length > 0 && (
-                      <span class="person-works">
-                        {nums.map((n) => (
-                          <a class="num-badge" href={'#' + works[n - 1].slug} aria-label={'작품 ' + n + ' 열기'}>{n}</a>
-                        ))}
-                      </span>
-                    )}
-                  </div>
-                </>
+                <div class="person" data-works={pWorks.join(',') || undefined}>
+                  <span
+                    class="person-name"
+                    data-ko={'@' + (p.nameKo || p.nameEn)}
+                    data-en={'@' + (p.nameEn || p.nameKo)}
+                  >@{p.nameEn || p.nameKo}</span>
+                  {/* 한 줄 소개 — 인물 블록 description의 desc: 키 */}
+                  {p.description && <p class="person-desc">{p.description}</p>}
+                </div>
               );
             })}
           </div>
@@ -303,17 +287,13 @@ const defaultMosaic = fs.readFileSync(
     {/* ──────────── 우측: 수집 링크 (Are.na links 채널) — 언어 토글은 띠 위로 이사 ──────────── */}
     <div class="third right">
       <div class="content">
+        {/* 제목만 — 타원 한가운데 (설명은 데이터에만 보관) */}
         {siteLinks.length > 0 && (
           <nav class="link-list" aria-label="collected links">
-            {siteLinks.map((l, i) => (
-              <>
-                {i > 0 && <hr />}
-                {/* 블록 전체가 링크·호버 단위 — 제목 pill + 설명 한 덩어리 */}
-                <a class="link-item" href={l.url} target="_blank" rel="noopener">
-                  <span class="link-title">{l.title || l.url}</span>
-                  {l.description && <p class="link-desc">{l.description}</p>}
-                </a>
-              </>
+            {siteLinks.map((l) => (
+              <a class="link-item" href={l.url} target="_blank" rel="noopener">
+                <span class="link-title">{l.title || l.url}</span>
+              </a>
             ))}
           </nav>
         )}
@@ -642,11 +622,15 @@ const defaultMosaic = fs.readFileSync(
         });
       }
 
-      // 인물 블록 — 이름·뱃지 밖을 누르면 인물 링크로 (우측 링크 블록과 동일 단위)
-      document.querySelectorAll('.person[data-url]').forEach(function (el) {
-        el.addEventListener('click', function (e) {
-          if (e.target.closest('a')) return; // 이름 pill·번호 뱃지는 자체 링크
-          window.open(el.getAttribute('data-url'), '_blank', 'noopener');
+      // 인물 블록 클릭 — 그 인물이 참여한 작업으로 이동.
+      // 여러 작업이면 클릭마다 순환 (이미 그 인물의 작업이 열려 있으면 다음 것).
+      document.querySelectorAll('.person[data-works]').forEach(function (el) {
+        el.addEventListener('click', function () {
+          var slugs = (el.getAttribute('data-works') || '').split(',').filter(Boolean);
+          if (!slugs.length) return;
+          var next = slugs[(slugs.indexOf(accSlug) + 1) % slugs.length];
+          accOpen(next);
+          history.replaceState(null, '', '#' + next);
         });
       });
 
