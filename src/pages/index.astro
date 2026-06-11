@@ -284,6 +284,7 @@ const defaultMosaic = fs.readFileSync(
         if (tr) tr.setAttribute('data-active', 'false');
         accRow = null;
         accSlug = null;
+        updateCurtain(); // 커튼 기본(72px)으로 복귀
       }
 
       function accOpen(slug) {
@@ -304,8 +305,19 @@ const defaultMosaic = fs.readFileSync(
         tr.setAttribute('data-active', 'true');
         accSlug = slug;
         accRow = detail;
-        // 이펙트 없이 즉시 펼침. 펼친 행이 보이게만 스크롤(애니메이션 없음).
-        tr.scrollIntoView({ block: 'start' });
+        if (isMobileView()) {
+          // 모바일: 펼친 행이 보이게만 스크롤 (기존 동작)
+          tr.scrollIntoView({ block: 'start' });
+        } else {
+          // 데스크탑: 스크롤 없이 클릭한 자리 그대로 두고, 커튼이 행 위까지
+          // 내려와 위 영역을 가린다. 행이 화면 밖(해시 직접 진입 등)일 때만
+          // 가운데로 가져온 뒤 커튼을 내린다.
+          var r = tr.getBoundingClientRect();
+          if (r.top < 72 || r.top > window.innerHeight * 0.8) {
+            tr.scrollIntoView({ block: 'center' });
+          }
+          curtainOpen();
+        }
       }
 
       // 모자이크 셀이 오른쪽 위 → 왼쪽 아래 대각선 순서로 떨어짐.
@@ -518,6 +530,49 @@ const defaultMosaic = fs.readFileSync(
           stripeTopEl.classList.remove('open');
         });
       }
+
+      // ── 커튼-아코디언 연동 (데스크탑) ──────────────────────────────
+      // 작업을 펼치면 해당 행 위까지 커튼이 내려와 위 영역(다른 행·인트로 등)을
+      // 가린다. center 스크롤 시 행 위치를 따라 높이를 추적하고(짧은 전환으로
+      // 따라붙음), 닫으면 기본 72px로 복귀. 커튼은 pointer-events:none이라
+      // 커튼 아래 깔린 영역 위에서도 스크롤·클릭은 그대로 통과한다.
+      var centerEl = document.querySelector('.three-col .center');
+      var curtainRaf = 0;
+      var curtainTrackT = null;
+      function isMobileView() {
+        return window.matchMedia('(max-width: 600px)').matches;
+      }
+      function updateCurtain() {
+        curtainRaf = 0;
+        if (!stripeTopEl) return;
+        var tr = accSlug && document.querySelector('tr[data-slug="' + accSlug + '"]');
+        if (!tr || isMobileView()) {
+          clearTimeout(curtainTrackT);
+          stripeTopEl.style.removeProperty('--curtain-t'); // 복귀는 기본 속도(0.5s)
+          stripeTopEl.style.removeProperty('--curtain-h');
+          return;
+        }
+        // 행 윗변까지 — 행(제목 줄)은 커튼 바로 아래 보인다. 72px 밑으론 안 줄고
+        // 행이 화면 밖으로 내려가면 화면 전체까지만.
+        var top = tr.getBoundingClientRect().top;
+        var h = Math.max(72, Math.min(top, window.innerHeight));
+        stripeTopEl.style.setProperty('--curtain-h', h.toFixed(0) + 'px');
+      }
+      function scheduleCurtain() {
+        if (!curtainRaf) curtainRaf = requestAnimationFrame(updateCurtain);
+      }
+      function curtainOpen() {
+        if (!stripeTopEl) return;
+        // 첫 하강은 기본 속도(0.5s)로 우아하게 — 자리 잡으면 추적용 짧은 전환으로
+        stripeTopEl.style.removeProperty('--curtain-t');
+        updateCurtain();
+        clearTimeout(curtainTrackT);
+        curtainTrackT = setTimeout(function () {
+          if (accSlug && stripeTopEl) stripeTopEl.style.setProperty('--curtain-t', '0.15s');
+        }, 550);
+      }
+      if (centerEl) centerEl.addEventListener('scroll', scheduleCurtain, { passive: true });
+      window.addEventListener('resize', scheduleCurtain);
 
       // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작
       document.querySelectorAll('[data-home]').forEach(function (a) {
