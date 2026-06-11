@@ -219,6 +219,12 @@ iframe {
   height: 100dvh;
   pointer-events: auto;
 }
+/* 아코디언 연동으로 내려온 커튼 — 클릭하면 작업이 닫히며 다시 올라간다.
+   클릭을 받아야 하므로 pointer-events 활성 (wheel은 JS가 center로 전달). */
+.stripe-top.curtain-acc {
+  pointer-events: auto;
+  cursor: pointer;
+}
 .stripe-row {
   display: flex;
   height: 36px;
@@ -462,6 +468,17 @@ tr[data-slug] { scroll-margin-top: 8px; }
 
 .accordion-detail,
 .accordion-detail > td { padding: 0; border-top: 0; }
+/* 펼침 애니메이션 — 패널 행 높이 0fr→1fr 전환(JS가 삽입 직후 .is-open 부여).
+   grid-rows 방식이라 이미지·iframe 높이를 몰라도 자연스럽게 열린다.
+   닫힘은 즉시 제거 — 행 전환(다른 행 클릭) 시퀀스가 꼬이지 않게. */
+.accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows 0.45s ease;
+}
+.accordion-panel.is-open { grid-template-rows: 1fr; }
+.accordion-panel > .work-card { min-height: 0; }
 /* 펼쳐진 카드 — 좌우 10px = 표 제목 셀 padding과 동일 라인, 상단 8px 간격 */
 /* 아코디언 펼침을 표 3컬럼 그리드(20/60/20)에 맞춰 배치:
    규격=연도칸(1), 이미지·본문=제목칸(2), web 링크=분류칸(3). */
