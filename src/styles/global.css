@@ -25,12 +25,11 @@
 :root {
   /* 라이트 단일 테마 — 시스템 다크 설정에서도 강제 라이트 렌더 */
   color-scheme: light;
-  /* 전 사이트 단일 폰트 크기 — 고정 px 아닌 뷰포트 비례.
-     기준: 1440px 화면에서 15px (15/1440 = 1.042vw). 창이 커지면 % 레이아웃과
-     같은 비율로 커지고, 좁은 창에선 12px 하한으로 가독성 보호.
+  /* 전 사이트 단일 폰트 크기 — 뷰포트 비례하되 완만한 커브(순수 vw는 큰
+     화면에서 과대). 기준점: 1440px≈14px, 1920px≈16px, 하한 12/상한 17px.
      모든 텍스트가 이 값 하나를 상속 — 뱃지·아이콘(em 글리프)도 같이 비례.
-     (모바일은 mobile.css에서 기기 폭 기준 3.85vw로 재정의) */
-  --fs: max(12px, 1.042vw);
+     (모바일은 mobile.css에서 기기 폭 기준으로 재정의) */
+  --fs: clamp(12px, calc(8px + 0.42vw), 17px);
   --bg: #ffffff;
   --ink: #000000;          /* UI 잉크 — 브라운(#775d4f)에서 블랙으로. 줄무늬·모자이크 브라운은 유지 */
   --accent: #b362ff;       /* hyuk repo의 lawngreen → 보라 */
@@ -333,17 +332,20 @@ table tr[data-active='true'] a {
   display: inline-block;
   width: 0.95em;
   height: 0.95em;
+  /* 기본 ↗ 규칙의 보라(color)를 무효화 — 인물 아이콘은 텍스트색 따라감 */
+  color: inherit;
   background-color: currentColor;
   mask: url('/icons/user.svg') no-repeat center / contain;
   -webkit-mask: url('/icons/user.svg') no-repeat center / contain;
   vertical-align: -1px;
   margin-right: 3px;
 }
+/* 멘션 호버 — 일반 pill과 동일 (보라 칠 + 블랙, 그라디언트 폐기) */
 .intro a.mention:hover,
 .work-card .card-body a.mention:hover,
 .work-card .card-link.mention:hover {
-  background: linear-gradient(to bottom, var(--mention), var(--bg));
-  color: var(--accent);
+  background: var(--accent);
+  color: var(--ink);
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -586,47 +588,57 @@ table.sontable .col-cat   { width: 20%; }
 }
 
 /* ───────────────────────────────────────────────────────────────────────
-   본문 안 하이퍼링크 — 연한 회색 pill + 보라 텍스트 + ↗ 아이콘
-   적용: 좌측 인트로 본문(.intro > p) / 작품 카드 본문(.card-body)
-   제외: 표(table a), footer, 카드 하단 Click to visit
+   본문 안 하이퍼링크 — 번호 뱃지와 같은 1px 윤곽선 pill.
+   블랙 텍스트 + 보라 ↗(포인트). 호버는 표 행(row-a)과 동일: 보라 칠 + 블랙.
+   적용: 좌측 인트로/footer 본문 / 작품 카드 본문 / 카드 web 링크
+   제외: 표(table a)
    ─────────────────────────────────────────────────────────────────────── */
 .intro a,
 .work-card .card-body a,
 .work-card .card-link {
-  /* inline + box-decoration-break:clone — 줄바꿈 시 각 줄 조각마다 pill 배경·
+  /* inline + box-decoration-break:clone — 줄바꿈 시 각 줄 조각마다 pill 윤곽선·
      둥근 모서리·padding이 따로 적용된다(줄별로 나뉜 pill).
      white-space:normal + word-break:keep-all — 짧은 링크는 한 줄, 너무 긴 링크는
      어절(단어) 단위로 줄바꿈되어 본문 폭을 넘지 않는다(데스크탑·모바일 공통). */
   display: inline;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  /* 상하 padding 0 — pill 높이(위아래여백)를 조금 줄임. 좌우는 컴팩트하게. */
-  padding: 0 6px;
-  background: var(--pill-bg);
-  border-radius: 999px; /* 둥근 모서리 (예전 스타일) */
-  color: var(--accent);
+  /* 상하 padding 0 — pill 높이는 line-height로만. 좌우는 윤곽선과 글자 간격 */
+  padding: 0 7px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink);
   text-decoration: none;
   font-style: normal;
   line-height: 1.4;
   white-space: normal;
   word-break: keep-all;
+  transition: background 0.12s; /* 표 셀 호버와 같은 템포 */
 }
 .intro a::before,
 .work-card .card-body a::before,
 .work-card .card-link::before {
   content: '↗';
-  margin-right: 2px;
+  margin-right: 3px;
   /* inline 글리프로 둬서 아이콘과 첫 단어 사이에 줄바꿈 기회가 안 생기게 한다
      (모바일에서 pill이 줄바꿈될 때 아이콘이 첫 단어와 붙어있도록). */
   display: inline;
   font-size: 0.8em;
   font-weight: 700;
   vertical-align: 1px;
+  color: var(--accent); /* 외부 링크 표시 — 유일한 포인트 컬러 */
 }
 .intro a:hover,
 .work-card .card-body a:hover,
 .work-card .card-link:hover {
-  background: linear-gradient(to bottom, var(--accent), var(--bg));
+  background: var(--accent);
+  color: var(--ink);
+}
+/* 칠 위에선 ↗도 블랙 (보라 위 보라 방지) */
+.intro a:hover::before,
+.work-card .card-body a:hover::before,
+.work-card .card-link:hover::before {
   color: var(--ink);
 }
 
@@ -669,6 +681,7 @@ table.sontable .col-cat   { width: 20%; }
   display: inline;
   padding: 0;
   background: none;
+  border: none; /* pill 윤곽선도 해제 */
   border-radius: 0;
   color: inherit;
   text-decoration: none;
