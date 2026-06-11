@@ -455,7 +455,8 @@ tr[data-slug] { scroll-margin-top: 8px; }
 .accordion-detail > td { padding: 0; border-top: 0; }
 /* 펼친 행 — 제목과 작품(미디어) 사이 여백 0: 제목 칸 아래 padding 제거 */
 table.sontable tr[data-active='true'] td { padding-bottom: 0; }
-/* 펼쳐진 카드 — 상단 0: 작품(미디어)이 제목 줄에 바로 붙는다 */
+/* 펼쳐진 카드 — 제목↔작품 간격은 카드 상단 8px 하나로만 (제목 칸 아래 0).
+   사이트 마이크로 간격 리듬(이미지 그리드·pill 스택 8px)과 동일 */
 /* 아코디언 펼침을 표 3컬럼 그리드(20/60/20)에 맞춰 배치:
    규격=연도칸(1), 이미지·본문=제목칸(2), web 링크=분류칸(3). */
 .accordion-detail .work-card {
@@ -463,7 +464,7 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   grid-template-columns: 20% 60% 20%;
   align-items: start;
   row-gap: 14px;
-  padding: 0 0 24px;
+  padding: 8px 0 24px;
 }
 /* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 */
 .accordion-detail .card-title,
