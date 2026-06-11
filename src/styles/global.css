@@ -380,48 +380,8 @@ iframe {
   flex-direction: column;
   align-items: center;
 }
-/* 수집 링크 — Are.na links 채널의 링크 블록들. 항목 = 블록 전체가
-   링크·호버 단위 (표 행과 같은 어법). */
-.link-list {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-/* 항목 사이 가로 구분선 — about hr처럼 컬럼 패딩(20px) 상쇄해 전체 폭 */
-.link-list hr {
-  align-self: stretch;
-  margin: 0 -20px;
-}
-/* 컬럼 패딩 상쇄해 전체 폭 띠 — 호버 시 띠가 통째로 칠해진다 */
-.link-list a.link-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  width: calc(100% + 40px);
-  margin: 0 -20px;
-  padding: 10px 20px;
-  text-decoration: none;
-  font-style: normal;
-  color: var(--ink);
-  transition: background 0.12s; /* 표 셀과 같은 템포 */
-}
-/* 호버 칠 — 표 행처럼 항목별 보라/갈색 교차 (hr 제외, a끼리 홀짝) */
-@media (hover: hover) {
-  .link-list a.link-item:nth-of-type(odd):hover { background: var(--tint-accent); }
-  .link-list a.link-item:nth-of-type(even):hover { background: var(--tint-brown); }
-  /* 틴트 칠 위에서 pill 속은 비치게 */
-  .link-list a.link-item:hover .link-title { background: transparent; }
-}
-/* 제목 — 본문 pill과 같은 윤곽선 어휘 (블록이 anchor라 span으로 분리) */
-.link-list .link-title {
-  display: inline-block;
-  padding: 0 7px;
-  border: 1px solid var(--ink);
-  border-radius: 999px;
-  background: var(--bg);
-  line-height: 1.4;
-}
+/* 링크 제목 — 타원 정중앙, ↗만 포인트 (밴드·타원 공통 규칙은 인물 섹션과 공유) */
+.link-list .link-title { text-align: center; }
 .link-list .link-title::before {
   content: '↗';
   margin-right: 3px;
@@ -430,72 +390,87 @@ iframe {
   vertical-align: 1px;
   color: var(--accent);
 }
-/* 설명 — 우측 정렬(컬럼 정렬과 동일), 전역 p padding 무력화 */
-.link-desc {
-  margin: 0;
-  padding-top: 0;
-  text-align: center;
-  line-height: 1.5;
-  text-wrap: pretty;
-}
 .three-col .content {
   /* 작품 카드들이 세로로 쌓이므로 auto */
 }
 
 /* ───────────────────────────────────────────────────────────────────────
-   좌측 인물 인덱스 — people 채널 ↔ 작품 관계. 이름(멘션 pill) + 카탈로그
-   번호 뱃지(클릭 = 그 작품 열기). 인물 사이 hr은 .intro hr(전체 폭) 공유.
+   좌(인물)/우(수집 링크) 공통 — 세로 줄무늬 밴드 + 흰 타원.
+   항목마다 보라/갈색이 배경으로 교차(상단 커튼 천과 같은 어휘)하고,
+   그 위에 100%를 차지하는 흰 스타디움(::before, radius 999)이 얹혀
+   모서리로 밴드 색이 비친다. 텍스트는 타원 정중앙.
    ─────────────────────────────────────────────────────────────────────── */
-/* 블록 전체가 단위 — 우측 링크 블록과 같은 어법: 컬럼 전체 폭 띠 +
-   항목별 보라/갈색 교차 틴트 호버. 콘텐츠는 가운데 정렬. */
-.person {
+.people-list,
+.link-list {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: calc(100% + 40px);
+  margin: 0 -20px; /* 컬럼 패딩 상쇄 — 밴드가 컬럼 전체 폭 */
+}
+.person,
+.link-list a.link-item {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  width: calc(100% + 40px);
-  margin: 0 -20px;
-  padding: 10px 20px;
-  cursor: pointer;
+  justify-content: center;
+  gap: 4px;
+  min-height: 64px;
+  padding: 12px 24px;
+  text-decoration: none;
+  font-style: normal;
+  color: var(--ink);
+}
+/* 밴드 색 — 항목 교차 (줄무늬 모티프, 풀 채도) */
+.people-list .person:nth-of-type(odd),
+.link-list a.link-item:nth-of-type(odd) { background: #a966ff; }
+.people-list .person:nth-of-type(even),
+.link-list a.link-item:nth-of-type(even) { background: #775d4f; }
+/* 흰 타원 — 항목 영역 100%를 채우는 스타디움. 모서리만 밴드 색 노출 */
+.person::before,
+.link-list a.link-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  border-radius: 999px;
   transition: background 0.12s;
 }
+/* 텍스트는 타원 위 레이어 */
+.person > *,
+.link-list a.link-item > * {
+  position: relative;
+}
+/* 호버 — 타원 속이 밴드 색 틴트로 */
 @media (hover: hover) {
-  .people-list .person:nth-of-type(odd):hover { background: var(--tint-accent); }
-  .people-list .person:nth-of-type(even):hover { background: var(--tint-brown); }
-  /* 틴트 위에서 이름 pill 속은 비치게 (우측 link-title과 동일) */
-  .people-list .person:hover .person-name { background: transparent; }
+  .people-list .person:nth-of-type(odd):hover::before,
+  .link-list a.link-item:nth-of-type(odd):hover::before { background: var(--tint-accent); }
+  .people-list .person:nth-of-type(even):hover::before,
+  .link-list a.link-item:nth-of-type(even):hover::before { background: var(--tint-brown); }
+}
+/* 인물 — 클릭 = 참여 작업으로 이동 (data-works 있을 때만) */
+.person[data-works] { cursor: pointer; }
+/* 인물 이름 — 인물 아이콘 + @이름 (pill 윤곽선 없이, 타원이 그릇) */
+.person-name { text-align: center; }
+.person-name::before {
+  content: '';
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  background-color: currentColor;
+  mask: url('/icons/user.svg') no-repeat center / contain;
+  -webkit-mask: url('/icons/user.svg') no-repeat center / contain;
+  vertical-align: -1px;
+  margin-right: 3px;
 }
 .person-desc {
   margin: 0;
   padding-top: 0;
   text-align: center;
-  line-height: 1.5;
+  line-height: 1.45;
   text-wrap: pretty;
 }
-.person-works {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 5px;
-}
-.people-list {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.people-list hr { align-self: stretch; } /* 가운데 정렬 컨테이너에서도 전체 폭 */
-/* 번호 뱃지가 .intro a(pill) 규칙을 상속받지 않게 — 표 뱃지와 동일 글리프로 */
-.intro a.num-badge {
-  padding: 0 0.4em;
-  background: var(--bg);
-  color: var(--ink);
-  font-size: calc(var(--fs) * 0.78);
-  text-decoration: none;
-  font-style: normal;
-}
-.intro a.num-badge::before { content: none; }
-.intro a.num-badge:hover { background: var(--tint-accent); color: var(--ink); }
-
 /* 작품이 열려 있는 동안 — 다른 행은 옅게. 목록(지도)은 보이되 시선만
    열린 작품으로 모은다. 호버하면 그 행만 다시 또렷하게. */
 table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) td,
