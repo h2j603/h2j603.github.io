@@ -307,13 +307,27 @@ iframe {
   align-items: flex-end;
 }
 /* 수집 링크 — Are.na links 채널의 링크 블록들. 본문 pill과 같은 어휘로
-   세로 스택 (Are.na 블록 쌓이듯). */
+   세로 스택 (Are.na 블록 쌓이듯). 항목 = pill + 설명(블록 description). */
 .link-list {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 8px;
+  gap: 16px; /* 항목 사이 — pill↔설명(4px)보다 넉넉하게 */
   margin-top: 28px;
+}
+.link-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+/* 설명 — 우측 정렬(컬럼 정렬과 동일), 전역 p padding 무력화 */
+.link-desc {
+  margin: 0;
+  padding-top: 0;
+  text-align: right;
+  line-height: 1.5;
+  text-wrap: pretty;
 }
 .three-col .content {
   /* 작품 카드들이 세로로 쌓이므로 auto */
