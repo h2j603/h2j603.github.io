@@ -55,6 +55,12 @@
     margin-left: -10px;
     margin-right: -10px;
   }
+  /* 인물 블록 띠도 모바일 padding(10px) 기준으로 상쇄 */
+  .three-col .left .person {
+    width: calc(100% + 20px);
+    margin: 0 -10px;
+    padding: 10px;
+  }
   .three-col .third {
     position: static;
     width: 100%;
