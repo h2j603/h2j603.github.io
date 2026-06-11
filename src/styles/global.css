@@ -203,13 +203,14 @@ iframe {
 /* hover 셀: 다른 셀의 5배 폭 (basis 5× var(--cell-w)), shrink 0 */
 .stripe-row .cell:hover  { flex: 0 0 calc(var(--cell-w) * 5); }
 
-/* 3-Column이 띠 만큼 아래로 밀려야 함 (24 × 2 = 48, + 안전 여유 12px = 60px).
-   stripe-row line-height 등 시각적 미세 영향 대비. */
+/* 3-Column — stripe 3줄(24×3=72px) 바로 아래, 여유 0.
+   스크롤 콘텐츠가 띠 밑에서 바로 잘리므로 띠 아래 흰 띠(구 sticky 네비
+   배경처럼 보이던 잔재)가 생기지 않는다. */
 .three-col .left,
 .three-col .center,
 .three-col .right {
-  top: 84px; /* stripe 3줄(24×3=72) + 여유 12 */
-  height: calc(100% - 84px);
+  top: 72px;
+  height: calc(100% - 72px);
 }
 /* stripe-row 안 line-height 잔여 픽셀 차단 — height: 24px 정확히 보장 */
 .stripe-row { line-height: 0; }
@@ -255,11 +256,11 @@ iframe {
 .col-divider.d5 { left: 26%; } /* 번호|연도 */
 .col-divider.d3 { left: 32%; } /* 연도|제목 */
 .col-divider.d4 { left: 68%; } /* 제목|분류 */
-/* 세로선 상단부 — stripe 구간(0~84px)을 띠 위로 지난다 (fixed, z200). */
+/* 세로선 상단부 — stripe 구간(0~72px)을 띠 위로 지난다 (fixed, z200). */
 .col-divider-top {
   position: fixed;
   top: 0;
-  height: 84px;
+  height: 72px;
   width: 1px;
   background: var(--ink);
   z-index: 200; /* stripe-top(100) 위 */
@@ -693,10 +694,7 @@ table.sontable .col-cat   { width: 20%; }
   justify-content: center;
   z-index: 50;
   pointer-events: none;
-  /* 레이어 스타일 곱하기 — 오버레이 전체(사각형들)를 뒤 페이지(표·텍스트)와 multiply.
-     셀 각각이 아니라 오버레이 레벨에 줘야 별도 스태킹 컨텍스트 안에 갇히지 않고
-     실제 뒤 콘텐츠와 섞인다. */
-  mix-blend-mode: multiply;
+  /* 합성 일반(normal) — 셀이 뒤 콘텐츠(표·텍스트)를 그대로 덮는다 (곱하기 폐기) */
 }
 .default-state[hidden] { display: none; }
 .default-state .stripe-mosaic {
