@@ -9,6 +9,7 @@
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
+import { getRequestCount } from '../src/lib/arena.js';
 import { buildWorks } from '../src/lib/works.js';
 import { buildPeople } from '../src/lib/people.js';
 import { buildLinks } from '../src/lib/links.js';
@@ -59,6 +60,7 @@ async function main() {
   console.log(`intro blocks   : ${intro.length}`);
   console.log(`footer blocks  : ${footer.length}`);
   console.log(`${dryRun ? 'DRY RUN — nothing written' : 'wrote ' + DATA_FILE + ' + ' + INTRO_FILE}`);
+  console.log(`api requests   : ${getRequestCount()} (무료 한도 120/min)`);
   console.log(`elapsed        : ${secs}s`);
   console.log('────────────────────────────────────');
 

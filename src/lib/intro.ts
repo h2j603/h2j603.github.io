@@ -9,7 +9,7 @@
  * 마커 줄은 본문 HTML에서 제거된다. 페이지 단에서 ko 다음 en이 연속되면
  * 좌우 2단으로 짝짓고, 그 외엔 1단으로 렌더.
  */
-import { getChannel, getChannelContents } from './arena.js';
+import { tryGetChannelContents } from './arena.js';
 import { classifyBlock } from './images.js';
 import { markdownToHtml } from './body.js';
 import { ARENA_INTRO_CHANNEL, ARENA_FOOTER_CHANNEL } from './config.js';
@@ -36,12 +36,12 @@ export function parseMarker(markdown: string): { lang: 'ko' | 'en' | null; rest:
 }
 
 async function buildTextChannel(slug: string, label: string): Promise<TextBlock[]> {
-  const ch = await getChannel(slug);
-  if (!ch) {
+  // contents를 바로 친다 — 존재 확인용 getChannel 요청 1회 절약 (404/403 → null)
+  const blocks = await tryGetChannelContents(slug);
+  if (!blocks) {
     console.warn(`${label}: channel "${slug}" not found.`);
     return [];
   }
-  const blocks = await getChannelContents(ch.id);
   const out: TextBlock[] = [];
   for (const b of blocks) {
     const c = classifyBlock(b);
