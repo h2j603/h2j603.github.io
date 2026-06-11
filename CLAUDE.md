@@ -51,6 +51,15 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 8. **Deploy:** GitHub Pages via `.github/workflows/deploy.yml` (push to `main`
    or manual dispatch). The runner has open internet so the Are.na fetch works
    there.
+9. **인물 레지스트리 (`people` 채널, 실제 슬러그 `people-vbm5erq60ra` / #5296875,
+   private).** 링크 블록 1개 = 인물 1명: value(URL) = 대표 링크, title =
+   `"한국어 / English"`, description = `slug:` + `aliases:`(쉼표 구분 표기 변형,
+   선택 `role:`). 본문 @멘션(링크 텍스트가 `@`로 시작)이 **빌드 타임에 이름으로
+   매칭**되어 — href가 레지스트리 URL로 통일되고, 블록 언어에 맞는 이름(한/영)
+   으로 표기가 바뀌며, `class="mention" data-person="slug"`가 박히고, 작품의
+   `people[]`(관계형 조인 키)에 기록된다. 미등록 인물은 원본 그대로(fallback).
+   스냅샷은 `src/data/people.json`. intro/footer 채널 멘션은 매칭하지 않음
+   (자기 SNS 핸들이라 의도적 제외).
 
 ## File map
 
@@ -61,10 +70,12 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 | `src/lib/body.ts` | Markdown → semantic HTML (`marked`), defensive |
 | `src/lib/images.ts` | `classifyBlock` (image/link/text), download + skip-cache |
 | `src/lib/works.ts` | orchestrate channel → validated `Work[]` (per-work error isolation) |
-| `src/lib/schema.ts` | `Work` zod schema (source of truth) + `TAGS` |
+| `src/lib/people.ts` | 인물 레지스트리 fetch + @멘션 매칭·재작성 (`rewriteMentions`) |
+| `src/lib/schema.ts` | `Work`·`Person` zod schema (source of truth) + `TAGS` |
 | `src/lib/site-data.ts` | page-side: read snapshot + resolve image assets |
 | `scripts/build-data.ts` | build-time data step (`--dry-run` supported) |
 | `scripts/setup-arena.ts` | idempotent Are.na structure bootstrap |
+| `scripts/setup-people.ts` | 인물 채널 생성 + 기존 멘션 시드 (멱등) |
 | `src/pages/index.astro` | work list + cover thumbnails + tag filter (inline JS) |
 | `src/pages/works/[slug].astro` | per-work detail page |
 
@@ -74,6 +85,7 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 npm install
 cp .env.example .env          # fill ARENA_TOKEN + ARENA_INDEX_CHANNEL
 npm run setup:arena           # one-time: create the Are.na structure (write token)
+npm run setup:people          # one-time: 인물 레지스트리 채널 생성 + 멘션 시드
 npm run check:arena           # dry-run fetch + report (writes nothing)
 npm run build                 # fetch Are.na + astro build → dist/
 npm run preview               # serve dist/
