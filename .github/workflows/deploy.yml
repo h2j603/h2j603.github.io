@@ -31,6 +31,15 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # 작품 이미지 증분 캐시 — 없으면 매 배포마다 전 이미지를 Are.na CDN에서
+      # 재다운로드한다 (downloadImages의 skip-cache가 디스크 기준이라 복원만
+      # 해주면 새 이미지만 받는다). run_id 키 = 매번 최신 상태로 다시 저장.
+      - name: Cache Are.na images
+        uses: actions/cache@v4
+        with:
+          path: src/assets/works
+          key: arena-images-${{ github.run_id }}
+          restore-keys: arena-images-
       - name: Build (fetch Are.na, then astro build)
         run: npm run build
         env:

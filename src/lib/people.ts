@@ -14,7 +14,7 @@
  *
  * 채널이 없거나 비어 있으면 레지스트리는 빈 배열 — 전 과정이 no-op.
  */
-import { getChannel, getChannelContents, parseDescriptionMetadata } from './arena.js';
+import { tryGetChannelContents, parseDescriptionMetadata } from './arena.js';
 import { classifyBlock } from './images.js';
 import { personSchema, type Person } from './schema.js';
 import { ARENA_PEOPLE_CHANNEL } from './config.js';
@@ -32,12 +32,12 @@ function kebab(s: string): string {
 }
 
 export async function buildPeople(): Promise<Person[]> {
-  const ch = await getChannel(ARENA_PEOPLE_CHANNEL);
-  if (!ch) {
+  // contents를 바로 친다 — 존재 확인용 getChannel 요청 1회 절약 (404/403 → null)
+  const blocks = await tryGetChannelContents(ARENA_PEOPLE_CHANNEL);
+  if (!blocks) {
     console.warn(`people: channel "${ARENA_PEOPLE_CHANNEL}" not found — 멘션 매칭 없이 진행.`);
     return [];
   }
-  const blocks = await getChannelContents(ch.id);
   const out: Person[] = [];
   for (const b of blocks) {
     const c = classifyBlock(b);

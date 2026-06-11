@@ -39,9 +39,23 @@ function blockIsChannel(block: any): boolean {
   return block?.type === 'Channel';
 }
 
-/** Resolve the child channel's slug/id from an index-channel entry. */
-function channelRefFromBlock(block: any): string | number | null {
-  return block?.slug ?? block?.id ?? null;
+/** 인덱스 contents의 Channel 블록에서 빌드에 필요한 메타만 추출.
+    블록이 title·slug·description(메타 전문)을 동봉하므로 작품마다
+    GET /channels/{id}를 또 부를 필요가 없다 (작품 수만큼 요청 절약). */
+interface WorkChannelRef {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+}
+function channelRefFromBlock(block: any): WorkChannelRef | null {
+  if (typeof block?.id !== 'number') return null;
+  return {
+    id: block.id,
+    slug: typeof block.slug === 'string' ? block.slug : '',
+    title: typeof block.title === 'string' ? block.title : '',
+    description: readMarkdown(block.description),
+  };
 }
 
 function num(
@@ -104,15 +118,10 @@ function parseLayout(
 }
 
 async function buildOne(
-  ref: string | number,
+  channel: WorkChannelRef,
   warn: (m: string) => void,
   mentionIndex: Map<string, Person>,
 ): Promise<{ work: Work | null; skipped: boolean }> {
-  const channel = await getChannel(ref);
-  if (!channel) {
-    warn(`channel "${ref}" not found`);
-    return { work: null, skipped: false };
-  }
   const meta = parseDescriptionMetadata(channel.description);
 
   if (meta.published?.toLowerCase() === 'false') {
@@ -268,7 +277,7 @@ export async function buildWorks(
   console.log(`Index channel: ${index.title} (#${index.id}, slug=${index.slug})`);
 
   const indexBlocks = await getChannelContents(index.id);
-  const refs: (string | number)[] = [];
+  const refs: WorkChannelRef[] = [];
   for (const b of indexBlocks) {
     if (!blockIsChannel(b)) continue;
     const ref = channelRefFromBlock(b);
@@ -276,21 +285,38 @@ export async function buildWorks(
   }
   console.log(`Found ${refs.length} work channel(s) in the index.`);
 
-  const works: Work[] = [];
   const failed: string[] = [];
   let skippedUnpublished = 0;
 
-  for (const ref of refs) {
-    try {
-      const { work, skipped } = await buildOne(ref, warn, mentionIndex);
-      if (skipped) skippedUnpublished++;
-      else if (work) works.push(work);
-      else failed.push(String(ref));
-    } catch (err: any) {
-      failed.push(String(ref));
-      warn(`channel "${ref}" crashed: ${err.message}`);
+  // 동시 4개 풀 — 직렬 fetch의 지연 합을 줄인다 (읽기 전용, 분당 한도
+  // 120에 한참 못 미침). 결과는 인덱스 순서를 보존.
+  const POOL = 4;
+  const results: ({ work: Work | null; skipped: boolean } | null)[] = new Array(refs.length).fill(null);
+  let cursor = 0;
+  async function worker() {
+    while (cursor < refs.length) {
+      const i = cursor++;
+      const ref = refs[i];
+      try {
+        results[i] = await buildOne(ref, warn, mentionIndex);
+      } catch (err: any) {
+        results[i] = { work: null, skipped: false };
+        failed.push(ref.slug || String(ref.id));
+        warn(`channel "${ref.slug || ref.id}" crashed: ${err.message}`);
+      }
     }
   }
+  await Promise.all(Array.from({ length: Math.min(POOL, refs.length) }, worker));
+
+  const works: Work[] = [];
+  results.forEach((r, i) => {
+    if (!r) return;
+    if (r.skipped) skippedUnpublished++;
+    else if (r.work) works.push(r.work);
+    else if (!failed.includes(refs[i].slug || String(refs[i].id))) {
+      failed.push(refs[i].slug || String(refs[i].id));
+    }
+  });
 
   works.sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
 

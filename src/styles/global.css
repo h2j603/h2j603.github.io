@@ -387,7 +387,6 @@ iframe {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  margin-top: 28px;
 }
 /* 항목 사이 가로 구분선 — about hr처럼 컬럼 패딩(20px) 상쇄해 전체 폭 */
 .link-list hr {
@@ -665,22 +664,29 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 /* 작품 이미지/iframe은 세로 구분선(z3) 위 레이어 — 펼친 카드 미디어가 선을 가린다 */
 .work-card .card-images,
 .work-card .iframe-wrap { position: relative; z-index: 4; }
-/* 언어 토글 — 우측 컬럼 우상단 (표 첫 행과 같은 높이대).
-   버튼은 UA 폰트를 쓰므로 본문 서체·크기·굵기를 명시 상속 */
+/* 언어 토글 — 띠 위 칩 (about 탭 왼쪽). 서랍이 열려 있어도 그대로 노출 —
+   서랍 본문(한/영)을 토글하면서 읽을 수 있다. 버튼은 UA 폰트라 명시 상속. */
 .lang-toggle {
+  position: fixed;
+  top: 24px; /* about 탭과 같은 줄 (띠 세로 중앙) */
+  right: 102px;
+  z-index: 102; /* 서랍 레이어(101) 위 */
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 9px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--bg);
   cursor: pointer;
   font-family: inherit;
   font-size: var(--fs);
   font-weight: inherit;
-  background: var(--bg);
   color: var(--ink);
-  line-height: 1.4;
-  flex-shrink: 0;
-  border: none;
-  padding: 0;
+  line-height: 1;
 }
 .lang-toggle:hover {
-  text-decoration: underline;
+  background: var(--tint-accent);
 }
 
 /* 표 컬럼 너비 — year는 controls의 sort 버튼과 grid-align 위해 고정.
