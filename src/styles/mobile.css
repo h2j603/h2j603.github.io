@@ -39,7 +39,7 @@
     z-index: auto;
     display: flex;
     flex-direction: column;
-    padding-top: 84px; /* stripe-top 3줄(24×3=72) + 여유 12 */
+    padding-top: 84px; /* stripe-top 2줄(36×2=72) + 여유 12 */
   }
   /* 좌측 컬럼(소개+푸터) — 숨기지 않고 표 아래 about/footer 섹션으로.
      좌우 10px = 표 셀 padding과 같은 세로 라인. 위 가로선으로 표와 구분. */
@@ -69,8 +69,9 @@
     order: 0;
     padding: 16px 10px 0;
   }
-  /* 단일 컬럼이라 세로 구분선 숨김. 띠 호버 트리거도 모바일엔 무의미 */
-  .col-divider, .stripe-hover-zone { display: none; }
+  /* 단일 컬럼이라 세로 구분선 숨김.
+     (stripe-hover-zone은 모바일에서도 살림 — 탭으로 커튼 토글) */
+  .col-divider { display: none; }
   /* center가 표+아코디언 메인 (work-card 저장소 숨김은 global 공통 규칙이 처리) */
   .three-col .center {
     order: 1;
