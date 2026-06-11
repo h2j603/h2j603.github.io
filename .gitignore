@@ -9,6 +9,7 @@ dist/
 src/data/works.json
 src/data/intro.json
 src/data/footer.json
+src/data/people.json
 
 # downloaded images (re-fetched at build time; skip-cached locally)
 src/assets/works/*/
