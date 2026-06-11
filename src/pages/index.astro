@@ -515,7 +515,7 @@ const defaultMosaic = fs.readFileSync(
           applyHash();
           if (defaultEl) {
             defaultEl.hidden = false;
-            triggerMosaicFall();
+            triggerMosaicFall(mosaicOpts());
           }
         });
       });
@@ -563,15 +563,16 @@ const defaultMosaic = fs.readFileSync(
       applyHash();
       markMentions();
       wrapAllKorean();
-      // 페이지 로드 시 모자이크 자동 낙하 (데스크탑 배경 장식 오버레이).
-      // 모바일(≤600px)은 표 아코디언 테스트 방해 방지로 숨김 유지.
+      // 페이지 로드 시 모자이크 자동 낙하 (데스크탑·모바일 공통 장식 오버레이).
+      // 모바일은 화면이 작고 스크롤 흐름이라 wave를 짧게(전체 ~7초) 끝낸다.
+      function mosaicOpts() {
+        return window.matchMedia('(max-width: 600px)').matches
+          ? { dur: 2.2, spread: 4, jitter: 1.2, stragMax: 5 }
+          : undefined; // 데스크탑은 triggerMosaicFall 기본값
+      }
       if (defaultEl) {
-        if (window.matchMedia('(max-width: 600px)').matches) {
-          defaultEl.hidden = true;
-        } else {
-          defaultEl.hidden = false;
-          triggerMosaicFall();
-        }
+        defaultEl.hidden = false;
+        triggerMosaicFall(mosaicOpts());
       }
     })();
   </script>
