@@ -25,11 +25,14 @@
 :root {
   /* 라이트 단일 테마 — 시스템 다크 설정에서도 강제 라이트 렌더 */
   color-scheme: light;
+  /* 전 사이트 단일 폰트 크기 — 모든 텍스트가 이 값 하나를 쓴다.
+     (예외: 번호 뱃지·↗ 아이콘 등 장식 글리프는 em 비율로 따라 움직임) */
+  --fs: 15px;
   --bg: #ffffff;
-  --ink: #775d4f;          /* hyuk repo의 orangered → 브라운 */
+  --ink: #000000;          /* UI 잉크 — 브라운(#775d4f)에서 블랙으로. 줄무늬·모자이크 브라운은 유지 */
   --accent: #b362ff;       /* hyuk repo의 lawngreen → 보라 */
   --pill-bg: #ececec;      /* 본문 링크 pill 배경 */
-  --mention: #b87333;      /* @멘션 링크 */
+  --mention: #000000;      /* @멘션 링크 — 브라운 일괄 블랙 전환에 포함 */
   --scrollbar: rgba(0, 0, 0, 0.35);
   --scrollbar-hover: rgba(0, 0, 0, 0.55);
   --muted: #a08d80;
@@ -58,7 +61,7 @@ html {
 body {
   height: 100%;
   overflow: hidden;
-  font-size: 15px; /* .left(인트로/about/footer)·.right 등 전역 프로즈 크기 */
+  font-size: var(--fs); /* 단일 크기 — 표·본문·토글 전부 이걸 상속 */
   font-family: neue-haas-unica, 'HakgyoansimBareondotum', sans-serif;
   font-weight: 500; /* 400 → 500, 전체적으로 살짝 두껍게 */
   font-style: normal;
@@ -82,10 +85,10 @@ body {
 /* ───────────────────────────────────────────────────────────────────────
    타이포 (원본 그대로)
    ─────────────────────────────────────────────────────────────────────── */
+/* h2 — carbon 폐기: 본문과 같은 서체·크기·굵기 (UA 기본 1.5em·bold 무력화) */
 h2 {
-  font-family: t26-carbon, monospace;
-  font-weight: 100;
-  font-style: italic;
+  font-size: var(--fs);
+  font-weight: 500;
   text-align: center;
 }
 p {
@@ -416,19 +419,13 @@ table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; pa
 /* 첫 행 — 위 가로선 제거 + 상단 padding 축소(표 시작 여백 컴팩트).
    필터·정렬이 없어 행 순서 고정 → :first-child로 충분 */
 table.sontable tr[data-slug]:first-child td { border-top: 0; padding-top: 2px; }
-/* 데스크탑 표 제목 폰트 — 표가 center 메인 콘텐츠가 됐으므로 키움.
-   화면 폭에 따라 가변(clamp): 좁은 데스크탑 14px ~ 넓은 화면 18px, 기준 ~1.15vw.
-   tr[data-slug] 행(제목/연도/분류)만 — 펼친 카드(.accordion-detail) 본문은 제외.
-   (모바일은 mobile.css에서 본문 크기로 되돌림) */
-table.sontable tr[data-slug] td { font-size: clamp(14px, 1.15vw, 18px); transition: background 0.12s, color 0.12s; }
-/* 호버 — 행이 아닌 칸(셀) 단위 배경 칠. 행마다 보라/갈색 교차(JS가 .row-a/.row-b 부여) */
+/* 표 셀 — 크기는 body(--fs) 상속. 호버 배경 전환만 정의 */
+table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s; }
+/* 호버 — 행이 아닌 칸(셀) 단위 배경 칠. 행마다 보라/갈색 교차(빌드 시 .row-a/.row-b 부여).
+   칠 색은 줄무늬 모티프(보라/브라운)라 잉크 블랙 전환과 무관하게 유지.
+   글자·뱃지는 색 반전 없이 블랙 그대로 둔다. */
 table.sontable tr.row-a td:hover { background: var(--accent); }
-table.sontable tr.row-b td:hover { background: var(--ink); }
-/* 칠한 칸 위 글자·뱃지는 흰색으로 가독성 확보 */
-table.sontable tr[data-slug] td:hover,
-table.sontable tr[data-slug] td:hover a,
-table.sontable tr[data-slug] td:hover .cat-tag { color: var(--bg); }
-table.sontable tr[data-slug] td:hover .num-badge { color: var(--bg); border-color: var(--bg); }
+table.sontable tr.row-b td:hover { background: #775d4f; }
 /* 펼칠 때 행이 컬럼(스크롤 컨테이너) 상단에서 살짝 떨어지게 —
    sticky 헤더가 없어졌으므로 작은 여백만 */
 tr[data-slug] { scroll-margin-top: 8px; }
@@ -465,9 +462,6 @@ tr[data-slug] { scroll-margin-top: 8px; }
 /* 규격·웹링크는 이제 card-body 안 본문 위(.card-meta-row)에 — 본문과 같은 칸(제목칸)에 흐른다 */
 /* specificity 높임 — .work-card .card-body{margin-top:16}이 뒤에서 덮는 것 방지 */
 .accordion-detail .work-card .card-body { grid-column: 2; grid-row: 2; padding: 0 10px; margin-top: 0; }
-/* 규격·본문·링크 폰트 크기 통일 (키움) */
-.accordion-detail .work-card .card-body,
-.accordion-detail .card-link { font-size: 17px; }
 /* 규격+링크 줄 — 본문 위. 둘 다 있으면(웹작업) 2단으로 나란히. */
 .accordion-detail .card-meta-row {
   display: flex;
@@ -481,11 +475,13 @@ tr[data-slug] { scroll-margin-top: 8px; }
 /* 작품 이미지/iframe은 세로 구분선(z3) 위 레이어 — 펼친 카드 미디어가 선을 가린다 */
 .work-card .card-images,
 .work-card .iframe-wrap { position: relative; z-index: 4; }
-/* 언어 토글 — 우측 컬럼 우상단 (표 첫 행과 같은 높이대) */
+/* 언어 토글 — 우측 컬럼 우상단 (표 첫 행과 같은 높이대).
+   버튼은 UA 폰트를 쓰므로 본문 서체·크기·굵기를 명시 상속 */
 .lang-toggle {
   cursor: pointer;
-  font-family: t26-carbon, monospace;
-  font-size: 18px;
+  font-family: inherit;
+  font-size: var(--fs);
+  font-weight: inherit;
   background: var(--bg);
   color: var(--ink);
   line-height: 1.4;
@@ -520,13 +516,13 @@ table.sontable .col-cat   { width: 20%; }
   box-sizing: border-box;
   border: 1px solid var(--ink);
   border-radius: 999px;
-  font-family: t26-carbon, monospace;
+  /* carbon 폐기 — 서체는 본문 상속. 크기만 원 안에 맞게 비율 축소(장식 글리프) */
   font-size: 0.78em;
   line-height: 1;
   color: var(--ink);
 }
 .work-card .card-meta {
-  font-size: 10px;
+  font-size: var(--fs);
   letter-spacing: 0.06em;
   margin: 4px 0 12px;
   padding-top: 0;
@@ -534,10 +530,6 @@ table.sontable .col-cat   { width: 20%; }
 
 /* 미디어(이미지/iframe)→설명 간격 — 한·영 설명 사이 간격(.bilingual gap)과
    동일하게 맞춘다. 데스크탑 16px(=.bilingual gap), 모바일 20px(mobile.css). */
-.work-card .card-body,
-.work-card .card-link {
-  font-size: 16px; /* 본문 + 웹링크(웹 작업) 동일 크기 */
-}
 .work-card .card-body {
   margin-top: 16px;
 }
@@ -573,10 +565,9 @@ table.sontable .col-cat   { width: 20%; }
 .three-col[data-lang='en'] .bilingual > [lang='ko'] { display: none; }
 .bilingual > div > p:first-child { padding-top: 0; }
 
-/* 좌측 인트로 h2 — 본문과 띄움 + 사이즈 키움 (기본 대비 20%) */
+/* 좌측 인트로 h2 — 크기는 전역 h2(--fs)와 동일, 본문과 여백만 */
 .intro > h2 {
   margin-bottom: 24px;
-  font-size: 1.8em;
 }
 
 /* 인트로 본문 + footer + 작품 카드 본문 — 엔터(p+p)와 줄바꿈(br)의 간격을
