@@ -8,15 +8,13 @@ import path from 'node:path';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import { getWorks, resolveImage, getIntro, getFooter, groupBilingual } from '../lib/site-data.js';
-import { TAGS } from '../lib/schema.js';
 
 const works = getWorks().slice().sort((a, b) => {
-  // 표 기본 정렬과 동일하게 — year desc (최신 위)
+  // 표 정렬 — year desc (최신 위). 정렬 토글이 없으므로 빌드 시 고정.
   const ya = parseInt(a.year || '0', 10) || 0;
   const yb = parseInt(b.year || '0', 10) || 0;
   return yb - ya;
 });
-const usedTags = TAGS.filter((t) => works.some((w) => w.tags.includes(t)));
 
 function orderedTagsOf(w: (typeof works)[number]): string[] {
   // 태그 전부 표시 — non-web 먼저, web은 맨 뒤. (표 카테고리 칸)
@@ -115,24 +113,7 @@ const defaultMosaic = fs.readFileSync(
           <Fragment set:html={defaultMosaic} />
         </div>
         {/* 작품 표 — 행 클릭 시 바로 아래로 카드(이미지+본문) 아코디언 펼침.
-            table-head(컨트롤+hr)는 스크롤 시 통째로 상단 고정 */}
-        <div class="table-head">
-          <div class="table-controls">
-            <button type="button" class="sort-toggle" data-order="desc">↓</button>
-            {usedTags.length > 0 && (
-              <nav class="card-filter" aria-label="Filter by tag">
-                <a href="#" class="filter-link" data-filter="all" data-active="true">All</a>
-                {usedTags.map((t) => (
-                  <a href="#" class="filter-link" data-filter={t} data-active="false">{t}</a>
-                ))}
-              </nav>
-            )}
-            <button type="button" class="lang-toggle" data-lang="en">KO</button>
-            <button type="button" class="theme-toggle" aria-label="라이트/다크 테마 전환">☾</button>
-          </div>
-          <hr class="table-head-hr" />
-        </div>
-
+            컨트롤 헤더(필터·정렬) 없이 표가 컬럼 최상단에서 바로 시작 */}
         {works.length > 0 ? (
           <table class="sontable">
             <colgroup>
@@ -143,8 +124,9 @@ const defaultMosaic = fs.readFileSync(
             </colgroup>
             <tbody>
               {works.map((w, i) => (
-                <tr data-slug={w.slug} data-tags={w.tags.join(' ')}>
-                  {/* 카탈로그 번호 — 기본 정렬(연도 내림차순) 기준 고정. 정렬해도 행 따라 이동 */}
+                <tr data-slug={w.slug} class={i % 2 === 0 ? 'row-a' : 'row-b'}>
+                  {/* 번호 = 연도 내림차순 고정. row-a/b = 호버 배경 보라/갈색 교차 —
+                      필터·정렬이 없어 행 순서가 안 바뀌므로 빌드 시 부여 */}
                   <td class="num-cell"><span class="num-badge">{i + 1}</span></td>
                   <td>{w.year || '—'}</td>
                   <td>
@@ -173,7 +155,7 @@ const defaultMosaic = fs.readFileSync(
             const externalUrl = w.links[0]?.url;
             const isWeb = w.tags.includes('web');
             return (
-              <article class="work-card" id={w.slug} data-tags={w.tags.join(' ')} data-year={w.year}>
+              <article class="work-card" id={w.slug}>
                 <h2 class="card-title">
                   {w.titleEn && w.titleEn !== w.title && (
                     <span class="card-title-en" lang="en">{w.titleEn}</span>
@@ -277,21 +259,19 @@ const defaultMosaic = fs.readFileSync(
       </div>
     </div>
 
-    {/* ──────────── 우측: 비움 (추후 구상) ──────────── */}
+    {/* ──────────── 우측: 언어 토글 (우상단 모서리) — 나머지는 추후 구상 ──────────── */}
     <div class="third right">
-      <div class="content"></div>
+      <div class="content">
+        <button type="button" class="lang-toggle" data-lang="en">KO</button>
+      </div>
     </div>
 
   </div>
 
   <script is:inline>
-    // (1) 좌측 태그 필터 → 우측 표 행만 토글
-    // (2) hash 변경 → 가운데에 해당 카드 한 개만 표시 + 활성 행 표시
+    // 표 아코디언 + URL hash 동기화 + 언어 토글 + 모자이크 인트로
     (function () {
-      var filter = document.querySelector('.card-filter');
       var cards = Array.from(document.querySelectorAll('.work-card'));
-      var rows = Array.from(document.querySelectorAll('tr[data-slug]'));
-      var center = document.querySelector('.three-col .center');
       var defaultEl = document.getElementById('__default');
 
       // ── 표 아코디언 (데스크탑·모바일 공통) ──────────────────────────
@@ -333,35 +313,6 @@ const defaultMosaic = fs.readFileSync(
         accRow = detail;
         // 이펙트 없이 즉시 펼침. 펼친 행이 보이게만 스크롤(애니메이션 없음).
         tr.scrollIntoView({ block: 'start' });
-      }
-
-      // 필터/정렬 후 "보이는 첫 행"에 .first-visible (표 맨 위 가로선 제거용) +
-      // 보이는 행에 보라/갈색 교차 클래스(.row-a/.row-b) — 호버 배경색 줄무늬용.
-      function markFirstVisible() {
-        var all = document.querySelectorAll('tr[data-slug]');
-        var firstDone = false, vi = 0;
-        for (var i = 0; i < all.length; i++) {
-          var tr = all[i];
-          tr.classList.remove('first-visible', 'row-a', 'row-b');
-          if (tr.hidden) continue;
-          if (!firstDone) { tr.classList.add('first-visible'); firstDone = true; }
-          tr.classList.add(vi % 2 === 0 ? 'row-a' : 'row-b');
-          vi++;
-        }
-      }
-
-      function applyFilter(tag) {
-        accClose();
-        rows.forEach(function (tr) {
-          var tags = (tr.getAttribute('data-tags') || '').split(' ');
-          tr.hidden = tag !== 'all' && tags.indexOf(tag) === -1;
-        });
-        if (filter) {
-          filter.querySelectorAll('[data-filter]').forEach(function (a) {
-            a.setAttribute('data-active', String(a.getAttribute('data-filter') === tag));
-          });
-        }
-        markFirstVisible();
       }
 
       // 모자이크 셀이 오른쪽 위 → 왼쪽 아래 대각선 순서로 떨어짐.
@@ -441,54 +392,6 @@ const defaultMosaic = fs.readFileSync(
         });
       });
 
-      if (filter) {
-        filter.addEventListener('click', function (e) {
-          var a = e.target.closest('[data-filter]');
-          if (!a) return;
-          e.preventDefault();
-          applyFilter(a.getAttribute('data-filter'));
-        });
-      }
-
-      // 표 정렬 — Year 기준. 기본 내림차순(최신 위), 클릭 시 토글.
-      // 작품 카드 순서도 같이 reorder.
-      function sortTable(order) {
-        accClose(); // 정렬 전 아코디언 닫기 (detail 행이 재정렬되지 않게)
-        var tbody = document.querySelector('table.sontable tbody');
-        if (tbody) {
-          var trs = Array.from(tbody.querySelectorAll('tr'));
-          trs.sort(function (a, b) {
-            // children[0]=번호 칸, children[1]=연도 칸
-            var ya = parseInt((a.children[1] || {}).textContent || '0', 10) || 0;
-            var yb = parseInt((b.children[1] || {}).textContent || '0', 10) || 0;
-            return order === 'desc' ? yb - ya : ya - yb;
-          });
-          trs.forEach(function (tr) { tbody.appendChild(tr); });
-        }
-        var content = document.querySelector('.three-col .center .content');
-        if (content) {
-          var cs = Array.from(content.querySelectorAll('.work-card'));
-          cs.sort(function (a, b) {
-            var ya = parseInt(a.dataset.year || '0', 10) || 0;
-            var yb = parseInt(b.dataset.year || '0', 10) || 0;
-            return order === 'desc' ? yb - ya : ya - yb;
-          });
-          cs.forEach(function (c) { content.appendChild(c); });
-        }
-        markFirstVisible();
-      }
-      var sortToggle = document.querySelector('.sort-toggle');
-      if (sortToggle) {
-        sortToggle.addEventListener('click', function () {
-          var cur = sortToggle.getAttribute('data-order') || 'desc';
-          var next = cur === 'desc' ? 'asc' : 'desc';
-          sortToggle.setAttribute('data-order', next);
-          sortToggle.textContent = next === 'desc' ? '↓' : '↑';
-          sortTable(next);
-        });
-      }
-      sortTable('desc');
-
       // 표 제목 한·영 토글 — EN 버튼 클릭하면 표의 a 텍스트가 영어로
       var langToggle = document.querySelector('.lang-toggle');
       var threeCol = document.querySelector('.three-col');
@@ -509,29 +412,6 @@ const defaultMosaic = fs.readFileSync(
           langToggle.textContent = next === 'ko' ? 'EN' : 'KO';
           applyLang(next);
         });
-      }
-
-      // 다크모드 토글 — 저장값(localStorage) > 시스템 설정 순.
-      // 첫 페인트 전 적용은 Base.astro <head> 인라인 스크립트가 담당.
-      // 버튼은 전환될 테마를 표시: 라이트일 때 ☾(→다크), 다크일 때 ☀(→라이트).
-      var themeToggle = document.querySelector('.theme-toggle');
-      if (themeToggle) {
-        var darkMq = window.matchMedia('(prefers-color-scheme: dark)');
-        var themeNow = function () {
-          var t = document.documentElement.getAttribute('data-theme');
-          return t || (darkMq.matches ? 'dark' : 'light');
-        };
-        var syncThemeIcon = function () {
-          themeToggle.textContent = themeNow() === 'dark' ? '☀' : '☾';
-        };
-        themeToggle.addEventListener('click', function () {
-          var next = themeNow() === 'dark' ? 'light' : 'dark';
-          document.documentElement.setAttribute('data-theme', next);
-          try { localStorage.setItem('theme', next); } catch (e) {}
-          syncThemeIcon();
-        });
-        if (darkMq.addEventListener) darkMq.addEventListener('change', syncThemeIcon);
-        syncThemeIcon();
       }
 
       // @로 시작하는 링크 텍스트 → mention 클래스 (인물 아이콘 + 갈색)
@@ -680,7 +560,6 @@ const defaultMosaic = fs.readFileSync(
       document.addEventListener('DOMContentLoaded', applyHash);
       document.addEventListener('DOMContentLoaded', markMentions);
       document.addEventListener('DOMContentLoaded', wrapAllKorean);
-      applyFilter('all');
       applyHash();
       markMentions();
       wrapAllKorean();
