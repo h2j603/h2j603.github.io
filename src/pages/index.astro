@@ -33,17 +33,10 @@ const defaultMosaic = fs.readFileSync(
 ---
 
 <Base title="hyuk.xyz">
-  <div class="stripe-top" aria-hidden="true">
-    <div class="stripe-row"></div>
-    <div class="stripe-row"></div>
-    <div class="stripe-row"></div>
-  </div>
-  {/* 세로 구분선 상단부 — stripe 구간(0~72px)을 띠 위(z200)로 지난다. */}
-  <div class="col-divider-top d1" aria-hidden="true"></div>
-  <div class="col-divider-top d2" aria-hidden="true"></div>
-  <div class="col-divider-top d3" aria-hidden="true"></div>
-  <div class="col-divider-top d4" aria-hidden="true"></div>
-  <div class="col-divider-top d5" aria-hidden="true"></div>
+  {/* 호버 트리거(상단 72px) — 바로 다음 형제 .stripe-top을 커튼처럼 100vh로 펼침 */}
+  <div class="stripe-hover-zone" aria-hidden="true"></div>
+  {/* 줄(.stripe-row)은 JS buildStripe가 화면 높이만큼 생성 — 기본 노출은 위 72px */}
+  <div class="stripe-top" aria-hidden="true"></div>
   <div class="three-col">
     {/* 세로 구분선 하단부 — center 구간. 표/텍스트 위, 작품 이미지/iframe 아래.
         d1/d2: 3구역 경계, d3/d4: 표 컬럼(제목|연도|분류) 기준선 */}
@@ -473,28 +466,36 @@ const defaultMosaic = fs.readFileSync(
         wrapKoreanIn(document.body);
       }
 
-      // 줄무늬 띠 — viewport 폭에 따라 셀 개수 동적 계산
-      var CELL_HEIGHT = 24;
+      // 줄무늬 띠 — viewport 폭에 따라 셀 개수, 높이에 따라 줄 수 동적 계산.
+      // 줄은 화면 전체(100vh)를 덮을 만큼 미리 만들어 두고 stripe-top의
+      // height(72px ↔ 100vh, CSS transition)로만 노출량을 조절한다 —
+      // 호버 시 타일 크기·비율 변형 없이 줄이 늘어나며 커튼처럼 내려온다.
+      var CELL_HEIGHT = 36; // 타일 확대 24→36 (커튼이 너무 촘촘했음). CSS .stripe-row height와 짝
       var CELL_RATIO = 0.5; // width / height — 0.5면 세로가 가로의 2배 길쭉
+      var STRIPE_BASE_ROWS = 2; // 기본 노출 2줄 = 72px (CSS .stripe-top height와 짝)
       function buildStripe() {
-        var rows = document.querySelectorAll('.stripe-row');
-        if (!rows.length) return;
+        var stripe = document.querySelector('.stripe-top');
+        if (!stripe) return;
         var desired = CELL_HEIGHT * CELL_RATIO;
         var N = Math.max(2, Math.round(window.innerWidth / desired));
         var pct = 100 / N;
-        rows.forEach(function (row, rowIdx) {
-          row.innerHTML = '';
+        var ROWS = Math.max(STRIPE_BASE_ROWS, Math.ceil(window.innerHeight / CELL_HEIGHT));
+        stripe.innerHTML = '';
+        for (var rowIdx = 0; rowIdx < ROWS; rowIdx++) {
+          var row = document.createElement('div');
+          row.className = 'stripe-row';
           row.style.setProperty('--cell-w', pct + '%');
           for (var i = 0; i < N; i++) {
             var cell = document.createElement('div');
             var rowEven = rowIdx % 2 === 0;
             var evenCol = i % 2 === 0;
             // row 짝수(0,2,...): 짝수 col = purple. row 홀수(1,3,...): 짝수 col = brown.
-            // → 3줄 이상이어도 위·아래·위·아래 패턴 유지.
+            // → 줄 수와 무관하게 위·아래·위·아래 패턴 유지.
             cell.className = 'cell ' + ((evenCol === rowEven) ? 'purple' : 'brown');
             row.appendChild(cell);
           }
-        });
+          stripe.appendChild(row);
+        }
       }
       var stripeResizeT = null;
       window.addEventListener('resize', function () {
@@ -503,6 +504,20 @@ const defaultMosaic = fs.readFileSync(
       });
       document.addEventListener('DOMContentLoaded', buildStripe);
       buildStripe();
+
+      // 커튼 — 터치 기기(hover 불가)는 탭으로 토글: 트리거 영역(상단 72px) 탭
+      // → 펼침, 펼쳐진 커튼(.open은 pointer-events:auto) 아무 데나 탭 → 닫힘.
+      // 데스크탑은 CSS :hover가 담당하므로 클릭 핸들러를 걸지 않는다.
+      var stripeTopEl = document.querySelector('.stripe-top');
+      var stripeZone = document.querySelector('.stripe-hover-zone');
+      if (stripeTopEl && stripeZone && !window.matchMedia('(hover: hover)').matches) {
+        stripeZone.addEventListener('click', function () {
+          stripeTopEl.classList.add('open');
+        });
+        stripeTopEl.addEventListener('click', function () {
+          stripeTopEl.classList.remove('open');
+        });
+      }
 
       // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작
       document.querySelectorAll('[data-home]').forEach(function (a) {
@@ -515,7 +530,7 @@ const defaultMosaic = fs.readFileSync(
           applyHash();
           if (defaultEl) {
             defaultEl.hidden = false;
-            triggerMosaicFall();
+            triggerMosaicFall(mosaicOpts());
           }
         });
       });
@@ -563,15 +578,16 @@ const defaultMosaic = fs.readFileSync(
       applyHash();
       markMentions();
       wrapAllKorean();
-      // 페이지 로드 시 모자이크 자동 낙하 (데스크탑 배경 장식 오버레이).
-      // 모바일(≤600px)은 표 아코디언 테스트 방해 방지로 숨김 유지.
+      // 페이지 로드 시 모자이크 자동 낙하 (데스크탑·모바일 공통 장식 오버레이).
+      // 모바일은 화면이 작고 스크롤 흐름이라 wave를 짧게(전체 ~7초) 끝낸다.
+      function mosaicOpts() {
+        return window.matchMedia('(max-width: 600px)').matches
+          ? { dur: 2.2, spread: 4, jitter: 1.2, stragMax: 5 }
+          : undefined; // 데스크탑은 triggerMosaicFall 기본값
+      }
       if (defaultEl) {
-        if (window.matchMedia('(max-width: 600px)').matches) {
-          defaultEl.hidden = true;
-        } else {
-          defaultEl.hidden = false;
-          triggerMosaicFall();
-        }
+        defaultEl.hidden = false;
+        triggerMosaicFall(mosaicOpts());
       }
     })();
   </script>
