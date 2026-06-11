@@ -33,6 +33,9 @@
   --bg: #ffffff;
   --ink: #000000;          /* UI 잉크 — 브라운(#775d4f)에서 블랙으로. 줄무늬·모자이크 브라운은 유지 */
   --accent: #b362ff;       /* hyuk repo의 lawngreen → 보라 */
+  /* 호버 칠 — 풀 채도가 시끄러워 옅은 틴트로 (보라/브라운 모티프 유지) */
+  --tint-accent: #e6d6ff;  /* 보라 틴트 */
+  --tint-brown: #e3dad3;   /* 브라운 틴트 */
   --mention: #000000;      /* @멘션 링크 — 브라운 일괄 블랙 전환에 포함 */
   --scrollbar: rgba(0, 0, 0, 0.35);
   --scrollbar-hover: rgba(0, 0, 0, 0.55);
@@ -199,6 +202,66 @@ iframe {
   pointer-events: auto;
   cursor: pointer;
 }
+/* 커튼 하단 상태줄 — 접힌 목차(가려진 번호) + 현재 작품 + 닫기.
+   커튼 밑변에 부착(top = --curtain-h, 자기 높이만큼 위로). 커튼이
+   열려 있을 때(.curtain-acc)만 표시. */
+.curtain-index {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--curtain-h, 72px);
+  transform: translateY(-100%);
+  z-index: 101; /* 커튼(100) 위 */
+  height: 30px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  background: var(--bg);
+  border-top: 1px solid var(--ink);
+}
+.stripe-top.curtain-acc + .curtain-index { display: flex; }
+/* 접힌 목차 — 가려진 작품들의 번호 뱃지 (클릭 = 그 작품으로) */
+.ci-nums {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.ci-nums .num-badge {
+  cursor: pointer;
+  background: var(--bg);
+  font-family: inherit;
+  font-size: calc(var(--fs) * 0.78);
+}
+.ci-nums .num-badge:hover { background: var(--tint-accent); }
+/* 현재 작품 + 닫기 — 우측 끝 */
+.ci-current {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  min-width: 0;
+}
+.ci-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 40vw;
+}
+.ci-close {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: var(--fs);
+  color: var(--ink);
+  padding: 0 3px;
+  line-height: 1;
+}
+.ci-close:hover { background: var(--tint-accent); }
 .stripe-row {
   display: flex;
   height: 36px;
@@ -347,11 +410,10 @@ iframe {
 }
 /* 호버 칠 — 표 행처럼 항목별 보라/갈색 교차 (hr 제외, a끼리 홀짝) */
 @media (hover: hover) {
-  .link-list a.link-item:nth-of-type(odd):hover { background: var(--accent); }
-  .link-list a.link-item:nth-of-type(even):hover { background: #775d4f; }
-  /* 칠 위에서 pill 속은 비치고 ↗는 블랙 (보라 위 보라 방지) */
+  .link-list a.link-item:nth-of-type(odd):hover { background: var(--tint-accent); }
+  .link-list a.link-item:nth-of-type(even):hover { background: var(--tint-brown); }
+  /* 틴트 칠 위에서 pill 속은 비치게 */
   .link-list a.link-item:hover .link-title { background: transparent; }
-  .link-list a.link-item:hover .link-title::before { color: var(--ink); }
 }
 /* 제목 — 본문 pill과 같은 윤곽선 어휘 (블록이 anchor라 span으로 분리) */
 .link-list .link-title {
@@ -410,11 +472,11 @@ table tr[data-active='true'] a {
   vertical-align: -1px;
   margin-right: 3px;
 }
-/* 멘션 호버 — 일반 pill과 동일 (보라 칠 + 블랙, 그라디언트 폐기) */
+/* 멘션 호버 — 일반 pill과 동일 (보라 틴트) */
 .intro a.mention:hover,
 .work-card .card-body a.mention:hover,
 .work-card .card-link.mention:hover {
-  background: var(--accent);
+  background: var(--tint-accent);
   color: var(--ink);
 }
 
@@ -503,8 +565,8 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s; }
    @media (hover: hover) — 터치 기기(모바일)에선 탭 시 sticky hover로 칸이
    칠해진 채 남는 문제가 있어 진짜 호버 가능한 기기에서만 적용. */
 @media (hover: hover) {
-  table.sontable tr.row-a:not([data-active='true']) td:hover { background: var(--accent); }
-  table.sontable tr.row-b:not([data-active='true']) td:hover { background: #775d4f; }
+  table.sontable tr.row-a:not([data-active='true']) td:hover { background: var(--tint-accent); }
+  table.sontable tr.row-b:not([data-active='true']) td:hover { background: var(--tint-brown); }
 }
 /* 펼칠 때 행이 컬럼(스크롤 컨테이너) 상단에서 살짝 떨어지게 —
    sticky 헤더가 없어졌으므로 작은 여백만 */
@@ -709,16 +771,11 @@ table.sontable .col-cat   { width: 20%; }
   vertical-align: 1px;
   color: var(--accent); /* 외부 링크 표시 — 유일한 포인트 컬러 */
 }
+/* 호버 — 옅은 보라 틴트 칠 (↗는 보라 유지, 틴트 위에서 충분히 보임) */
 .intro a:hover,
 .work-card .card-body a:hover,
 .work-card .card-link:hover {
-  background: var(--accent);
-  color: var(--ink);
-}
-/* 칠 위에선 ↗도 블랙 (보라 위 보라 방지) */
-.intro a:hover::before,
-.work-card .card-body a:hover::before,
-.work-card .card-link:hover::before {
+  background: var(--tint-accent);
   color: var(--ink);
 }
 
