@@ -67,6 +67,7 @@ export async function buildPeople(): Promise<Person[]> {
       aliases,
       url: c.url,
       role: meta.role ?? '',
+      description: (meta.desc ?? '').trim(),
     });
     if (!parsed.success) {
       console.warn(`people: block ${b?.id} schema validation failed — skipped`);
