@@ -9,12 +9,20 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { ImageMetadata } from 'astro';
-import { worksFileSchema, linksFileSchema, type Work, type SiteLink } from './schema.js';
+import {
+  worksFileSchema,
+  linksFileSchema,
+  peopleFileSchema,
+  type Work,
+  type SiteLink,
+  type Person,
+} from './schema.js';
 
 const DATA_PATH = resolve(process.cwd(), 'src/data/works.json');
 const INTRO_PATH = resolve(process.cwd(), 'src/data/intro.json');
 const FOOTER_PATH = resolve(process.cwd(), 'src/data/footer.json');
 const LINKS_PATH = resolve(process.cwd(), 'src/data/links.json');
+const PEOPLE_PATH = resolve(process.cwd(), 'src/data/people.json');
 
 let cache: Work[] | null = null;
 
@@ -90,6 +98,18 @@ export function getFooter(): BilingualGroup[] {
   if (footerCache !== null) return footerCache;
   footerCache = groupBilingual(readBlocks(FOOTER_PATH));
   return footerCache;
+}
+
+/** 좌측 컬럼 인물 인덱스 — people.json 스냅샷 (없으면 빈 배열). */
+let peopleCache: Person[] | null = null;
+export function getPeople(): Person[] {
+  if (peopleCache !== null) return peopleCache;
+  try {
+    peopleCache = peopleFileSchema.parse(JSON.parse(readFileSync(PEOPLE_PATH, 'utf8')));
+  } catch {
+    peopleCache = [];
+  }
+  return peopleCache;
 }
 
 /** 우측 컬럼 수집 링크 — links.json 스냅샷 (없으면 빈 배열). */
