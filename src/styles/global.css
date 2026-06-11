@@ -380,16 +380,8 @@ iframe {
   flex-direction: column;
   align-items: center;
 }
-/* 링크 제목 — 타원 정중앙, ↗만 포인트 (밴드·타원 공통 규칙은 인물 섹션과 공유) */
+/* 링크 제목 — 원 정중앙, 텍스트만 (밴드·원 공통 규칙은 인물 섹션과 공유) */
 .link-list .link-title { text-align: center; }
-.link-list .link-title::before {
-  content: '↗';
-  margin-right: 3px;
-  font-size: 0.8em;
-  font-weight: 700;
-  vertical-align: 1px;
-  color: var(--accent);
-}
 .three-col .content {
   /* 작품 카드들이 세로로 쌓이므로 auto */
 }
@@ -416,8 +408,9 @@ iframe {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: 64px;
-  padding: 12px 24px;
+  /* 정사각 타일 — 컬럼 폭이 변해도 비율 유지 (줄무늬 셀 기하의 확대판) */
+  aspect-ratio: 1 / 1;
+  padding: 24px;
   text-decoration: none;
   font-style: normal;
   color: var(--ink);
@@ -427,14 +420,14 @@ iframe {
 .link-list a.link-item:nth-of-type(odd) { background: #a966ff; }
 .people-list .person:nth-of-type(even),
 .link-list a.link-item:nth-of-type(even) { background: #775d4f; }
-/* 흰 타원 — 항목 영역 100%를 채우는 스타디움. 모서리만 밴드 색 노출 */
+/* 흰 정원 — 정사각 타일에 내접하는 원(지름 = 변). 네 모서리만 밴드 색 노출 */
 .person::before,
 .link-list a.link-item::before {
   content: '';
   position: absolute;
   inset: 0;
   background: var(--bg);
-  border-radius: 999px;
+  border-radius: 50%;
   transition: background 0.12s;
 }
 /* 텍스트는 타원 위 레이어 */
@@ -451,19 +444,8 @@ iframe {
 }
 /* 인물 — 클릭 = 참여 작업으로 이동 (data-works 있을 때만) */
 .person[data-works] { cursor: pointer; }
-/* 인물 이름 — 인물 아이콘 + @이름 (pill 윤곽선 없이, 타원이 그릇) */
+/* 인물 이름 — @이름만 (아이콘·pill 없이, 원이 그릇) */
 .person-name { text-align: center; }
-.person-name::before {
-  content: '';
-  display: inline-block;
-  width: 0.95em;
-  height: 0.95em;
-  background-color: currentColor;
-  mask: url('/icons/user.svg') no-repeat center / contain;
-  -webkit-mask: url('/icons/user.svg') no-repeat center / contain;
-  vertical-align: -1px;
-  margin-right: 3px;
-}
 .person-desc {
   margin: 0;
   padding-top: 0;
