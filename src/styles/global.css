@@ -182,9 +182,12 @@ iframe {
   left: 0;
   right: 0;
   z-index: 100;
-  height: 72px;
+  /* 높이·전환속도는 변수 — 아코디언 연동 JS가 --curtain-h(펼친 행 위까지)와
+     --curtain-t(스크롤 추적 시 짧은 전환)를 셋팅한다. 기본 72px / 0.5s.
+     호버 풀커튼(:hover 100vh)·터치(.open)는 셀렉터 우선순위가 높아 그대로 우선. */
+  height: var(--curtain-h, 72px);
   overflow: hidden;
-  transition: height 0.5s ease;
+  transition: height var(--curtain-t, 0.5s) ease;
   /* 장식 전용 — 펼쳐진 동안에도 클릭은 뒤 콘텐츠로 통과 (탭 토글 .open 제외) */
   pointer-events: none;
   /* row 사이 공백 텍스트 노드가 body line-height(~15px) 만큼 차지하지 않게 차단.
