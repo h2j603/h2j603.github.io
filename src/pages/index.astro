@@ -260,7 +260,11 @@ const defaultMosaic = fs.readFileSync(
         {siteLinks.length > 0 && (
           <nav class="link-list" aria-label="collected links">
             {siteLinks.map((l) => (
-              <a href={l.url} target="_blank" rel="noopener">{l.title || l.url}</a>
+              <div class="link-item">
+                <a href={l.url} target="_blank" rel="noopener">{l.title || l.url}</a>
+                {/* 블록 description = 한 줄 메모 (Are.na에서 작성) */}
+                {l.description && <p class="link-desc">{l.description}</p>}
+              </div>
             ))}
           </nav>
         )}
