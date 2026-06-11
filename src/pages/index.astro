@@ -262,11 +262,11 @@ const defaultMosaic = fs.readFileSync(
             {siteLinks.map((l, i) => (
               <>
                 {i > 0 && <hr />}
-                <div class="link-item">
-                  <a href={l.url} target="_blank" rel="noopener">{l.title || l.url}</a>
-                  {/* 블록 description의 첫 문장 (빌드 시 절삭) */}
+                {/* 블록 전체가 링크·호버 단위 — 제목 pill + 설명 한 덩어리 */}
+                <a class="link-item" href={l.url} target="_blank" rel="noopener">
+                  <span class="link-title">{l.title || l.url}</span>
                   {l.description && <p class="link-desc">{l.description}</p>}
-                </div>
+                </a>
               </>
             ))}
           </nav>
@@ -605,65 +605,7 @@ const defaultMosaic = fs.readFileSync(
         curtainLastT = 0;
         if (!curtainAnimRaf) curtainAnimRaf = requestAnimationFrame(curtainLoop);
       }
-      // ── 스크롤 넘김 — 열린 작업을 끝까지 지나치면 다음 작업으로 ─────────
-      // 아래로 스크롤해 패널 바닥이 기준선(anchorY) 위로 올라가면 = 다 읽음
-      // → 현재 작업을 닫고 다음 행을 연다. 전환 직후 700ms는 재발동 금지.
-      var lastCenterTop = 0;
-      var flipCooldownUntil = 0;
-      function flipTo(slug) {
-        var tr = document.querySelector('tr[data-slug="' + slug + '"]');
-        if (!tr || !centerEl) return;
-        // 패널 스왑(옛 것 제거+새 것 삽입)으로 생기는 레이아웃 점프를 보정 —
-        // 다음 행을 화면상 제자리에 고정해 두고 anchorY로 글라이드만 보이게.
-        var before = tr.getBoundingClientRect().top;
-        accOpen(slug);
-        var after = tr.getBoundingClientRect().top;
-        if (after !== before) {
-          centerEl.scrollTop += after - before;
-          glideCenterBy(tr.getBoundingClientRect().top - anchorY(), 500);
-        }
-        history.replaceState(null, '', '#' + slug);
-      }
-      function flipNext() {
-        var rows = Array.prototype.slice.call(
-          document.querySelectorAll('table.sontable tr[data-slug]'),
-        );
-        var cur = document.querySelector('tr[data-slug="' + accSlug + '"]');
-        var idx = rows.indexOf(cur);
-        if (idx < 0 || idx + 1 >= rows.length) return; // 마지막 작업이면 유지
-        flipCooldownUntil = performance.now() + 700;
-        flipTo(rows[idx + 1].getAttribute('data-slug'));
-      }
-      function maybeFlip() {
-        if (!centerEl) return;
-        var st = centerEl.scrollTop;
-        var dir = st - lastCenterTop;
-        lastCenterTop = st;
-        if (!accRow || isMobileView()) return;
-        if (dir <= 0) return; // 아래로 내릴 때만
-        if (performance.now() < flipCooldownUntil) return;
-        if (accRow.getBoundingClientRect().bottom > anchorY()) return; // 아직 읽는 중
-        flipNext();
-      }
-      if (centerEl) {
-        centerEl.addEventListener('scroll', maybeFlip, { passive: true });
-        // 하부 작품은 남은 콘텐츠가 부족해 패널 바닥이 기준선까지 못 올라간다
-        // (스크롤이 끝에 닿으면 scroll 이벤트 자체가 안 옴) — 끝에서 휠을
-        // 계속 내리는 의도가 누적(240px)되면 다음 작품으로 넘김.
-        var wheelAccum = 0;
-        centerEl.addEventListener(
-          'wheel',
-          function (e) {
-            if (!accRow || isMobileView() || e.deltaY <= 0) { wheelAccum = 0; return; }
-            var max = centerEl.scrollHeight - centerEl.clientHeight;
-            if (centerEl.scrollTop < max - 2) { wheelAccum = 0; return; }
-            if (performance.now() < flipCooldownUntil) return;
-            wheelAccum += e.deltaY;
-            if (wheelAccum >= 240) { wheelAccum = 0; flipNext(); }
-          },
-          { passive: true },
-        );
-      }
+      // (스크롤로 다음 작품 자동 넘김 기능은 폐기 — 행 클릭/커튼 클릭으로만 전환)
       // (커튼은 rAF 루프가 매 프레임 행 위치를 읽으므로 별도 resize 핸들러 불필요)
 
       // 내려온 커튼 클릭 → 작업 닫힘 + 커튼 상승. (curtain-acc일 때만 클릭을 받음)
