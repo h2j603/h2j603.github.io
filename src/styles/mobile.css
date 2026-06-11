@@ -114,10 +114,10 @@
     border-top: 0;
   }
   /* 좌우 10px — 본문을 표 제목 왼쪽(셀 padding 10px)에 맞추고 오른쪽도 동일하게.
-     상단 0 = 제목과 작품 사이 여백 없음 (데스크탑과 동일) */
+     상단 8px = 제목↔작품 컴팩트 간격 (데스크탑과 동일) */
   .accordion-detail .work-card {
     display: block;
-    padding: 0 10px 24px;
+    padding: 8px 10px 24px;
   }
   /* 메타가 숨겨져 미디어가 첫 요소이므로, 미디어의 위 margin 제거 —
      제목↔이미지 간격은 work-card padding-top(8px)으로만 잡는다 */
