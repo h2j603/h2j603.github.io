@@ -29,12 +29,19 @@ const PER_PAGE = 100;
 
 type Json = Record<string, any>;
 
+/** 빌드 한 번에 보낸 API 요청 수 — 효율 회귀 감시용 (build-data 요약에 출력). */
+let requestCount = 0;
+export function getRequestCount(): number {
+  return requestCount;
+}
+
 async function request(
   path: string,
   init: RequestInit & { token?: string } = {},
 ): Promise<Json> {
   const { token, headers, ...rest } = init;
   const auth = token ?? getArenaToken();
+  requestCount++;
   const res = await fetch(`${ARENA_API_BASE}${path}`, {
     ...rest,
     headers: {
@@ -113,6 +120,23 @@ export async function getChannel(slugOrId: string | number): Promise<ArenaChanne
 /** All blocks (and sub-channels) in a channel, in channel order. */
 export async function getChannelContents(slugOrId: string | number): Promise<Json[]> {
   return getAll(`/channels/${encodeURIComponent(String(slugOrId))}/contents`);
+}
+
+/**
+ * getChannelContents의 관대한 버전 — 채널이 없거나(404) 남의 비공개(403)면
+ * null. 채널 메타가 필요 없는 보조 채널(people/links/intro/footer)은 이걸로
+ * 존재 확인용 getChannel 요청 한 번씩을 아낀다.
+ */
+export async function tryGetChannelContents(
+  slugOrId: string | number,
+): Promise<Json[] | null> {
+  try {
+    return await getChannelContents(slugOrId);
+  } catch (err: any) {
+    const msg = String(err.message);
+    if (msg.includes(' 404 ') || msg.includes(' 403 ')) return null;
+    throw err;
+  }
 }
 
 /**

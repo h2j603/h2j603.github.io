@@ -5,7 +5,7 @@
  * 추가하면 다음 빌드에 반영된다. 블록 title이 표시 이름 (없으면 URL).
  * 채널이 없거나 비어 있으면 빈 배열 — 우측 컬럼엔 토글만 남는다.
  */
-import { getChannel, getChannelContents, parseDescriptionMetadata } from './arena.js';
+import { tryGetChannelContents, parseDescriptionMetadata } from './arena.js';
 import { classifyBlock } from './images.js';
 import { siteLinkSchema, type SiteLink } from './schema.js';
 import { ARENA_LINKS_CHANNEL } from './config.js';
@@ -44,12 +44,12 @@ export function deriveLink(
 }
 
 export async function buildLinks(): Promise<SiteLink[]> {
-  const ch = await getChannel(ARENA_LINKS_CHANNEL);
-  if (!ch) {
+  // contents를 바로 친다 — 존재 확인용 getChannel 요청 1회 절약 (404/403 → null)
+  const blocks = await tryGetChannelContents(ARENA_LINKS_CHANNEL);
+  if (!blocks) {
     console.warn(`links: channel "${ARENA_LINKS_CHANNEL}" not found — 수집 링크 없이 진행.`);
     return [];
   }
-  const blocks = await getChannelContents(ch.id);
   const out: SiteLink[] = [];
   for (const b of blocks) {
     const c = classifyBlock(b);

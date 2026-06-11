@@ -40,8 +40,9 @@ const defaultMosaic = fs.readFileSync(
   {/* 줄(.stripe-row)은 JS buildStripe가 화면 높이만큼 생성 — 기본 노출은 위 72px.
       띠 클릭 → 커튼이 전면으로 내려오고 그 위에 About 패널이 인쇄된다(서랍) */}
   <div class="stripe-top" role="button" tabindex="0" aria-label="about 열기/닫기"></div>
-  {/* 띠 우측 어포던스 — 서랍이 닫혀 있을 때만 보임 */}
+  {/* 띠 우측 칩들 — about 탭(서랍 닫혔을 때만) + 언어 토글(항상, 서랍 위에서도) */}
   <span class="curtain-tab" aria-hidden="true">about ↓</span>
+  <button type="button" class="lang-toggle" data-lang="en">KO</button>
   {/* About 서랍 — 커튼(형제) 위에 얹히는 패널 레이어. 천 클릭은 통과시켜
       stripe 토글로 가고, 패널 자신만 클릭을 소화한다. */}
   <div class="about-drawer" data-lang="en">
@@ -295,10 +296,9 @@ const defaultMosaic = fs.readFileSync(
       </div>
     </div>
 
-    {/* ──────────── 우측: 언어 토글 + 수집 링크 (Are.na links 채널) ──────────── */}
+    {/* ──────────── 우측: 수집 링크 (Are.na links 채널) — 언어 토글은 띠 위로 이사 ──────────── */}
     <div class="third right">
       <div class="content">
-        <button type="button" class="lang-toggle" data-lang="en">KO</button>
         {siteLinks.length > 0 && (
           <nav class="link-list" aria-label="collected links">
             {siteLinks.map((l, i) => (
