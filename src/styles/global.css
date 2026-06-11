@@ -172,9 +172,10 @@ iframe {
 
 /* ───────────────────────────────────────────────────────────────────────
    페이지 상단 줄무늬 띠 — 보라(#a966ff) + 갈색(#775d4f) alternating.
-   기본은 위 3줄(72px)만 보이고, JS가 화면 높이만큼 줄을 미리 만들어 둔다.
-   호버(stripe-hover-zone, 상단 72px 영역) 시 height가 100vh로 늘며 커튼처럼
-   내려와 화면 전체를 덮는다 — 타일 크기·비율은 그대로, 줄 수로 채움.
+   타일 1개 = 18×36px, 기본은 위 2줄(72px)만 보이고 JS가 화면 높이만큼
+   줄을 미리 만들어 둔다. 호버(데스크탑) 또는 탭(터치, .open 클래스) 시
+   height가 100vh로 늘며 커튼처럼 내려와 화면 전체를 덮는다 —
+   타일 크기·비율은 그대로, 줄 수로 채움.
    ─────────────────────────────────────────────────────────────────────── */
 .stripe-top {
   position: fixed;
@@ -184,15 +185,17 @@ iframe {
   z-index: 100;
   height: 72px;
   overflow: hidden;
-  /* 장식 전용 — 펼쳐진 동안에도 클릭은 뒤 콘텐츠로 통과 */
+  transition: height 0.5s ease;
+  /* 장식 전용 — 펼쳐진 동안에도 클릭은 뒤 콘텐츠로 통과 (탭 토글 .open 제외) */
   pointer-events: none;
   /* row 사이 공백 텍스트 노드가 body line-height(~15px) 만큼 차지하지 않게 차단.
      이게 시각적으로 stripe를 50~63px로 두껍게 보이게 만들던 진범. */
   line-height: 0;
   font-size: 0;
 }
-/* 호버 트리거 — 띠의 기본 영역(상단 72px)만. 띠 자체에 :hover를 걸면
-   펼쳐진 띠가 커서를 계속 덮어 영원히 안 닫히므로 트리거를 분리한다. */
+/* 트리거 — 띠의 기본 영역(상단 72px)만. 띠 자체에 :hover를 걸면
+   펼쳐진 띠가 커서를 계속 덮어 영원히 안 닫히므로 트리거를 분리한다.
+   데스크탑은 호버, 터치 기기는 JS가 이 영역 탭으로 .open을 토글. */
 .stripe-hover-zone {
   position: fixed;
   top: 0;
@@ -202,15 +205,21 @@ iframe {
   z-index: 101;
 }
 @media (hover: hover) {
-  .stripe-top { transition: height 0.5s ease; }
   .stripe-hover-zone:hover + .stripe-top {
     height: 100vh;
     height: 100dvh;
   }
 }
+/* 터치 기기 탭 토글 상태 — 펼친 동안엔 탭을 삼켜(pointer-events) 커튼 자체를
+   탭하면 닫히게 한다. 뒤 콘텐츠(표 링크 등) 오작동 방지. */
+.stripe-top.open {
+  height: 100vh;
+  height: 100dvh;
+  pointer-events: auto;
+}
 .stripe-row {
   display: flex;
-  height: 24px;
+  height: 36px;
   overflow: hidden;
 }
 .stripe-row .cell {
@@ -221,7 +230,7 @@ iframe {
 .stripe-row .cell.purple { background: #a966ff; }
 .stripe-row .cell.brown  { background: #775d4f; }
 
-/* 3-Column — stripe 3줄(24×3=72px) 바로 아래, 여유 0.
+/* 3-Column — stripe 2줄(36×2=72px) 바로 아래, 여유 0.
    스크롤 콘텐츠가 띠 밑에서 바로 잘리므로 띠 아래 흰 띠(구 sticky 네비
    배경처럼 보이던 잔재)가 생기지 않는다. */
 .three-col .left,
@@ -594,8 +603,8 @@ table.sontable .col-cat   { width: 20%; }
 }
 
 /* ───────────────────────────────────────────────────────────────────────
-   본문 안 하이퍼링크 — 직각 사각형, 속 채움 없이 블랙 1px 테두리만,
-   보라 텍스트 + ↗ 아이콘
+   본문 안 하이퍼링크 — 직각 사각형, 속 채움 없이 보라 1px 테두리만,
+   블랙 텍스트 + ↗ 아이콘
    적용: 좌측 인트로 본문(.intro > p) / 작품 카드 본문(.card-body)
    제외: 표(table a), footer, 카드 하단 Click to visit
    ─────────────────────────────────────────────────────────────────────── */
@@ -612,9 +621,9 @@ table.sontable .col-cat   { width: 20%; }
   /* 상하 padding 0 — 박스 높이(위아래여백)를 조금 줄임. 좌우는 컴팩트하게. */
   padding: 0 6px;
   background: none;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--accent); /* 보라는 테두리에 — 텍스트는 잉크 블랙 */
   border-radius: 0; /* 직각 모서리 — 둥근 pill 폐기 */
-  color: var(--accent);
+  color: var(--ink);
   text-decoration: none;
   font-style: normal;
   line-height: 1.4;
