@@ -305,17 +305,18 @@ const defaultMosaic = fs.readFileSync(
         tr.setAttribute('data-active', 'true');
         accSlug = slug;
         accRow = detail;
+        // 펼침 애니메이션 — 삽입 후 reflow 강제 → .is-open으로 0fr→1fr 전환
+        void panel.offsetHeight;
+        panel.classList.add('is-open');
         if (isMobileView()) {
-          // 모바일: 펼친 행이 보이게만 스크롤 (기존 동작)
-          tr.scrollIntoView({ block: 'start' });
+          // 모바일: 펼친 행이 보이게 부드럽게 스크롤
+          tr.scrollIntoView({ block: 'start', behavior: 'smooth' });
         } else {
-          // 데스크탑: 스크롤 없이 클릭한 자리 그대로 두고, 커튼이 행 위까지
-          // 내려와 위 영역을 가린다. 행이 화면 밖(해시 직접 진입 등)일 때만
-          // 가운데로 가져온 뒤 커튼을 내린다.
-          var r = tr.getBoundingClientRect();
-          if (r.top < 72 || r.top > window.innerHeight * 0.8) {
-            tr.scrollIntoView({ block: 'center' });
-          }
+          // 데스크탑 시점 이동 — 행을 화면 상단 ~22% 지점(anchorY)으로 글라이드.
+          // 커튼이 스크롤을 추적하므로 따라 내려와 그 라인에 안착.
+          // (브라우저 smooth scrollTo는 호출 시점의 스크롤 한계로 clamp돼서,
+          //  패널이 자라며 생기는 공간을 못 따라감 → 수동 글라이드 사용)
+          glideCenterBy(tr.getBoundingClientRect().top - anchorY(), 500);
           curtainOpen();
         }
       }
@@ -542,6 +543,10 @@ const defaultMosaic = fs.readFileSync(
       function isMobileView() {
         return window.matchMedia('(max-width: 600px)').matches;
       }
+      // 펼친 행이 안착하는 화면 기준선 — 상단 ~22% (커튼이 여기까지 내려옴)
+      function anchorY() {
+        return Math.max(110, Math.round(window.innerHeight * 0.22));
+      }
       function updateCurtain() {
         curtainRaf = 0;
         if (!stripeTopEl) return;
@@ -550,6 +555,7 @@ const defaultMosaic = fs.readFileSync(
           clearTimeout(curtainTrackT);
           stripeTopEl.style.removeProperty('--curtain-t'); // 복귀는 기본 속도(0.5s)
           stripeTopEl.style.removeProperty('--curtain-h');
+          stripeTopEl.classList.remove('curtain-acc'); // 클릭 받기 해제
           return;
         }
         // 행 윗변까지 — 행(제목 줄)은 커튼 바로 아래 보인다. 72px 밑으론 안 줄고
@@ -561,18 +567,117 @@ const defaultMosaic = fs.readFileSync(
       function scheduleCurtain() {
         if (!curtainRaf) curtainRaf = requestAnimationFrame(updateCurtain);
       }
+      // center 스크롤 글라이드 — 목표 한계(scrollHeight)를 매 프레임 재계산.
+      // 아코디언 패널이 0.45s 동안 자라며 스크롤 공간이 늘어나도 끝까지 따라간다.
+      var glideRaf = 0;
+      function glideCenterBy(delta, dur) {
+        if (!centerEl) return;
+        cancelAnimationFrame(glideRaf);
+        var startTop = centerEl.scrollTop;
+        var t0 = performance.now();
+        function ease(t) { // easeInOutQuad
+          return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        }
+        function step(now) {
+          var t = Math.min(1, (now - t0) / dur);
+          var max = centerEl.scrollHeight - centerEl.clientHeight;
+          var target = Math.max(0, Math.min(startTop + delta, max));
+          centerEl.scrollTop = startTop + (target - startTop) * ease(t);
+          if (t < 1) glideRaf = requestAnimationFrame(step);
+        }
+        glideRaf = requestAnimationFrame(step);
+      }
       function curtainOpen() {
         if (!stripeTopEl) return;
         // 첫 하강은 기본 속도(0.5s)로 우아하게 — 자리 잡으면 추적용 짧은 전환으로
         stripeTopEl.style.removeProperty('--curtain-t');
+        stripeTopEl.classList.add('curtain-acc'); // 커튼 클릭 → 닫기 활성
         updateCurtain();
         clearTimeout(curtainTrackT);
         curtainTrackT = setTimeout(function () {
           if (accSlug && stripeTopEl) stripeTopEl.style.setProperty('--curtain-t', '0.15s');
         }, 550);
       }
-      if (centerEl) centerEl.addEventListener('scroll', scheduleCurtain, { passive: true });
+      // ── 스크롤 넘김 — 열린 작업을 끝까지 지나치면 다음 작업으로 ─────────
+      // 아래로 스크롤해 패널 바닥이 기준선(anchorY) 위로 올라가면 = 다 읽음
+      // → 현재 작업을 닫고 다음 행을 연다. 전환 직후 700ms는 재발동 금지.
+      var lastCenterTop = 0;
+      var flipCooldownUntil = 0;
+      function flipTo(slug) {
+        var tr = document.querySelector('tr[data-slug="' + slug + '"]');
+        if (!tr || !centerEl) return;
+        // 패널 스왑(옛 것 제거+새 것 삽입)으로 생기는 레이아웃 점프를 보정 —
+        // 다음 행을 화면상 제자리에 고정해 두고 anchorY로 글라이드만 보이게.
+        var before = tr.getBoundingClientRect().top;
+        accOpen(slug);
+        var after = tr.getBoundingClientRect().top;
+        if (after !== before) {
+          centerEl.scrollTop += after - before;
+          glideCenterBy(tr.getBoundingClientRect().top - anchorY(), 500);
+        }
+        history.replaceState(null, '', '#' + slug);
+      }
+      function flipNext() {
+        var rows = Array.prototype.slice.call(
+          document.querySelectorAll('table.sontable tr[data-slug]'),
+        );
+        var cur = document.querySelector('tr[data-slug="' + accSlug + '"]');
+        var idx = rows.indexOf(cur);
+        if (idx < 0 || idx + 1 >= rows.length) return; // 마지막 작업이면 유지
+        flipCooldownUntil = performance.now() + 700;
+        flipTo(rows[idx + 1].getAttribute('data-slug'));
+      }
+      function maybeFlip() {
+        if (!centerEl) return;
+        var st = centerEl.scrollTop;
+        var dir = st - lastCenterTop;
+        lastCenterTop = st;
+        if (!accRow || isMobileView()) return;
+        if (dir <= 0) return; // 아래로 내릴 때만
+        if (performance.now() < flipCooldownUntil) return;
+        if (accRow.getBoundingClientRect().bottom > anchorY()) return; // 아직 읽는 중
+        flipNext();
+      }
+      if (centerEl) {
+        centerEl.addEventListener('scroll', scheduleCurtain, { passive: true });
+        centerEl.addEventListener('scroll', maybeFlip, { passive: true });
+        // 하부 작품은 남은 콘텐츠가 부족해 패널 바닥이 기준선까지 못 올라간다
+        // (스크롤이 끝에 닿으면 scroll 이벤트 자체가 안 옴) — 끝에서 휠을
+        // 계속 내리는 의도가 누적(240px)되면 다음 작품으로 넘김.
+        var wheelAccum = 0;
+        centerEl.addEventListener(
+          'wheel',
+          function (e) {
+            if (!accRow || isMobileView() || e.deltaY <= 0) { wheelAccum = 0; return; }
+            var max = centerEl.scrollHeight - centerEl.clientHeight;
+            if (centerEl.scrollTop < max - 2) { wheelAccum = 0; return; }
+            if (performance.now() < flipCooldownUntil) return;
+            wheelAccum += e.deltaY;
+            if (wheelAccum >= 240) { wheelAccum = 0; flipNext(); }
+          },
+          { passive: true },
+        );
+      }
       window.addEventListener('resize', scheduleCurtain);
+
+      // 내려온 커튼 클릭 → 작업 닫힘 + 커튼 상승. (curtain-acc일 때만 클릭을 받음)
+      if (stripeTopEl) {
+        stripeTopEl.addEventListener('click', function () {
+          if (!stripeTopEl.classList.contains('curtain-acc')) return;
+          accClose();
+          if (location.hash) history.replaceState(null, '', location.pathname);
+        });
+        // 커튼이 클릭을 받는 동안에도 휠 스크롤은 center로 전달 — 추적 인터랙션 유지
+        stripeTopEl.addEventListener(
+          'wheel',
+          function (e) {
+            if (stripeTopEl.classList.contains('curtain-acc') && centerEl) {
+              centerEl.scrollTop += e.deltaY;
+            }
+          },
+          { passive: true },
+        );
+      }
 
       // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작
       document.querySelectorAll('[data-home]').forEach(function (a) {
