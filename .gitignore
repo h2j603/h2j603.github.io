@@ -11,6 +11,7 @@ src/data/intro.json
 src/data/footer.json
 src/data/people.json
 src/data/links.json
+src/data/memos.json
 
 # downloaded images (re-fetched at build time; skip-cached locally)
 src/assets/works/*/
