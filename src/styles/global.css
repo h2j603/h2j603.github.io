@@ -423,6 +423,11 @@ iframe {
 }
 /* 링크 제목 — 텍스트만 가운데 */
 .link-list .link-title { text-align: center; }
+/* 추가 시점 — Are.na의 "added" 표기. 같은 크기, 위계는 굵기(400)로만 */
+.block-date {
+  font-weight: 400;
+  text-align: center;
+}
 
 /* 메모 아코디언 — 라벨(접힘) 클릭 → 본문 펼침. JS가 .open 토글 */
 .memo { cursor: pointer; }

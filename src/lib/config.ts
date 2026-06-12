@@ -66,10 +66,9 @@ export const PEOPLE_FILE = 'src/data/people.json';
 /** 수집 링크 스냅샷 파일 (우측 컬럼 렌더용). */
 export const LINKS_FILE = 'src/data/links.json';
 
-/** 메모 채널 슬러그 — 좌측 컬럼 아코디언 (setup:memo로 생성).
-    'memo'는 타인 채널이 선점 — 접미사 붙은 실제 슬러그 사용 (#5299919). */
+/** 메모 채널 슬러그 — 좌측 컬럼 아코디언. 혁이 직접 만든 채널 (#5297539). */
 export const ARENA_MEMO_CHANNEL =
-  process.env.ARENA_MEMO_CHANNEL ?? 'memo-a1lzhxlnuqc';
+  process.env.ARENA_MEMO_CHANNEL ?? 'memo-dv8r-pad_am';
 
 /** 메모 스냅샷 파일. */
 export const MEMO_FILE = 'src/data/memos.json';
