@@ -46,7 +46,6 @@ jobs:
           ARENA_TOKEN: ${{ secrets.ARENA_TOKEN }}
           ARENA_INDEX_CHANNEL: ${{ secrets.ARENA_INDEX_CHANNEL }}
           ARENA_INTRO_CHANNEL: ${{ secrets.ARENA_INTRO_CHANNEL }}
-          ARENA_FOOTER_CHANNEL: ${{ secrets.ARENA_FOOTER_CHANNEL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

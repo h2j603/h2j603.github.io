@@ -19,9 +19,6 @@ export const ARENA_INDEX_CHANNEL = process.env.ARENA_INDEX_CHANNEL ?? 'works';
 /** 좌측 인트로(About) 채널의 슬러그 — 텍스트 블록들이 hr로 구분되어 표시됨. */
 export const ARENA_INTRO_CHANNEL = process.env.ARENA_INTRO_CHANNEL ?? 'hyuk-intro';
 
-/** 좌측 footer 채널의 슬러그 — 텍스트 블록들이 hr로 구분되어 표시됨. */
-export const ARENA_FOOTER_CHANNEL = process.env.ARENA_FOOTER_CHANNEL ?? 'hyuk-footer';
-
 /** 인물 레지스트리 채널 슬러그 — 링크 블록 1개 = 인물 1명.
     본문 @멘션이 빌드 타임에 여기와 매칭된다 (setup:people로 생성).
     'people'은 전역 점유라 실제 슬러그에 접미사가 붙음 (채널 ID #5296875). */
@@ -56,9 +53,6 @@ export const DATA_FILE = 'src/data/works.json';
 
 /** 좌측 인트로 블록 데이터가 저장되는 파일 (JSON 배열 — 각 블록의 lang/html). */
 export const INTRO_FILE = 'src/data/intro.json';
-
-/** 좌측 footer 블록 데이터가 저장되는 파일. */
-export const FOOTER_FILE = 'src/data/footer.json';
 
 /** 인물 레지스트리 스냅샷 파일 (관계형 데이터 — 우측 컬럼 등 향후 UI용). */
 export const PEOPLE_FILE = 'src/data/people.json';
