@@ -43,6 +43,7 @@ export async function buildMemos(): Promise<Memo[]> {
     const text = c.content.trim();
     if (!text) continue;
     const parsed = memoSchema.safeParse({
+      id: typeof b?.id === 'number' ? b.id : undefined,
       title: memoLabel(text),
       text,
       addedAt: blockAddedAt(b),

@@ -359,36 +359,14 @@ iframe {
   .bottom .colophon a:hover { text-decoration: underline; }
 }
 
-/* 우측 태그 드롭다운 — 링크 목록 첫 줄. 날짜와 같은 0.75rem 문법 */
+/* 우측 태그 드롭다운 — 셀렉트는 브라우저 기본 모습 그대로.
+   줄 높이만 2.5rem(40px)으로 고정해 아래 선들이 4px 격자에 남게 한다. */
 .link-filter {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-  padding: 0.5rem 1.25rem; /* 8+16+8 = 32px, 4px 격자 */
-  cursor: pointer;
-}
-.link-filter select {
-  appearance: none;
-  -webkit-appearance: none;
-  border: none;
-  background: transparent;
-  font: inherit;
-  font-size: 0.75rem;
-  line-height: 1rem;
-  color: var(--ink);
-  text-align: center;
-  padding: 0;
-  cursor: pointer;
-}
-.link-filter .filter-arrow {
-  font-size: 0.75rem;
-  line-height: 1rem;
-  color: rgba(0, 0, 0, 0.45);
-}
-@media (hover: hover) {
-  .link-filter:hover select,
-  .link-filter:hover .filter-arrow { color: var(--accent); }
+  height: 2.5rem;
+  padding: 0 1.25rem;
 }
 /* 표 컬럼 기준선 — center(20~80%) 안에서 번호 10/연도 10/제목 60/분류 20 경계 */
 .col-divider.d5 { left: 26%; } /* 번호|연도 */
@@ -445,6 +423,28 @@ iframe {
    전체 폭 hr 구분선(about hr과 같은 어법), 항목별 보라/갈색 교차 틴트 호버.
    표 행과 같은 조용한 블록 문법.
    ─────────────────────────────────────────────────────────────────────── */
+/* 영역 출처 라벨 — "Are.na/Hyuk Jang/채널" 경로를 그대로 드러내는 장치.
+   컬럼 상단 sticky: 콘텐츠가 밑으로 스크롤돼도 출처는 자리를 지킨다. */
+.arena-path {
+  position: sticky;
+  top: 0;
+  z-index: 7; /* 표 기준선(6) 위 — 라벨 띠 구간에선 세로선을 덮는다 */
+  background: var(--bg);
+  height: 2rem; /* 32px — 4px 격자 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgba(0, 0, 0, 0.45);
+  border-bottom: var(--line-w) solid var(--ink);
+}
+/* 좌/우 컬럼은 패딩(1.25rem)을 상쇄해 전체 폭 띠로 (center는 패딩 0) */
+.left .arena-path,
+.right .arena-path {
+  margin: 0 -1.25rem;
+}
+
 .memo-list,
 .link-list {
   display: flex;
@@ -480,11 +480,12 @@ iframe {
   padding-top: 0.5rem;
 }
 /* 호버 — 항목별 보라/갈색 교차 틴트 (hr 제외, 같은 태그끼리 홀짝).
-   링크 쪽은 드롭다운 필터로 항목이 숨겨질 수 있어 JS가 row-a/row-b를 단다. */
+   링크 쪽은 드롭다운 필터로 항목이 숨겨질 수 있어 JS가 row-a/row-b를 단다.
+   열린 메모는 표 활성 행처럼 호버 칠 없음. */
 @media (hover: hover) {
-  .memo-list .memo:nth-of-type(odd):hover,
+  .memo-list .memo:nth-of-type(odd):not(.open):hover,
   .link-list a.link-item.row-a:hover { background: var(--tint-accent); }
-  .memo-list .memo:nth-of-type(even):hover,
+  .memo-list .memo:nth-of-type(even):not(.open):hover,
   .link-list a.link-item.row-b:hover { background: var(--tint-brown); }
 }
 /* 링크 제목 — 텍스트만 가운데 */
@@ -532,6 +533,25 @@ iframe {
   line-height: 1.5rem;
 }
 .memo.open .memo-body { display: block; }
+/* 펼침 본문 맨 아래 — 원 블록으로 가는 출처 링크 (회색, 작게).
+   좌측 컬럼이 .intro 스코프라 본문 링크 규칙(보라·점멸·↗)을 받아서
+   .intro a보다 높은 특이도로 메타 어법(회색·정적)을 되돌린다. */
+.intro a.memo-source {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgba(0, 0, 0, 0.45);
+  text-decoration: none;
+  white-space: nowrap;
+  animation: none;
+}
+.intro a.memo-source::before { content: none; } /* ↗는 마크업 리터럴 하나만 */
+.intro a.memo-source:hover {
+  color: var(--accent);
+  font-weight: 400;
+  text-decoration: none;
+}
 /* 작품이 열려 있는 동안 — 다른 행은 옅게. 목록(지도)은 보이되 시선만
    열린 작품으로 모은다. 호버하면 그 행만 다시 또렷하게. */
 table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) td,
@@ -882,6 +902,37 @@ table.sontable .col-cat   { width: 20%; }
   text-decoration: underline;
 }
 
+/* 하이퍼링크 점멸 — 커서처럼 깜빡여 링크임을 알린다 (0.6s 켜짐/0.6s 꺼짐).
+   호버하면 점멸을 멈추고 웨이트 700. 콜로폰 링크도 같은 어법. */
+@keyframes link-blink {
+  50% { opacity: 0; }
+}
+.intro a,
+.drawer-panel a,
+.work-card .card-body a,
+.work-card .card-link,
+.bottom .colophon a {
+  animation: link-blink 1.2s step-end infinite;
+}
+.intro a:hover,
+.drawer-panel a:hover,
+.work-card .card-body a:hover,
+.work-card .card-link:hover,
+.bottom .colophon a:hover {
+  animation: none;
+  font-weight: 700;
+}
+/* 모션 줄이기 선호 — 점멸 끔 (링크 식별은 보라색이 담당) */
+@media (prefers-reduced-motion: reduce) {
+  .intro a,
+  .drawer-panel a,
+  .work-card .card-body a,
+  .work-card .card-link,
+  .bottom .colophon a {
+    animation: none;
+  }
+}
+
 /* anchor 스크롤 위로 살짝 띄움 */
 [id] { scroll-margin-top: 1.125rem; }
 
@@ -941,8 +992,8 @@ table.sontable .col-cat   { width: 20%; }
 }
 
 /* 기본 화면 모자이크 — 화면 정중앙 fixed 오버레이.
-   정지 상태로 떠 있다가 클릭하면 낙하 시작(JS). 오버레이 자체는 클릭을
-   통과시키고 모자이크 그리드만 받는다. z-index 50 = stripe(100) 아래, 3컬럼(1) 위. */
+   로드 시 자동 낙하. pointer-events:none이라 클릭은 뒤(표)로 통과.
+   z-index 50 = 상단 stripe(100) 아래, 3컬럼(1) 위. */
 .default-state {
   position: fixed;
   inset: 0;
@@ -957,13 +1008,6 @@ table.sontable .col-cat   { width: 20%; }
 .default-state .stripe-mosaic {
   width: 88vw;
   max-width: 88vw;
-  pointer-events: auto; /* 클릭 = 낙하 트리거 */
-  cursor: pointer;
-}
-/* 낙하 시작 후 — 그리드는 즉시 클릭 통과 (뒤의 표가 바로 살아남) */
-.default-state.falling .stripe-mosaic {
-  pointer-events: none;
-  cursor: default;
 }
 /* 셀의 animation은 JS triggerMosaicFall()에서만 부여 — 기본은 정적. */
 @keyframes cell-drop {
