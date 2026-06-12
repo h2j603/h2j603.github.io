@@ -11,7 +11,7 @@ import { getWorks, resolveImage, getIntro, getLinks, getMemos, groupBilingual } 
 import { tagColor } from "../lib/tag-colors.js";
 
 const works = getWorks().slice().sort((a, b) => {
-  // 표 정렬 — year desc (최신 위). 정렬 토글이 없으므로 빌드 시 고정.
+  // 표 정렬 — year desc(최신 위), 같은 연도는 stable sort로 index 채널 순서 유지.
   const ya = parseInt(a.year || '0', 10) || 0;
   const yb = parseInt(b.year || '0', 10) || 0;
   return yb - ya;
@@ -345,17 +345,12 @@ const defaultMosaic = fs.readFileSync(
       </div>
     </div>
 
-    {/* ──────────── 하단: 커튼과 같은 높이(4.5rem)의 콜로폰 마키 ──────────── */}
+    {/* ──────────── 하단: 시간만 — 좌 빌드 시각 / 우 현재 시각(KST) ──────────── */}
     <div class="bottom">
-      <div class="colophon-track">
-        {[0, 1].map((i) => (
-          <p class="colophon" aria-hidden={i === 1 ? 'true' : undefined}>
-            <span>every block of this site lives on <a href="https://www.are.na/hyuk-jang-cud6vccao20" target="_blank" rel="noopener">↗ Are.na</a></span>
-            <span>built {buildStamp}</span>
-            <span>now <span class="now-clock">{buildStamp}</span> KST</span>
-          </p>
-        ))}
-      </div>
+      <p class="colophon">
+        <span>built {buildStamp}</span>
+        <span>now <span class="now-clock">{buildStamp}</span> KST</span>
+      </p>
     </div>
 
   </div>
