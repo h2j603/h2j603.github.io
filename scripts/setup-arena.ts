@@ -21,7 +21,7 @@ import {
   connectChannel,
   type ArenaChannel,
 } from '../src/lib/arena.js';
-import { ARENA_INDEX_CHANNEL, ARENA_INTRO_CHANNEL, ARENA_FOOTER_CHANNEL, requireArenaToken } from '../src/lib/config.js';
+import { ARENA_INDEX_CHANNEL, ARENA_INTRO_CHANNEL, requireArenaToken } from '../src/lib/config.js';
 
 // setup:arena 재실행 시 sample 작품을 추가로 만들지 않기 위해 비워둠.
 // 실제 작품은 Are.na UI에서 직접 채널을 만들고 인덱스에 연결해 관리.
@@ -89,20 +89,6 @@ async function main() {
       console.log(`    .env의 ARENA_INTRO_CHANNEL을 "${created.slug}"로 업데이트 필요`);
     }
     console.log(`  → 텍스트 블록을 여러 개 추가하면 페이지 좌측에 hr로 구분되어 표시됨`);
-  }
-
-  console.log('\n== Footer channel ==');
-  const footer = await getChannel(ARENA_FOOTER_CHANNEL);
-  if (footer) {
-    console.log(`  = footer 채널 재사용 "${footer.slug}" (#${footer.id})`);
-  } else {
-    const created = await createChannel('Footer', 'private');
-    console.log(`  + footer 채널 생성 "${created.slug}" (#${created.id})`);
-    if (created.slug !== ARENA_FOOTER_CHANNEL) {
-      console.log(`    note: 요청 슬러그 "${ARENA_FOOTER_CHANNEL}" → Are.na가 "${created.slug}" 할당`);
-      console.log(`    .env의 ARENA_FOOTER_CHANNEL을 "${created.slug}"로 업데이트 필요`);
-    }
-    console.log(`  → 텍스트 블록을 여러 개 추가하면 페이지 좌측 footer에 hr로 구분되어 표시됨`);
   }
 
   console.log('\n──────── done ────────');

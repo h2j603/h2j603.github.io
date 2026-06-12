@@ -11,7 +11,7 @@
 ```
 Are.na (원본 아카이브)
    │   index 채널(works) ── 각 작업 = 연결된 하위 채널
-   │   intro 채널(hyuk-intro) / footer 채널(hyuk-footer)
+   │   intro 채널(About — footer 통합)
    ▼
 scripts/build-data.ts   ← 빌드 시 Are.na를 읽어
    │   · 검증된 스냅샷 src/data/works.json 생성
@@ -33,8 +33,7 @@ GitHub Actions(deploy.yml) ← main에 push되면 빌드+배포 → hyuk.xyz
 | 채널 | 기본 슬러그 | 역할 | 환경변수 |
 |---|---|---|---|
 | **index** | `works` | 작업 목록. 각 작업을 **하위 채널 블록으로 연결** | `ARENA_INDEX_CHANNEL` |
-| **intro** | `hyuk-intro` | 좌측 About 본문 (텍스트 블록들) | `ARENA_INTRO_CHANNEL` |
-| **footer** | `hyuk-footer` | 좌측 하단 footer 본문 | `ARENA_FOOTER_CHANNEL` |
+| **intro** | `about-bzuvinlwhkw` | About 서랍 본문 — 소개·연락처·footer까지 전부 (텍스트 블록들) | `ARENA_INTRO_CHANNEL` |
 
 **한 작업 = Are.na 채널 하나.** 그 채널을 `works`(index) 채널 안에 끌어다 넣으면(연결하면) 사이트에 등장합니다.
 
@@ -220,7 +219,7 @@ npm run build:nofetch         # 기존 works.json으로 astro build만
 |---|---|
 | `src/lib/config.ts` | 환경변수·채널 슬러그 기본값 |
 | `src/lib/arena.ts` | Are.na v3 클라이언트 + 설명 메타데이터 파서 |
-| `src/lib/intro.ts` | `## ko`/`## en` 마커 파싱 (본문·intro·footer 공용) |
+| `src/lib/intro.ts` | `## ko`/`## en` 마커 파싱 (본문·intro 공용) |
 | `src/lib/images.ts` | 블록 분류(image/link/text) + 다운로드 캐시 |
 | `src/lib/works.ts` | 채널 → 검증된 `Work[]` 오케스트레이션(작업별 에러 격리) |
 | `src/lib/schema.ts` | `Work` zod 스키마(원본 진실) + `TAGS` |

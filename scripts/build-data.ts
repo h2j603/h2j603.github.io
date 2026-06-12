@@ -14,9 +14,9 @@ import { buildWorks } from '../src/lib/works.js';
 import { buildPeople } from '../src/lib/people.js';
 import { buildLinks } from "../src/lib/links.js";
 import { buildMemos } from "../src/lib/memos.js";
-import { buildIntro, buildFooter } from '../src/lib/intro.js';
+import { buildIntro } from "../src/lib/intro.js";
 import { worksFileSchema, peopleFileSchema, linksFileSchema, memosFileSchema } from "../src/lib/schema.js";
-import { DATA_FILE, INTRO_FILE, FOOTER_FILE, PEOPLE_FILE, LINKS_FILE, MEMO_FILE } from "../src/lib/config.js";
+import { DATA_FILE, INTRO_FILE, PEOPLE_FILE, LINKS_FILE, MEMO_FILE } from "../src/lib/config.js";
 
 const dryRun = process.argv.includes('--dry-run');
 
@@ -26,7 +26,6 @@ async function main() {
   const people = await buildPeople();
   const { works, summary } = await buildWorks(people);
   const intro = await buildIntro();
-  const footer = await buildFooter();
   const links = await buildLinks();
   const memos = await buildMemos();
 
@@ -40,8 +39,6 @@ async function main() {
     await writeFile(DATA_FILE, JSON.stringify(validated, null, 2) + '\n');
     await mkdir(dirname(INTRO_FILE), { recursive: true });
     await writeFile(INTRO_FILE, JSON.stringify(intro, null, 2) + '\n');
-    await mkdir(dirname(FOOTER_FILE), { recursive: true });
-    await writeFile(FOOTER_FILE, JSON.stringify(footer, null, 2) + '\n');
     await mkdir(dirname(PEOPLE_FILE), { recursive: true });
     await writeFile(PEOPLE_FILE, JSON.stringify(validatedPeople, null, 2) + '\n');
     await mkdir(dirname(LINKS_FILE), { recursive: true });
@@ -64,7 +61,6 @@ async function main() {
   console.log(`links          : ${validatedLinks.length}`);
   console.log(`memos          : ${validatedMemos.length}`);
   console.log(`intro blocks   : ${intro.length}`);
-  console.log(`footer blocks  : ${footer.length}`);
   console.log(`${dryRun ? 'DRY RUN — nothing written' : 'wrote ' + DATA_FILE + ' + ' + INTRO_FILE}`);
   console.log(`api requests   : ${getRequestCount()} (무료 한도 120/min)`);
   console.log(`elapsed        : ${secs}s`);

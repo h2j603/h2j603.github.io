@@ -58,7 +58,7 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
    매칭**되어 — href가 레지스트리 URL로 통일되고, 블록 언어에 맞는 이름(한/영)
    으로 표기가 바뀌며, `class="mention" data-person="slug"`가 박히고, 작품의
    `people[]`(관계형 조인 키)에 기록된다. 미등록 인물은 원본 그대로(fallback).
-   스냅샷은 `src/data/people.json`. intro/footer 채널 멘션은 매칭하지 않음
+   스냅샷은 `src/data/people.json`. intro 채널 멘션은 매칭하지 않음
    (자기 SNS 핸들이라 의도적 제외).
 10. **메모 (`memo` 채널, 슬러그 `memo-dv8r-pad_am` / #5297539, 혁이 직접
     만든 채널).** 텍스트 블록 1개 = 메모 1개 — 좌측 컬럼 아코디언(블록
