@@ -150,12 +150,9 @@ th {
   border-collapse: collapse;
   padding: 0.625rem;
 }
-/* 행 hover — active(펼침)와 동일한 밑줄(border-bottom). 데스크탑만. */
-@media (hover: hover) {
-  table tr[data-slug]:hover td a {
-    border-bottom: var(--line-w) solid currentColor;
-  }
-}
+/* 행 hover 밑줄은 폐기 — 밑줄은 펼친(active) 행의 표식으로만.
+   행 전체가 토글 단위(메모 블록과 같은 어법)라 커서로 클릭 가능성을 알린다. */
+table.sontable tr[data-slug] { cursor: pointer; }
 /* ───────────────────────────────────────────────────────────────────────
    이미지 / iframe (원본 그대로 + 비율 유지 보강)
    ─────────────────────────────────────────────────────────────────────── */
@@ -480,6 +477,8 @@ iframe {
   align-items: stretch;
   width: calc(100% + 2.5rem);
   margin: 0 -1.25rem;
+  /* 맨 마지막 블록 아래에도 구분선 — 컨테이너 바닥이라 필터로 끝이 바뀌어도 유지 */
+  border-bottom: var(--line-w) solid var(--ink);
   /* 라벨 아래 공통 여백(--top-gap)은 첫 항목의 padding-top이 가짐 —
      호버 칠이 라벨 선까지 닿게 (표와 같은 처리) */
 }
@@ -720,7 +719,7 @@ table tr[data-active='true'] a {
    구분선은 각 td border-top로 유지, table 자체 테두리는 끔 */
 /* padding:0 — table,td 공통 padding(0.625rem)이 표를 좌우로 들여 세로선과 어긋나게 함.
    table 자체 padding을 0으로 해 td 경계 = 세로선(d1/d3/d4/d2)에 정확히 맞춘다. */
-table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; padding: 0; margin-top: 0; /* 라벨 아래 여백은 첫 행 padding이 가짐 — 호버 칠이 라벨 선까지 */ }
+table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; border-bottom: var(--line-w) solid var(--ink); /* 마지막 행 아래에도 구분선 */ padding: 0; margin-top: 0; /* 라벨 아래 여백은 첫 행 padding이 가짐 — 호버 칠이 라벨 선까지 */ }
 /* 첫 행 — 위 가로선 제거. 상단 padding = 컴팩트 5px + 공통 여백 8px(옛 margin-top 몫).
    필터·정렬이 없어 행 순서 고정 → :first-child로 충분 */
 table.sontable tr[data-slug]:first-child td { border-top: 0; --pt: calc(0.3125rem + var(--top-gap)); } /* 13+24+11=48 */
