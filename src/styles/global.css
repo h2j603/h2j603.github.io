@@ -116,9 +116,13 @@ table.sontable td .ko { top: 0; }
    hr — 브라운 1px 라인
    ─────────────────────────────────────────────────────────────────────── */
 hr {
+  /* background 페인트는 Windows 분수 DPR에서 AA로 번져 표 border보다 굵어 보임.
+     표와 같은 border 페인트로 — 디바이스px 스냅 경로를 태워 두께 통일.
+     박스 높이는 border 1px + height 0 = 종전과 동일한 1px. */
   border: none;
-  height: var(--line-w);
-  background-color: var(--ink);
+  border-top: var(--line-w) solid var(--ink);
+  height: 0;
+  background: none;
   margin: 1rem 0;
 }
 /* About 본문 가로선 — .third padding(1.25rem)을 상쇄해 컬럼 전체 너비로 */
@@ -296,9 +300,9 @@ iframe {
 }
 .three-col .third {
   position: absolute;
-  /* 띠(4.5rem) 아래 영역만 — 100%로 두면 같은 특이도의 나중 선언이라
-     위 calc를 덮어 컬럼이 72px 길어지고 바닥이 화면 밖으로 잘린다 */
-  height: calc(100% - 4.5rem);
+  /* 띠(4.5rem)와 하단 .bottom(4.5rem) 사이 영역만 — 100%로 두면 같은
+     특이도의 나중 선언이 calc를 덮어 바닥이 화면 밖으로 잘린다 */
+  height: calc(100% - 9rem);
   overflow-y: auto;
   overflow-x: hidden;
   padding: 1.25rem;
@@ -314,14 +318,78 @@ iframe {
 .col-divider {
   position: absolute;
   top: 0;
-  bottom: 0;
-  width: var(--line-w);
-  background: var(--ink);
+  bottom: 4.5rem; /* .bottom 영역 윗선에서 정지 */
+  width: 0;
+  /* hr과 같은 이유 — border 페인트로 표 세로 border와 두께 통일 */
+  border-left: var(--line-w) solid var(--ink);
+  background: none;
   z-index: 6;
   pointer-events: none;
 }
 .col-divider.d1 { left: 20%; }
 .col-divider.d2 { left: 80%; }
+
+/* 하단 영역 — 커튼 기본 높이(4.5rem)와 같은 키의 콜로폰 띠.
+   컬럼(.third)·세로선은 이 윗변에서 끝난다. */
+.three-col .bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4.5rem;
+  border-top: var(--line-w) solid var(--ink);
+  background: var(--bg);
+  z-index: 7; /* 세로선(6) 위, 커튼(100) 아래 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bottom .colophon {
+  padding: 0; /* 전역 p padding-top 무력화 */
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgba(0, 0, 0, 0.45);
+}
+.bottom .colophon a {
+  color: var(--accent);
+  text-decoration: none;
+  font-style: normal; /* 본문 링크의 이탤릭 어법과 분리 — 콜로폰은 UI 크롬 */
+}
+@media (hover: hover) {
+  .bottom .colophon a:hover { text-decoration: underline; }
+}
+
+/* 우측 태그 드롭다운 — 링크 목록 첫 줄. 날짜와 같은 0.75rem 문법 */
+.link-filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1.25rem; /* 8+16+8 = 32px, 4px 격자 */
+  cursor: pointer;
+}
+.link-filter select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--ink);
+  text-align: center;
+  padding: 0;
+  cursor: pointer;
+}
+.link-filter .filter-arrow {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgba(0, 0, 0, 0.45);
+}
+@media (hover: hover) {
+  .link-filter:hover select,
+  .link-filter:hover .filter-arrow { color: var(--accent); }
+}
 /* 표 컬럼 기준선 — center(20~80%) 안에서 번호 10/연도 10/제목 60/분류 20 경계 */
 .col-divider.d5 { left: 26%; } /* 번호|연도 */
 .col-divider.d3 { left: 32%; } /* 연도|제목 */
@@ -388,9 +456,9 @@ iframe {
 }
 .memo-list hr,
 .link-list hr {
-  /* 선 1px + 아래 3px = 흐름 기여 4px — 1px 누적으로 4px 격자가
-     밀리는 것을 방지 (선 굵기 들쭉의 마지막 원인) */
-  margin: 0 0 3px;
+  /* 선 아래 3px 여백은 다음 블록의 padding-top이 갖는다(아래 규칙) —
+     호버 틴트가 선까지 닿게. 흐름 기여는 종전과 같은 4px(선1+패딩3). */
+  margin: 0;
 }
 .memo,
 .link-list a.link-item {
@@ -399,18 +467,25 @@ iframe {
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
-  padding: 0.5rem 1.25rem; /* 컴팩트 */
+  /* 위 11px = 기본 8px + 윗선(hr) 몫 3px — 호버 틴트가 선까지 닿게 */
+  padding: 0.6875rem 1.25rem 0.5rem;
   text-decoration: none;
   font-style: normal;
   color: var(--ink);
   transition: background 0.12s; /* 표 셀과 같은 템포 */
 }
-/* 호버 — 항목별 보라/갈색 교차 틴트 (hr 제외, 같은 태그끼리 홀짝) */
+/* 위에 선이 없는 첫 블록은 기본 8px 그대로 (필터 행이 있으면 hr이 끼므로 제외) */
+.memo-list > .memo:first-child,
+.link-list > a.link-item:first-child {
+  padding-top: 0.5rem;
+}
+/* 호버 — 항목별 보라/갈색 교차 틴트 (hr 제외, 같은 태그끼리 홀짝).
+   링크 쪽은 드롭다운 필터로 항목이 숨겨질 수 있어 JS가 row-a/row-b를 단다. */
 @media (hover: hover) {
   .memo-list .memo:nth-of-type(odd):hover,
-  .link-list a.link-item:nth-of-type(odd):hover { background: var(--tint-accent); }
+  .link-list a.link-item.row-a:hover { background: var(--tint-accent); }
   .memo-list .memo:nth-of-type(even):hover,
-  .link-list a.link-item:nth-of-type(even):hover { background: var(--tint-brown); }
+  .link-list a.link-item.row-b:hover { background: var(--tint-brown); }
 }
 /* 링크 제목 — 텍스트만 가운데 */
 .link-list .link-title { text-align: center; line-height: 1.25rem; }
@@ -437,8 +512,16 @@ iframe {
   text-align: center;
   line-height: 1.25rem;
 }
-/* 펼친 메모 라벨 — 표 활성 행과 같은 밑줄 어법 */
-.memo.open .memo-head { border-bottom: var(--line-w) solid currentColor; }
+/* 메모가 열려 있는 동안 — 표와 같은 어법으로 다른 메모는 옅게,
+   호버하면 그 메모만 다시 또렷하게 (열린 메모로 시선 모으기) */
+.memo-list:has(.memo.open) .memo:not(.open) .memo-head { color: rgba(0, 0, 0, 0.32); }
+.memo-list:has(.memo.open) .memo:not(.open) .block-date { color: rgba(0, 0, 0, 0.2); }
+.memo-list:has(.memo.open) .memo:not(.open) .tag-chip { opacity: 0.45; }
+@media (hover: hover) {
+  .memo-list:has(.memo.open) .memo:not(.open):hover .memo-head { color: var(--ink); }
+  .memo-list:has(.memo.open) .memo:not(.open):hover .block-date { color: rgba(0, 0, 0, 0.45); }
+  .memo-list:has(.memo.open) .memo:not(.open):hover .tag-chip { opacity: 1; }
+}
 .memo-body {
   display: none;
   width: 100%;
@@ -858,8 +941,8 @@ table.sontable .col-cat   { width: 20%; }
 }
 
 /* 기본 화면 모자이크 — 화면 정중앙 fixed 오버레이.
-   페이지 로드 시 자동 낙하. pointer-events:none이라 클릭은 뒤(표)로 통과.
-   z-index 50 = 상단 stripe(100) 아래, 3컬럼(1) 위. */
+   정지 상태로 떠 있다가 클릭하면 낙하 시작(JS). 오버레이 자체는 클릭을
+   통과시키고 모자이크 그리드만 받는다. z-index 50 = stripe(100) 아래, 3컬럼(1) 위. */
 .default-state {
   position: fixed;
   inset: 0;
@@ -874,6 +957,13 @@ table.sontable .col-cat   { width: 20%; }
 .default-state .stripe-mosaic {
   width: 88vw;
   max-width: 88vw;
+  pointer-events: auto; /* 클릭 = 낙하 트리거 */
+  cursor: pointer;
+}
+/* 낙하 시작 후 — 그리드는 즉시 클릭 통과 (뒤의 표가 바로 살아남) */
+.default-state.falling .stripe-mosaic {
+  pointer-events: none;
+  cursor: default;
 }
 /* 셀의 animation은 JS triggerMosaicFall()에서만 부여 — 기본은 정적. */
 @keyframes cell-drop {
@@ -891,5 +981,5 @@ b, strong { font-weight: inherit; }
   display: inline-block;
   padding: 0 0.375rem;
   border-radius: 0.5rem;
-  margin-left: 0.375rem;
+  /* 간격은 마크업의 ' · ' 구분자가 담당 */
 }
