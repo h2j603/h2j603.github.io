@@ -36,6 +36,8 @@
   /* 호버 칠 — 풀 채도가 시끄러워 옅은 틴트로 (보라/브라운 모티프 유지) */
   --tint-accent: #e6d6ff;  /* 보라 틴트 */
   --tint-brown: #e3dad3;   /* 브라운 틴트 */
+  /* 커튼 아래 콘텐츠 공통 최소 여백 — 좌(메모)/중(표)/우(링크) 동일 */
+  --top-gap: 8px;
   --mention: #000000;      /* @멘션 링크 — 브라운 일괄 블랙 전환에 포함 */
   --scrollbar: rgba(0, 0, 0, 0.35);
   --scrollbar-hover: rgba(0, 0, 0, 0.55);
@@ -335,7 +337,7 @@ iframe {
   background-color: var(--bg);
   width: 20%;
   left: 0;
-  padding-top: 0; /* 커튼과 사이 여백 0 — 띠 바로 밑에서 시작 */
+  padding-top: var(--top-gap); /* 커튼 아래 공통 최소 여백 */
   /* 스크롤 가능 (.third의 auto 상속) — 커튼에 밀려 내려간 내용도 읽을 수 있게.
      스크롤바는 .third 공통 규칙으로 숨김 */
 }
@@ -363,7 +365,7 @@ iframe {
   background-color: var(--bg);
   left: 80%;
   width: 20%;
-  padding-top: 0; /* 커튼과 사이 여백 0 */
+  padding-top: var(--top-gap); /* 커튼 아래 공통 최소 여백 */
   /* 표가 길어지면 스크롤 가능하게 */
 }
 /* 우측 컬럼 콘텐츠 — 수집 링크, 가운데 정렬 (좌측 인물 인덱스와 동일) */
@@ -576,7 +578,7 @@ table tr[data-active='true'] a {
    구분선은 각 td border-top로 유지, table 자체 테두리는 끔 */
 /* padding:0 — table,td 공통 padding(10px)이 표를 좌우로 들여 세로선과 어긋나게 함.
    table 자체 padding을 0으로 해 td 경계 = 세로선(d1/d3/d4/d2)에 정확히 맞춘다. */
-table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; padding: 0; margin-top: 0; /* 커튼과 표 사이 여백 0 */ }
+table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; padding: 0; margin-top: var(--top-gap); /* 커튼 아래 공통 최소 여백 */ }
 /* 첫 행 — 위 가로선 제거 + 상단 padding 축소(표 시작 여백 컴팩트).
    필터·정렬이 없어 행 순서 고정 → :first-child로 충분 */
 table.sontable tr[data-slug]:first-child td { border-top: 0; padding-top: 2px; }
