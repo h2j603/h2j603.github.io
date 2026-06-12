@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>desktop preview</title>
+<title>device preview</title>
 <style>
   html, body {
     margin: 0;
@@ -25,7 +25,9 @@
     border-bottom: 1px solid #000;
     font-size: 13px;
   }
-  #toolbar button {
+  #toolbar button,
+  #toolbar select,
+  #toolbar input[type='number'] {
     font: inherit;
     background: #fff;
     color: #000;
@@ -33,14 +35,23 @@
     padding: 4px 10px;
     cursor: pointer;
   }
+  #toolbar input[type='number'] {
+    width: 64px;
+    cursor: text;
+    padding: 4px 6px;
+  }
   #toolbar button.active {
     background: #000;
     color: #fff;
+  }
+  #toolbar .x {
+    color: #888;
   }
   #info {
     margin-left: auto;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
+    color: #444;
   }
   #path {
     flex: 1 1 100%;
@@ -68,11 +79,15 @@
 </head>
 <body>
   <div id="toolbar">
-    <button data-w="1440">1440</button>
-    <button data-w="1024">1024</button>
-    <button data-w="768">768</button>
-    <button data-w="375">375</button>
-    <button id="zoom">100%</button>
+    <select id="device" aria-label="기기 선택"></select>
+    <button id="rotate" title="가로/세로 회전">⟳</button>
+    <span>
+      <input id="cw" type="number" min="240" max="3840" aria-label="너비">
+      <span class="x">×</span>
+      <input id="ch" type="number" min="240" max="2400" aria-label="높이">
+    </span>
+    <button id="zoom" title="화면에 맞춤 ↔ 실제 크기">100%</button>
+    <button id="hover" title="터치 기기에서 (hover:hover) 미디어 게이트를 해제해 탭=호버로 미리보기">hover</button>
     <button id="reload">새로고침</button>
     <span id="info"></span>
     <input id="path" type="text" value="/" spellcheck="false"
@@ -82,8 +97,29 @@
     <iframe id="frame" title="site preview"></iframe>
   </div>
 <script>
-  // 폭별 기기 뷰포트 높이 — 세로도 이 값으로 제한(무한정 길어지지 않게).
-  var DEVICE_H = { 1440: 900, 1024: 768, 768: 1024, 375: 812 };
+  // ── 기기 프리셋 — CSS 픽셀(뷰포트) 기준 ──────────────────────────
+  var DEVICES = [
+    { group: '모바일', items: [
+      { id: 'iphone-se',     name: 'iPhone SE',         w: 375,  h: 667 },
+      { id: 'iphone-15pro',  name: 'iPhone 15 Pro',     w: 393,  h: 852 },
+      { id: 'iphone-15max',  name: 'iPhone 15 Pro Max', w: 430,  h: 932 },
+      { id: 'galaxy-s24',    name: 'Galaxy S24',        w: 360,  h: 780 },
+    ]},
+    { group: '태블릿', items: [
+      { id: 'ipad-mini',     name: 'iPad mini',         w: 768,  h: 1024 },
+      { id: 'ipad-pro11',    name: 'iPad Pro 11"',      w: 834,  h: 1194 },
+    ]},
+    { group: '데스크탑', items: [
+      { id: 'laptop',        name: '노트북 1280',        w: 1280, h: 800 },
+      { id: 'macbook-14',    name: 'MacBook Pro 14"',   w: 1512, h: 982 },
+      { id: 'desktop-1440',  name: '데스크탑 1440',       w: 1440, h: 900 },
+      { id: 'fhd',           name: 'FHD 1920',          w: 1920, h: 1080 },
+    ]},
+    { group: '직접 입력', items: [
+      { id: 'custom',        name: '커스텀',             w: 0,    h: 0 },
+    ]},
+  ];
+  var FLAT = DEVICES.flatMap(function (g) { return g.items; });
 
   var frame = document.getElementById('frame');
   var stage = document.getElementById('stage');
@@ -91,18 +127,75 @@
   var toolbar = document.getElementById('toolbar');
   var pathInput = document.getElementById('path');
   var zoomBtn = document.getElementById('zoom');
+  var hoverBtn = document.getElementById('hover');
+  var rotateBtn = document.getElementById('rotate');
+  var deviceSel = document.getElementById('device');
+  var cwInput = document.getElementById('cw');
+  var chInput = document.getElementById('ch');
 
-  // ?w=768&path=/works/foo 로 초기 상태 지정
+  // 셀렉트 채우기 (optgroup 단위)
+  DEVICES.forEach(function (g) {
+    var og = document.createElement('optgroup');
+    og.label = g.group;
+    g.items.forEach(function (d) {
+      var o = document.createElement('option');
+      o.value = d.id;
+      o.textContent = d.w ? d.name + ' — ' + d.w + '×' + d.h : d.name;
+      og.appendChild(o);
+    });
+    deviceSel.appendChild(og);
+  });
+
+  // ── 상태: URL 쿼리로 복원 (?d=iphone-15pro&rot=1&w=900&h=600&path=/...&hover=1) ──
   var params = new URLSearchParams(location.search);
-  var width = parseInt(params.get('w'), 10);
-  if (!(width > 0)) width = 1440;
+  var deviceId = params.get('d') || legacyWidthToDevice(parseInt(params.get('w'), 10)) || 'desktop-1440';
+  var rotated = params.get('rot') === '1';
+  var customW = parseInt(params.get('w'), 10) || 900;
+  var customH = parseInt(params.get('h'), 10) || 600;
+  var fitMode = true;
+  // 터치 기기(hover 불가)에서 데스크탑 폭을 고르면 자동으로 호버 게이트 해제
+  var touchEnv = window.matchMedia('(hover: none)').matches;
+  var hoverForce = params.has('hover') ? params.get('hover') === '1' : null; // null = 자동
   var initialPath = params.get('path');
   if (!initialPath || initialPath[0] !== '/') initialPath = '/';
-  var fitMode = true;
 
-  function markActiveWidth() {
-    toolbar.querySelectorAll('button[data-w]').forEach(function (b) {
-      b.classList.toggle('active', parseInt(b.dataset.w, 10) === width);
+  function legacyWidthToDevice(w) {
+    if (!(w > 0)) return null;
+    var hit = FLAT.find(function (d) { return d.w === w; });
+    return hit ? hit.id : null;
+  }
+  function currentDevice() {
+    return FLAT.find(function (d) { return d.id === deviceId; }) || FLAT[0];
+  }
+  function size() {
+    var d = currentDevice();
+    var w = d.id === 'custom' ? customW : d.w;
+    var h = d.id === 'custom' ? customH : d.h;
+    return rotated ? { w: h, h: w } : { w: w, h: h };
+  }
+  function hoverActive() {
+    // 수동 설정이 있으면 그대로, 없으면 자동: 터치 환경 + 모바일 폭(≤600) 아님
+    if (hoverForce !== null) return hoverForce;
+    return touchEnv && size().w > 600;
+  }
+
+  // ── 호버 게이트 해제 — iframe(같은 출처) 안의 @media (hover: hover)를 all로 ──
+  // 터치 기기는 그 블록의 규칙(틴트 등)이 영영 안 살아나므로, 미디어 조건을 풀어
+  // 모바일 브라우저의 "탭 = sticky :hover"로나마 데스크탑 호버를 흉내 낸다.
+  // 진짜 커서 호버(접촉 없이 올리기)는 터치 하드웨어에선 재현 불가.
+  function unlockHoverGates() {
+    var doc;
+    try { doc = frame.contentDocument; } catch (err) { return; } // 교차 출처면 불가
+    if (!doc) return;
+    Array.prototype.forEach.call(doc.styleSheets, function (sheet) {
+      var rules;
+      try { rules = sheet.cssRules; } catch (err) { return; } // CDN 폰트 시트 등은 건너뜀
+      if (!rules) return;
+      Array.prototype.forEach.call(rules, function (r) {
+        if (r.media && /hover:\s*hover/.test(r.media.mediaText)) {
+          r.media.mediaText = 'all';
+        }
+      });
     });
   }
 
@@ -117,7 +210,10 @@
 
   function syncQuery() {
     var q = new URLSearchParams();
-    if (width !== 1440) q.set('w', width);
+    if (deviceId !== 'desktop-1440') q.set('d', deviceId);
+    if (rotated) q.set('rot', '1');
+    if (deviceId === 'custom') { q.set('w', customW); q.set('h', customH); }
+    if (hoverForce !== null) q.set('hover', hoverForce ? '1' : '0');
     var p = framePath();
     if (p !== '/') q.set('path', p);
     var s = q.toString();
@@ -125,29 +221,60 @@
   }
 
   function apply() {
+    var s = size();
     var availW = document.documentElement.clientWidth - 2;
     var availH = window.innerHeight - toolbar.offsetHeight - 1;
-    var h = DEVICE_H[width] || 900;
-    frame.style.width = width + 'px';
+    frame.style.width = s.w + 'px';
+    var d = currentDevice();
+    var label = (d.id === 'custom' ? '커스텀' : d.name) + (rotated ? ' ⟳' : '');
     if (fitMode) {
-      // 가로·세로 둘 다 화면 안에 들어오도록(contain) 스케일. 1배 초과 업스케일 금지.
-      var scale = Math.min(availW / width, availH / h, 1);
-      frame.style.height = h + 'px';
+      // 가로·세로 둘 다 화면 안(contain) 스케일. 1배 초과 업스케일 금지.
+      var scale = Math.min(availW / s.w, availH / s.h, 1);
+      frame.style.height = s.h + 'px';
       frame.style.transform = 'scale(' + scale + ')';
-      stage.style.width = Math.round(width * scale) + 'px';
-      stage.style.height = Math.round(h * scale) + 'px';
+      stage.style.width = Math.round(s.w * scale) + 'px';
+      stage.style.height = Math.round(s.h * scale) + 'px';
       stage.style.overflowX = 'hidden';
-      info.textContent = width + '×' + h + ' · ' + Math.round(scale * 100) + '%';
+      info.textContent = label + ' · ' + s.w + '×' + s.h + ' · ' + Math.round(scale * 100) + '%';
     } else {
-      // 100% 모드: 실제 크기, stage 안에서만 가로 스크롤
       frame.style.height = availH + 'px';
       frame.style.transform = 'none';
       stage.style.width = '100%';
       stage.style.height = availH + 'px';
       stage.style.overflowX = 'auto';
-      info.textContent = width + '×' + h + ' · 100%';
+      info.textContent = label + ' · ' + s.w + '×' + s.h + ' · 100%';
     }
+    // 컨트롤 상태 동기화
+    deviceSel.value = deviceId;
+    cwInput.value = s.w;
+    chInput.value = s.h;
+    hoverBtn.classList.toggle('active', hoverActive());
+    if (hoverActive()) unlockHoverGates();
   }
+
+  deviceSel.addEventListener('change', function () {
+    deviceId = deviceSel.value;
+    rotated = false;
+    apply();
+    syncQuery();
+  });
+
+  rotateBtn.addEventListener('click', function () {
+    rotated = !rotated;
+    apply();
+    syncQuery();
+  });
+
+  [cwInput, chInput].forEach(function (inp) {
+    inp.addEventListener('change', function () {
+      deviceId = 'custom';
+      rotated = false;
+      customW = Math.max(240, parseInt(cwInput.value, 10) || 900);
+      customH = Math.max(240, parseInt(chInput.value, 10) || 600);
+      apply();
+      syncQuery();
+    });
+  });
 
   toolbar.addEventListener('click', function (e) {
     var btn = e.target.closest('button');
@@ -166,10 +293,18 @@
       apply();
       return;
     }
-    width = parseInt(btn.dataset.w, 10);
-    markActiveWidth();
-    apply();
-    syncQuery();
+    if (btn.id === 'hover') {
+      hoverForce = !hoverActive();
+      if (hoverForce) {
+        apply(); // 게이트 해제 포함
+      } else {
+        // 되돌리기는 문서 재로드로 (한 번 푼 미디어 조건은 복원이 번거로움)
+        try { frame.contentWindow.location.reload(); } catch (err) { frame.src = framePath(); }
+        apply();
+      }
+      syncQuery();
+      return;
+    }
   });
 
   pathInput.addEventListener('keydown', function (e) {
@@ -182,13 +317,13 @@
 
   frame.addEventListener('load', function () {
     if (document.activeElement !== pathInput) pathInput.value = framePath();
+    if (hoverActive()) unlockHoverGates();
     syncQuery();
   });
 
   window.addEventListener('resize', apply);
   window.addEventListener('orientationchange', apply);
 
-  markActiveWidth();
   pathInput.value = initialPath;
   frame.src = initialPath;
   apply();
