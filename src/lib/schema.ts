@@ -125,6 +125,8 @@ export type SiteLink = z.infer<typeof siteLinkSchema>;
  * 메모 — Are.na memo 채널의 텍스트 블록 1개. 좌측 컬럼 아코디언으로 표시.
  */
 export const memoSchema = z.object({
+  /** Are.na 블록 id — 펼침 본문 아래 출처 링크(are.na/block/{id})용. */
+  id: z.number().optional(),
   /** 접힌 라벨 — 본문 첫 문장 (60자 말줄임). */
   title: z.string().min(1),
   /** 본문 원문 — 서식 없이 그대로 (줄바꿈 유지 렌더). */

@@ -76,6 +76,8 @@
     height: auto;
     padding: 1.25rem 0.625rem;
   }
+  /* 영역 출처 라벨 — 3컬럼 해부도의 장치라 데스크탑 전용 */
+  .arena-path { display: none; }
   /* 수집 링크는 데스크탑 전용 — 모바일에선 표 위 공간을 차지하지 않게 숨김 */
   .link-list { display: none; }
   /* center가 표+아코디언 메인 (work-card 저장소 숨김은 global 공통 규칙이 처리) */

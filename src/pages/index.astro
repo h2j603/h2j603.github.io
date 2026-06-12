@@ -106,6 +106,8 @@ const defaultMosaic = fs.readFileSync(
         본문 @멘션 매칭용으로 데이터에서 계속 동작 ──────────── */}
     <div class="third left">
       <div class="content intro">
+        {/* 영역 출처 — Are.na를 그대로 쓰고 있음을 드러내는 경로 라벨 */}
+        <div class="arena-path" aria-hidden="true">Are.na/Hyuk Jang/Notepad</div>
         {memos.length > 0 && (
           <div class="memo-list">
             {memos.map((m, i) => (
@@ -121,8 +123,10 @@ const defaultMosaic = fs.readFileSync(
                       ))}
                     </span>
                   )}
-                  {/* 서식 없이 원문 그대로 (줄바꿈 유지) */}
-                  <div class="memo-body">{m.text}</div>
+                  {/* 서식 없이 원문 그대로 (줄바꿈 유지). 맨 아래 = 원 블록으로 가는 출처 링크 */}
+                  <div class="memo-body">{m.text}{m.id && (
+                    <a class="memo-source" href={`https://www.are.na/block/${m.id}`} target="_blank" rel="noopener">↗ are.na/block/{m.id}</a>
+                  )}</div>
                 </div>
               </>
             ))}
@@ -134,6 +138,7 @@ const defaultMosaic = fs.readFileSync(
     {/* ──────────── 중앙: 작품 표 + 카드 아코디언 ──────────── */}
     <div class="third center">
       <div class="content">
+        <div class="arena-path" aria-hidden="true">Are.na/Hyuk Jang/Portfolio</div>
         {/* 작품 미선택 시 배경 모자이크 — fixed 오버레이, 로드 시 자동 낙하 */}
         <div class="default-state" id="__default" hidden>
           <Fragment set:html={defaultMosaic} />
@@ -295,20 +300,21 @@ const defaultMosaic = fs.readFileSync(
     {/* ──────────── 우측: 수집 링크 (Are.na links 채널) — 언어 토글은 띠 위로 이사 ──────────── */}
     <div class="third right">
       <div class="content">
+        <div class="arena-path" aria-hidden="true">Are.na/Hyuk Jang/Collection</div>
         {/* 제목만 — 가운데 (설명은 데이터에만 보관) */}
         {siteLinks.length > 0 && (
           <nav class="link-list" aria-label="collected links">
             {/* 태그 드롭다운 — 채널에 태그가 하나라도 있을 때만 */}
             {linkTags.length > 0 && (
               <>
+                {/* 브라우저 기본 셀렉트 그대로 — 줄 높이만 4px 격자에 고정 */}
                 <label class="link-filter">
                   <select id="linkTagFilter" aria-label="태그별 필터">
-                    <option value="">#all</option>
+                    <option value="">all</option>
                     {linkTags.map((t) => (
-                      <option value={t}>#{t}</option>
+                      <option value={t}>{t}</option>
                     ))}
                   </select>
-                  <span class="filter-arrow" aria-hidden="true">▾</span>
                 </label>
                 <hr />
               </>
@@ -342,8 +348,8 @@ const defaultMosaic = fs.readFileSync(
     {/* ──────────── 하단: 커튼과 같은 높이(4.5rem)의 콜로폰 영역 ──────────── */}
     <div class="bottom">
       <p class="colophon">
-        every block of this site lives on <a href="https://www.are.na/" target="_blank" rel="noopener">↗ Are.na</a>
-        {' · '}built {buildStamp} KST{' · '}ⓒ {new Date().getFullYear()} Hyuk Jang
+        every block of this site lives on <a href="https://www.are.na/hyuk-jang-cud6vccao20" target="_blank" rel="noopener">↗ Are.na</a>
+        {' · '}built {buildStamp}{' · '}now <span id="nowClock">{buildStamp}</span> KST{' · '}ⓒ {new Date().getFullYear()} Hyuk Jang
       </p>
     </div>
 
@@ -732,6 +738,26 @@ const defaultMosaic = fs.readFileSync(
       }
       if (tagFilterEl) tagFilterEl.addEventListener('change', applyLinkFilter);
 
+      // ── 하단 콜로폰 시계 — 빌드 시각 옆에 현재 시각(KST) 병기 ──
+      var clockEl = document.getElementById('nowClock');
+      function tickClock() {
+        if (!clockEl) return;
+        var parts = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Asia/Seoul',
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+        }).formatToParts(new Date());
+        function g(t) {
+          var p = parts.find(function (x) { return x.type === t; });
+          return p ? p.value : '';
+        }
+        clockEl.textContent = g('year') + '.' + g('month') + '.' + g('day') + ' ' + g('hour') + ':' + g('minute');
+      }
+      if (clockEl) {
+        tickClock();
+        setInterval(tickClock, 10000); // 분 단위 표기 — 10초마다 갱신이면 충분
+      }
+
       // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작.
       // 홈 링크가 About 서랍 안에 있으므로 서랍도 닫는다.
       document.querySelectorAll('[data-home]').forEach(function (a) {
@@ -743,7 +769,10 @@ const defaultMosaic = fs.readFileSync(
             history.pushState(null, '', location.pathname);
           }
           applyHash();
-          showMosaicStatic();
+          if (defaultEl) {
+            defaultEl.hidden = false;
+            triggerMosaicFall(mosaicOpts());
+          }
         });
       });
 
@@ -754,33 +783,16 @@ const defaultMosaic = fs.readFileSync(
       applyHash();
       markMentions();
       wrapAllKorean();
-      // 모자이크 인트로 — 자동 낙하·마우스 근접 낙하 폐기.
-      // 정지 상태로 떠 있다가 '클릭하는 순간' 떨어진다 (명쾌한 1:1 인과).
+      // 모자이크 인트로 — 진입 즉시 낙하 (클릭 트리거는 잘 안 먹어서 폐기,
+      // 마우스 근접 낙하도 폐기 — 매 로드마다 한 번 떨어지고 끝).
       function mosaicOpts() {
         return window.matchMedia('(max-width: 600px)').matches
           ? { dur: 1.8, spread: 2, jitter: 0.8, stragProb: 0.06, stragMax: 2 }
           : { dur: 1.8, spread: 2.2, jitter: 0.8, stragProb: 0.06, stragMax: 2.5 };
       }
-      function showMosaicStatic() {
-        if (!defaultEl) return;
-        defaultEl.hidden = false;
-        defaultEl.classList.remove('falling');
-        delete defaultEl.dataset.falling;
-        defaultEl.querySelectorAll('.stripe-mosaic > div').forEach(function (d) {
-          d.style.animation = 'none';
-          d.style.animationDelay = '';
-        });
-      }
       if (defaultEl) {
-        var mosaicGrid = defaultEl.querySelector('.stripe-mosaic');
-        if (mosaicGrid) {
-          mosaicGrid.addEventListener('click', function () {
-            if (defaultEl.classList.contains('falling')) return;
-            defaultEl.classList.add('falling'); // 셀 통과 클릭 즉시 해제(CSS)
-            triggerMosaicFall(mosaicOpts());
-          });
-        }
-        showMosaicStatic();
+        defaultEl.hidden = false;
+        triggerMosaicFall(mosaicOpts());
       }
     })();
   </script>
