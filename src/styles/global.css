@@ -957,37 +957,40 @@ table.sontable .col-cat   { width: 20%; }
   text-decoration: underline;
 }
 
-/* 하이퍼링크 점멸 — JS가 html.blink-dim을 0.7초마다 토글하는 한 클럭에
-   전 링크가 같은 박자로 부드럽게(transition) 숨쉰다. 늦게 나타나는
-   요소(서랍 등)도 클럭이 전역이라 박자가 어긋나지 않는다.
+/* 하이퍼링크 점멸 — CSS 애니메이션 한 박자(1.4s = 구 0.7s 토글의 왕복)로
+   전 링크가 같이 숨쉰다. (구 JS 0.7s html 클래스 토글은 매번 문서 전체
+   스타일 재계산을 일으켰음 → 타이머 제거.) 페이지 로드 때 같이 시작해
+   박자가 맞고, DOM 이동으로 애니메이션이 재시작되는 작품 카드 링크는
+   accordion JS가 animation-delay로 위상을 재동기화한다.
    호버 중인 링크는 점멸에서 제외(또렷하게 고정). */
+@keyframes link-blink {
+  0%   { opacity: 1; }
+  39%  { opacity: 0.3; } /* ≈0.55s ease 페이드-아웃 (구 transition과 동일 감각) */
+  50%  { opacity: 0.3; }
+  89%  { opacity: 1; }   /* ≈0.55s ease 페이드-인 */
+  100% { opacity: 1; }
+}
 .intro a,
 .drawer-panel a,
 .work-card .card-body a,
 .work-card .card-link {
-  transition: opacity 0.55s ease;
+  animation: link-blink 1.4s ease infinite;
 }
-html.blink-dim .intro a,
-html.blink-dim .drawer-panel a,
-html.blink-dim .work-card .card-body a,
-html.blink-dim .work-card .card-link {
-  opacity: 0.3;
-}
-html.blink-dim .intro a:hover,
-html.blink-dim .drawer-panel a:hover,
-html.blink-dim .work-card .card-body a:hover,
-html.blink-dim .work-card .card-link:hover,
+.intro a:hover,
+.drawer-panel a:hover,
+.work-card .card-body a:hover,
+.work-card .card-link:hover,
 /* 출처 링크는 메타 어법 — 점멸 제외 */
-html.blink-dim .intro a.memo-source {
-  opacity: 1;
+.intro a.memo-source {
+  animation: none;
 }
 /* 모션 줄이기 선호 — 점멸 끔 (링크 식별은 보라색이 담당) */
 @media (prefers-reduced-motion: reduce) {
-  html.blink-dim .intro a,
-  html.blink-dim .drawer-panel a,
-  html.blink-dim .work-card .card-body a,
-  html.blink-dim .work-card .card-link {
-    opacity: 1;
+  .intro a,
+  .drawer-panel a,
+  .work-card .card-body a,
+  .work-card .card-link {
+    animation: none;
   }
 }
 
