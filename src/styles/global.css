@@ -1,22 +1,11 @@
 /* ───────────────────────────────────────────────────────────────────────
-   한글 폰트 (HakgyoansimBareondotum Regular)
-   baseline 정렬은 CSS metric override 대신 JS로 한글 char를 .ko span으로
-   감싸고 아래 CSS로 위치를 미세 조정한다.
+   한글 폰트 — Pretendard Variable (Base.astro에서 dynamic-subset CSS 로드).
+   Pretendard는 라틴과 수직 메트릭이 맞아 학교안심 시절의 baseline 보정이
+   불필요 — .ko 이동 0 (JS 래핑은 유지, 필요 시 미세 조정 지점).
    ─────────────────────────────────────────────────────────────────────── */
-@font-face {
-  font-family: 'HakgyoansimBareondotum';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/HakgyoansimBareondotumR.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  /* 폰트 로딩 중에도 대체 글꼴로 텍스트 즉시 표시 (FOIT 방지) */
-  font-display: swap;
-}
-
-/* 한글 char span — JS가 자동으로 감쌈. 영문 baseline에 맞춰 살짝 위로.
-   inline + position: relative top — 같은 라인 박스 공유 → ::selection이 일정한 사각형. */
 .ko {
   position: relative;
-  top: -0.12em;
+  top: 0;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -68,7 +57,7 @@ body {
   height: 100%;
   overflow: hidden;
   font-size: var(--fs); /* 단일 크기 — 표·본문·토글 전부 이걸 상속 */
-  font-family: neue-haas-unica, 'HakgyoansimBareondotum', sans-serif;
+  font-family: neue-haas-unica, 'Pretendard Variable', Pretendard, sans-serif;
   font-weight: 500; /* 400 → 500, 전체적으로 살짝 두껍게 */
   font-style: normal;
   color: var(--ink);
@@ -581,7 +570,7 @@ table tr[data-active='true'] a {
 .work-card > :last-child { margin-bottom: 0; }
 
 .work-card .card-title {
-  font-family: neue-haas-unica, 'HakgyoansimBareondotum', sans-serif;
+  font-family: neue-haas-unica, 'Pretendard Variable', Pretendard, sans-serif;
   font-weight: 500;
   font-style: normal;
   text-align: left;
