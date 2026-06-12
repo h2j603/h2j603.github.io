@@ -32,9 +32,6 @@ const memos = getMemos();
 // 블록 추가 시점 표기 — Are.na의 "added"처럼. ISO → YYYY.MM.DD
 const fmtDate = (iso: string) => (iso ? iso.slice(0, 10).replaceAll('-', '.') : '');
 
-// 영역 라벨 마키 — 무한 흐름용 반복 문자열. 같은 내용의 트랙 2개를
-// translateX(-50%)로 돌리면 이음새 없이 무한 (트랙 폭 > 컬럼 폭 보장 14회 반복)
-const tickerText = (label: string) => Array(14).fill(label).join('  ·  ') + '  ·  ';
 
 // 작품 선택 안 한 기본 화면용 모자이크 (stripe-mosaic 도구로 만든 단일 SVG → 셀 그리드)
 const defaultMosaic = fs.readFileSync(
@@ -115,12 +112,9 @@ const defaultMosaic = fs.readFileSync(
         본문 @멘션 매칭용으로 데이터에서 계속 동작 ──────────── */}
     <div class="third left">
       <div class="content intro">
-        {/* 영역 라벨 마키 — 커튼과 영역 사이 무한 흐르는 텍스트 바 */}
-        <div class="ticker" aria-hidden="true">
-          <div class="ticker-track">
-            <span>{tickerText('hyuk.xyz as a notepad')}</span>
-            <span>{tickerText('hyuk.xyz as a notepad')}</span>
-          </div>
+        {/* 영역 라벨 — 큰 볼드 한 줄, 양쪽 정렬 (단어 사이 공백만 늘어남) */}
+        <div class="area-label">
+          {"hyuk.xyz as a notepad".split(" ").map((w) => <span>{w}</span>)}
         </div>
         {memos.length > 0 && (
           <div class="memo-list">
@@ -148,11 +142,8 @@ const defaultMosaic = fs.readFileSync(
     {/* ──────────── 중앙: 작품 표 + 카드 아코디언 ──────────── */}
     <div class="third center">
       <div class="content">
-        <div class="ticker" aria-hidden="true">
-          <div class="ticker-track">
-            <span>{tickerText('hyuk.xyz as a portfolio')}</span>
-            <span>{tickerText('hyuk.xyz as a portfolio')}</span>
-          </div>
+        <div class="area-label">
+          {"hyuk.xyz as a portfolio".split(" ").map((w) => <span>{w}</span>)}
         </div>
         {/* 작품 미선택 시 배경 모자이크 — fixed 오버레이, 로드 시 자동 낙하 */}
         <div class="default-state" id="__default" hidden>
@@ -308,11 +299,8 @@ const defaultMosaic = fs.readFileSync(
     {/* ──────────── 우측: 수집 링크 (Are.na links 채널) — 언어 토글은 띠 위로 이사 ──────────── */}
     <div class="third right">
       <div class="content">
-        <div class="ticker" aria-hidden="true">
-          <div class="ticker-track">
-            <span>{tickerText('hyuk.xyz as a collection')}</span>
-            <span>{tickerText('hyuk.xyz as a collection')}</span>
-          </div>
+        <div class="area-label">
+          {"hyuk.xyz as a collection".split(" ").map((w) => <span>{w}</span>)}
         </div>
         {/* 제목만 — 가운데 (설명은 데이터에만 보관) */}
         {siteLinks.length > 0 && (
