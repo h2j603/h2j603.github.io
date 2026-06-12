@@ -730,22 +730,16 @@ const defaultMosaic = fs.readFileSync(
       applyHash();
       markMentions();
       wrapAllKorean();
-      // 모자이크 인트로 다이어트 — 전체 낙하 3~4초 내 정리(스트래글러 단축).
-      // 자동 낙하는 최초 방문 1회만(localStorage) — 재방문자는 바로 표.
-      // hyuk.xyz(홈) 클릭으로 다시 보는 건 의도된 행동이라 항상 가능.
+      // 모자이크 인트로 — 매 로드(새로고침 포함)마다 낙하. 길이는 짧게
+      // 유지(전체 3~4초, 스트래글러 단축).
       function mosaicOpts() {
         return window.matchMedia('(max-width: 600px)').matches
           ? { dur: 1.8, spread: 2, jitter: 0.8, stragProb: 0.06, stragMax: 2 }
           : { dur: 1.8, spread: 2.2, jitter: 0.8, stragProb: 0.06, stragMax: 2.5 };
       }
-      var seenMosaic = false;
-      try { seenMosaic = localStorage.getItem('mosaic-seen') === '1'; } catch (e) {}
-      if (defaultEl && !seenMosaic) {
+      if (defaultEl) {
         defaultEl.hidden = false;
         triggerMosaicFall(mosaicOpts());
-        try { localStorage.setItem('mosaic-seen', '1'); } catch (e) {}
-      } else if (defaultEl) {
-        defaultEl.hidden = true;
       }
     })();
   </script>
