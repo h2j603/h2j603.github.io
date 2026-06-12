@@ -340,12 +340,28 @@ iframe {
   border-top: var(--line-w) solid var(--ink);
   background: var(--bg);
   z-index: 7; /* 세로선(6) 위, 커튼(100) 아래 */
+  overflow: hidden; /* 마키 트랙 자르기 */
+}
+/* 콜로폰 마키 — 같은 내용 2벌을 이어 붙여 -50%까지 밀면 이음새 없이 무한 순환 */
+.colophon-track {
   display: flex;
+  width: max-content;
+  height: 100%;
   align-items: center;
-  justify-content: center;
+  animation: colophon-marquee 36s linear infinite;
+}
+@keyframes colophon-marquee {
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .colophon-track { animation: none; }
 }
 .bottom .colophon {
-  padding: 0; /* 전역 p padding-top 무력화 */
+  margin: 0;
+  padding: 0 2.5rem; /* 복제본 사이 간격 = 2.5+2.5 = 부분 간격(5rem)과 동일 */
+  display: flex;
+  gap: 5rem; /* 각 부분을 넓게 띄움 */
+  white-space: nowrap;
   font-size: 0.75rem;
   line-height: 1rem;
   color: rgba(0, 0, 0, 0.45);
@@ -359,14 +375,42 @@ iframe {
   .bottom .colophon a:hover { text-decoration: underline; }
 }
 
-/* 우측 태그 드롭다운 — 셀렉트는 브라우저 기본 모습 그대로.
-   줄 높이만 2.5rem(40px)으로 고정해 아래 선들이 4px 격자에 남게 한다. */
+/* 우측 태그 드롭다운 — 블록 문법에 맞춘 조용한 컨트롤: 가운데 정렬,
+   네이티브 위젯 대신 텍스트+▾, 호버는 행처럼 보라 틴트.
+   높이 = 40px + 라벨 아래 공통 여백(8px)을 자기 패딩으로 흡수해
+   호버 칠이 라벨 선까지 닿는다 (총 48px, 4px 격자). */
 .link-filter {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 2.5rem;
-  padding: 0 1.25rem;
+  height: 3rem;
+  padding: var(--top-gap) 1.25rem 0;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.link-filter::after {
+  content: '▾';
+  font-size: 0.75rem;
+  line-height: 1rem;
+  margin-left: 0.25rem;
+  color: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.link-filter select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--ink);
+  text-align: center;
+  padding: 0;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .link-filter:hover { background: var(--tint-accent); }
 }
 /* 표 컬럼 기준선 — center(20~80%) 안에서 번호 10/연도 10/제목 60/분류 20 경계 */
 .col-divider.d5 { left: 26%; } /* 번호|연도 */
@@ -434,6 +478,7 @@ iframe {
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: stretch; /* flex 컬럼(.right .content)에서도 내용 폭으로 수축 금지 — 선이 끊기지 않게 */
   font-size: 0.75rem;
   line-height: 1rem;
   color: rgba(0, 0, 0, 0.45);
@@ -452,7 +497,8 @@ iframe {
   align-items: stretch;
   width: calc(100% + 2.5rem);
   margin: 0 -1.25rem;
-  margin-top: var(--top-gap); /* 커튼 아래 공통 최소 여백 */
+  /* 라벨 아래 공통 여백(--top-gap)은 첫 항목의 padding-top이 가짐 —
+     호버 칠이 라벨 선까지 닿게 (표와 같은 처리) */
 }
 .memo-list hr,
 .link-list hr {
@@ -474,10 +520,11 @@ iframe {
   color: var(--ink);
   transition: background 0.12s; /* 표 셀과 같은 템포 */
 }
-/* 위에 선이 없는 첫 블록은 기본 8px 그대로 (필터 행이 있으면 hr이 끼므로 제외) */
+/* 첫 블록 — 위 hr(3px 몫)이 없는 대신 라벨 아래 공통 여백(8px)을 패딩으로:
+   8(기본) + 8(--top-gap) = 1rem (필터 행이 첫 child면 그쪽이 여백을 가짐) */
 .memo-list > .memo:first-child,
 .link-list > a.link-item:first-child {
-  padding-top: 0.5rem;
+  padding-top: calc(0.5rem + var(--top-gap));
 }
 /* 호버 — 항목별 보라/갈색 교차 틴트 (hr 제외, 같은 태그끼리 홀짝).
    링크 쪽은 드롭다운 필터로 항목이 숨겨질 수 있어 JS가 row-a/row-b를 단다.
@@ -574,12 +621,12 @@ table tr[data-active='true'] a {
   border-bottom: var(--line-w) solid currentColor;
 }
 
-/* 인물 멘션(@) 링크 — 화살표 대신 인물 아이콘 + 채도 높은 갈색 (예전 스타일) */
+/* 인물 멘션(@) 링크 — 화살표 대신 인물 아이콘. 색은 일반 링크와 같은 보라 */
 .intro a.mention,
 .drawer-panel a.mention,
 .work-card .card-body a.mention,
 .work-card .card-link.mention {
-  color: var(--mention);
+  color: var(--accent);
 }
 .intro a.mention::before,
 .drawer-panel a.mention::before,
@@ -678,10 +725,10 @@ table tr[data-active='true'] a {
    구분선은 각 td border-top로 유지, table 자체 테두리는 끔 */
 /* padding:0 — table,td 공통 padding(0.625rem)이 표를 좌우로 들여 세로선과 어긋나게 함.
    table 자체 padding을 0으로 해 td 경계 = 세로선(d1/d3/d4/d2)에 정확히 맞춘다. */
-table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; padding: 0; margin-top: var(--top-gap); /* 커튼 아래 공통 최소 여백 */ }
-/* 첫 행 — 위 가로선 제거 + 상단 padding 축소(표 시작 여백 컴팩트).
+table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; padding: 0; margin-top: 0; /* 라벨 아래 여백은 첫 행 padding이 가짐 — 호버 칠이 라벨 선까지 */ }
+/* 첫 행 — 위 가로선 제거. 상단 padding = 컴팩트 5px + 공통 여백 8px(옛 margin-top 몫).
    필터·정렬이 없어 행 순서 고정 → :first-child로 충분 */
-table.sontable tr[data-slug]:first-child td { border-top: 0; padding-top: 0.3125rem; } /* 5+24+11=40 */
+table.sontable tr[data-slug]:first-child td { border-top: 0; padding-top: calc(0.3125rem + var(--top-gap)); } /* 13+24+11=48 */
 /* 표 셀 — 행 총높이를 4px 격자에: 12(위)+24(줄)+11(아래)+1(테두리)=48.
    비대칭 1px은 시각적으로 무감 — 테두리 1px 누적 드리프트 방지가 우선 */
 table.sontable tr[data-slug] td { padding-top: 0.75rem; padding-bottom: 0.6875rem; }
@@ -902,34 +949,41 @@ table.sontable .col-cat   { width: 20%; }
   text-decoration: underline;
 }
 
-/* 하이퍼링크 점멸 — 커서처럼 깜빡여 링크임을 알린다 (0.6s 켜짐/0.6s 꺼짐).
-   호버하면 점멸을 멈추고 웨이트 700. 콜로폰 링크도 같은 어법. */
-@keyframes link-blink {
-  50% { opacity: 0; }
-}
+/* 하이퍼링크 점멸 — JS가 html.blink-dim을 0.7초마다 토글하는 한 클럭에
+   전 링크가 같은 박자로 부드럽게(transition) 숨쉰다. 늦게 나타나는
+   요소(서랍 등)도 클럭이 전역이라 박자가 어긋나지 않는다.
+   호버 중인 링크는 점멸에서 제외(또렷하게 고정). */
 .intro a,
 .drawer-panel a,
 .work-card .card-body a,
 .work-card .card-link,
 .bottom .colophon a {
-  animation: link-blink 1.2s step-end infinite;
+  transition: opacity 0.55s ease;
 }
-.intro a:hover,
-.drawer-panel a:hover,
-.work-card .card-body a:hover,
-.work-card .card-link:hover,
-.bottom .colophon a:hover {
-  animation: none;
-  font-weight: 700;
+html.blink-dim .intro a,
+html.blink-dim .drawer-panel a,
+html.blink-dim .work-card .card-body a,
+html.blink-dim .work-card .card-link,
+html.blink-dim .bottom .colophon a {
+  opacity: 0.3;
+}
+html.blink-dim .intro a:hover,
+html.blink-dim .drawer-panel a:hover,
+html.blink-dim .work-card .card-body a:hover,
+html.blink-dim .work-card .card-link:hover,
+html.blink-dim .bottom .colophon a:hover,
+/* 출처 링크는 메타 어법 — 점멸 제외 */
+html.blink-dim .intro a.memo-source {
+  opacity: 1;
 }
 /* 모션 줄이기 선호 — 점멸 끔 (링크 식별은 보라색이 담당) */
 @media (prefers-reduced-motion: reduce) {
-  .intro a,
-  .drawer-panel a,
-  .work-card .card-body a,
-  .work-card .card-link,
-  .bottom .colophon a {
-    animation: none;
+  html.blink-dim .intro a,
+  html.blink-dim .drawer-panel a,
+  html.blink-dim .work-card .card-body a,
+  html.blink-dim .work-card .card-link,
+  html.blink-dim .bottom .colophon a {
+    opacity: 1;
   }
 }
 

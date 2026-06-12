@@ -32,16 +32,16 @@ const memos = getMemos();
 // 블록 추가 시점 표기 — Are.na의 "added"처럼. ISO → YYYY.MM.DD
 const fmtDate = (iso: string) => (iso ? iso.slice(0, 10).replaceAll('-', '.') : '');
 
-// 메모는 분 단위까지 — 빌드 머신(CI=UTC)과 무관하게 KST로 고정
+// 메모·링크·콜로폰 일시 — 초 단위까지, 빌드 머신(CI=UTC)과 무관하게 KST 고정
 const fmtDateTime = (iso: string) => {
   if (!iso) return '';
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Seoul',
     year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
   }).formatToParts(new Date(iso));
   const g = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
-  return `${g('year')}.${g('month')}.${g('day')} ${g('hour')}:${g('minute')}`;
+  return `${g('year')}.${g('month')}.${g('day')} ${g('hour')}:${g('minute')}:${g('second')}`;
 };
 
 // 우측 드롭다운용 — 수집 링크에 등장하는 태그 목록 (채널 순서대로, 중복 제거)
@@ -332,7 +332,7 @@ const defaultMosaic = fs.readFileSync(
                   <span class="link-title">{l.title || l.url}</span>
                   {(l.addedAt || l.tags.length > 0) && (
                     <span class="block-date">
-                      {fmtDate(l.addedAt)}{l.tags.map((t) => (
+                      {fmtDateTime(l.addedAt)}{l.tags.map((t) => (
                         <>{' · '}<span class="tag-chip" style={`background:${tagColor(t).bg};color:${tagColor(t).fg}`}>#{t}</span></>
                       ))}
                     </span>
@@ -345,12 +345,18 @@ const defaultMosaic = fs.readFileSync(
       </div>
     </div>
 
-    {/* ──────────── 하단: 커튼과 같은 높이(4.5rem)의 콜로폰 영역 ──────────── */}
+    {/* ──────────── 하단: 커튼과 같은 높이(4.5rem)의 콜로폰 마키 ──────────── */}
     <div class="bottom">
-      <p class="colophon">
-        every block of this site lives on <a href="https://www.are.na/hyuk-jang-cud6vccao20" target="_blank" rel="noopener">↗ Are.na</a>
-        {' · '}built {buildStamp}{' · '}now <span id="nowClock">{buildStamp}</span> KST{' · '}ⓒ {new Date().getFullYear()} Hyuk Jang
-      </p>
+      <div class="colophon-track">
+        {[0, 1].map((i) => (
+          <p class="colophon" aria-hidden={i === 1 ? 'true' : undefined}>
+            <span>every block of this site lives on <a href="https://www.are.na/hyuk-jang-cud6vccao20" target="_blank" rel="noopener">↗ Are.na</a></span>
+            <span>built {buildStamp}</span>
+            <span>now <span class="now-clock">{buildStamp}</span> KST</span>
+            <span>ⓒ {new Date().getFullYear()} Hyuk Jang</span>
+          </p>
+        ))}
+      </div>
     </div>
 
   </div>
@@ -738,25 +744,33 @@ const defaultMosaic = fs.readFileSync(
       }
       if (tagFilterEl) tagFilterEl.addEventListener('change', applyLinkFilter);
 
-      // ── 하단 콜로폰 시계 — 빌드 시각 옆에 현재 시각(KST) 병기 ──
-      var clockEl = document.getElementById('nowClock');
+      // ── 하단 콜로폰 시계 — 빌드 시각 옆에 현재 시각(KST, 초 단위) 병기.
+      //    마키 복제본까지 .now-clock 전부 갱신 ──
+      var clockEls = document.querySelectorAll('.now-clock');
       function tickClock() {
-        if (!clockEl) return;
+        if (!clockEls.length) return;
         var parts = new Intl.DateTimeFormat('en-CA', {
           timeZone: 'Asia/Seoul',
           year: 'numeric', month: '2-digit', day: '2-digit',
-          hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+          hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
         }).formatToParts(new Date());
         function g(t) {
           var p = parts.find(function (x) { return x.type === t; });
           return p ? p.value : '';
         }
-        clockEl.textContent = g('year') + '.' + g('month') + '.' + g('day') + ' ' + g('hour') + ':' + g('minute');
+        var s = g('year') + '.' + g('month') + '.' + g('day') + ' ' + g('hour') + ':' + g('minute') + ':' + g('second');
+        clockEls.forEach(function (el) { el.textContent = s; });
       }
-      if (clockEl) {
+      if (clockEls.length) {
         tickClock();
-        setInterval(tickClock, 10000); // 분 단위 표기 — 10초마다 갱신이면 충분
+        setInterval(tickClock, 1000); // 초 단위
       }
+
+      // ── 하이퍼링크 점멸 클럭 — html.blink-dim을 0.7초마다 토글.
+      //    CSS transition이 부드럽게 따라가고, 전 링크가 같은 박자를 공유한다. ──
+      setInterval(function () {
+        document.documentElement.classList.toggle('blink-dim');
+      }, 700);
 
       // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작.
       // 홈 링크가 About 서랍 안에 있으므로 서랍도 닫는다.
