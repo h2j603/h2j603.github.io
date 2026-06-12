@@ -40,8 +40,9 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 4. **Metadata is in the channel DESCRIPTION**, not Are.na "custom metadata"
    (v3 custom metadata has no UI editing box). Parsed at build time. Free-form
    prose lines (no colon / spaced key) are ignored, so prose + fields can mix.
-   Keys: `slug, title, year, medium, size, client, order, tags, cover,
-   published`. All optional.
+   Keys: `slug, title, year, medium, size, client, tags, cover,
+   published`. All optional. (`order:` 키는 정렬에서 폐기 — 표 순서는
+   연도 desc + 같은 연도 안에선 index 채널의 블록 순서를 그대로 따른다)
 5. **Classification tags** — one axis: `identity, editorial, poster, type, web`.
    `tags: identity, poster` in the description. Multiple allowed; `web` is
    auto-added for link works; unknown tokens dropped with a warning.
