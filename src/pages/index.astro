@@ -120,9 +120,9 @@ const defaultMosaic = fs.readFileSync(
                 {/* 블록 전체가 토글 단위 — 라벨/날짜/본문 어디를 눌러도 접고 펼침 */}
                 <div class="memo" role="button" tabindex="0">
                   <span class="memo-head">{m.title}</span>
-                  {m.addedAt && (
+                  {(m.addedAt || m.tags.length > 0) && (
                     <span class="block-date">
-                      {fmtDate(m.addedAt)}{m.addedBy && ` · ${m.addedBy}`}
+                      {fmtDate(m.addedAt)}{m.addedBy && ` · ${m.addedBy}`}{m.tags.length > 0 && ` · ${m.tags.map((t) => "#" + t).join(" ")}`}
                     </span>
                   )}
                   {/* 서식 없이 원문 그대로 (줄바꿈 유지) */}
@@ -300,7 +300,11 @@ const defaultMosaic = fs.readFileSync(
                 {i > 0 && <hr />}
                 <a class="link-item" href={l.url} target="_blank" rel="noopener">
                   <span class="link-title">{l.title || l.url}</span>
-                  {l.addedAt && <span class="block-date">{fmtDate(l.addedAt)}</span>}
+                  {(l.addedAt || l.tags.length > 0) && (
+                    <span class="block-date">
+                      {fmtDate(l.addedAt)}{l.tags.length > 0 && ` · ${l.tags.map((t) => "#" + t).join(" ")}`}
+                    </span>
+                  )}
                 </a>
               </>
             ))}
@@ -576,13 +580,15 @@ const defaultMosaic = fs.readFileSync(
       var stripeTopEl = document.querySelector('.stripe-top');
       var centerEl = document.querySelector('.three-col .center');
 
-      // ── 세로 구분선 정수 px 스냅 ──────────────────────────────────
-      // % 위치(20%·26%…)는 분수 픽셀에 떨어져 환경(배율·해상도)에 따라
-      // 1px 선이 두 픽셀에 걸쳐 굵어 보인다. 정수로 스냅해 두께를 통일.
+      // ── 세로 구분선 디바이스 픽셀 스냅 ─────────────────────────────
+      // % 위치는 분수 픽셀에 떨어져 1px 선이 두 픽셀에 번진다. CSS 정수만으론
+      // 윈도우 배율(125%/150% = DPR 1.25/1.5)에서 여전히 분수 디바이스 픽셀이
+      // 되므로, 디바이스 픽셀 격자(×dpr 반올림 ÷dpr)에 스냅해 두께를 통일.
       var DIVIDER_POS = { d1: 0.2, d5: 0.26, d3: 0.32, d4: 0.68, d2: 0.8 };
       function snapDividers() {
+        var dpr = window.devicePixelRatio || 1;
         Object.keys(DIVIDER_POS).forEach(function (k) {
-          var x = Math.round(window.innerWidth * DIVIDER_POS[k]);
+          var x = Math.round(window.innerWidth * DIVIDER_POS[k] * dpr) / dpr;
           document
             .querySelectorAll('.col-divider.' + k + ', .col-divider-top.' + k)
             .forEach(function (el) { el.style.left = x + 'px'; });
