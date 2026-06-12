@@ -358,13 +358,14 @@ iframe {
 }
 .bottom .colophon {
   margin: 0;
-  padding: 0 2.5rem; /* 복제본 사이 간격 = 2.5+2.5 = 부분 간격(5rem)과 동일 */
+  padding: 0 1.5rem; /* 복제본 사이 간격 = 1.5+1.5 = 부분 간격(3rem)과 동일 */
   display: flex;
-  gap: 5rem; /* 각 부분을 넓게 띄움 */
+  gap: 3rem; /* 부분 간격 */
   white-space: nowrap;
-  font-size: 0.75rem;
-  line-height: 1rem;
-  color: rgba(0, 0, 0, 0.45);
+  /* 본문과 같은 크기·색 */
+  font-size: var(--fs);
+  line-height: 1.25rem;
+  color: var(--ink);
 }
 .bottom .colophon a {
   color: var(--accent);
@@ -390,8 +391,8 @@ iframe {
 }
 .link-filter::after {
   content: '▾';
-  font-size: 0.75rem;
-  line-height: 1rem;
+  font-size: var(--fs); /* 본문 크기와 동일 */
+  line-height: 1.25rem;
   margin-left: 0.25rem;
   color: rgba(0, 0, 0, 0.45);
   pointer-events: none;
@@ -402,8 +403,8 @@ iframe {
   border: 0;
   background: transparent;
   font: inherit;
-  font-size: 0.75rem;
-  line-height: 1rem;
+  font-size: var(--fs); /* 본문 크기와 동일 */
+  line-height: 1.25rem;
   color: var(--ink);
   text-align: center;
   padding: 0;
@@ -479,9 +480,10 @@ iframe {
   align-items: center;
   justify-content: center;
   align-self: stretch; /* flex 컬럼(.right .content)에서도 내용 폭으로 수축 금지 — 선이 끊기지 않게 */
-  font-size: 0.75rem;
-  line-height: 1rem;
-  color: rgba(0, 0, 0, 0.45);
+  /* 본문과 같은 크기·색 */
+  font-size: var(--fs);
+  line-height: 1.25rem;
+  color: var(--ink);
   border-bottom: var(--line-w) solid var(--ink);
 }
 /* 좌/우 컬럼은 패딩(1.25rem)을 상쇄해 전체 폭 띠로 (center는 패딩 0) */
