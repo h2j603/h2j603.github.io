@@ -55,11 +55,15 @@
     margin-left: -10px;
     margin-right: -10px;
   }
-  /* 블록 리스트 — 모바일 left padding(10px) 기준 상쇄 */
+  /* 블록 리스트·마키 — 모바일 left padding(10px) 기준 상쇄 */
   .three-col .left .memo-list {
     width: calc(100% + 20px);
     margin: 0 -10px;
+    margin-top: var(--top-gap);
   }
+  .three-col .left .ticker { margin: 0 -10px; }
+  /* 모바일은 body 흐름 스크롤 — 마키 고정 해제 */
+  .ticker { position: static; }
   .three-col .third {
     position: static;
     width: 100%;
