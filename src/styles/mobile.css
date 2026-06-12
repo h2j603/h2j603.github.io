@@ -69,6 +69,13 @@
   .three-col .right { display: none; }
   /* 단일 컬럼이라 세로 구분선 숨김 */
   .col-divider { display: none; }
+  /* 하단 콜로폰 — 고정 띠 대신 흐름 맨 끝(About 섹션 아래) */
+  .three-col .bottom {
+    position: static;
+    order: 3;
+    height: auto;
+    padding: 1.25rem 0.625rem;
+  }
   /* 수집 링크는 데스크탑 전용 — 모바일에선 표 위 공간을 차지하지 않게 숨김 */
   .link-list { display: none; }
   /* center가 표+아코디언 메인 (work-card 저장소 숨김은 global 공통 규칙이 처리) */
