@@ -30,7 +30,6 @@ const siteLinks = getLinks();
 const memos = getMemos();
 
 // 첫 태그의 틴트 = 블록 배경 (태그 없으면 undefined → 흰 바탕+교차 호버)
-const tagBg = (tags: string[]) => (tags.length ? `background:${tagColor(tags[0]).bg}` : undefined);
 
 // 블록 추가 시점 표기 — Are.na의 "added"처럼. ISO → YYYY.MM.DD
 const fmtDate = (iso: string) => (iso ? iso.slice(0, 10).replaceAll('-', '.') : '');
@@ -97,12 +96,12 @@ const defaultMosaic = fs.readFileSync(
               <>
                 {i > 0 && <hr />}
                 {/* 블록 전체가 토글 단위 — 라벨/날짜/본문 어디를 눌러도 접고 펼침 */}
-                <div class="memo" role="button" tabindex="0" style={tagBg(m.tags)}>
+                <div class="memo" role="button" tabindex="0">
                   <span class="memo-head">{m.title}</span>
                   {(m.addedAt || m.tags.length > 0) && (
                     <span class="block-date">
                       {fmtDate(m.addedAt)}{m.addedBy && ` · ${m.addedBy}`}{m.tags.map((t) => (
-                        <span class="tag-chip" style={`color:${tagColor(t).fg}`}> #{t}</span>
+                        <span class="tag-chip" style={`background:${tagColor(t).bg};color:${tagColor(t).fg}`}>#{t}</span>
                       ))}
                     </span>
                   )}
@@ -286,12 +285,12 @@ const defaultMosaic = fs.readFileSync(
             {siteLinks.map((l, i) => (
               <>
                 {i > 0 && <hr />}
-                <a class="link-item" href={l.url} target="_blank" rel="noopener" style={tagBg(l.tags)}>
+                <a class="link-item" href={l.url} target="_blank" rel="noopener">
                   <span class="link-title">{l.title || l.url}</span>
                   {(l.addedAt || l.tags.length > 0) && (
                     <span class="block-date">
                       {fmtDate(l.addedAt)}{l.tags.map((t) => (
-                        <span class="tag-chip" style={`color:${tagColor(t).fg}`}> #{t}</span>
+                        <span class="tag-chip" style={`background:${tagColor(t).bg};color:${tagColor(t).fg}`}>#{t}</span>
                       ))}
                     </span>
                   )}

@@ -884,5 +884,12 @@ table.sontable .col-cat   { width: 20%; }
 /* 전체 웨이트 400 통일 — 마크다운 강조(strong)도 같은 굵기 (위계는 크기·배치로) */
 b, strong { font-weight: inherit; }
 
-/* 태그 칩 — 진한 동색 (배경 틴트와 한 쌍, tag-colors.ts) */
-.tag-chip { white-space: nowrap; }
+/* 태그 칩 — 라벨에만 색 (틴트 배경 + 진한 동색 텍스트, tag-colors.ts).
+   line-height 1rem 그대로 → 높이 16px, 4px 그리드 유지 (세로 padding 없음) */
+.tag-chip {
+  white-space: nowrap;
+  display: inline-block;
+  padding: 0 0.375rem;
+  border-radius: 0.5rem;
+  margin-left: 0.375rem;
+}
