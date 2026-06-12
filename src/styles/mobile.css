@@ -83,6 +83,9 @@
   }
   /* 단일 컬럼이라 세로 구분선 숨김 */
   .col-divider { display: none; }
+  /* 기본 화면 모자이크 — 모바일 숨김. 페이저 화면에선 장식이 콘텐츠 아래
+     빈 공간을 어지럽히기만 한다. display:none이면 낙하 애니메이션도 안 돈다. */
+  .default-state { display: none; }
   /* 하단 시간 — 고정 띠 대신 흐름 맨 끝(About 섹션 아래).
      좁아서 두 줄: built 좌 / now 우 (대각 호응) */
   .three-col .bottom {
