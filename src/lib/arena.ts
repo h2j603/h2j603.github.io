@@ -279,3 +279,9 @@ export function blockAddedBy(block: Json): string {
   const n = block?.user?.name ?? block?.connection?.connected_by?.name;
   return typeof n === "string" ? n : "";
 }
+
+/** description DSL의 `tags:` — 쉼표 구분 자유형 태그 (trim·중복 제거). */
+export function parseTags(value: string | undefined): string[] {
+  if (!value) return [];
+  return [...new Set(value.split(',').map((t) => t.trim()).filter(Boolean))];
+}

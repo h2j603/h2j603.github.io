@@ -5,7 +5,14 @@
  * 펼치면 본문을 서식 없이 있는 그대로(plain text, 줄바꿈 유지) 표시.
  * 수집 시각·추가한 사람을 함께 담는다. 채널 순서 그대로.
  */
-import { tryGetChannelContents, blockAddedAt, blockAddedBy } from './arena.js';
+import {
+  tryGetChannelContents,
+  blockAddedAt,
+  blockAddedBy,
+  parseTags,
+  parseDescriptionMetadata,
+  readMarkdown,
+} from './arena.js';
 import { classifyBlock } from './images.js';
 import { firstSentence } from './links.js';
 import { memoSchema, type Memo } from './schema.js';
@@ -40,6 +47,8 @@ export async function buildMemos(): Promise<Memo[]> {
       text,
       addedAt: blockAddedAt(b),
       addedBy: blockAddedBy(b),
+      // 텍스트 블록의 description 필드 = 메타 전용 (본문은 content)
+      tags: parseTags(parseDescriptionMetadata(readMarkdown(b?.description)).tags),
     });
     if (!parsed.success) {
       console.warn(`memo: block ${b?.id} schema validation failed — skipped`);
