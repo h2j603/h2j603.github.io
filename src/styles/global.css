@@ -351,13 +351,10 @@ iframe {
   display: flex;
   justify-content: space-between; /* 좌 = built, 우 = now */
   white-space: nowrap;
-  /* 대형 시계 — 밴드(5.5rem)를 꽉 채우는 디스플레이 크기.
-     숫자는 어센더·디센더가 없어 라인박스(5.5rem)를 넘는 크기로
-     캡 높이를 밴드에 딱 맞춘다. 좁은 화면은 vw로 양보. */
-  font-size: clamp(3rem, 7.5vw, 6.75rem);
-  line-height: 5.5rem;
+  /* 본문과 같은 크기·색 */
+  font-size: var(--fs);
+  line-height: 1.25rem;
   color: var(--ink);
-  font-variant-numeric: tabular-nums; /* 초가 바뀌어도 폭 안 흔들리게 */
 }
 
 /* 우측 태그 드롭다운 — 블록 문법에 맞춘 조용한 컨트롤: 가운데 정렬,
