@@ -1,25 +1,26 @@
 /**
  * 메모 — Are.na `memo` 채널 (텍스트 블록 1개 = 메모 1개).
  *
- * 좌측 컬럼에 아코디언으로 표시: 접힌 상태 = 라벨(블록 title, 없으면
- * 본문 첫 줄 요약), 펼치면 본문(markdown → HTML). 채널 순서 그대로.
- * 채널이 없거나 비어 있으면 빈 배열.
+ * 좌측 컬럼 아코디언: 접힌 라벨 = 본문 첫 문장(블록 title 무시, 60자 말줄임),
+ * 펼치면 본문을 서식 없이 있는 그대로(plain text, 줄바꿈 유지) 표시.
+ * 수집 시각·추가한 사람을 함께 담는다. 채널 순서 그대로.
  */
-import { tryGetChannelContents, blockAddedAt } from "./arena.js";
+import { tryGetChannelContents, blockAddedAt, blockAddedBy } from './arena.js';
 import { classifyBlock } from './images.js';
-import { markdownToHtml } from './body.js';
+import { firstSentence } from './links.js';
 import { memoSchema, type Memo } from './schema.js';
 import { ARENA_MEMO_CHANNEL } from './config.js';
 
-/** 라벨 fallback — 본문 첫 줄에서 마크다운 기호를 걷어내고 40자로 자름. */
-function firstLineLabel(markdown: string): string {
-  const line = (markdown.split(/\r?\n/).find((l) => l.trim()) ?? '').trim();
-  const plain = line
-    .replace(/^#{1,6}\s*/, '')
+const LABEL_MAX = 60;
+
+/** 라벨 — 본문 첫 문장. 너무 길면 말줄임. (마크다운 기호는 걷어냄) */
+function memoLabel(raw: string): string {
+  const plain = raw
+    .replace(/^#{1,6}\s*/gm, '')
     .replace(/[*_`>]/g, '')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .trim();
-  return plain.length > 40 ? plain.slice(0, 40) + '…' : plain;
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+  const s = firstSentence(plain);
+  return s.length > LABEL_MAX ? s.slice(0, LABEL_MAX) + '…' : s;
 }
 
 export async function buildMemos(): Promise<Memo[]> {
@@ -32,10 +33,14 @@ export async function buildMemos(): Promise<Memo[]> {
   for (const b of blocks) {
     const c = classifyBlock(b);
     if (c.kind !== 'text') continue;
-    const title =
-      (typeof b?.title === 'string' && b.title.trim()) || firstLineLabel(c.content);
-    const html = markdownToHtml(c.content, `memo block ${out.length + 1}`);
-    const parsed = memoSchema.safeParse({ title, html, addedAt: blockAddedAt(b) });
+    const text = c.content.trim();
+    if (!text) continue;
+    const parsed = memoSchema.safeParse({
+      title: memoLabel(text),
+      text,
+      addedAt: blockAddedAt(b),
+      addedBy: blockAddedBy(b),
+    });
     if (!parsed.success) {
       console.warn(`memo: block ${b?.id} schema validation failed — skipped`);
       continue;

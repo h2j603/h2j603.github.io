@@ -43,14 +43,13 @@ const defaultMosaic = fs.readFileSync(
   {/* 줄(.stripe-row)은 JS buildStripe가 화면 높이만큼 생성 — 기본 노출은 위 72px.
       띠 클릭 → 커튼이 전면으로 내려오고 그 위에 About 패널이 인쇄된다(서랍) */}
   <div class="stripe-top" role="button" tabindex="0" aria-label="about 열기/닫기"></div>
-  {/* 띠 우측 칩들 — about 탭(서랍 닫혔을 때만) + 언어 토글(항상, 서랍 위에서도) */}
-  <span class="curtain-tab" aria-hidden="true">about ↓</span>
+  {/* 띠 우측 칩들 — about 탭(상시, 열리면 ↑로 반전) + 언어 토글 */}
+  <button type="button" class="curtain-tab">about ↓</button>
   <button type="button" class="lang-toggle" data-lang="en">KO</button>
   {/* About 서랍 — 커튼(형제) 위에 얹히는 패널 레이어. 천 클릭은 통과시켜
       stripe 토글로 가고, 패널 자신만 클릭을 소화한다. */}
   <div class="about-drawer" data-lang="en">
     <div class="drawer-panel">
-      <button type="button" class="drawer-close" aria-label="닫기">✕</button>
       {introGroups.length > 0 && (
         <div class="intro-body">
           {
@@ -117,10 +116,16 @@ const defaultMosaic = fs.readFileSync(
             {memos.map((m, i) => (
               <>
                 {i > 0 && <hr />}
-                <div class="memo">
-                  <button type="button" class="memo-head">{m.title}</button>
-                  {m.addedAt && <span class="block-date">{fmtDate(m.addedAt)}</span>}
-                  <div class="memo-body" set:html={m.html} />
+                {/* 블록 전체가 토글 단위 — 라벨/날짜/본문 어디를 눌러도 접고 펼침 */}
+                <div class="memo" role="button" tabindex="0">
+                  <span class="memo-head">{m.title}</span>
+                  {m.addedAt && (
+                    <span class="block-date">
+                      {fmtDate(m.addedAt)}{m.addedBy && ` · ${m.addedBy}`}
+                    </span>
+                  )}
+                  {/* 서식 없이 원문 그대로 (줄바꿈 유지) */}
+                  <div class="memo-body">{m.text}</div>
                 </div>
               </>
             ))}
@@ -601,6 +606,7 @@ const defaultMosaic = fs.readFileSync(
       // 띠(.stripe-top)를 클릭하면 커튼이 전면(100dvh)으로 내려오고, 그 위에
       // 어바웃·연락처 패널(.about-drawer, 형제 레이어)이 인쇄된다.
       // 닫기: 천(패널 밖) 클릭 / ✕ / ESC. 상태는 .open 클래스 하나.
+      var curtainTabEl = document.querySelector('.curtain-tab');
       function drawerOpen() {
         return stripeTopEl && stripeTopEl.classList.contains('open');
       }
@@ -608,10 +614,15 @@ const defaultMosaic = fs.readFileSync(
         if (!stripeTopEl) return;
         var open = typeof force === 'boolean' ? force : !drawerOpen();
         stripeTopEl.classList.toggle('open', open);
+        // about 탭은 상시 노출 — 화살표만 방향 반전 (↓ 열기 / ↑ 닫기)
+        if (curtainTabEl) curtainTabEl.textContent = open ? 'about ↑' : 'about ↓';
       }
       if (stripeTopEl) {
         // 닫힌 띠 클릭 = 열기. (열린 상태에선 서랍 레이어가 클릭을 받는다)
         stripeTopEl.addEventListener('click', function () { toggleDrawer(); });
+      }
+      if (curtainTabEl) {
+        curtainTabEl.addEventListener('click', function () { toggleDrawer(); });
       }
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && drawerOpen()) toggleDrawer(false);
@@ -619,16 +630,14 @@ const defaultMosaic = fs.readFileSync(
       var drawerEl = document.querySelector('.about-drawer');
       if (drawerEl) {
         drawerEl.addEventListener('click', function (e) {
-          if (e.target.closest('.drawer-close')) { toggleDrawer(false); return; }
           // 패널 밖(천 위) 클릭 → 닫기
           if (!e.target.closest('.drawer-panel')) toggleDrawer(false);
         });
       }
 
-      // ── 좌측 메모 아코디언 — 라벨 클릭 → 본문 펼침, 한 번에 하나만 ──
-      document.querySelectorAll('.memo .memo-head').forEach(function (head) {
-        head.addEventListener('click', function () {
-          var memo = head.closest('.memo');
+      // ── 좌측 메모 아코디언 — 블록 전체가 토글 단위, 한 번에 하나만 ──
+      document.querySelectorAll('.memo').forEach(function (memo) {
+        memo.addEventListener('click', function () {
           var wasOpen = memo.classList.contains('open');
           document.querySelectorAll('.memo.open').forEach(function (m) {
             m.classList.remove('open');
