@@ -300,9 +300,9 @@ iframe {
 }
 .three-col .third {
   position: absolute;
-  /* 띠(4.5rem)와 하단 .bottom(4.5rem) 사이 영역만 — 100%로 두면 같은
+  /* 띠(4.5rem)와 하단 .bottom(5.5rem) 사이 영역만 — 100%로 두면 같은
      특이도의 나중 선언이 calc를 덮어 바닥이 화면 밖으로 잘린다 */
-  height: calc(100% - 9rem);
+  height: calc(100% - 10rem);
   overflow-y: auto;
   overflow-x: hidden;
   padding: 1.25rem;
@@ -318,7 +318,7 @@ iframe {
 .col-divider {
   position: absolute;
   top: 0;
-  bottom: 4.5rem; /* .bottom 영역 윗선에서 정지 */
+  bottom: 5.5rem; /* .bottom 영역 윗선에서 정지 */
   width: 0;
   /* hr과 같은 이유 — border 페인트로 표 세로 border와 두께 통일 */
   border-left: var(--line-w) solid var(--ink);
@@ -336,44 +336,25 @@ iframe {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 4.5rem;
+  height: 5.5rem; /* 커튼(4.5rem)보다 +22% — 4px 격자에서 20% 증량의 최근접 */
   border-top: var(--line-w) solid var(--ink);
   background: var(--bg);
   z-index: 7; /* 세로선(6) 위, 커튼(100) 아래 */
-  overflow: hidden; /* 마키 트랙 자르기 */
-}
-/* 콜로폰 마키 — 같은 내용 2벌을 이어 붙여 -50%까지 밀면 이음새 없이 무한 순환 */
-.colophon-track {
   display: flex;
-  width: max-content;
-  height: 100%;
   align-items: center;
-  animation: colophon-marquee 36s linear infinite;
-}
-@keyframes colophon-marquee {
-  to { transform: translateX(-50%); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .colophon-track { animation: none; }
+  padding: 0 1.25rem; /* 컬럼 패딩과 같은 세로 라인 */
 }
 .bottom .colophon {
   margin: 0;
-  padding: 0 1.5rem; /* 복제본 사이 간격 = 1.5+1.5 = 부분 간격(3rem)과 동일 */
+  padding: 0;
+  width: 100%;
   display: flex;
-  gap: 3rem; /* 부분 간격 */
+  justify-content: space-between; /* 좌 = built, 우 = now */
   white-space: nowrap;
   /* 본문과 같은 크기·색 */
   font-size: var(--fs);
   line-height: 1.25rem;
   color: var(--ink);
-}
-.bottom .colophon a {
-  color: var(--accent);
-  text-decoration: none;
-  font-style: normal; /* 본문 링크의 이탤릭 어법과 분리 — 콜로폰은 UI 크롬 */
-}
-@media (hover: hover) {
-  .bottom .colophon a:hover { text-decoration: underline; }
 }
 
 /* 우측 태그 드롭다운 — 블록 문법에 맞춘 조용한 컨트롤: 가운데 정렬,
@@ -958,22 +939,19 @@ table.sontable .col-cat   { width: 20%; }
 .intro a,
 .drawer-panel a,
 .work-card .card-body a,
-.work-card .card-link,
-.bottom .colophon a {
+.work-card .card-link {
   transition: opacity 0.55s ease;
 }
 html.blink-dim .intro a,
 html.blink-dim .drawer-panel a,
 html.blink-dim .work-card .card-body a,
-html.blink-dim .work-card .card-link,
-html.blink-dim .bottom .colophon a {
+html.blink-dim .work-card .card-link {
   opacity: 0.3;
 }
 html.blink-dim .intro a:hover,
 html.blink-dim .drawer-panel a:hover,
 html.blink-dim .work-card .card-body a:hover,
 html.blink-dim .work-card .card-link:hover,
-html.blink-dim .bottom .colophon a:hover,
 /* 출처 링크는 메타 어법 — 점멸 제외 */
 html.blink-dim .intro a.memo-source {
   opacity: 1;
@@ -983,8 +961,7 @@ html.blink-dim .intro a.memo-source {
   html.blink-dim .intro a,
   html.blink-dim .drawer-panel a,
   html.blink-dim .work-card .card-body a,
-  html.blink-dim .work-card .card-link,
-  html.blink-dim .bottom .colophon a {
+  html.blink-dim .work-card .card-link {
     opacity: 1;
   }
 }
