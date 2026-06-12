@@ -78,6 +78,34 @@ body {
   overflow-wrap: break-word;
 }
 
+/* ───────────────────────────────────────────────────────────────────────
+   영역 라벨 마키 — 커튼과 각 영역 사이, 무한 흐르는 텍스트 바.
+   컬럼 상단 sticky: 콘텐츠가 그 밑으로 스크롤. 같은 트랙 2개를
+   translateX(-50%)로 돌려 이음새 없는 무한 루프.
+   ─────────────────────────────────────────────────────────────────────── */
+.ticker {
+  position: sticky;
+  top: 0;
+  z-index: 5; /* 작품 미디어(z4) 위 */
+  background: var(--bg);
+  border-bottom: 1px solid var(--ink);
+  overflow: hidden;
+  white-space: nowrap;
+  line-height: 26px;
+  height: 27px;
+}
+/* 좌/우 컬럼은 padding(20px) 상쇄해 전체 폭 */
+.three-col .left .ticker,
+.three-col .right .ticker { margin: 0 -20px; }
+.ticker-track {
+  display: inline-block;
+  animation: ticker-flow 40s linear infinite;
+}
+@keyframes ticker-flow {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
 /* 텍스트 드래그 하이라이트 — 포인트 보라 + 흰 텍스트 */
 ::selection {
   background: var(--accent);
@@ -337,7 +365,7 @@ iframe {
   background-color: var(--bg);
   width: 20%;
   left: 0;
-  padding-top: var(--top-gap); /* 커튼 아래 공통 최소 여백 */
+  padding-top: 0; /* 마키(ticker)가 컬럼 최상단 — 여백은 마키 아래(--top-gap) */
   /* 스크롤 가능 (.third의 auto 상속) — 커튼에 밀려 내려간 내용도 읽을 수 있게.
      스크롤바는 .third 공통 규칙으로 숨김 */
 }
@@ -365,7 +393,7 @@ iframe {
   background-color: var(--bg);
   left: 80%;
   width: 20%;
-  padding-top: var(--top-gap); /* 커튼 아래 공통 최소 여백 */
+  padding-top: 0; /* 마키(ticker)가 컬럼 최상단 — 여백은 마키 아래(--top-gap) */
   /* 표가 길어지면 스크롤 가능하게 */
 }
 /* 우측 컬럼 콘텐츠 — 수집 링크, 가운데 정렬 (좌측 인물 인덱스와 동일) */
@@ -389,7 +417,8 @@ iframe {
   flex-direction: column;
   align-items: stretch;
   width: calc(100% + 40px);
-  margin: 0 -20px; /* 컬럼 패딩 상쇄 — 블록·구분선이 컬럼 전체 폭 */
+  margin: 0 -20px;
+  margin-top: var(--top-gap); /* 마키 아래 공통 최소 여백 */
 }
 .memo-list hr,
 .link-list hr {
