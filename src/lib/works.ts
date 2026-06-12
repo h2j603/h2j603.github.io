@@ -318,7 +318,9 @@ export async function buildWorks(
     }
   });
 
-  works.sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
+  // 정렬하지 않는다 — works[]는 index 채널의 블록 순서 그대로.
+  // (표는 연도 desc로 stable 재정렬 → 같은 연도 안에선 이 채널 순서 유지.
+  //  description의 order: 키는 정렬에서 폐기 — 순서는 Are.na에서 끌어서 조정)
 
   return {
     works,
