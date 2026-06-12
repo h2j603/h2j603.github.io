@@ -112,10 +112,6 @@ const defaultMosaic = fs.readFileSync(
         본문 @멘션 매칭용으로 데이터에서 계속 동작 ──────────── */}
     <div class="third left">
       <div class="content intro">
-        {/* 영역 라벨 — 큰 볼드 한 줄, 양쪽 정렬 (단어 사이 공백만 늘어남) */}
-        <div class="area-label">
-          {"hyuk.xyz as a notepad".split(" ").map((w) => <span>{w}</span>)}
-        </div>
         {memos.length > 0 && (
           <div class="memo-list">
             {memos.map((m, i) => (
@@ -142,9 +138,6 @@ const defaultMosaic = fs.readFileSync(
     {/* ──────────── 중앙: 작품 표 + 카드 아코디언 ──────────── */}
     <div class="third center">
       <div class="content">
-        <div class="area-label">
-          {"hyuk.xyz as a portfolio".split(" ").map((w) => <span>{w}</span>)}
-        </div>
         {/* 작품 미선택 시 배경 모자이크 — fixed 오버레이, 로드 시 자동 낙하 */}
         <div class="default-state" id="__default" hidden>
           <Fragment set:html={defaultMosaic} />
@@ -299,9 +292,6 @@ const defaultMosaic = fs.readFileSync(
     {/* ──────────── 우측: 수집 링크 (Are.na links 채널) — 언어 토글은 띠 위로 이사 ──────────── */}
     <div class="third right">
       <div class="content">
-        <div class="area-label">
-          {"hyuk.xyz as a collection".split(" ").map((w) => <span>{w}</span>)}
-        </div>
         {/* 제목만 — 가운데 (설명은 데이터에만 보관) */}
         {siteLinks.length > 0 && (
           <nav class="link-list" aria-label="collected links">
