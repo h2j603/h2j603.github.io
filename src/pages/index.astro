@@ -585,6 +585,21 @@ const defaultMosaic = fs.readFileSync(
 
       var stripeTopEl = document.querySelector('.stripe-top');
       var centerEl = document.querySelector('.three-col .center');
+
+      // ── 세로 구분선 정수 px 스냅 ──────────────────────────────────
+      // % 위치(20%·26%…)는 분수 픽셀에 떨어져 환경(배율·해상도)에 따라
+      // 1px 선이 두 픽셀에 걸쳐 굵어 보인다. 정수로 스냅해 두께를 통일.
+      var DIVIDER_POS = { d1: 0.2, d5: 0.26, d3: 0.32, d4: 0.68, d2: 0.8 };
+      function snapDividers() {
+        Object.keys(DIVIDER_POS).forEach(function (k) {
+          var x = Math.round(window.innerWidth * DIVIDER_POS[k]);
+          document
+            .querySelectorAll('.col-divider.' + k + ', .col-divider-top.' + k)
+            .forEach(function (el) { el.style.left = x + 'px'; });
+        });
+      }
+      window.addEventListener('resize', snapDividers);
+      snapDividers();
       function isMobileView() {
         return window.matchMedia('(max-width: 600px)').matches;
       }

@@ -1,22 +1,11 @@
 /* ───────────────────────────────────────────────────────────────────────
-   한글 폰트 (HakgyoansimBareondotum Regular)
-   baseline 정렬은 CSS metric override 대신 JS로 한글 char를 .ko span으로
-   감싸고 아래 CSS로 위치를 미세 조정한다.
+   한글 폰트 — Pretendard Variable (Base.astro에서 dynamic-subset CSS 로드).
+   Pretendard는 라틴과 수직 메트릭이 맞아 학교안심 시절의 baseline 보정이
+   불필요 — .ko 이동 0 (JS 래핑은 유지, 필요 시 미세 조정 지점).
    ─────────────────────────────────────────────────────────────────────── */
-@font-face {
-  font-family: 'HakgyoansimBareondotum';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/HakgyoansimBareondotumR.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  /* 폰트 로딩 중에도 대체 글꼴로 텍스트 즉시 표시 (FOIT 방지) */
-  font-display: swap;
-}
-
-/* 한글 char span — JS가 자동으로 감쌈. 영문 baseline에 맞춰 살짝 위로.
-   inline + position: relative top — 같은 라인 박스 공유 → ::selection이 일정한 사각형. */
 .ko {
   position: relative;
-  top: -0.12em;
+  top: 0;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -25,11 +14,8 @@
 :root {
   /* 라이트 단일 테마 — 시스템 다크 설정에서도 강제 라이트 렌더 */
   color-scheme: light;
-  /* 전 사이트 단일 폰트 크기 — 뷰포트 비례하되 완만한 커브(순수 vw는 큰
-     화면에서 과대). 기준점: 1440px≈14px, 1920px≈16px, 하한 12/상한 17px.
-     모든 텍스트가 이 값 하나를 상속 — 뱃지·아이콘(em 글리프)도 같이 비례.
-     (모바일은 mobile.css에서 기기 폭 기준으로 재정의) */
-  --fs: clamp(12px, calc(8px + 0.42vw), 17px);
+  /* 전 사이트 단일 폰트 크기 — 1rem(=1rem) 고정. 비례 곡선 폐기. */
+  --fs: 1rem;
   --bg: #ffffff;
   --ink: #000000;          /* UI 잉크 — 브라운(#775d4f)에서 블랙으로. 줄무늬·모자이크 브라운은 유지 */
   --accent: #b362ff;       /* hyuk repo의 lawngreen → 보라 */
@@ -37,7 +23,9 @@
   --tint-accent: #e6d6ff;  /* 보라 틴트 */
   --tint-brown: #e3dad3;   /* 브라운 틴트 */
   /* 커튼 아래 콘텐츠 공통 최소 여백 — 좌(메모)/중(표)/우(링크) 동일 */
-  --top-gap: 8px;
+  --top-gap: 0.5rem;
+  /* 모든 선의 단일 두께 — 환경별 들쭉남 방지 (위치는 JS가 정수 px 스냅) */
+  --line-w: 1px;
   --mention: #000000;      /* @멘션 링크 — 브라운 일괄 블랙 전환에 포함 */
   --scrollbar: rgba(0, 0, 0, 0.35);
   --scrollbar-hover: rgba(0, 0, 0, 0.55);
@@ -63,12 +51,14 @@
 html {
   height: 100%;
   overflow: hidden;
+  /* rem 기준 고정 — 모든 수치가 1rem = 1rem 격자 위에 선다 */
+  font-size: 16px;
 }
 body {
   height: 100%;
   overflow: hidden;
   font-size: var(--fs); /* 단일 크기 — 표·본문·토글 전부 이걸 상속 */
-  font-family: neue-haas-unica, 'HakgyoansimBareondotum', sans-serif;
+  font-family: neue-haas-unica, 'Pretendard Variable', Pretendard, sans-serif;
   font-weight: 500; /* 400 → 500, 전체적으로 살짝 두껍게 */
   font-style: normal;
   color: var(--ink);
@@ -91,23 +81,23 @@ body {
   display: flex;
   justify-content: space-between;
   background: var(--bg);
-  border-bottom: 1px solid var(--ink);
+  border-bottom: var(--line-w) solid var(--ink);
   font-size: calc(var(--fs) * 1.5);
   font-weight: 700;
   line-height: 1.3;
-  padding: 6px 0 7px;
+  padding: 0.375rem 0 0.4375rem;
 }
-/* 좌/우 — 컬럼 padding(20px) 상쇄해 배경·선은 전체 폭, 텍스트는 20px 인셋 */
+/* 좌/우 — 컬럼 padding(1.25rem) 상쇄해 배경·선은 전체 폭, 텍스트는 1.25rem 인셋 */
 .three-col .left .area-label,
 .three-col .right .area-label {
-  margin: 0 -20px;
-  padding-left: 20px;
-  padding-right: 20px;
+  margin: 0 -1.25rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
 }
-/* 중앙 — 표 셀 텍스트 인셋(10px)과 정렬 */
+/* 중앙 — 표 셀 텍스트 인셋(0.625rem)과 정렬 */
 .three-col .center .area-label {
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 0.625rem;
+  padding-right: 0.625rem;
 }
 
 /* 텍스트 드래그 하이라이트 — 포인트 보라 + 흰 텍스트 */
@@ -130,7 +120,7 @@ h2 {
   text-align: center;
 }
 p {
-  padding-top: 20px;
+  padding-top: 1.25rem;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -156,14 +146,14 @@ table.sontable td .ko { top: 0; }
    ─────────────────────────────────────────────────────────────────────── */
 hr {
   border: none;
-  height: 1px;
+  height: var(--line-w);
   background-color: var(--ink);
-  margin: 15px 0;
+  margin: 0.9375rem 0;
 }
-/* about/footer(.left) 가로선 — .third padding(20px)을 상쇄해 컬럼 전체 너비로 */
+/* about/footer(.left) 가로선 — .third padding(1.25rem)을 상쇄해 컬럼 전체 너비로 */
 .intro hr {
-  margin-left: -20px;
-  margin-right: -20px;
+  margin-left: -1.25rem;
+  margin-right: -1.25rem;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -172,8 +162,8 @@ hr {
 table {
   width: 100%;
   margin: auto;
-  margin-top: 20px;
-  margin-bottom: 50px;
+  margin-top: 1.25rem;
+  margin-bottom: 3.125rem;
   text-align: left;
   border-top: 0;
 }
@@ -181,14 +171,14 @@ table,
 tr,
 td,
 th {
-  border-top: 1px solid var(--ink);
+  border-top: var(--line-w) solid var(--ink);
   border-collapse: collapse;
-  padding: 10px;
+  padding: 0.625rem;
 }
 /* 행 hover — active(펼침)와 동일한 밑줄(border-bottom). 데스크탑만. */
 @media (hover: hover) {
   table tr[data-slug]:hover td a {
-    border-bottom: 1px solid currentColor;
+    border-bottom: var(--line-w) solid currentColor;
   }
 }
 /* ───────────────────────────────────────────────────────────────────────
@@ -200,15 +190,15 @@ img {
 }
 iframe {
   width: 100%;
-  height: 300px;
+  height: 18.75rem;
   border: none;
   display: block;
-  margin: 20px 0;
+  margin: 1.25rem 0;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
    페이지 상단 줄무늬 띠 = About 서랍의 손잡이.
-   보라(#a966ff)+갈색(#775d4f) 타일 18×36px, 기본은 위 2줄(72px).
+   보라(#a966ff)+갈색(#775d4f) 타일 18×2.25rem, 기본은 위 2줄(4.5rem).
    클릭하면 커튼이 전면(100dvh)으로 내려오고 그 위에 About 패널
    (.about-drawer, 형제 레이어)이 인쇄된다 — "포스터의 뒷면".
    ─────────────────────────────────────────────────────────────────────── */
@@ -218,11 +208,11 @@ iframe {
   left: 0;
   right: 0;
   z-index: 100;
-  height: 72px;
+  height: 4.5rem;
   overflow: hidden;
   transition: height 0.5s ease;
   cursor: pointer;
-  /* row 사이 공백 텍스트 노드가 body line-height(~15px) 만큼 차지하지 않게 차단.
+  /* row 사이 공백 텍스트 노드가 body line-height(~0.9375rem) 만큼 차지하지 않게 차단.
      이게 시각적으로 stripe를 50~63px로 두껍게 보이게 만들던 진범. */
   line-height: 0;
   font-size: 0;
@@ -234,14 +224,14 @@ iframe {
 /* 띠 우측 about 탭 — 상시 노출, 화살표만 ↓/↑ 반전. 클릭 = 토글 */
 .curtain-tab {
   position: fixed;
-  top: 24px; /* 띠(72px) 세로 중앙 */
-  right: 20px;
+  top: 1.5rem; /* 띠(4.5rem) 세로 중앙 */
+  right: 1.25rem;
   z-index: 102; /* 서랍 레이어(101) 위 — 열린 상태에서도 클릭 가능 */
   display: inline-flex;
   align-items: center;
-  height: 24px;
-  padding: 0 9px;
-  border: 1px solid var(--ink);
+  height: 1.5rem;
+  padding: 0 0.5625rem;
+  border: var(--line-w) solid var(--ink);
   border-radius: 999px;
   background: var(--bg);
   cursor: pointer;
@@ -263,7 +253,7 @@ iframe {
   align-items: flex-start;
   justify-content: center;
   overflow-y: auto;
-  padding: 96px 20px 60px;
+  padding: 6rem 1.25rem 3.75rem;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
@@ -278,14 +268,14 @@ iframe {
 /* 패널 — 커튼 천에 핀으로 꽂은 흰 종이 (포스터의 뒷면) */
 .drawer-panel {
   position: relative;
-  width: min(620px, 92vw);
+  width: min(38.75rem, 92vw);
   background: var(--bg);
-  border: 1px solid var(--ink);
-  padding: 28px 28px 32px;
+  border: var(--line-w) solid var(--ink);
+  padding: 1.75rem 1.75rem 2rem;
 }
 .drawer-panel hr {
-  margin-left: -28px;
-  margin-right: -28px;
+  margin-left: -1.75rem;
+  margin-right: -1.75rem;
 }
 /* 서랍 안 본문 — 인트로/푸터와 같은 프로즈 리듬 */
 .drawer-panel p {
@@ -299,7 +289,7 @@ iframe {
 .about-drawer[data-lang='en'] .bilingual > [lang='ko'] { display: none; }
 .stripe-row {
   display: flex;
-  height: 36px;
+  height: 2.25rem;
   overflow: hidden;
 }
 .stripe-row .cell {
@@ -310,16 +300,16 @@ iframe {
 .stripe-row .cell.purple { background: #a966ff; }
 .stripe-row .cell.brown  { background: #775d4f; }
 
-/* 3-Column — stripe 2줄(36×2=72px) 바로 아래, 여유 0.
+/* 3-Column — stripe 2줄(36×2=4.5rem) 바로 아래, 여유 0.
    스크롤 콘텐츠가 띠 밑에서 바로 잘리므로 띠 아래 흰 띠(구 sticky 네비
    배경처럼 보이던 잔재)가 생기지 않는다. */
 .three-col .left,
 .three-col .center,
 .three-col .right {
-  top: 72px;
-  height: calc(100% - 72px);
+  top: 4.5rem;
+  height: calc(100% - 4.5rem);
 }
-/* stripe-row 안 line-height 잔여 픽셀 차단 — height: 24px 정확히 보장 */
+/* stripe-row 안 line-height 잔여 픽셀 차단 — height: 1.5rem 정확히 보장 */
 .stripe-row { line-height: 0; }
 
 
@@ -327,7 +317,7 @@ iframe {
    3-Column Split (.three-col 래퍼로 감싸서 .third 클래스 적용)
    ─────────────────────────────────────────────────────────────────────── */
 /* 래퍼를 viewport에 고정 — absolute 컬럼들의 기준(containing block)을 명확히
-   해서 컬럼이 항상 stripe(48px) 아래 top:60px 자리에 머무르게 한다.
+   해서 컬럼이 항상 stripe(3rem) 아래 top:3.75rem 자리에 머무르게 한다.
    stripe-top(z:100)보다 아래 z-index. */
 .three-col {
   position: fixed;
@@ -339,7 +329,7 @@ iframe {
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 20px;
+  padding: 1.25rem;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -347,13 +337,13 @@ iframe {
 
 /* 컬럼 세로 구분선 — three-col 안 absolute, 화면 전체 높이.
    z-index 6: 작품 이미지/iframe(z4) 위 → 끊김 없음(세로선>이미지).
-   three-col(z1) 안이라 stripe(z100)보다 항상 아래 레이어 — 띠 구간(상단 72px)과
+   three-col(z1) 안이라 stripe(z100)보다 항상 아래 레이어 — 띠 구간(상단 4.5rem)과
    호버로 펼쳐진 띠 뒤로 가려진다. (띠 위를 지나던 col-divider-top은 폐기) */
 .col-divider {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 1px;
+  width: var(--line-w);
   background: var(--ink);
   z-index: 6;
   pointer-events: none;
@@ -378,17 +368,17 @@ iframe {
   left: 20%;
   width: 60%;
   /* 좌우 패딩 0 — 표가 center(20~80%)를 꽉 채워 컬럼 경계가 정확히 56%/68%에
-     오게 한다(세로 구분선 d3/d4와 정렬). 상단 여백은 표 margin-top(20px)이 잡는다. */
-  padding: 0 0 20px;
+     오게 한다(세로 구분선 d3/d4와 정렬). 상단 여백은 표 margin-top(1.25rem)이 잡는다. */
+  padding: 0 0 1.25rem;
   /* 작업영역은 기본 스크롤바 노출 */
   scrollbar-width: auto;
   -ms-overflow-style: auto;
 }
-.three-col .center::-webkit-scrollbar { width: 10px; height: 10px; }
+.three-col .center::-webkit-scrollbar { width: 0.625rem; height: 0.625rem; }
 .three-col .center::-webkit-scrollbar-track { background: transparent; }
 .three-col .center::-webkit-scrollbar-thumb {
   background: var(--scrollbar);
-  border-radius: 5px;
+  border-radius: 0.3125rem;
 }
 .three-col .center::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-hover);
@@ -420,8 +410,8 @@ iframe {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  width: calc(100% + 40px);
-  margin: 0 -20px;
+  width: calc(100% + 2.5rem);
+  margin: 0 -1.25rem;
   margin-top: var(--top-gap); /* 마키 아래 공통 최소 여백 */
 }
 .memo-list hr,
@@ -434,8 +424,8 @@ iframe {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 14px 20px;
+  gap: 0.25rem;
+  padding: 0.875rem 1.25rem;
   text-decoration: none;
   font-style: normal;
   color: var(--ink);
@@ -473,11 +463,11 @@ iframe {
   line-height: 1.5;
 }
 /* 펼친 메모 라벨 — 표 활성 행과 같은 밑줄 어법 */
-.memo.open .memo-head { border-bottom: 1px solid currentColor; }
+.memo.open .memo-head { border-bottom: var(--line-w) solid currentColor; }
 .memo-body {
   display: none;
   width: 100%;
-  padding-top: 8px;
+  padding-top: 0.5rem;
   text-align: left; /* 본문은 왼끝 정렬 */
   /* 서식 없이 원문 그대로 — 줄바꿈·공백 유지 */
   white-space: pre-wrap;
@@ -503,7 +493,7 @@ table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true'
    text-decoration: underline은 한글 inline-block .ko span을 못 통과해 공백만
    밑줄로 보였음. border-bottom으로 a 박스 전체에 일관된 라인. */
 table tr[data-active='true'] a {
-  border-bottom: 1px solid currentColor;
+  border-bottom: var(--line-w) solid currentColor;
 }
 
 /* 인물 멘션(@) 링크 — 화살표 대신 인물 아이콘 + 채도 높은 갈색 (예전 스타일) */
@@ -526,8 +516,8 @@ table tr[data-active='true'] a {
   background-color: currentColor;
   mask: url('/icons/user.svg') no-repeat center / contain;
   -webkit-mask: url('/icons/user.svg') no-repeat center / contain;
-  vertical-align: -1px;
-  margin-right: 3px;
+  vertical-align: -0.0625rem;
+  margin-right: 0.1875rem;
 }
 /* 멘션 호버 — 일반 pill과 동일 (보라 틴트) */
 .intro a.mention:hover,
@@ -552,14 +542,14 @@ table tr[data-active='true'] a {
 .card-images {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
   /* 아래 margin은 0 — 미디어→설명 간격은 .card-body의 margin-top이 결정한다
      (한·영 설명 사이 간격과 동일하게 맞추기 위함). */
-  margin: 12px 0 0;
+  margin: 0.75rem 0 0;
 }
 .card-images .image-row {
   display: grid;
-  gap: 8px;
+  gap: 0.5rem;
 }
 .card-images .image-row img {
   width: 100%;
@@ -573,7 +563,7 @@ table tr[data-active='true'] a {
   padding-bottom: 3vh;
 }
 .work-card + .work-card {
-  border-top: 1px solid var(--ink);
+  border-top: var(--line-w) solid var(--ink);
   padding-top: 3vh;
 }
 /* padding 안으로 새어드는 자식 가장자리 margin 제거 (여백을 padding만으로 고정) */
@@ -581,17 +571,17 @@ table tr[data-active='true'] a {
 .work-card > :last-child { margin-bottom: 0; }
 
 .work-card .card-title {
-  font-family: neue-haas-unica, 'HakgyoansimBareondotum', sans-serif;
+  font-family: neue-haas-unica, 'Pretendard Variable', Pretendard, sans-serif;
   font-weight: 500;
   font-style: normal;
   text-align: left;
-  margin-bottom: 4px;
+  margin-bottom: 0.25rem;
   color: var(--ink);
   user-select: none;
   -webkit-user-select: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.375rem;
 }
 /* 영어 위 / 한국어 아래 — 둘 다 동등 위계 (같은 크기) */
 .work-card .card-title .card-title-en,
@@ -609,12 +599,12 @@ table tr[data-active='true'] a {
 .three-col .center > .content > .work-card { display: none; }
 /* border-collapse:separate — 행 사이 detail 삽입 시 셀 경계가 깔끔.
    구분선은 각 td border-top로 유지, table 자체 테두리는 끔 */
-/* padding:0 — table,td 공통 padding(10px)이 표를 좌우로 들여 세로선과 어긋나게 함.
+/* padding:0 — table,td 공통 padding(0.625rem)이 표를 좌우로 들여 세로선과 어긋나게 함.
    table 자체 padding을 0으로 해 td 경계 = 세로선(d1/d3/d4/d2)에 정확히 맞춘다. */
 table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; padding: 0; margin-top: var(--top-gap); /* 커튼 아래 공통 최소 여백 */ }
 /* 첫 행 — 위 가로선 제거 + 상단 padding 축소(표 시작 여백 컴팩트).
    필터·정렬이 없어 행 순서 고정 → :first-child로 충분 */
-table.sontable tr[data-slug]:first-child td { border-top: 0; padding-top: 2px; }
+table.sontable tr[data-slug]:first-child td { border-top: 0; padding-top: 0.125rem; }
 /* 표 셀 — 크기는 body(--fs) 상속. 호버 배경 전환만 정의 */
 table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s; }
 /* 호버 — 행이 아닌 칸(셀) 단위 배경 칠. 행마다 보라/갈색 교차(빌드 시 .row-a/.row-b 부여).
@@ -628,7 +618,7 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s; }
 }
 /* 펼칠 때 행이 컬럼(스크롤 컨테이너) 상단에서 살짝 떨어지게 —
    sticky 헤더가 없어졌으므로 작은 여백만 */
-tr[data-slug] { scroll-margin-top: 8px; }
+tr[data-slug] { scroll-margin-top: 0.5rem; }
 /* 표 분류(cat) 칸 — 태그를 pill 없이 텍스트로, 왼끝 정렬(d4 선 기준), · 구분. */
 .cat-cell { text-align: left; }
 .cat-cell .cat-tag { color: var(--ink); white-space: nowrap; }
@@ -638,16 +628,16 @@ tr[data-slug] { scroll-margin-top: 8px; }
 .accordion-detail > td { padding: 0; border-top: 0; }
 /* 펼친 행 — 제목과 작품(미디어) 사이 여백 0: 제목 칸 아래 padding 제거 */
 table.sontable tr[data-active='true'] td { padding-bottom: 0; }
-/* 펼쳐진 카드 — 제목↔작품 간격은 카드 상단 8px 하나로만 (제목 칸 아래 0).
-   사이트 마이크로 간격 리듬(이미지 그리드·pill 스택 8px)과 동일 */
+/* 펼쳐진 카드 — 제목↔작품 간격은 카드 상단 0.5rem 하나로만 (제목 칸 아래 0).
+   사이트 마이크로 간격 리듬(이미지 그리드·pill 스택 0.5rem)과 동일 */
 /* 아코디언 펼침을 표 3컬럼 그리드(20/60/20)에 맞춰 배치:
    규격=연도칸(1), 이미지·본문=제목칸(2), web 링크=분류칸(3). */
 .accordion-detail .work-card {
   display: grid;
   grid-template-columns: 20% 60% 20%;
   align-items: start;
-  row-gap: 14px;
-  padding: 8px 0 24px;
+  row-gap: 0.875rem;
+  padding: 0.5rem 0 1.5rem;
 }
 /* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 */
 .accordion-detail .card-title,
@@ -664,16 +654,16 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 .accordion-detail .iframe-wrap { aspect-ratio: 100 / 65; }
 /* 규격·웹링크는 이제 card-body 안 본문 위(.card-meta-row)에 — 본문과 같은 칸(제목칸)에 흐른다 */
 /* specificity 높임 — .work-card .card-body{margin-top:16}이 뒤에서 덮는 것 방지 */
-.accordion-detail .work-card .card-body { grid-column: 2; grid-row: 2; padding: 0 10px; margin-top: 0; }
+.accordion-detail .work-card .card-body { grid-column: 2; grid-row: 2; padding: 0 0.625rem; margin-top: 0; }
 /* 규격+링크 줄 — 본문 위. 둘 다 있으면(웹작업) 2단으로 나란히. */
 .accordion-detail .card-meta-row {
   display: flex;
-  gap: 16px;
-  margin-bottom: 12px;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
 }
 .accordion-detail .card-meta-row > * { flex: 1; margin: 0; }
 .accordion-detail .card-spec p { padding-top: 0; margin-top: 0; line-height: 1.5; }
-.accordion-detail .card-spec p + p { margin-top: 4px; }
+.accordion-detail .card-spec p + p { margin-top: 0.25rem; }
 .accordion-detail .card-link-wrap { margin: 0; }
 /* 작품 이미지/iframe은 세로 구분선(z3) 위 레이어 — 펼친 카드 미디어가 선을 가린다 */
 .work-card .card-images,
@@ -682,14 +672,14 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
    서랍 본문(한/영)을 토글하면서 읽을 수 있다. 버튼은 UA 폰트라 명시 상속. */
 .lang-toggle {
   position: fixed;
-  top: 24px; /* about 탭과 같은 줄 (띠 세로 중앙) */
-  right: 102px;
+  top: 1.5rem; /* about 탭과 같은 줄 (띠 세로 중앙) */
+  right: 6.375rem;
   z-index: 102; /* 서랍 레이어(101) 위 */
   display: inline-flex;
   align-items: center;
-  height: 24px;
-  padding: 0 9px;
-  border: 1px solid var(--ink);
+  height: 1.5rem;
+  padding: 0 0.5625rem;
+  border: var(--line-w) solid var(--ink);
   border-radius: 999px;
   background: var(--bg);
   cursor: pointer;
@@ -724,7 +714,7 @@ table.sontable .col-cat   { width: 20%; }
   height: 1.7em;
   padding: 0 0.4em;
   box-sizing: border-box;
-  border: 1px solid currentColor; /* 디밍 시 원도 같이 옅어지게 */
+  border: var(--line-w) solid currentColor; /* 디밍 시 원도 같이 옅어지게 */
   border-radius: 999px;
   /* carbon 폐기 — 서체는 본문 상속. 크기만 원 안에 맞게 비율 축소(장식 글리프) */
   font-size: 0.78em;
@@ -734,26 +724,26 @@ table.sontable .col-cat   { width: 20%; }
 .work-card .card-meta {
   font-size: var(--fs);
   letter-spacing: 0.06em;
-  margin: 4px 0 12px;
+  margin: 0.25rem 0 0.75rem;
   padding-top: 0;
 }
 
 /* 미디어(이미지/iframe)→설명 간격 — 한·영 설명 사이 간격(.bilingual gap)과
-   동일하게 맞춘다. 데스크탑 16px(=.bilingual gap), 모바일 20px(mobile.css). */
+   동일하게 맞춘다. 데스크탑 1rem(=.bilingual gap), 모바일 1.25rem(mobile.css). */
 .work-card .card-body {
-  margin-top: 16px;
+  margin-top: 1rem;
 }
 
 /* 작품 카드 본문 — 그룹 사이 hr 없이 적당한 여백만 */
 .work-card .card-body > * + * {
-  margin-top: 16px;
+  margin-top: 1rem;
 }
 
 /* 작품 카드의 이미지 시퀀스 — 여러 이미지를 세로로 쌓음 */
 .work-card .card-images {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 .work-card .card-images img {
   width: 100%;
@@ -764,7 +754,7 @@ table.sontable .col-cat   { width: 20%; }
 .bilingual {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 1rem;
   align-items: start;
 }
 .bilingual > [lang='en'] { order: 1; }
@@ -777,11 +767,11 @@ table.sontable .col-cat   { width: 20%; }
 
 /* 좌측 인트로 h2 — 크기는 전역 h2(--fs)와 동일, 본문과 여백만 */
 .intro > h2 {
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
 }
 
 /* 인트로 본문 + footer + 작품 카드 본문 — 엔터(p+p)와 줄바꿈(br)의 간격을
-   동일하게 유지. 글로벌 `p { padding-top: 20px }` 무력화.
+   동일하게 유지. 글로벌 `p { padding-top: 1.25rem }` 무력화.
    line-height 고정 → pill(a inline-block)이 들어가도 p 높이 일정. */
 .intro-body p,
 .intro > footer p,
@@ -812,8 +802,8 @@ table.sontable .col-cat   { width: 20%; }
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
   /* 상하 padding 0 — pill 높이는 line-height로만. 좌우는 윤곽선과 글자 간격 */
-  padding: 0 7px;
-  border: 1px solid var(--ink);
+  padding: 0 0.4375rem;
+  border: var(--line-w) solid var(--ink);
   border-radius: 999px;
   background: var(--bg);
   color: var(--ink);
@@ -829,13 +819,13 @@ table.sontable .col-cat   { width: 20%; }
 .work-card .card-body a::before,
 .work-card .card-link::before {
   content: '↗';
-  margin-right: 3px;
+  margin-right: 0.1875rem;
   /* inline 글리프로 둬서 아이콘과 첫 단어 사이에 줄바꿈 기회가 안 생기게 한다
      (모바일에서 pill이 줄바꿈될 때 아이콘이 첫 단어와 붙어있도록). */
   display: inline;
   font-size: 0.8em;
   font-weight: 700;
-  vertical-align: 1px;
+  vertical-align: 0.0625rem;
   color: var(--accent); /* 외부 링크 표시 — 유일한 포인트 컬러 */
 }
 /* 호버 — 옅은 보라 틴트 칠 (↗는 보라 유지, 틴트 위에서 충분히 보임) */
@@ -848,14 +838,14 @@ table.sontable .col-cat   { width: 20%; }
 }
 
 /* anchor 스크롤 위로 살짝 띄움 */
-[id] { scroll-margin-top: 18px; }
+[id] { scroll-margin-top: 1.125rem; }
 
 .embedded-iframe {
   width: 100%;
-  height: 300px;
+  height: 18.75rem;
   border: none;
   display: block;
-  margin: 20px 0;
+  margin: 1.25rem 0;
 }
 
 /* iframe 페이지를 데스크탑 사이즈로 렌더해 축소 — 페이지 전체가 한눈에. */
@@ -865,7 +855,7 @@ table.sontable .col-cat   { width: 20%; }
   padding-top: 65%;
   overflow: hidden;
   /* 아래 margin은 0 — 미디어→설명 간격은 .card-body의 margin-top이 결정한다. */
-  margin: 20px 0 0;
+  margin: 1.25rem 0 0;
 }
 .iframe-wrap .embedded-iframe {
   position: absolute;
