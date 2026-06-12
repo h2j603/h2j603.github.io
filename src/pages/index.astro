@@ -8,6 +8,7 @@ import path from 'node:path';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import { getWorks, resolveImage, getIntro, getFooter, getLinks, getMemos, groupBilingual } from "../lib/site-data.js";
+import { tagColor } from "../lib/tag-colors.js";
 
 const works = getWorks().slice().sort((a, b) => {
   // 표 정렬 — year desc (최신 위). 정렬 토글이 없으므로 빌드 시 고정.
@@ -28,6 +29,9 @@ const footerGroups = getFooter();
 const siteLinks = getLinks();
 // 좌측 컬럼 메모 — memo 채널 텍스트 블록 (채널 순서)
 const memos = getMemos();
+
+// 첫 태그의 틴트 = 블록 배경 (태그 없으면 undefined → 흰 바탕+교차 호버)
+const tagBg = (tags: string[]) => (tags.length ? `background:${tagColor(tags[0]).bg}` : undefined);
 
 // 블록 추가 시점 표기 — Are.na의 "added"처럼. ISO → YYYY.MM.DD
 const fmtDate = (iso: string) => (iso ? iso.slice(0, 10).replaceAll('-', '.') : '');
@@ -118,11 +122,13 @@ const defaultMosaic = fs.readFileSync(
               <>
                 {i > 0 && <hr />}
                 {/* 블록 전체가 토글 단위 — 라벨/날짜/본문 어디를 눌러도 접고 펼침 */}
-                <div class="memo" role="button" tabindex="0">
+                <div class="memo" role="button" tabindex="0" style={tagBg(m.tags)}>
                   <span class="memo-head">{m.title}</span>
                   {(m.addedAt || m.tags.length > 0) && (
                     <span class="block-date">
-                      {fmtDate(m.addedAt)}{m.addedBy && ` · ${m.addedBy}`}{m.tags.length > 0 && ` · ${m.tags.map((t) => "#" + t).join(" ")}`}
+                      {fmtDate(m.addedAt)}{m.addedBy && ` · ${m.addedBy}`}{m.tags.map((t) => (
+                        <span class="tag-chip" style={`color:${tagColor(t).fg}`}> #{t}</span>
+                      ))}
                     </span>
                   )}
                   {/* 서식 없이 원문 그대로 (줄바꿈 유지) */}
@@ -158,7 +164,14 @@ const defaultMosaic = fs.readFileSync(
                   {/* 번호 = 연도 내림차순 고정. row-a/b = 호버 배경 보라/갈색 교차 —
                       필터·정렬이 없어 행 순서가 안 바뀌므로 빌드 시 부여 */}
                   <td class="num-cell"><span class="num-badge">{i + 1}</span></td>
-                  <td>{w.year || '—'}</td>
+                  <td>
+                    {/* 연도 → 위키피디아 해당 연도 문서 */}
+                    {w.year ? (
+                      <a href={`https://en.wikipedia.org/wiki/${w.year}`} target="_blank" rel="noopener">{w.year}</a>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
                   <td>
                     <a href={`#${w.slug}`} data-ko={w.title || w.slug} data-en={w.titleEn || w.title || w.slug}>
                       {w.title || w.slug}
@@ -298,11 +311,13 @@ const defaultMosaic = fs.readFileSync(
             {siteLinks.map((l, i) => (
               <>
                 {i > 0 && <hr />}
-                <a class="link-item" href={l.url} target="_blank" rel="noopener">
+                <a class="link-item" href={l.url} target="_blank" rel="noopener" style={tagBg(l.tags)}>
                   <span class="link-title">{l.title || l.url}</span>
                   {(l.addedAt || l.tags.length > 0) && (
                     <span class="block-date">
-                      {fmtDate(l.addedAt)}{l.tags.length > 0 && ` · ${l.tags.map((t) => "#" + t).join(" ")}`}
+                      {fmtDate(l.addedAt)}{l.tags.map((t) => (
+                        <span class="tag-chip" style={`color:${tagColor(t).fg}`}> #{t}</span>
+                      ))}
                     </span>
                   )}
                 </a>
