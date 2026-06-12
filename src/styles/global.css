@@ -101,6 +101,11 @@ body {
   display: inline-block;
   animation: ticker-flow 40s linear infinite;
 }
+/* 영역별 따로따로 — 속도를 다르게, 가운데는 반대 방향으로 흘러서
+   하나로 합쳐진 띠가 아니라 각자의 바로 읽힌다 */
+.three-col .left .ticker-track { animation-duration: 38s; }
+.three-col .center .ticker-track { animation-duration: 52s; animation-direction: reverse; }
+.three-col .right .ticker-track { animation-duration: 44s; }
 @keyframes ticker-flow {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
