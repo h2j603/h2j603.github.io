@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import { getWorks, resolveImage, getIntro, getFooter, getLinks, getMemos, groupBilingual } from "../lib/site-data.js";
+import { getWorks, resolveImage, getIntro, getLinks, getMemos, groupBilingual } from "../lib/site-data.js";
 import { tagColor } from "../lib/tag-colors.js";
 
 const works = getWorks().slice().sort((a, b) => {
@@ -23,8 +23,7 @@ function orderedTagsOf(w: (typeof works)[number]): string[] {
   return w.tags.includes('web') ? [...nonWeb, 'web'] : nonWeb;
 }
 
-const introGroups = getIntro();
-const footerGroups = getFooter();
+const introGroups = getIntro(); // About 서랍 — footer 채널은 intro로 통폐합됨
 // 우측 컬럼 수집 링크 — Are.na links 채널의 링크 블록들 (채널 순서)
 const siteLinks = getLinks();
 // 좌측 컬럼 메모 — memo 채널 텍스트 블록 (채널 순서)
@@ -75,30 +74,6 @@ const defaultMosaic = fs.readFileSync(
             ))
           }
         </div>
-      )}
-      {footerGroups.length > 0 && (
-        <>
-          <hr />
-          <footer>
-            {
-              footerGroups.map((g, i) => (
-                <>
-                  {i > 0 && <hr />}
-                  {g.ko && g.en ? (
-                    <div class="bilingual">
-                      <div class="ko-body" lang="ko" set:html={g.ko} />
-                      <div class="en-body" lang="en" set:html={g.en} />
-                    </div>
-                  ) : g.ko ? (
-                    <div lang="ko" set:html={g.ko} />
-                  ) : (
-                    <div lang="en" set:html={g.en} />
-                  )}
-                </>
-              ))
-            }
-          </footer>
-        </>
       )}
     </div>
   </div>
@@ -471,7 +446,7 @@ const defaultMosaic = fs.readFileSync(
       // 표 제목 한·영 토글 — EN 버튼 클릭하면 표의 a 텍스트가 영어로
       var langToggle = document.querySelector('.lang-toggle');
       var threeCol = document.querySelector('.three-col');
-      // 현재 언어를 .three-col에 반영 → 데스크탑에서 작품 본문 + about/footer가
+      // 현재 언어를 .three-col에 반영 → 작품 본문 + About 서랍이
       // 그 언어만 1단으로 표시됨 (양쪽 컬럼 모두 포함하려고 center 대신 three-col)
       function applyLang(lang) {
         if (threeCol) threeCol.setAttribute('data-lang', lang);

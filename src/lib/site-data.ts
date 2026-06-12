@@ -22,7 +22,6 @@ import {
 
 const DATA_PATH = resolve(process.cwd(), 'src/data/works.json');
 const INTRO_PATH = resolve(process.cwd(), 'src/data/intro.json');
-const FOOTER_PATH = resolve(process.cwd(), 'src/data/footer.json');
 const LINKS_PATH = resolve(process.cwd(), 'src/data/links.json');
 const PEOPLE_PATH = resolve(process.cwd(), 'src/data/people.json');
 const MEMOS_PATH = resolve(process.cwd(), 'src/data/memos.json');
@@ -94,13 +93,6 @@ export function getIntro(): BilingualGroup[] {
   if (introCache !== null) return introCache;
   introCache = groupBilingual(readBlocks(INTRO_PATH));
   return introCache;
-}
-
-let footerCache: BilingualGroup[] | null = null;
-export function getFooter(): BilingualGroup[] {
-  if (footerCache !== null) return footerCache;
-  footerCache = groupBilingual(readBlocks(FOOTER_PATH));
-  return footerCache;
 }
 
 /** 좌측 컬럼 인물 인덱스 — people.json 스냅샷 (없으면 빈 배열). */

@@ -124,7 +124,7 @@ export async function getChannelContents(slugOrId: string | number): Promise<Jso
 
 /**
  * getChannelContents의 관대한 버전 — 채널이 없거나(404) 남의 비공개(403)면
- * null. 채널 메타가 필요 없는 보조 채널(people/links/intro/footer)은 이걸로
+ * null. 채널 메타가 필요 없는 보조 채널(people/links/intro/memo)은 이걸로
  * 존재 확인용 getChannel 요청 한 번씩을 아낀다.
  */
 export async function tryGetChannelContents(

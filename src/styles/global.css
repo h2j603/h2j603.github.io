@@ -121,7 +121,7 @@ hr {
   background-color: var(--ink);
   margin: 1rem 0;
 }
-/* about/footer(.left) 가로선 — .third padding(1.25rem)을 상쇄해 컬럼 전체 너비로 */
+/* About 본문 가로선 — .third padding(1.25rem)을 상쇄해 컬럼 전체 너비로 */
 .intro hr {
   margin-left: -1.25rem;
   margin-right: -1.25rem;
@@ -742,7 +742,7 @@ table.sontable .col-cat   { width: 20%; }
 }
 .bilingual > [lang='en'] { order: 1; }
 .bilingual > [lang='ko'] { order: 2; }
-/* 데스크탑 — 작품 본문·about·footer 모두 2단 병기 대신 언어 토글(EN/KO)에 따라
+/* 데스크탑 — 작품 본문·About 모두 2단 병기 대신 언어 토글(EN/KO)에 따라
    현재 언어만 1단 표시. (모바일은 mobile.css에서 ko/en 둘 다 stack으로 복원) */
 .three-col[data-lang='ko'] .bilingual > [lang='en'] { display: none; }
 .three-col[data-lang='en'] .bilingual > [lang='ko'] { display: none; }
@@ -753,11 +753,10 @@ table.sontable .col-cat   { width: 20%; }
   margin-bottom: 1.5rem;
 }
 
-/* 인트로 본문 + footer + 작품 카드 본문 — 엔터(p+p)와 줄바꿈(br)의 간격을
+/* 인트로 본문 + 작품 카드 본문 — 엔터(p+p)와 줄바꿈(br)의 간격을
    동일하게 유지. 글로벌 `p { padding-top: 1.25rem }` 무력화.
    line-height 고정 → pill(a inline-block)이 들어가도 p 높이 일정. */
 .intro-body p,
-.intro > footer p,
 .work-card .card-body p {
   padding-top: 0;
   margin-top: 0;

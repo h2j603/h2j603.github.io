@@ -12,7 +12,7 @@
 import { tryGetChannelContents } from './arena.js';
 import { classifyBlock } from './images.js';
 import { markdownToHtml } from './body.js';
-import { ARENA_INTRO_CHANNEL, ARENA_FOOTER_CHANNEL } from './config.js';
+import { ARENA_INTRO_CHANNEL } from "./config.js";
 
 export interface TextBlock {
   /** 'ko' | 'en' | null */
@@ -58,8 +58,4 @@ async function buildTextChannel(slug: string, label: string): Promise<TextBlock[
 
 export function buildIntro() {
   return buildTextChannel(ARENA_INTRO_CHANNEL, 'intro');
-}
-
-export function buildFooter() {
-  return buildTextChannel(ARENA_FOOTER_CHANNEL, 'footer');
 }
