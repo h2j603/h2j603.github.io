@@ -56,16 +56,12 @@
   /* 블록 리스트·마키 — 모바일 left padding(0.625rem) 기준 상쇄 */
   .three-col .left .memo-list {
     width: calc(100% + 1.25rem);
-    margin: 0 -0.625rem;
-    margin-top: var(--top-gap);
+    margin: 0 -0.625rem; /* 라벨 직하 — 여백은 첫 블록 padding(전역 1rem)이 가짐 */
   }
   /* 리스트가 이미 전폭이므로 안의 hr은 그대로 — 위 .intro hr 음수 보정이
      여기까지 닿으면 화면 폭(390)을 넘겨 가로 스크롤이 생긴다 */
   .three-col .left .memo-list hr { margin: 0; }
-  /* 바닥 마감선은 바로 아래 푸터의 윗선이 담당 — 이중선 방지 */
-  .three-col .left .memo-list { border-bottom: 0; }
-  /* 라벨 머리띠 아래 여백은 리스트 margin-top이 가짐 — 첫 블록은 기본 패딩으로 */
-  .three-col .left .memo-list > .memo:first-child { padding-top: 0.5rem; }
+  /* Notepad 바닥선 = Collection 경계선 (전역 border-bottom 유지) */
   .three-col .third {
     position: static;
     width: 100%;
@@ -74,29 +70,37 @@
     overflow: visible;
     padding: 1rem;
   }
-  /* 우측 컬럼(수집 링크) — 데스크탑 전용. 토글은 띠 위 칩으로 이사 */
-  .three-col .right { display: none; }
+  /* 우측 컬럼(Collection) — Notepad 아래 섹션으로 노출 */
+  .three-col .third.right {
+    order: 3;
+    overflow-y: visible;
+    padding: 0 0.625rem 0; /* Notepad와 같은 좌우 라인, 마감선은 푸터 윗선 */
+  }
+  .three-col .right .arena-path { margin: 0 -0.625rem; }
+  .three-col .right .link-list {
+    width: calc(100% + 1.25rem);
+    margin: 0 -0.625rem;
+    border-bottom: 0; /* 바닥 마감선은 푸터 윗선이 담당 */
+  }
   /* 단일 컬럼이라 세로 구분선 숨김 */
   .col-divider { display: none; }
   /* 하단 시간 — 고정 띠 대신 흐름 맨 끝(About 섹션 아래).
      좁아서 두 줄: built 좌 / now 우 (대각 호응) */
   .three-col .bottom {
     position: static;
-    order: 3;
+    order: 4; /* Collection 다음, 맨 끝 */
     height: auto;
     padding: 0.75rem 0.625rem; /* 컴팩트 — 줄 20×2 + 위아래 12 */
   }
   .bottom .colophon {
     flex-direction: column;
     gap: 0.25rem;
+    align-items: center; /* 라벨·블록과 같은 중앙 문법 */
   }
-  .bottom .colophon span:last-child { align-self: flex-end; }
   /* 영역 출처 라벨 — 모바일은 sticky 대신 섹션 머리띠(흐름 안 정적).
      center는 패딩 0이라 그대로 전폭, left는 자기 패딩(0.625rem)만 상쇄 */
   .arena-path { position: static; }
   .three-col .left .arena-path { margin: 0 -0.625rem; }
-  /* 수집 링크는 데스크탑 전용 — 모바일에선 표 위 공간을 차지하지 않게 숨김 */
-  .link-list { display: none; }
   /* center가 표+아코디언 메인 (work-card 저장소 숨김은 global 공통 규칙이 처리) */
   .three-col .center {
     order: 1;
