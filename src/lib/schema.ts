@@ -123,12 +123,14 @@ export type SiteLink = z.infer<typeof siteLinkSchema>;
  * 메모 — Are.na memo 채널의 텍스트 블록 1개. 좌측 컬럼 아코디언으로 표시.
  */
 export const memoSchema = z.object({
-  /** 접힌 상태 라벨 — 블록 title, 없으면 본문 첫 줄 요약. */
+  /** 접힌 라벨 — 본문 첫 문장 (60자 말줄임). */
   title: z.string().min(1),
-  /** 펼친 본문 (markdown → HTML). */
-  html: z.string().default(""),
-  /** 채널에 추가된 시각 (ISO) — Are.na connection.created_at */
+  /** 본문 원문 — 서식 없이 그대로 (줄바꿈 유지 렌더). */
+  text: z.string().default(""),
+  /** 수집 시각 (ISO). */
   addedAt: z.string().default(""),
+  /** 추가한 사람 (connection.connected_by). */
+  addedBy: z.string().default(""),
 });
 export const memosFileSchema = z.array(memoSchema);
 export type Memo = z.infer<typeof memoSchema>;

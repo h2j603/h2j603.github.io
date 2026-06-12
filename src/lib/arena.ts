@@ -266,9 +266,15 @@ export async function createBlock(
   });
 }
 
-/** 블록이 채널에 추가된 시각 (ISO) — connection.created_at(연결 시각) 우선,
-    없으면 블록 생성 시각. Are.na가 블록에 표기하는 "added"와 같은 기준. */
+/** 블록의 수집 시각 (ISO) — 원 블록 created_at 우선 (채널에 재연결해도
+    처음 수집된 때가 남는다, 아카이브 출처). 없으면 연결 시각. */
 export function blockAddedAt(block: Json): string {
-  const t = block?.connection?.created_at ?? block?.created_at;
-  return typeof t === 'string' ? t : '';
+  const t = block?.created_at ?? block?.connection?.connected_at;
+  return typeof t === "string" ? t : "";
+}
+
+/** 블록을 채널에 추가한 사람 — connection.connected_by, 없으면 블록 작성자. */
+export function blockAddedBy(block: Json): string {
+  const n = block?.connection?.connected_by?.name ?? block?.user?.name;
+  return typeof n === "string" ? n : "";
 }
