@@ -120,8 +120,9 @@ npm run build:nofetch         # astro build only, against existing works.json
 - Are.na 라이브 API 검증 완료, 채널 전부 운영 중 (works / people / memo / links).
 - GitHub Pages 배포 정상 (`deploy.yml`, main push 또는 수동 dispatch).
 - **소유자는 당분간 폰만 사용 가능 (군 복무)** — 모든 작업은 클라우드 세션에서
-  하고, 반드시 PR로 만들어 소유자가 GitHub 모바일 앱에서 diff 확인 후 머지한다.
-  검증이 필요한 시각 변경은 머지 전 스크린샷이나 측정값을 PR 설명에 남길 것.
+  하고, 반드시 PR로 만든 뒤 **세션이 즉시 머지한다** (소유자 사전 확인 불요 —
+  diff는 머지 후 GitHub 모바일 앱에서 확인). 검증이 필요한 시각 변경은
+  스크린샷이나 측정값을 PR 설명에 남길 것.
 
 ## Conventions / guardrails
 
