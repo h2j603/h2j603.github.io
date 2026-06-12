@@ -29,10 +29,26 @@ const siteLinks = getLinks();
 // 좌측 컬럼 메모 — memo 채널 텍스트 블록 (채널 순서)
 const memos = getMemos();
 
-// 첫 태그의 틴트 = 블록 배경 (태그 없으면 undefined → 흰 바탕+교차 호버)
-
 // 블록 추가 시점 표기 — Are.na의 "added"처럼. ISO → YYYY.MM.DD
 const fmtDate = (iso: string) => (iso ? iso.slice(0, 10).replaceAll('-', '.') : '');
+
+// 메모는 분 단위까지 — 빌드 머신(CI=UTC)과 무관하게 KST로 고정
+const fmtDateTime = (iso: string) => {
+  if (!iso) return '';
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+  }).formatToParts(new Date(iso));
+  const g = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
+  return `${g('year')}.${g('month')}.${g('day')} ${g('hour')}:${g('minute')}`;
+};
+
+// 우측 드롭다운용 — 수집 링크에 등장하는 태그 목록 (채널 순서대로, 중복 제거)
+const linkTags = [...new Set(siteLinks.flatMap((l) => l.tags))];
+
+// 하단 콜로폰 — 빌드 시각 (SSG라 = 콘텐츠 스냅샷 시각)
+const buildStamp = fmtDateTime(new Date().toISOString());
 
 
 // 작품 선택 안 한 기본 화면용 모자이크 (stripe-mosaic 도구로 만든 단일 SVG → 셀 그리드)
@@ -100,8 +116,8 @@ const defaultMosaic = fs.readFileSync(
                   <span class="memo-head">{m.title}</span>
                   {(m.addedAt || m.tags.length > 0) && (
                     <span class="block-date">
-                      {fmtDate(m.addedAt)}{m.addedBy && ` · ${m.addedBy}`}{m.tags.map((t) => (
-                        <span class="tag-chip" style={`background:${tagColor(t).bg};color:${tagColor(t).fg}`}>#{t}</span>
+                      {fmtDateTime(m.addedAt)}{m.addedBy && ` · ${m.addedBy}`}{m.tags.map((t) => (
+                        <>{' · '}<span class="tag-chip" style={`background:${tagColor(t).bg};color:${tagColor(t).fg}`}>#{t}</span></>
                       ))}
                     </span>
                   )}
@@ -282,15 +298,36 @@ const defaultMosaic = fs.readFileSync(
         {/* 제목만 — 가운데 (설명은 데이터에만 보관) */}
         {siteLinks.length > 0 && (
           <nav class="link-list" aria-label="collected links">
+            {/* 태그 드롭다운 — 채널에 태그가 하나라도 있을 때만 */}
+            {linkTags.length > 0 && (
+              <>
+                <label class="link-filter">
+                  <select id="linkTagFilter" aria-label="태그별 필터">
+                    <option value="">#all</option>
+                    {linkTags.map((t) => (
+                      <option value={t}>#{t}</option>
+                    ))}
+                  </select>
+                  <span class="filter-arrow" aria-hidden="true">▾</span>
+                </label>
+                <hr />
+              </>
+            )}
             {siteLinks.map((l, i) => (
               <>
                 {i > 0 && <hr />}
-                <a class="link-item" href={l.url} target="_blank" rel="noopener">
+                <a
+                  class={`link-item ${i % 2 === 0 ? 'row-a' : 'row-b'}`}
+                  href={l.url}
+                  target="_blank"
+                  rel="noopener"
+                  data-tags={l.tags.join(',')}
+                >
                   <span class="link-title">{l.title || l.url}</span>
                   {(l.addedAt || l.tags.length > 0) && (
                     <span class="block-date">
                       {fmtDate(l.addedAt)}{l.tags.map((t) => (
-                        <span class="tag-chip" style={`background:${tagColor(t).bg};color:${tagColor(t).fg}`}>#{t}</span>
+                        <>{' · '}<span class="tag-chip" style={`background:${tagColor(t).bg};color:${tagColor(t).fg}`}>#{t}</span></>
                       ))}
                     </span>
                   )}
@@ -300,6 +337,14 @@ const defaultMosaic = fs.readFileSync(
           </nav>
         )}
       </div>
+    </div>
+
+    {/* ──────────── 하단: 커튼과 같은 높이(4.5rem)의 콜로폰 영역 ──────────── */}
+    <div class="bottom">
+      <p class="colophon">
+        every block of this site lives on <a href="https://www.are.na/" target="_blank" rel="noopener">↗ Are.na</a>
+        {' · '}built {buildStamp} KST{' · '}ⓒ {new Date().getFullYear()} Hyuk Jang
+      </p>
     </div>
 
   </div>
@@ -592,26 +637,26 @@ const defaultMosaic = fs.readFileSync(
       function anchorY() {
         return Math.max(110, Math.round(window.innerHeight * 0.22));
       }
-      // center 스크롤 글라이드 — 목표 한계(scrollHeight)를 매 프레임 재계산
-      // (패널 삽입으로 스크롤 공간이 변해도 끝까지 따라간다).
-      var glideRaf = 0;
-      function glideCenterBy(delta, dur) {
-        if (!centerEl) return;
-        cancelAnimationFrame(glideRaf);
-        var startTop = centerEl.scrollTop;
+      // 컬럼 스크롤 글라이드 — 목표 한계(scrollHeight)를 매 프레임 재계산
+      // (패널 삽입으로 스크롤 공간이 변해도 끝까지 따라간다). 컬럼별 raf 분리.
+      function glideScrollBy(el, delta, dur) {
+        if (!el) return;
+        cancelAnimationFrame(el._glideRaf || 0);
+        var startTop = el.scrollTop;
         var t0 = performance.now();
         function ease(t) { // easeInOutQuad
           return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
         }
         function step(now) {
           var t = Math.min(1, (now - t0) / dur);
-          var max = centerEl.scrollHeight - centerEl.clientHeight;
+          var max = el.scrollHeight - el.clientHeight;
           var target = Math.max(0, Math.min(startTop + delta, max));
-          centerEl.scrollTop = startTop + (target - startTop) * ease(t);
-          if (t < 1) glideRaf = requestAnimationFrame(step);
+          el.scrollTop = startTop + (target - startTop) * ease(t);
+          if (t < 1) el._glideRaf = requestAnimationFrame(step);
         }
-        glideRaf = requestAnimationFrame(step);
+        el._glideRaf = requestAnimationFrame(step);
       }
+      function glideCenterBy(delta, dur) { glideScrollBy(centerEl, delta, dur); }
 
       // ── 커튼 = About 서랍 ─────────────────────────────────────────
       // 띠(.stripe-top)를 클릭하면 커튼이 전면(100dvh)으로 내려오고, 그 위에
@@ -647,15 +692,45 @@ const defaultMosaic = fs.readFileSync(
       }
 
       // ── 좌측 메모 아코디언 — 블록 전체가 토글 단위, 한 번에 하나만 ──
+      var leftEl = document.querySelector('.three-col .left');
       document.querySelectorAll('.memo').forEach(function (memo) {
         memo.addEventListener('click', function () {
           var wasOpen = memo.classList.contains('open');
           document.querySelectorAll('.memo.open').forEach(function (m) {
             m.classList.remove('open');
           });
-          if (!wasOpen) memo.classList.add('open');
+          if (!wasOpen) {
+            memo.classList.add('open');
+            // 표와 같은 시점 이동 — 펼친 메모를 화면 상단 기준선(anchorY)으로
+            if (!isMobileView()) {
+              glideScrollBy(leftEl, memo.getBoundingClientRect().top - anchorY(), 500);
+            }
+          }
         });
       });
+
+      // ── 우측 태그 드롭다운 — 선택 태그만 표시, 사이 hr·교차 틴트 재계산 ──
+      var tagFilterEl = document.getElementById('linkTagFilter');
+      function applyLinkFilter() {
+        var v = tagFilterEl ? tagFilterEl.value : '';
+        var shown = 0;
+        document.querySelectorAll('.link-list a.link-item').forEach(function (a) {
+          var tags = (a.getAttribute('data-tags') || '').split(',').filter(Boolean);
+          var show = !v || tags.indexOf(v) !== -1;
+          a.hidden = !show;
+          // 항목 사이 hr만 관리 — 필터 줄 아래 hr은 앞 형제가 label이라 제외
+          var hr = a.previousElementSibling;
+          if (hr && hr.tagName === 'HR' && hr.previousElementSibling && hr.previousElementSibling.tagName === 'A') {
+            hr.hidden = !(show && shown > 0);
+          }
+          if (show) {
+            a.classList.toggle('row-a', shown % 2 === 0);
+            a.classList.toggle('row-b', shown % 2 === 1);
+            shown++;
+          }
+        });
+      }
+      if (tagFilterEl) tagFilterEl.addEventListener('change', applyLinkFilter);
 
       // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작.
       // 홈 링크가 About 서랍 안에 있으므로 서랍도 닫는다.
@@ -668,46 +743,7 @@ const defaultMosaic = fs.readFileSync(
             history.pushState(null, '', location.pathname);
           }
           applyHash();
-          if (defaultEl) {
-            defaultEl.hidden = false;
-            triggerMosaicFall(mosaicOpts());
-          }
-        });
-      });
-
-      // 떨어지는 중 mousemove — 마우스 주위 원형 영역의 셀들이 낱개로 자연스럽게 떨어짐.
-      // 영역에 들어온 셀 중 50%만 trigger, 나머지 절반은 영구히 영향 무시.
-      var moveThrottle = 0;
-      document.addEventListener('mousemove', function (e) {
-        if (!defaultEl || defaultEl.dataset.falling !== '1') return;
-        var now = Date.now();
-        if (now - moveThrottle < 60) return;
-        moveThrottle = now;
-        var nearRadius = 110; // 좁은 원형 영역
-        var cells = defaultEl.querySelectorAll('.stripe-mosaic > div');
-        cells.forEach(function (d) {
-          if (d.dataset.fast === '1' || d.dataset.skip === '1') return;
-          var rect = d.getBoundingClientRect();
-          if (rect.top > window.innerHeight + 50) return;
-          var cx = rect.left + rect.width / 2;
-          var cy = rect.top + rect.height / 2;
-          var dist = Math.hypot(cx - e.clientX, cy - e.clientY);
-          if (dist < nearRadius) {
-            if (Math.random() < 0.7) {
-              // animation을 새로 부여 — delay만 바꾸면 elapsed가 누적돼서
-              // duration 초과 시 final state(화면 밖)로 점프 = 사라져 보임.
-              var ratio = dist / nearRadius;
-              var delay = Math.random() * 0.5 + ratio * 0.6;
-              d.style.animation = 'none';
-              void d.offsetWidth; // reflow
-              d.style.animation = 'cell-drop 2.6s cubic-bezier(0.95, 0, 1, 0.45) forwards';
-              d.style.animationDelay = delay.toFixed(3) + 's';
-              d.dataset.fast = '1';
-            } else {
-              // 마우스 영향 영구히 무시
-              d.dataset.skip = '1';
-            }
-          }
+          showMosaicStatic();
         });
       });
 
@@ -718,16 +754,33 @@ const defaultMosaic = fs.readFileSync(
       applyHash();
       markMentions();
       wrapAllKorean();
-      // 모자이크 인트로 — 매 로드(새로고침 포함)마다 낙하. 길이는 짧게
-      // 유지(전체 3~4초, 스트래글러 단축).
+      // 모자이크 인트로 — 자동 낙하·마우스 근접 낙하 폐기.
+      // 정지 상태로 떠 있다가 '클릭하는 순간' 떨어진다 (명쾌한 1:1 인과).
       function mosaicOpts() {
         return window.matchMedia('(max-width: 600px)').matches
           ? { dur: 1.8, spread: 2, jitter: 0.8, stragProb: 0.06, stragMax: 2 }
           : { dur: 1.8, spread: 2.2, jitter: 0.8, stragProb: 0.06, stragMax: 2.5 };
       }
-      if (defaultEl) {
+      function showMosaicStatic() {
+        if (!defaultEl) return;
         defaultEl.hidden = false;
-        triggerMosaicFall(mosaicOpts());
+        defaultEl.classList.remove('falling');
+        delete defaultEl.dataset.falling;
+        defaultEl.querySelectorAll('.stripe-mosaic > div').forEach(function (d) {
+          d.style.animation = 'none';
+          d.style.animationDelay = '';
+        });
+      }
+      if (defaultEl) {
+        var mosaicGrid = defaultEl.querySelector('.stripe-mosaic');
+        if (mosaicGrid) {
+          mosaicGrid.addEventListener('click', function () {
+            if (defaultEl.classList.contains('falling')) return;
+            defaultEl.classList.add('falling'); // 셀 통과 클릭 즉시 해제(CSS)
+            triggerMosaicFall(mosaicOpts());
+          });
+        }
+        showMosaicStatic();
       }
     })();
   </script>
