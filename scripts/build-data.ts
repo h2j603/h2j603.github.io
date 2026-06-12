@@ -12,10 +12,11 @@ import { dirname } from 'node:path';
 import { getRequestCount } from '../src/lib/arena.js';
 import { buildWorks } from '../src/lib/works.js';
 import { buildPeople } from '../src/lib/people.js';
-import { buildLinks } from '../src/lib/links.js';
+import { buildLinks } from "../src/lib/links.js";
+import { buildMemos } from "../src/lib/memos.js";
 import { buildIntro, buildFooter } from '../src/lib/intro.js';
-import { worksFileSchema, peopleFileSchema, linksFileSchema } from '../src/lib/schema.js';
-import { DATA_FILE, INTRO_FILE, FOOTER_FILE, PEOPLE_FILE, LINKS_FILE } from '../src/lib/config.js';
+import { worksFileSchema, peopleFileSchema, linksFileSchema, memosFileSchema } from "../src/lib/schema.js";
+import { DATA_FILE, INTRO_FILE, FOOTER_FILE, PEOPLE_FILE, LINKS_FILE, MEMO_FILE } from "../src/lib/config.js";
 
 const dryRun = process.argv.includes('--dry-run');
 
@@ -27,10 +28,12 @@ async function main() {
   const intro = await buildIntro();
   const footer = await buildFooter();
   const links = await buildLinks();
+  const memos = await buildMemos();
 
   const validated = worksFileSchema.parse(works);
   const validatedPeople = peopleFileSchema.parse(people);
   const validatedLinks = linksFileSchema.parse(links);
+  const validatedMemos = memosFileSchema.parse(memos);
 
   if (!dryRun) {
     await mkdir(dirname(DATA_FILE), { recursive: true });
@@ -42,7 +45,9 @@ async function main() {
     await mkdir(dirname(PEOPLE_FILE), { recursive: true });
     await writeFile(PEOPLE_FILE, JSON.stringify(validatedPeople, null, 2) + '\n');
     await mkdir(dirname(LINKS_FILE), { recursive: true });
-    await writeFile(LINKS_FILE, JSON.stringify(validatedLinks, null, 2) + '\n');
+    await writeFile(LINKS_FILE, JSON.stringify(validatedLinks, null, 2) + "\n");
+    await mkdir(dirname(MEMO_FILE), { recursive: true });
+    await writeFile(MEMO_FILE, JSON.stringify(validatedMemos, null, 2) + "\n");
   }
 
   const secs = ((Date.now() - start) / 1000).toFixed(1);
@@ -57,6 +62,7 @@ async function main() {
   console.log(`warnings       : ${summary.warnings.length}`);
   console.log(`people         : ${validatedPeople.length}`);
   console.log(`links          : ${validatedLinks.length}`);
+  console.log(`memos          : ${validatedMemos.length}`);
   console.log(`intro blocks   : ${intro.length}`);
   console.log(`footer blocks  : ${footer.length}`);
   console.log(`${dryRun ? 'DRY RUN — nothing written' : 'wrote ' + DATA_FILE + ' + ' + INTRO_FILE}`);

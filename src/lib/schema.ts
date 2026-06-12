@@ -116,3 +116,15 @@ export type Tag = z.infer<typeof tagSchema>;
 export type Work = z.infer<typeof workSchema>;
 export type Person = z.infer<typeof personSchema>;
 export type SiteLink = z.infer<typeof siteLinkSchema>;
+
+/**
+ * 메모 — Are.na memo 채널의 텍스트 블록 1개. 좌측 컬럼 아코디언으로 표시.
+ */
+export const memoSchema = z.object({
+  /** 접힌 상태 라벨 — 블록 title, 없으면 본문 첫 줄 요약. */
+  title: z.string().min(1),
+  /** 펼친 본문 (markdown → HTML). */
+  html: z.string().default(''),
+});
+export const memosFileSchema = z.array(memoSchema);
+export type Memo = z.infer<typeof memoSchema>;

@@ -380,79 +380,80 @@ iframe {
   flex-direction: column;
   align-items: center;
 }
-/* 링크 제목 — 원 정중앙, 텍스트만 (밴드·원 공통 규칙은 인물 섹션과 공유) */
-.link-list .link-title { text-align: center; }
 .three-col .content {
   /* 작품 카드들이 세로로 쌓이므로 auto */
 }
 
 /* ───────────────────────────────────────────────────────────────────────
-   좌(인물)/우(수집 링크) 공통 — 세로 줄무늬 밴드 + 흰 타원.
-   항목마다 보라/갈색이 배경으로 교차(상단 커튼 천과 같은 어휘)하고,
-   그 위에 100%를 차지하는 흰 스타디움(::before, radius 999)이 얹혀
-   모서리로 밴드 색이 비친다. 텍스트는 타원 정중앙.
+   좌(메모)/우(수집 링크) 공통 블록 — 흰 바탕, 컬럼 전체 폭, 가운데 텍스트,
+   전체 폭 hr 구분선(about hr과 같은 어법), 항목별 보라/갈색 교차 틴트 호버.
+   표 행과 같은 조용한 블록 문법.
    ─────────────────────────────────────────────────────────────────────── */
-.people-list,
+.memo-list,
 .link-list {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   width: calc(100% + 40px);
-  margin: 0 -20px; /* 컬럼 패딩 상쇄 — 밴드가 컬럼 전체 폭 */
+  margin: 0 -20px; /* 컬럼 패딩 상쇄 — 블록·구분선이 컬럼 전체 폭 */
 }
-.person,
+.memo-list hr,
+.link-list hr {
+  margin: 0; /* 블록 자체 padding이 리듬을 만든다 */
+}
+.memo,
 .link-list a.link-item {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  /* 정사각 타일 — 컬럼 폭이 변해도 비율 유지 (줄무늬 셀 기하의 확대판) */
-  aspect-ratio: 1 / 1;
-  padding: 24px;
+  padding: 14px 20px;
   text-decoration: none;
   font-style: normal;
   color: var(--ink);
+  transition: background 0.12s; /* 표 셀과 같은 템포 */
 }
-/* 밴드 색 — 항목 교차 (줄무늬 모티프, 풀 채도) */
-.people-list .person:nth-of-type(odd),
-.link-list a.link-item:nth-of-type(odd) { background: #a966ff; }
-.people-list .person:nth-of-type(even),
-.link-list a.link-item:nth-of-type(even) { background: #775d4f; }
-/* 흰 정원 — 정사각 타일에 내접하는 원(지름 = 변). 네 모서리만 밴드 색 노출 */
-.person::before,
-.link-list a.link-item::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--bg);
-  border-radius: 50%;
-  transition: background 0.12s;
-}
-/* 텍스트는 타원 위 레이어 */
-.person > *,
-.link-list a.link-item > * {
-  position: relative;
-}
-/* 호버 — 타원 속이 밴드 색 틴트로 */
+/* 호버 — 항목별 보라/갈색 교차 틴트 (hr 제외, 같은 태그끼리 홀짝) */
 @media (hover: hover) {
-  .people-list .person:nth-of-type(odd):hover::before,
-  .link-list a.link-item:nth-of-type(odd):hover::before { background: var(--tint-accent); }
-  .people-list .person:nth-of-type(even):hover::before,
-  .link-list a.link-item:nth-of-type(even):hover::before { background: var(--tint-brown); }
+  .memo-list .memo:nth-of-type(odd):hover,
+  .link-list a.link-item:nth-of-type(odd):hover { background: var(--tint-accent); }
+  .memo-list .memo:nth-of-type(even):hover,
+  .link-list a.link-item:nth-of-type(even):hover { background: var(--tint-brown); }
 }
-/* 인물 — 클릭 = 참여 작업으로 이동 (data-works 있을 때만) */
-.person[data-works] { cursor: pointer; }
-/* 인물 이름 — @이름만 (아이콘·pill 없이, 원이 그릇) */
-.person-name { text-align: center; }
-.person-desc {
-  margin: 0;
-  padding-top: 0;
+/* 링크 제목 — 텍스트만 가운데 */
+.link-list .link-title { text-align: center; }
+
+/* 메모 아코디언 — 라벨(접힘) 클릭 → 본문 펼침. JS가 .open 토글 */
+.memo { cursor: pointer; }
+.memo-head {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--fs);
+  font-weight: inherit;
+  color: var(--ink);
   text-align: center;
-  line-height: 1.45;
+  line-height: 1.5;
+}
+/* 펼친 메모 라벨 — 표 활성 행과 같은 밑줄 어법 */
+.memo.open .memo-head { border-bottom: 1px solid currentColor; }
+.memo-body {
+  display: none;
+  width: 100%;
+  padding-top: 8px;
+  text-align: left; /* 본문 프로즈는 왼끝 정렬 */
+}
+.memo.open .memo-body { display: block; }
+.memo-body p {
+  padding-top: 0;
+  margin-top: 0;
+  line-height: 1.6;
   text-wrap: pretty;
 }
+.memo-body p + p { margin-top: 8px; }
 /* 작품이 열려 있는 동안 — 다른 행은 옅게. 목록(지도)은 보이되 시선만
    열린 작품으로 모은다. 호버하면 그 행만 다시 또렷하게. */
 table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) td,
