@@ -158,10 +158,10 @@
   /* 작품 카드 — 표에서 클릭 시 stripe 가리지 않게 보정 */
   .work-card { scroll-margin-top: 5.875rem; }
   .work-card:not(:last-child) {
-    padding-bottom: 8vh;
+    padding-bottom: 3rem;
   }
   .work-card + .work-card {
-    padding-top: 8vh;
+    padding-top: 3rem;
   }
 
 }
