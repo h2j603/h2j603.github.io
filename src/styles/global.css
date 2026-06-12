@@ -278,7 +278,6 @@ iframe {
 .three-col .center,
 .three-col .right {
   top: 4.5rem;
-  height: calc(100% - 4.5rem);
 }
 /* stripe-row 안 line-height 잔여 픽셀 차단 — height: 1.5rem 정확히 보장 */
 .stripe-row { line-height: 0; }
@@ -297,7 +296,9 @@ iframe {
 }
 .three-col .third {
   position: absolute;
-  height: 100%;
+  /* 띠(4.5rem) 아래 영역만 — 100%로 두면 같은 특이도의 나중 선언이라
+     위 calc를 덮어 컬럼이 72px 길어지고 바닥이 화면 밖으로 잘린다 */
+  height: calc(100% - 4.5rem);
   overflow-y: auto;
   overflow-x: hidden;
   padding: 1.25rem;
