@@ -49,6 +49,8 @@ const linkTags = [...new Set(siteLinks.flatMap((l) => l.tags))];
 
 // 하단 콜로폰 — 빌드 시각 (SSG라 = 콘텐츠 스냅샷 시각)
 const buildStamp = fmtDateTime(new Date().toISOString());
+// 푸터 대형 시계용 — 시간 부분만 (HH:mm:ss)
+const buildTime = buildStamp.slice(11);
 
 
 // 작품 선택 안 한 기본 화면용 모자이크 (stripe-mosaic 도구로 만든 단일 SVG → 셀 그리드)
@@ -345,11 +347,11 @@ const defaultMosaic = fs.readFileSync(
       </div>
     </div>
 
-    {/* ──────────── 하단: 시간만 — 좌 빌드 시각 / 우 현재 시각(KST) ──────────── */}
+    {/* ──────────── 하단: 대형 시계 — 좌 빌드 시각 / 우 현재 시각(KST) ──────────── */}
     <div class="bottom">
       <p class="colophon">
-        <span>built {buildStamp}</span>
-        <span>now <span class="now-clock">{buildStamp}</span> KST</span>
+        <span title={`built ${buildStamp} KST`}>{buildTime}</span>
+        <span class="now-clock" title="now (KST)">{buildTime}</span>
       </p>
     </div>
 
@@ -755,7 +757,8 @@ const defaultMosaic = fs.readFileSync(
           var p = parts.find(function (x) { return x.type === t; });
           return p ? p.value : '';
         }
-        var s = g('year') + '.' + g('month') + '.' + g('day') + ' ' + g('hour') + ':' + g('minute') + ':' + g('second');
+        // 푸터 대형 시계 — 시간만 (날짜·라벨은 title 속성에)
+        var s = g('hour') + ':' + g('minute') + ':' + g('second');
         clockEls.forEach(function (el) { el.textContent = s; });
       }
       if (clockEls.length) {

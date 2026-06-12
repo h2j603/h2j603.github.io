@@ -88,6 +88,8 @@
   .bottom .colophon {
     flex-direction: column;
     gap: 0.25rem;
+    font-size: 3rem; /* 모바일 대형 시계 — 한 줄에 들어가는 최대급 */
+    line-height: 3rem;
   }
   .bottom .colophon span:last-child { align-self: flex-end; }
   /* 영역 출처 라벨 — 모바일은 sticky 대신 섹션 머리띠(흐름 안 정적).
