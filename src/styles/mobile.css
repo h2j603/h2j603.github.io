@@ -55,8 +55,8 @@
     margin-left: -10px;
     margin-right: -10px;
   }
-  /* 밴드 리스트 — 모바일 left padding(10px) 기준 상쇄 */
-  .three-col .left .people-list {
+  /* 블록 리스트 — 모바일 left padding(10px) 기준 상쇄 */
+  .three-col .left .memo-list {
     width: calc(100% + 20px);
     margin: 0 -10px;
   }

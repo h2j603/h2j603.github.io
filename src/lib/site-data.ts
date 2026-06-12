@@ -13,9 +13,11 @@ import {
   worksFileSchema,
   linksFileSchema,
   peopleFileSchema,
+  memosFileSchema,
   type Work,
   type SiteLink,
   type Person,
+  type Memo,
 } from './schema.js';
 
 const DATA_PATH = resolve(process.cwd(), 'src/data/works.json');
@@ -23,6 +25,7 @@ const INTRO_PATH = resolve(process.cwd(), 'src/data/intro.json');
 const FOOTER_PATH = resolve(process.cwd(), 'src/data/footer.json');
 const LINKS_PATH = resolve(process.cwd(), 'src/data/links.json');
 const PEOPLE_PATH = resolve(process.cwd(), 'src/data/people.json');
+const MEMOS_PATH = resolve(process.cwd(), 'src/data/memos.json');
 
 let cache: Work[] | null = null;
 
@@ -133,4 +136,16 @@ const imageModules = import.meta.glob<{ default: ImageMetadata }>(
 
 export function resolveImage(localPath: string): ImageMetadata | undefined {
   return imageModules[`/src/assets/${localPath}`]?.default;
+}
+
+/** 좌측 컬럼 메모 — memos.json 스냅샷 (없으면 빈 배열). */
+let memosCache: Memo[] | null = null;
+export function getMemos(): Memo[] {
+  if (memosCache !== null) return memosCache;
+  try {
+    memosCache = memosFileSchema.parse(JSON.parse(readFileSync(MEMOS_PATH, 'utf8')));
+  } catch {
+    memosCache = [];
+  }
+  return memosCache;
 }
