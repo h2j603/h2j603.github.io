@@ -90,8 +90,8 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 | `scripts/setup-arena.ts` | idempotent Are.na structure bootstrap |
 | `scripts/setup-people.ts` | 인물 채널 생성 + 기존 멘션 시드 (멱등) |
 | `scripts/setup-links.ts` | 수집 링크 채널 생성 + 예시 시드 (멱등) |
-| `src/pages/index.astro` | work list + cover thumbnails + tag filter (inline JS) |
-| `src/pages/works/[slug].astro` | per-work detail page |
+| `src/pages/index.astro` | 단일 페이지 — 3컬럼 마크업 (JS는 `src/scripts/`로 분리) |
+| `src/scripts/*.js` | 인터랙션 모듈 — main(진입점)·accordion(표+hash+모바일 페이저)·drawer·stripe·mosaic·lang·memos·link-filter·clock·text·util |
 
 ## Commands
 
