@@ -106,8 +106,10 @@ export const siteLinkSchema = z.object({
   url: z.string().url(),
   title: z.string().default(""),
   description: z.string().default(""),
-  /** 채널에 추가된 시각 (ISO) — Are.na connection.created_at */
+  /** 수집 시각 (ISO). */
   addedAt: z.string().default(""),
+  /** 분류 태그 — 블록 description의 `tags:` (자유형, 쉼표 구분). */
+  tags: z.array(z.string()).default([]),
 });
 
 export const linksFileSchema = z.array(siteLinkSchema);
@@ -129,8 +131,10 @@ export const memoSchema = z.object({
   text: z.string().default(""),
   /** 수집 시각 (ISO). */
   addedAt: z.string().default(""),
-  /** 추가한 사람 (connection.connected_by). */
+  /** 만든 사람 (block.user). */
   addedBy: z.string().default(""),
+  /** 분류 태그 — 블록 description의 `tags:` (자유형, 쉼표 구분). */
+  tags: z.array(z.string()).default([]),
 });
 export const memosFileSchema = z.array(memoSchema);
 export type Memo = z.infer<typeof memoSchema>;
