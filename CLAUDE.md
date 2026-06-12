@@ -64,11 +64,11 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
    `people[]`(관계형 조인 키)에 기록된다. 미등록 인물은 원본 그대로(fallback).
    스냅샷은 `src/data/people.json`. intro 채널 멘션은 매칭하지 않음
    (자기 SNS 핸들이라 의도적 제외).
-10. **메모 (`memo` 채널, 슬러그 `memo-dv8r-pad_am` / #5297539, 혁이 직접
+10. **메모 (`memo` 채널, 슬러그 `notepad-jgoklfiysqa` / #5297539, 혁이 직접
     만든 채널).** 텍스트 블록 1개 = 메모 1개 — 좌측 컬럼 아코디언(블록
     title = 접힌 라벨, 본문 = 펼침). 블록의 connection.created_at을
     "추가 시점"으로 표기 (links도 동일). 스냅샷 `src/data/memos.json`.
-11. **수집 링크 (`links` 채널, 실제 슬러그 `links-fccchcri-lm` / #5297302,
+11. **수집 링크 (`links` 채널, 실제 슬러그 `collection-gxx8lqhxixg` / #5297302,
     private).** 링크 블록 1개 = 사이트 1개, title = 표시 이름. 우측 컬럼에
     채널 순서대로 본문 pill 스타일 스택으로 렌더 (모바일은 숨김). 스냅샷
     `src/data/links.json`. 채널이 비면 우측 컬럼엔 언어 토글만 남는다.

@@ -28,7 +28,7 @@ export const ARENA_PEOPLE_CHANNEL =
 /** 수집 링크 채널 슬러그 — 우측 컬럼에 표시되는 사이트 링크 모음.
     'links'도 전역 점유라 접미사 붙은 실제 슬러그 사용 (채널 ID #5297302). */
 export const ARENA_LINKS_CHANNEL =
-  process.env.ARENA_LINKS_CHANNEL ?? 'links-fccchcri-lm';
+  process.env.ARENA_LINKS_CHANNEL ?? 'collection-gxx8lqhxixg';
 
 export function getArenaToken(): string | undefined {
   return process.env.ARENA_TOKEN || undefined;
@@ -62,7 +62,7 @@ export const LINKS_FILE = 'src/data/links.json';
 
 /** 메모 채널 슬러그 — 좌측 컬럼 아코디언. 혁이 직접 만든 채널 (#5297539). */
 export const ARENA_MEMO_CHANNEL =
-  process.env.ARENA_MEMO_CHANNEL ?? 'memo-dv8r-pad_am';
+  process.env.ARENA_MEMO_CHANNEL ?? 'notepad-jgoklfiysqa';
 
 /** 메모 스냅샷 파일. */
 export const MEMO_FILE = 'src/data/memos.json';
