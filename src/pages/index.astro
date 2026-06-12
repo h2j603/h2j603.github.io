@@ -478,11 +478,14 @@ const defaultMosaic = fs.readFileSync(
         }
       }
 
-      // 표 행 클릭 — 아코디언 토글 (그 아래로 카드 펼침)
-      document.querySelectorAll('table.sontable a[href^="#"]').forEach(function (a) {
-        a.addEventListener('click', function (e) {
+      // 표 행 클릭 — 블록(행) 전체가 토글 단위 (메모 블록과 같은 어법).
+      // 연도 등 외부 링크는 본연의 동작대로 통과.
+      document.querySelectorAll('table.sontable tr[data-slug]').forEach(function (tr) {
+        tr.addEventListener('click', function (e) {
+          var a = e.target.closest('a');
+          if (a && !(a.getAttribute('href') || '').startsWith('#')) return;
           e.preventDefault();
-          var slug = (a.getAttribute('href') || '').replace(/^#/, '');
+          var slug = tr.getAttribute('data-slug');
           if (accSlug === slug) {
             accClose();
             if (location.hash) history.replaceState(null, '', location.pathname);
