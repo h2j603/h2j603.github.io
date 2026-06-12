@@ -57,9 +57,6 @@
     margin: 0 -0.625rem;
     margin-top: var(--top-gap);
   }
-  .three-col .left .area-label { margin: 0 -0.625rem; padding-left: 0.625rem; padding-right: 0.625rem; }
-  /* 모바일은 body 흐름 스크롤 — 라벨 고정 해제 */
-  .area-label { position: static; }
   .three-col .third {
     position: static;
     width: 100%;
