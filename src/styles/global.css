@@ -59,7 +59,7 @@ body {
   overflow: hidden;
   font-size: var(--fs); /* 단일 크기 — 표·본문·토글 전부 이걸 상속 */
   font-family: neue-haas-unica, 'Pretendard Variable', Pretendard, sans-serif;
-  font-weight: 500; /* 400 → 500, 전체적으로 살짝 두껍게 */
+  font-weight: 300; /* 전체 웨이트 300 통일 */
   font-style: normal;
   color: var(--ink);
   background: var(--bg);
@@ -84,7 +84,7 @@ body {
 /* h2 — carbon 폐기: 본문과 같은 서체·크기·굵기 (UA 기본 1.5em·bold 무력화) */
 h2 {
   font-size: var(--fs);
-  font-weight: 500;
+  font-weight: 300;
   text-align: center;
 }
 p {
@@ -410,7 +410,7 @@ iframe {
 .link-list .link-title { text-align: center; }
 /* 수집 시점·추가자 — 더 작고 회색 (명시 지시로 단일 크기 예외) */
 .block-date {
-  font-weight: 400;
+  font-weight: 300;
   font-size: 0.8em;
   color: rgba(0, 0, 0, 0.45);
   text-align: center;
@@ -540,7 +540,7 @@ table tr[data-active='true'] a {
 
 .work-card .card-title {
   font-family: neue-haas-unica, 'Pretendard Variable', Pretendard, sans-serif;
-  font-weight: 500;
+  font-weight: 300;
   font-style: normal;
   text-align: left;
   margin-bottom: 0.25rem;
@@ -792,7 +792,7 @@ table.sontable .col-cat   { width: 20%; }
      (모바일에서 pill이 줄바꿈될 때 아이콘이 첫 단어와 붙어있도록). */
   display: inline;
   font-size: 0.8em;
-  font-weight: 700;
+
   vertical-align: 0.0625rem;
   color: var(--accent); /* 외부 링크 표시 — 유일한 포인트 컬러 */
 }
@@ -838,7 +838,7 @@ table.sontable .col-cat   { width: 20%; }
 
 /* 인트로 제목 "hyuk.xyz/about"에서 hyuk.xyz 부분만 홈 링크.
    .intro a의 pill·↗ 효과는 Are.na 본문 링크 전용 — 여기선 일반 텍스트로 reset.
-   호버 시 font-weight만 두껍게. */
+   호버는 밑줄 (웨이트 300 통일). */
 .intro h2 .home-link,
 .drawer-panel h2 .home-link,
 .drawer-panel h2 .home-link:hover,
@@ -860,7 +860,7 @@ table.sontable .col-cat   { width: 20%; }
 }
 .intro h2 .home-link:hover,
 .drawer-panel h2 .home-link:hover {
-  font-weight: 700;
+  text-decoration: underline; /* 굵기 300 통일 — 호버는 밑줄로 */
 }
 
 /* 기본 화면 모자이크 — 화면 정중앙 fixed 오버레이.
@@ -886,3 +886,6 @@ table.sontable .col-cat   { width: 20%; }
   from { transform: translateY(0); }
   to { transform: translateY(200vh); }
 }
+
+/* 전체 웨이트 300 통일 — 마크다운 강조(strong)도 같은 굵기 (위계는 크기·배치로) */
+b, strong { font-weight: inherit; }
