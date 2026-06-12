@@ -469,6 +469,10 @@ iframe {
 .right .arena-path {
   margin: 0 -1.25rem;
 }
+/* 섹션 페이저 화살표 — 모바일 전용(mobile.css가 켠다). 데스크탑은 3컬럼 동시 노출 */
+.path-arrow {
+  display: none;
+}
 
 .memo-list,
 .link-list {
