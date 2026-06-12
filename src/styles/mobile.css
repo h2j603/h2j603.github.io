@@ -2,12 +2,11 @@
    모바일 전용 — 모든 룰은 반드시 @media 안에 두고, 데스크탑 룰은 절대 건드리지 않는다.
    브레이크포인트: 600px. 맥북 등 일반 데스크탑은 폭 1000+로 절대 발동 안 됨.
 
-   레이아웃 (flex column order):
-   · 우측(.right): 데스크탑 전용(수집 링크) — 모바일 숨김. 언어 토글·about 탭은 띠 위 칩
-   · 가운데 표+아코디언(.center): 그 아래 (order: 1), 세로 흐름
-   · 좌측 인트로(.left): 표 아래 About 섹션 (order: 2) —
-     데스크탑 좌측 컬럼 내용을 모바일에선 페이지 하단에 둔다.
-     (이전엔 display:none으로 통째로 숨겨 모바일에서 접근 불가였음)
+   레이아웃 — 섹션 페이저 (한 화면에 한 섹션):
+   · 기본은 Portfolio(.center). 머리띠(.arena-path) 양옆 화살표로
+     Notepad(.left) ← Portfolio → Collection(.right) 전환.
+   · 상태는 .three-col[data-section], 비활성 섹션은 display:none.
+   · 언어 토글·about 탭은 띠 위 칩, 콜로폰(.bottom)은 모든 섹션 공통 꼬리.
    · 표 행 클릭 → 해당 카드로 자동 스크롤 (scroll-margin-top 으로 stripe 가림 보정)
    ─────────────────────────────────────────────────────────────────────── */
 
@@ -97,9 +96,38 @@
     gap: 0.25rem;
     align-items: center; /* 라벨·블록과 같은 중앙 문법 */
   }
-  /* 영역 출처 라벨 — 모바일은 sticky 대신 섹션 머리띠(흐름 안 정적).
+  /* 영역 출처 라벨 — 모바일은 sticky 대신 섹션 머리띠(흐름 안).
+     relative = static처럼 흐름 안에 있되, 페이저 화살표의 absolute 기준이 된다.
      center는 패딩 0이라 그대로 전폭, left는 자기 패딩(0.625rem)만 상쇄 */
-  .arena-path { position: static; }
+  .arena-path { position: relative; }
+
+  /* ── 섹션 페이저 — 한 화면에 한 섹션만 (기본 Portfolio).
+     머리띠 양옆 화살표로 Notepad ← Portfolio → Collection 이동.
+     상태는 .three-col[data-section], 전환은 인라인 JS가 담당. ── */
+  .three-col[data-section='portfolio'] .third.left,
+  .three-col[data-section='portfolio'] .third.right,
+  .three-col[data-section='notepad'] .third.center,
+  .three-col[data-section='notepad'] .third.right,
+  .three-col[data-section='collection'] .third.left,
+  .three-col[data-section='collection'] .third.center {
+    display: none;
+  }
+  /* 화살표 — 머리띠 좌우 끝, 바 전체 높이(32px)가 탭 영역 */
+  .path-arrow {
+    display: flex;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    padding: 0 0.625rem; /* 표 셀 padding과 같은 좌우 라인 */
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .path-arrow.prev { left: 0; }
+  .path-arrow.next { right: 0; }
   .three-col .left .arena-path { margin: 0 -0.625rem; }
   /* center가 표+아코디언 메인 (work-card 저장소 숨김은 global 공통 규칙이 처리) */
   .three-col .center {
