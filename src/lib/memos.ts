@@ -5,7 +5,7 @@
  * 본문 첫 줄 요약), 펼치면 본문(markdown → HTML). 채널 순서 그대로.
  * 채널이 없거나 비어 있으면 빈 배열.
  */
-import { tryGetChannelContents } from './arena.js';
+import { tryGetChannelContents, blockAddedAt } from "./arena.js";
 import { classifyBlock } from './images.js';
 import { markdownToHtml } from './body.js';
 import { memoSchema, type Memo } from './schema.js';
@@ -35,7 +35,7 @@ export async function buildMemos(): Promise<Memo[]> {
     const title =
       (typeof b?.title === 'string' && b.title.trim()) || firstLineLabel(c.content);
     const html = markdownToHtml(c.content, `memo block ${out.length + 1}`);
-    const parsed = memoSchema.safeParse({ title, html });
+    const parsed = memoSchema.safeParse({ title, html, addedAt: blockAddedAt(b) });
     if (!parsed.success) {
       console.warn(`memo: block ${b?.id} schema validation failed — skipped`);
       continue;

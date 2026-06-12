@@ -29,6 +29,9 @@ const siteLinks = getLinks();
 // 좌측 컬럼 메모 — memo 채널 텍스트 블록 (채널 순서)
 const memos = getMemos();
 
+// 블록 추가 시점 표기 — Are.na의 "added"처럼. ISO → YYYY.MM.DD
+const fmtDate = (iso: string) => (iso ? iso.slice(0, 10).replaceAll('-', '.') : '');
+
 // 작품 선택 안 한 기본 화면용 모자이크 (stripe-mosaic 도구로 만든 단일 SVG → 셀 그리드)
 const defaultMosaic = fs.readFileSync(
   path.join(process.cwd(), 'src/data/default-mosaic.html'),
@@ -116,6 +119,7 @@ const defaultMosaic = fs.readFileSync(
                 {i > 0 && <hr />}
                 <div class="memo">
                   <button type="button" class="memo-head">{m.title}</button>
+                  {m.addedAt && <span class="block-date">{fmtDate(m.addedAt)}</span>}
                   <div class="memo-body" set:html={m.html} />
                 </div>
               </>
@@ -290,6 +294,7 @@ const defaultMosaic = fs.readFileSync(
                 {i > 0 && <hr />}
                 <a class="link-item" href={l.url} target="_blank" rel="noopener">
                   <span class="link-title">{l.title || l.url}</span>
+                  {l.addedAt && <span class="block-date">{fmtDate(l.addedAt)}</span>}
                 </a>
               </>
             ))}

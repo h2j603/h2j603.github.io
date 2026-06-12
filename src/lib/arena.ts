@@ -265,3 +265,10 @@ export async function createBlock(
     body: JSON.stringify(body),
   });
 }
+
+/** 블록이 채널에 추가된 시각 (ISO) — connection.created_at(연결 시각) 우선,
+    없으면 블록 생성 시각. Are.na가 블록에 표기하는 "added"와 같은 기준. */
+export function blockAddedAt(block: Json): string {
+  const t = block?.connection?.created_at ?? block?.created_at;
+  return typeof t === 'string' ? t : '';
+}
