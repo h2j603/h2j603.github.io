@@ -713,9 +713,12 @@ const defaultMosaic = fs.readFileSync(
           });
           if (!wasOpen) {
             memo.classList.add('open');
-            // 표와 같은 시점 이동 — 펼친 메모를 화면 상단 기준선(anchorY)으로
             if (!isMobileView()) {
+              // 표와 같은 시점 이동 — 펼친 메모를 화면 상단 기준선(anchorY)으로
               glideScrollBy(leftEl, memo.getBoundingClientRect().top - anchorY(), 500);
+            } else {
+              // 모바일 — 표 행과 같은 어법: 펼친 메모가 보이게 부드럽게 스크롤
+              memo.scrollIntoView({ block: 'start', behavior: 'smooth' });
             }
           }
         });
