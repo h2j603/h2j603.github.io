@@ -197,12 +197,12 @@ iframe {
   height: 100vh;
   height: 100dvh;
 }
-/* 띠 우측 어포던스 — 서랍이 닫혀 있을 때만. 클릭은 띠로 통과(label 전용) */
+/* 띠 우측 about 탭 — 상시 노출, 화살표만 ↓/↑ 반전. 클릭 = 토글 */
 .curtain-tab {
   position: fixed;
   top: 24px; /* 띠(72px) 세로 중앙 */
   right: 20px;
-  z-index: 101;
+  z-index: 102; /* 서랍 레이어(101) 위 — 열린 상태에서도 클릭 가능 */
   display: inline-flex;
   align-items: center;
   height: 24px;
@@ -210,10 +210,14 @@ iframe {
   border: 1px solid var(--ink);
   border-radius: 999px;
   background: var(--bg);
-  pointer-events: none; /* label 전용 — 클릭은 띠로 */
-  transition: opacity 0.25s ease;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--fs);
+  font-weight: inherit;
+  color: var(--ink);
+  line-height: 1;
 }
-.stripe-top.open ~ .curtain-tab { opacity: 0; }
+.curtain-tab:hover { background: var(--tint-accent); }
 
 /* About 서랍 — 펼쳐진 커튼 위 패널 레이어. 레이어 자체는 클릭을 통과시켜
    (천 클릭 = 닫기, stripe 핸들러) 패널만 클릭을 소화한다. */
@@ -249,20 +253,6 @@ iframe {
   margin-left: -28px;
   margin-right: -28px;
 }
-.drawer-close {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  cursor: pointer;
-  border: none;
-  background: none;
-  font-family: inherit;
-  font-size: var(--fs);
-  color: var(--ink);
-  line-height: 1;
-  padding: 2px 4px;
-}
-.drawer-close:hover { background: var(--tint-accent); }
 /* 서랍 안 본문 — 인트로/푸터와 같은 프로즈 리듬 */
 .drawer-panel p {
   padding-top: 0;
@@ -345,6 +335,7 @@ iframe {
   background-color: var(--bg);
   width: 20%;
   left: 0;
+  padding-top: 0; /* 커튼과 사이 여백 0 — 띠 바로 밑에서 시작 */
   /* 스크롤 가능 (.third의 auto 상속) — 커튼에 밀려 내려간 내용도 읽을 수 있게.
      스크롤바는 .third 공통 규칙으로 숨김 */
 }
@@ -372,6 +363,7 @@ iframe {
   background-color: var(--bg);
   left: 80%;
   width: 20%;
+  padding-top: 0; /* 커튼과 사이 여백 0 */
   /* 표가 길어지면 스크롤 가능하게 */
 }
 /* 우측 컬럼 콘텐츠 — 수집 링크, 가운데 정렬 (좌측 인물 인덱스와 동일) */
@@ -423,9 +415,11 @@ iframe {
 }
 /* 링크 제목 — 텍스트만 가운데 */
 .link-list .link-title { text-align: center; }
-/* 추가 시점 — Are.na의 "added" 표기. 같은 크기, 위계는 굵기(400)로만 */
+/* 수집 시점·추가자 — 더 작고 회색 (명시 지시로 단일 크기 예외) */
 .block-date {
   font-weight: 400;
+  font-size: 0.8em;
+  color: rgba(0, 0, 0, 0.45);
   text-align: center;
 }
 
@@ -449,16 +443,12 @@ iframe {
   display: none;
   width: 100%;
   padding-top: 8px;
-  text-align: left; /* 본문 프로즈는 왼끝 정렬 */
+  text-align: left; /* 본문은 왼끝 정렬 */
+  /* 서식 없이 원문 그대로 — 줄바꿈·공백 유지 */
+  white-space: pre-wrap;
+  line-height: 1.6;
 }
 .memo.open .memo-body { display: block; }
-.memo-body p {
-  padding-top: 0;
-  margin-top: 0;
-  line-height: 1.6;
-  text-wrap: pretty;
-}
-.memo-body p + p { margin-top: 8px; }
 /* 작품이 열려 있는 동안 — 다른 행은 옅게. 목록(지도)은 보이되 시선만
    열린 작품으로 모은다. 호버하면 그 행만 다시 또렷하게. */
 table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) td,
@@ -586,7 +576,7 @@ table tr[data-active='true'] a {
    구분선은 각 td border-top로 유지, table 자체 테두리는 끔 */
 /* padding:0 — table,td 공통 padding(10px)이 표를 좌우로 들여 세로선과 어긋나게 함.
    table 자체 padding을 0으로 해 td 경계 = 세로선(d1/d3/d4/d2)에 정확히 맞춘다. */
-table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; padding: 0; }
+table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; padding: 0; margin-top: 0; /* 커튼과 표 사이 여백 0 */ }
 /* 첫 행 — 위 가로선 제거 + 상단 padding 축소(표 시작 여백 컴팩트).
    필터·정렬이 없어 행 순서 고정 → :first-child로 충분 */
 table.sontable tr[data-slug]:first-child td { border-top: 0; padding-top: 2px; }
