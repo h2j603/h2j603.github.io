@@ -506,6 +506,9 @@ iframe {
   color: var(--ink);
   transition: background 0.12s, padding 0.15s ease; /* 표 셀과 같은 템포 */
 }
+/* 드롭다운 필터로 숨긴 링크 — display:flex가 UA의 [hidden]을 이기므로 명시 */
+.link-list a.link-item[hidden] { display: none; }
+
 /* 첫 블록 — 위 hr(3px 몫)이 없는 대신 라벨 아래 공통 여백(8px)을 패딩으로:
    8(기본) + 8(--top-gap) = 1rem (필터 행이 첫 child면 그쪽이 여백을 가짐) */
 .memo-list > .memo:first-child,
@@ -523,8 +526,8 @@ iframe {
   /* 호버 = 블록이 살짝 자란다 (+8px, 4px 격자 유지. 열린 메모 제외) */
   .memo-list .memo:not(.open):hover,
   .link-list a.link-item:hover {
-    padding-top: calc(var(--pt) + 0.25rem);
-    padding-bottom: calc(var(--pb) + 0.25rem);
+    padding-top: calc(var(--pt) + 0.5rem);
+    padding-bottom: calc(var(--pb) + 0.5rem);
   }
 }
 /* 링크 제목 — 텍스트만 가운데 */
@@ -731,8 +734,8 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, pad
 /* 호버 = 블록이 살짝 자란다 (펼쳐진 행 제외) */
 @media (hover: hover) {
   table.sontable tr[data-slug]:not([data-active='true']):hover td {
-    padding-top: calc(var(--pt) + 0.25rem);
-    padding-bottom: calc(var(--pb) + 0.25rem);
+    padding-top: calc(var(--pt) + 0.5rem);
+    padding-bottom: calc(var(--pb) + 0.5rem);
   }
 }
 /* 호버 — 행이 아닌 칸(셀) 단위 배경 칠. 행마다 보라/갈색 교차(빌드 시 .row-a/.row-b 부여).
