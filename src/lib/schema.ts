@@ -104,8 +104,10 @@ export const peopleFileSchema = z.array(personSchema);
  */
 export const siteLinkSchema = z.object({
   url: z.string().url(),
-  title: z.string().default(''),
-  description: z.string().default(''),
+  title: z.string().default(""),
+  description: z.string().default(""),
+  /** 채널에 추가된 시각 (ISO) — Are.na connection.created_at */
+  addedAt: z.string().default(""),
 });
 
 export const linksFileSchema = z.array(siteLinkSchema);
@@ -124,7 +126,9 @@ export const memoSchema = z.object({
   /** 접힌 상태 라벨 — 블록 title, 없으면 본문 첫 줄 요약. */
   title: z.string().min(1),
   /** 펼친 본문 (markdown → HTML). */
-  html: z.string().default(''),
+  html: z.string().default(""),
+  /** 채널에 추가된 시각 (ISO) — Are.na connection.created_at */
+  addedAt: z.string().default(""),
 });
 export const memosFileSchema = z.array(memoSchema);
 export type Memo = z.infer<typeof memoSchema>;
