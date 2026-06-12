@@ -273,8 +273,9 @@ export function blockAddedAt(block: Json): string {
   return typeof t === "string" ? t : "";
 }
 
-/** 블록을 채널에 추가한 사람 — connection.connected_by, 없으면 블록 작성자. */
+/** 블록을 만든 사람 — block.user(생성자) 우선. 수집 시각(created_at)과
+    같은 기준이라 "언제·누가 만든 블록인지"가 일관된다. */
 export function blockAddedBy(block: Json): string {
-  const n = block?.connection?.connected_by?.name ?? block?.user?.name;
+  const n = block?.user?.name ?? block?.connection?.connected_by?.name;
   return typeof n === "string" ? n : "";
 }
