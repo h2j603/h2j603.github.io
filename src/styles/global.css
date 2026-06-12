@@ -300,9 +300,9 @@ iframe {
 }
 .three-col .third {
   position: absolute;
-  /* 띠(4.5rem)와 하단 .bottom(5.5rem) 사이 영역만 — 100%로 두면 같은
+  /* 띠(4.5rem)와 하단 .bottom(2.5rem) 사이 영역만 — 100%로 두면 같은
      특이도의 나중 선언이 calc를 덮어 바닥이 화면 밖으로 잘린다 */
-  height: calc(100% - 10rem);
+  height: calc(100% - 7rem);
   overflow-y: auto;
   overflow-x: hidden;
   padding: 1.25rem;
@@ -318,7 +318,7 @@ iframe {
 .col-divider {
   position: absolute;
   top: 0;
-  bottom: 5.5rem; /* .bottom 영역 윗선에서 정지 */
+  bottom: 2.5rem; /* .bottom 영역 윗선에서 정지 */
   width: 0;
   /* hr과 같은 이유 — border 페인트로 표 세로 border와 두께 통일 */
   border-left: var(--line-w) solid var(--ink);
@@ -329,14 +329,14 @@ iframe {
 .col-divider.d1 { left: 20%; }
 .col-divider.d2 { left: 80%; }
 
-/* 하단 영역 — 커튼 기본 높이(4.5rem)와 같은 키의 콜로폰 띠.
+/* 하단 영역 — 본문 크기에 맞춘 컴팩트 콜로폰 띠.
    컬럼(.third)·세로선은 이 윗변에서 끝난다. */
 .three-col .bottom {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 5.5rem; /* 커튼(4.5rem)보다 +22% — 4px 격자에서 20% 증량의 최근접 */
+  height: 2.5rem; /* 컴팩트 — 줄(20px) 위아래 10px */
   border-top: var(--line-w) solid var(--ink);
   background: var(--bg);
   z-index: 7; /* 세로선(6) 위, 커튼(100) 아래 */
@@ -496,18 +496,21 @@ iframe {
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
-  /* 위 11px = 기본 8px + 윗선(hr) 몫 3px — 호버 틴트가 선까지 닿게 */
-  padding: 0.6875rem 1.25rem 0.5rem;
+  /* 위 11px = 기본 8px + 윗선(hr) 몫 3px — 호버 틴트가 선까지 닿게.
+     패딩 변수 — 호버 성장(+0.25rem씩)이 첫 블록의 다른 기본값에도 한 규칙으로 */
+  --pt: 0.6875rem;
+  --pb: 0.5rem;
+  padding: var(--pt) 1.25rem var(--pb);
   text-decoration: none;
   font-style: normal;
   color: var(--ink);
-  transition: background 0.12s; /* 표 셀과 같은 템포 */
+  transition: background 0.12s, padding 0.15s ease; /* 표 셀과 같은 템포 */
 }
 /* 첫 블록 — 위 hr(3px 몫)이 없는 대신 라벨 아래 공통 여백(8px)을 패딩으로:
    8(기본) + 8(--top-gap) = 1rem (필터 행이 첫 child면 그쪽이 여백을 가짐) */
 .memo-list > .memo:first-child,
 .link-list > a.link-item:first-child {
-  padding-top: calc(0.5rem + var(--top-gap));
+  --pt: calc(0.5rem + var(--top-gap));
 }
 /* 호버 — 항목별 보라/갈색 교차 틴트 (hr 제외, 같은 태그끼리 홀짝).
    링크 쪽은 드롭다운 필터로 항목이 숨겨질 수 있어 JS가 row-a/row-b를 단다.
@@ -517,6 +520,12 @@ iframe {
   .link-list a.link-item.row-a:hover { background: var(--tint-accent); }
   .memo-list .memo:nth-of-type(even):not(.open):hover,
   .link-list a.link-item.row-b:hover { background: var(--tint-brown); }
+  /* 호버 = 블록이 살짝 자란다 (+8px, 4px 격자 유지. 열린 메모 제외) */
+  .memo-list .memo:not(.open):hover,
+  .link-list a.link-item:hover {
+    padding-top: calc(var(--pt) + 0.25rem);
+    padding-bottom: calc(var(--pb) + 0.25rem);
+  }
 }
 /* 링크 제목 — 텍스트만 가운데 */
 .link-list .link-title { text-align: center; line-height: 1.25rem; }
@@ -711,12 +720,21 @@ table tr[data-active='true'] a {
 table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; padding: 0; margin-top: 0; /* 라벨 아래 여백은 첫 행 padding이 가짐 — 호버 칠이 라벨 선까지 */ }
 /* 첫 행 — 위 가로선 제거. 상단 padding = 컴팩트 5px + 공통 여백 8px(옛 margin-top 몫).
    필터·정렬이 없어 행 순서 고정 → :first-child로 충분 */
-table.sontable tr[data-slug]:first-child td { border-top: 0; padding-top: calc(0.3125rem + var(--top-gap)); } /* 13+24+11=48 */
+table.sontable tr[data-slug]:first-child td { border-top: 0; --pt: calc(0.3125rem + var(--top-gap)); } /* 13+24+11=48 */
 /* 표 셀 — 행 총높이를 4px 격자에: 12(위)+24(줄)+11(아래)+1(테두리)=48.
-   비대칭 1px은 시각적으로 무감 — 테두리 1px 누적 드리프트 방지가 우선 */
-table.sontable tr[data-slug] td { padding-top: 0.75rem; padding-bottom: 0.6875rem; }
-/* 표 셀 — 크기는 body(--fs) 상속. 호버 배경 전환만 정의 */
-table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s; }
+   비대칭 1px은 시각적으로 무감 — 테두리 1px 누적 드리프트 방지가 우선.
+   패딩은 변수로 — 호버 성장(+0.25rem씩, 총 +8px = 4px 격자 유지)이 첫 행의
+   다른 기본값에도 한 규칙으로 먹게 한다 */
+table.sontable tr[data-slug] td { --pt: 0.75rem; --pb: 0.6875rem; padding-top: var(--pt); padding-bottom: var(--pb); }
+/* 표 셀 — 크기는 body(--fs) 상속. 호버 배경·패딩 전환 */
+table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, padding 0.15s ease; }
+/* 호버 = 블록이 살짝 자란다 (펼쳐진 행 제외) */
+@media (hover: hover) {
+  table.sontable tr[data-slug]:not([data-active='true']):hover td {
+    padding-top: calc(var(--pt) + 0.25rem);
+    padding-bottom: calc(var(--pb) + 0.25rem);
+  }
+}
 /* 호버 — 행이 아닌 칸(셀) 단위 배경 칠. 행마다 보라/갈색 교차(빌드 시 .row-a/.row-b 부여).
    칠 색은 줄무늬 모티프(보라/브라운)라 잉크 블랙 전환과 무관하게 유지.
    글자·뱃지는 색 반전 없이 블랙 그대로. 펼쳐진(active) 행은 호버 칠 없음.
@@ -731,7 +749,8 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s; }
 tr[data-slug] { scroll-margin-top: 0.5rem; }
 /* 표 분류(cat) 칸 — 태그를 pill 없이 텍스트로, 왼끝 정렬(d4 선 기준), · 구분. */
 .cat-cell { text-align: left; }
-.cat-cell .cat-tag { color: var(--ink); white-space: nowrap; }
+/* 작업 태그 — 데이터는 소문자 토큰 유지, 표기만 첫자 대문자 */
+.cat-cell .cat-tag { color: var(--ink); white-space: nowrap; text-transform: capitalize; }
 .cat-cell .cat-tag + .cat-tag::before { content: ' · '; }
 
 .accordion-detail,

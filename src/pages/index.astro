@@ -63,7 +63,7 @@ const defaultMosaic = fs.readFileSync(
       띠 클릭 → 커튼이 전면으로 내려오고 그 위에 About 패널이 인쇄된다(서랍) */}
   <div class="stripe-top" role="button" tabindex="0" aria-label="about 열기/닫기"></div>
   {/* 띠 우측 칩들 — about 탭(상시, 열리면 ↑로 반전) + 언어 토글 */}
-  <button type="button" class="curtain-tab">about ↓</button>
+  <button type="button" class="curtain-tab">About ↓</button>
   <button type="button" class="lang-toggle" data-lang="en">KO</button>
   {/* About 서랍 — 커튼(형제) 위에 얹히는 패널 레이어. 천 클릭은 통과시켜
       stripe 토글로 가고, 패널 자신만 클릭을 소화한다. */}
@@ -348,7 +348,7 @@ const defaultMosaic = fs.readFileSync(
     {/* ──────────── 하단: 시간만 — 좌 빌드 시각 / 우 현재 시각(KST) ──────────── */}
     <div class="bottom">
       <p class="colophon">
-        <span>built {buildStamp}</span>
+        <span>built {buildStamp} KST</span>
         <span>now <span class="now-clock">{buildStamp}</span> KST</span>
       </p>
     </div>
@@ -677,7 +677,7 @@ const defaultMosaic = fs.readFileSync(
         var open = typeof force === 'boolean' ? force : !drawerOpen();
         stripeTopEl.classList.toggle('open', open);
         // about 탭은 상시 노출 — 화살표만 방향 반전 (↓ 열기 / ↑ 닫기)
-        if (curtainTabEl) curtainTabEl.textContent = open ? 'about ↑' : 'about ↓';
+        if (curtainTabEl) curtainTabEl.textContent = open ? 'About ↑' : 'About ↓';
       }
       if (stripeTopEl) {
         // 닫힌 띠 클릭 = 열기. (열린 상태에선 서랍 레이어가 클릭을 받는다)
