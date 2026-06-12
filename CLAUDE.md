@@ -15,8 +15,11 @@ API calls) and baked into static HTML.
 The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 `public/` so Astro copies it into `dist/`.
 
-> **Current phase: architecture/data-pipeline is done; the site is intentionally
-> UNSTYLED.** The pages only prove data flows. Styling is the next major phase.
+> **Current phase: 라이브 운영 중 (hyuk.xyz).** 스타일링 완료 — 3컬럼 레이아웃
+> (좌: Are.na memo 채널 아코디언 / 중: 작품 표 + 커튼 인터랙션 / 우: 수집 링크),
+> 행별 보라/갈색 교차 호버, Pretendard Variable(dynamic subset), 라이트 단일
+> 테마. 콘텐츠는 Are.na에서만 관리하면 빌드가 반영한다. 기존 인터랙션 문법
+> (커튼·블록 단위 호버·마키 라벨)을 깨지 말 것.
 
 ## Architecture (the decisions we made, in order)
 
@@ -111,28 +114,13 @@ npm run build:nofetch         # astro build only, against existing works.json
 - `ARENA_INDEX_CHANNEL` — index channel slug (default `works`).
 - `.env` is gitignored; mirror these as **repo secrets** for the deploy workflow.
 
-## ⚠️ Status & next steps (do these on the laptop — open internet)
+## Status (2026-06-12 기준)
 
-The real Are.na work has NOT been done yet (the web sandbox blocked
-`api.are.na`, so the code is written but unverified against the live API).
-
-1. **Read the live OpenAPI spec** `https://api.are.na/v3/openapi` and verify the
-   endpoints/bodies the code guesses. Highest-uncertainty spots, all in
-   `src/lib/arena.ts`:
-   - channel **description** field name on read (`GET /channels/{id}`) and write
-     (`setChannelDescription` uses `PUT /channels/{id}` `{description}`),
-   - **connecting a child channel** into the index (`connectChannel`,
-     `POST /channels/{id}/blocks`) — tries 3 body shapes, may need fixing,
-   - block **class** spellings and **image/thumbnail URL** fields used by
-     `classifyBlock` / `bitmapUrl` in `src/lib/images.ts`,
-   - **pagination** params in `getAll` (`page`/`per`).
-2. `npm run setup:arena` → create `works` + sample channels. If channel
-   connection fails, just drag the channel into `works` in the Are.na UI.
-3. Add real content: image blocks, two text blocks (ko, en), link blocks, and
-   the `key: value` description per work.
-4. `npm run build` and check `dist/`. Then set repo Settings → Pages → Source =
-   GitHub Actions, add secrets, confirm custom domain hyuk.xyz.
-5. **Then: styling.** Everything so far is unstyled on purpose.
+- Are.na 라이브 API 검증 완료, 채널 전부 운영 중 (works / people / memo / links).
+- GitHub Pages 배포 정상 (`deploy.yml`, main push 또는 수동 dispatch).
+- **소유자는 당분간 폰만 사용 가능 (군 복무)** — 모든 작업은 클라우드 세션에서
+  하고, 반드시 PR로 만들어 소유자가 GitHub 모바일 앱에서 diff 확인 후 머지한다.
+  검증이 필요한 시각 변경은 머지 전 스크린샷이나 측정값을 PR 설명에 남길 것.
 
 ## Conventions / guardrails
 
