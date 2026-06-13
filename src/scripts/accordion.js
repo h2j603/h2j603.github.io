@@ -145,30 +145,103 @@ export function initAccordion() {
     });
   });
 
-  // ── 스와이프 — 좌우 플릭으로도 섹션 이동 (화살표와 같은 경로).
-  // 세로 스크롤이 우세한 제스처는 무시하고, 핀치 줌(멀티터치)·About 서랍
-  // 열림 중엔 발동하지 않는다. passive라 스크롤 성능에 영향 없음.
-  var touchX = 0, touchY = 0, touchValid = false;
+  // ── 스와이프 — 손가락을 따라오는 드래그. 끌면 섹션이 같이 움직이고,
+  // 충분히 끌거나(80px+) 빠르게 튕기면(32px+ & 0.35px/ms+) 밀려나가며 전환,
+  // 아니면 고무줄 복귀. 이웃 없는 방향(양끝 밖)은 1/3.5 저항.
+  // 축 판정: 첫 12px 이동에서 가로/세로 우세를 한 번만 결정 — 세로 스크롤
+  // 중 비스듬한 손가락에 오발동하지 않는다. 핀치 줌(멀티터치)·About 서랍
+  // 열림 중엔 미발동. 전부 passive — 세로 스크롤은 touch-action: pan-y가
+  // 브라우저 네이티브로 처리(mobile.css).
+  var SECTION_EL = { notepad: '.third.left', portfolio: '.third.center', collection: '.third.right' };
+  var REDUCE_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var drag = null; // { x, y, t, name, el, axis, rawDx, dx, committing }
+
+  function clearDragStyle(el) {
+    el.style.transition = '';
+    el.style.transform = '';
+    el.style.opacity = '';
+  }
+
   document.addEventListener('touchstart', function (e) {
-    touchValid = e.touches.length === 1 && isMobileView() &&
-      !document.querySelector('.stripe-top.open');
-    if (touchValid) {
-      touchX = e.touches[0].clientX;
-      touchY = e.touches[0].clientY;
+    if (drag && drag.committing) return; // 전환 연출 중 — 새 제스처 무시
+    drag = null;
+    if (!isMobileView() || e.touches.length !== 1) return;
+    if (document.querySelector('.stripe-top.open')) return;
+    if (!e.target.closest || !e.target.closest('.three-col')) return;
+    var cur = threeCol ? threeCol.getAttribute('data-section') : 'portfolio';
+    var el = threeCol ? threeCol.querySelector(SECTION_EL[cur]) : null;
+    if (!el) return;
+    drag = {
+      x: e.touches[0].clientX, y: e.touches[0].clientY, t: performance.now(),
+      name: cur, el: el, axis: null, rawDx: 0, dx: 0, committing: false,
+    };
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function (e) {
+    if (!drag || drag.committing) return;
+    if (e.touches.length !== 1) { // 두 번째 손가락 = 핀치 — 드래그 취소
+      clearDragStyle(drag.el);
+      drag = null;
+      return;
+    }
+    var dx = e.touches[0].clientX - drag.x;
+    var dy = e.touches[0].clientY - drag.y;
+    if (!drag.axis) {
+      if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return; // 아직 미결정
+      drag.axis = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+    }
+    if (drag.axis !== 'h') return;
+    drag.rawDx = dx;
+    var i = SECTION_ORDER.indexOf(drag.name);
+    var hasTarget = dx < 0 ? !!SECTION_ORDER[i + 1] : !!SECTION_ORDER[i - 1];
+    drag.dx = hasTarget ? dx : dx / 3.5;
+    drag.el.style.transform = 'translateX(' + drag.dx.toFixed(1) + 'px)';
+  }, { passive: true });
+
+  document.addEventListener('touchend', function () {
+    if (!drag || drag.committing) return;
+    var d = drag;
+    if (d.axis !== 'h') { drag = null; return; }
+    var raw = d.rawDx;
+    var vel = Math.abs(raw) / Math.max(1, performance.now() - d.t);
+    var i = SECTION_ORDER.indexOf(d.name);
+    var next = raw < 0 ? SECTION_ORDER[i + 1] : SECTION_ORDER[i - 1];
+    var commit = next && (Math.abs(raw) >= 80 || (Math.abs(raw) >= 32 && vel >= 0.35));
+    if (commit) {
+      if (REDUCE_MOTION.matches) {
+        clearDragStyle(d.el);
+        drag = null;
+        goSection(next);
+        return;
+      }
+      // 끌던 방향으로 마저 밀려나간 뒤 전환 — 들어오는 쪽은 setSection의
+      // slide-in이 받는다 (나가기 0.16s → 들어오기 0.25s 페이지 넘김 감각)
+      d.committing = true;
+      d.el.style.transition = 'transform 0.16s ease-in, opacity 0.16s ease-in';
+      d.el.style.transform = 'translateX(' + (raw < 0 ? '-70vw' : '70vw') + ')';
+      d.el.style.opacity = '0';
+      setTimeout(function () {
+        clearDragStyle(d.el);
+        drag = null;
+        goSection(next);
+      }, 160);
+    } else {
+      // 임계 미달 — 제자리 스프링 복귀
+      if (d.dx !== 0 && !REDUCE_MOTION.matches) {
+        d.el.style.transition = 'transform 0.2s ease-out';
+        d.el.style.transform = '';
+        setTimeout(function () { d.el.style.transition = ''; }, 220);
+      } else {
+        clearDragStyle(d.el);
+      }
+      drag = null;
     }
   }, { passive: true });
-  document.addEventListener('touchend', function (e) {
-    if (!touchValid || e.touches.length > 0) return; // 두 번째 손가락 남음 = 핀치
-    touchValid = false;
-    var t = e.changedTouches[0];
-    var dx = t.clientX - touchX;
-    var dy = t.clientY - touchY;
-    // 발동 조건: 가로 56px 이상 + 가로가 세로의 1.4배 이상 우세
-    if (Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
-    var cur = threeCol ? threeCol.getAttribute('data-section') : 'portfolio';
-    var i = SECTION_ORDER.indexOf(cur);
-    var next = SECTION_ORDER[i + (dx < 0 ? 1 : -1)]; // 왼쪽 플릭 = 오른쪽 섹션
-    if (next) goSection(next); // 양끝 밖은 무시 (Notepad 왼쪽/Collection 오른쪽 없음)
+
+  document.addEventListener('touchcancel', function () {
+    if (!drag || drag.committing) return;
+    clearDragStyle(drag.el);
+    drag = null;
   }, { passive: true });
 
   window.addEventListener('hashchange', applyHash);
