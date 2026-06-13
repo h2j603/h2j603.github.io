@@ -115,20 +115,24 @@
   .three-col[data-section='collection'] .third.center {
     display: none;
   }
-  /* 섹션 전환 슬라이드 — 들어오는 섹션이 이동 방향에서 살짝 밀려 들어옴.
-     data-slide는 전환 때마다 JS(setSection)가 리셋 후 재부여. 비활성 섹션은
-     display:none이라 보이는 섹션만 애니메이션된다. */
+  /* 섹션 전환 슬라이드 — 들어오는 섹션이 이동 방향에서 밀려 들어옴 (페이지
+     넘김 감각, 드래그 커밋의 나가기 0.16s와 짝). data-slide는 전환 때마다
+     JS(setSection)가 리셋 후 재부여. 비활성 섹션은 display:none이라 보이는
+     섹션만 애니메이션된다. */
   @keyframes section-from-right {
-    from { transform: translateX(40px); opacity: 0; }
+    from { transform: translateX(22vw); opacity: 0; }
   }
   @keyframes section-from-left {
-    from { transform: translateX(-40px); opacity: 0; }
+    from { transform: translateX(-22vw); opacity: 0; }
   }
   .three-col[data-slide='from-right'] .third { animation: section-from-right 0.25s ease-out; }
   .three-col[data-slide='from-left'] .third { animation: section-from-left 0.25s ease-out; }
   @media (prefers-reduced-motion: reduce) {
     .three-col[data-slide] .third { animation: none; }
   }
+  /* 가로 제스처는 JS 드래그가, 세로 스크롤·핀치 줌은 브라우저가 —
+     역할을 선언해 두면 가로 드래그 중 세로 스크롤이 끼어들지 않는다 */
+  .three-col { touch-action: pan-y pinch-zoom; }
 
   /* 화살표 — 머리띠 좌우 끝, 바 전체 높이(32px)가 탭 영역 */
   .path-arrow {
