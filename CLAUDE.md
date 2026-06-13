@@ -64,10 +64,13 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
    `people[]`(관계형 조인 키)에 기록된다. 미등록 인물은 원본 그대로(fallback).
    스냅샷은 `src/data/people.json`. intro 채널 멘션은 매칭하지 않음
    (자기 SNS 핸들이라 의도적 제외).
-10. **메모 (`memo` 채널, 슬러그 `notepad-jgoklfiysqa` / #5297539, 혁이 직접
-    만든 채널).** 텍스트 블록 1개 = 메모 1개 — 좌측 컬럼 아코디언(블록
-    title = 접힌 라벨, 본문 = 펼침). 블록의 connection.created_at을
-    "추가 시점"으로 표기 (links도 동일). 스냅샷 `src/data/memos.json`.
+10. **메모 (`memo` 채널, 혁이 직접 만든 채널 — 불변 ID `5297539`로 참조).**
+    채널 이름 rename 시 Are.na slug가 바뀌어 연결이 끊기므로 slug 대신 숫자
+    ID로 건다 (config의 `ARENA_MEMO_CHANNEL`). 텍스트 블록 1개 = 메모 1개 —
+    좌측 컬럼 아코디언(블록 title = 접힌 라벨, 본문 = 펼침). 블록의
+    connection.created_at을 "추가 시점"으로 표기 (links도 동일). 스냅샷
+    `src/data/memos.json`. (people·links 채널은 아직 slug 참조 — 같은 rename
+    취약점, 필요 시 동일하게 ID로 전환: people #5296875, links #5297302.)
 11. **수집 링크 (`links` 채널, 실제 슬러그 `collection-gxx8lqhxixg` / #5297302,
     private).** 링크 블록 1개 = 사이트 1개, title = 표시 이름. 우측 컬럼에
     채널 순서대로 본문 pill 스타일 스택으로 렌더 (모바일은 숨김). 스냅샷
