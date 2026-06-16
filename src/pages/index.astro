@@ -164,7 +164,7 @@ const defaultMosaic = fs.readFileSync(
             </colgroup>
             <tbody>
               {works.map((w, i) => (
-                <tr data-slug={w.slug} class={i % 2 === 0 ? 'row-a' : 'row-b'}>
+                <tr data-slug={w.slug} data-locked={w.published ? undefined : 'true'} class={i % 2 === 0 ? 'row-a' : 'row-b'}>
                   {/* 번호 = 연도 내림차순 고정. row-a/b = 호버 배경 보라/갈색 교차 —
                       필터·정렬이 없어 행 순서가 안 바뀌므로 빌드 시 부여 */}
                   <td class="num-cell"><span class="num-badge">{i + 1}</span></td>
@@ -177,9 +177,16 @@ const defaultMosaic = fs.readFileSync(
                     )}
                   </td>
                   <td>
-                    <a href={`#${w.slug}`} data-ko={w.title || w.slug} data-en={w.titleEn || w.title || w.slug}>
-                      {w.title || w.slug}
-                    </a>
+                    {w.published ? (
+                      <a href={`#${w.slug}`} data-ko={w.title || w.slug} data-en={w.titleEn || w.title || w.slug}>
+                        {w.title || w.slug}
+                      </a>
+                    ) : (
+                      // 미게시 — 펼침 불가. 링크가 아닌 잠긴 라벨 (언어 스왑은 유지)
+                      <span class="locked-title" data-ko={w.title || w.slug} data-en={w.titleEn || w.title || w.slug}>
+                        {w.title || w.slug}
+                      </span>
+                    )}
                   </td>
                   <td class="cat-cell">
                     {orderedTagsOf(w).length
@@ -197,7 +204,8 @@ const defaultMosaic = fs.readFileSync(
         )}
 
         {
-          works.map((w) => {
+          /* 미게시 작업은 펼칠 수 없으므로 카드를 만들지 않는다 (표 행만 남음) */
+          works.filter((w) => w.published).map((w) => {
             const cover = w.cover ? resolveImage(w.cover) : undefined;
             const externalUrl = w.links[0]?.url;
             const isWeb = w.tags.includes('web');

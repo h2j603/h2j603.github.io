@@ -124,9 +124,9 @@ async function buildOne(
 ): Promise<{ work: Work | null; skipped: boolean }> {
   const meta = parseDescriptionMetadata(channel.description);
 
-  if (meta.published?.toLowerCase() === 'false') {
-    return { work: null, skipped: true };
-  }
+  // `published: false`는 더 이상 작업을 빌드에서 제외하지 않는다 — 표에는
+  // 남되 펼칠(클릭) 수 없는 잠긴 행으로 렌더된다 (페이지 쪽 처리).
+  const published = meta.published?.toLowerCase() !== 'false';
 
   const slug = (meta.slug || channel.slug || '').trim();
   if (!slug) {
@@ -242,6 +242,7 @@ async function buildOne(
     client: meta.client ?? '',
     order: num(meta.order, 9999, warn, ctx),
     tags,
+    published,
     cover,
     bodyKo,
     bodyEn,
@@ -311,9 +312,11 @@ export async function buildWorks(
   const works: Work[] = [];
   results.forEach((r, i) => {
     if (!r) return;
-    if (r.skipped) skippedUnpublished++;
-    else if (r.work) works.push(r.work);
-    else if (!failed.includes(refs[i].slug || String(refs[i].id))) {
+    if (r.work) {
+      works.push(r.work);
+      // 잠긴(미게시) 작업도 표엔 남으므로 빌드에 포함 — 카운트만 따로 집계.
+      if (!r.work.published) skippedUnpublished++;
+    } else if (!failed.includes(refs[i].slug || String(refs[i].id))) {
       failed.push(refs[i].slug || String(refs[i].id));
     }
   });

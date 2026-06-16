@@ -131,7 +131,9 @@ npm run build:nofetch         # astro build only, against existing works.json
 
 - Keep build-time-only; no runtime API calls.
 - Per-work error isolation: one bad channel logs a warning and is skipped, never
-  fatal. `published: false` skips a work.
+  fatal. `published: false` keeps a work in the table but locks the row —
+  the title is a plain label (not a link) and the row can't be expanded
+  (no card rendered).
 - Don't embed remote Are.na URLs in output — always download locally.
 - There are small Node test scripts used during development for the markdown
   converter, block classifier, and description parser; re-create/run them with

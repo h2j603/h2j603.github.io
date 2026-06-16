@@ -176,10 +176,11 @@ cover: 2
 | `order` | `1` | sort order (ascending number) |
 | `tags` | `identity, poster` | comma-separated subset of `identity/editorial/poster/type/web`; `web` auto-added for link works |
 | `cover` | `2` | 1-based index of the image to use as the index thumbnail; defaults to the first image (or first link thumbnail for web-only works) |
-| `published` | `true` | `false` excludes the work from the build |
+| `published` | `true` | `false` keeps the work in the table but locks the row (not clickable / can't expand) |
 
 All keys are optional. Missing fields fall back to defaults. `published: false`
-skips the work. A non-numeric `order` logs a warning and uses the default.
+keeps the row in the table but makes it un-clickable (the title is a plain label,
+not a link, and no card is rendered). A non-numeric `order` logs a warning and uses the default.
 Unknown `tags` tokens are warned about and dropped. Keys are case-insensitive.
 
 `scripts/setup-arena.ts` seeds each sample channel's description with these

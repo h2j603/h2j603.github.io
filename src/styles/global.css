@@ -153,6 +153,12 @@ th {
 /* 행 hover 밑줄은 폐기 — 밑줄은 펼친(active) 행의 표식으로만.
    행 전체가 토글 단위(메모 블록과 같은 어법)라 커서로 클릭 가능성을 알린다. */
 table.sontable tr[data-slug] { cursor: pointer; }
+/* 미게시(잠긴) 행 — 표엔 남되 펼칠 수 없음. 클릭 어포던스 제거 + 살짝 흐리게 */
+table.sontable tr[data-slug][data-locked='true'] { cursor: default; }
+table.sontable tr[data-slug][data-locked='true'] td,
+table.sontable tr[data-slug][data-locked='true'] .num-badge,
+table.sontable tr[data-slug][data-locked='true'] .cat-tag { color: rgba(0, 0, 0, 0.4); }
+table.sontable tr[data-slug][data-locked='true'] .locked-title { cursor: default; }
 /* ───────────────────────────────────────────────────────────────────────
    이미지 / iframe (원본 그대로 + 비율 유지 보강)
    ─────────────────────────────────────────────────────────────────────── */
@@ -736,7 +742,7 @@ table.sontable tr[data-slug] td { --pt: 0.75rem; --pb: 0.6875rem; padding-top: v
 table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, padding 0.15s ease; }
 /* 호버 = 블록이 살짝 자란다 (펼쳐진 행 제외) */
 @media (hover: hover) {
-  table.sontable tr[data-slug]:not([data-active='true']):hover td {
+  table.sontable tr[data-slug]:not([data-active='true']):not([data-locked='true']):hover td {
     padding-top: calc(var(--pt) + 0.5rem);
     padding-bottom: calc(var(--pb) + 0.5rem);
   }
@@ -747,8 +753,8 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, pad
    @media (hover: hover) — 터치 기기(모바일)에선 탭 시 sticky hover로 칸이
    칠해진 채 남는 문제가 있어 진짜 호버 가능한 기기에서만 적용. */
 @media (hover: hover) {
-  table.sontable tr.row-a:not([data-active='true']) td:hover { background: var(--tint-accent); }
-  table.sontable tr.row-b:not([data-active='true']) td:hover { background: var(--tint-brown); }
+  table.sontable tr.row-a:not([data-active='true']):not([data-locked='true']) td:hover { background: var(--tint-accent); }
+  table.sontable tr.row-b:not([data-active='true']):not([data-locked='true']) td:hover { background: var(--tint-brown); }
 }
 /* 펼칠 때 행이 컬럼(스크롤 컨테이너) 상단에서 살짝 떨어지게 —
    sticky 헤더가 없어졌으므로 작은 여백만 */

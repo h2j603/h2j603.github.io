@@ -11,9 +11,9 @@ export function initLang() {
     // About 서랍(.three-col 밖 형제 레이어)도 같은 언어 규칙을 타게
     var drawer = document.querySelector('.about-drawer');
     if (drawer) drawer.setAttribute('data-lang', lang);
-    // 표 제목 — data-ko/en 스왑
-    document.querySelectorAll('table.sontable a[data-ko]').forEach(function (a) {
-      a.textContent = a.getAttribute('data-' + lang) || '';
+    // 표 제목 — data-ko/en 스왑 (게시 행은 <a>, 미게시 잠긴 행은 <span>)
+    document.querySelectorAll('table.sontable [data-ko]').forEach(function (el) {
+      el.textContent = el.getAttribute('data-' + lang) || '';
     });
   }
   applyLang(langToggle.getAttribute('data-lang') || 'ko'); // 초기 동기화

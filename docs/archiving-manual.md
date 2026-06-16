@@ -109,7 +109,7 @@ layout: 1, 2, 2
 | `tags` | 분류 태그(쉼표 구분) | `editorial, poster` | §5 |
 | `cover` | 대표 이미지 번호(1부터) | `2` | §6 |
 | `layout` | 이미지 그리드 단 구성 | `2, 1, 3` | §7 |
-| `published` | 게시 여부 | `false` | `false`면 사이트에서 제외(아카이브엔 유지) |
+| `published` | 게시 여부 | `false` | `false`면 표엔 남되 행이 잠겨 클릭(펼침) 불가 |
 
 ---
 
@@ -154,10 +154,10 @@ layout: 2, 1, 3
 
 ---
 
-## 8. 작업 숨기기 / 임시저장
+## 8. 작업 잠그기 / 임시저장
 
-- 채널 설명에 `published: false` → **사이트에서 제외**되지만 Are.na 아카이브엔 그대로 남습니다. (초안·보류 작업 보관용)
-- 다시 `published: true`(또는 그 줄 삭제)로 되돌리면 다음 빌드에 다시 등장.
+- 채널 설명에 `published: false` → 표에는 **그대로 보이되 행이 잠겨** 클릭해도 펼쳐지지 않습니다 (제목이 링크가 아닌 흐린 라벨이 되고 카드는 만들지 않음). 초안·보류 작업을 목록엔 남기되 내용은 가리고 싶을 때.
+- 다시 `published: true`(또는 그 줄 삭제)로 되돌리면 다음 빌드에 행이 다시 열립니다.
 
 ---
 
@@ -208,7 +208,7 @@ npm run build:nofetch         # 기존 works.json으로 astro build만
 | 카테고리 지정 | 설명에 `tags: poster, editorial` |
 | 대표 썸네일 고르기 | 설명에 `cover: N` |
 | 이미지 단 배치 | 설명에 `layout: 2,1,3` |
-| 작업 숨기기 | 설명에 `published: false` |
+| 작업 잠그기(표엔 남되 펼침 불가) | 설명에 `published: false` |
 | 사이트 반영 | `main`에 빈 커밋 push 또는 Actions 수동 실행(재빌드) |
 
 ---

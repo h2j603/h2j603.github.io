@@ -43,6 +43,11 @@ export const workSchema = z.object({
   /** Classification tags (subset of TAGS); `web` is auto-added for link works. */
   tags: z.array(tagSchema).default([]),
   /**
+   * 게시 여부. `published: false`면 표에는 남지만 행을 펼칠(클릭) 수 없다 —
+   * 제목이 링크가 아니라 잠긴 라벨이 되고 카드도 렌더하지 않는다.
+   */
+  published: z.boolean().default(true),
+  /**
    * Local path to the representative image for index thumbnails, or '' if the
    * work has no images/thumbnails. Chosen from the `cover` metadata (1-based),
    * else the first image, else the first link thumbnail.

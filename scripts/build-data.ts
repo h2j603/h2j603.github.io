@@ -51,7 +51,7 @@ async function main() {
   console.log('\n──────── build-data summary ────────');
   console.log(`works in index : ${summary.total}`);
   console.log(`built          : ${summary.built}`);
-  console.log(`unpublished    : ${summary.skippedUnpublished}`);
+  console.log(`locked (unpub) : ${summary.skippedUnpublished}`);
   console.log(
     `failed         : ${summary.failed.length}` +
       (summary.failed.length ? ' (' + summary.failed.join(', ') + ')' : ''),
