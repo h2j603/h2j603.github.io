@@ -50,13 +50,6 @@ const linkTags = [...new Set(siteLinks.flatMap((l) => l.tags))];
 // 하단 콜로폰 — 빌드 시각 (SSG라 = 콘텐츠 스냅샷 시각)
 const buildStamp = fmtDateTime(new Date().toISOString());
 
-// 인디웹 웹링 (🕸💍 xn--sr8hvo.ws) — 콜로폰 가운데 prev/next 네비.
-// 가입(https://xn--sr8hvo.ws/) 후 받은 hex id를 여기에 채우면 내 위치 기준
-// 이전/다음 사이트로 연결된다. 비어 있으면 링 전체에서 무작위 이동(generic).
-const webringId = '';
-const webringHref = (dir: 'previous' | 'next') =>
-  `https://xn--sr8hvo.ws/${webringId ? webringId + '/' : ''}${dir}`;
-
 
 // 작품 선택 안 한 기본 화면용 모자이크 (stripe-mosaic 도구로 만든 단일 SVG → 셀 그리드)
 const defaultMosaic = fs.readFileSync(
@@ -376,11 +369,12 @@ const defaultMosaic = fs.readFileSync(
     <div class="bottom">
       <p class="colophon">
         <span>built {buildStamp} KST</span>
-        {/* 인디웹 웹링 — 화살표 = 링 이전/다음 사이트, 가운데 = 링 홈 */}
+        {/* 인디웹 웹링 — 공식 임베드 스니펫. 위치는 referrer로 판단(member id 없음).
+            화살표 = 링 이전/다음 사이트 (같은 탭 이동 = 웹링 관례) */}
         <span class="webring">
-          <a href={webringHref('previous')} target="_blank" rel="noopener" aria-label="webring: 이전 사이트">←</a>
-          <a href="https://xn--sr8hvo.ws/" target="_blank" rel="noopener" title="An IndieWeb Webring">🕸💍</a>
-          <a href={webringHref('next')} target="_blank" rel="noopener" aria-label="webring: 다음 사이트">→</a>
+          <a href="https://xn--sr8hvo.ws/previous" aria-label="webring: 이전 사이트">←</a>
+          An <a href="https://xn--sr8hvo.ws">IndieWeb Webring</a> 🕸💍
+          <a href="https://xn--sr8hvo.ws/next" aria-label="webring: 다음 사이트">→</a>
         </span>
         <span>now <span class="now-clock">{buildStamp}</span> KST</span>
       </p>
