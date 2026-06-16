@@ -153,11 +153,9 @@ th {
 /* 행 hover 밑줄은 폐기 — 밑줄은 펼친(active) 행의 표식으로만.
    행 전체가 토글 단위(메모 블록과 같은 어법)라 커서로 클릭 가능성을 알린다. */
 table.sontable tr[data-slug] { cursor: pointer; }
-/* 미게시(잠긴) 행 — 표엔 남되 펼칠 수 없음. 클릭 어포던스 제거 + 살짝 흐리게 */
+/* 미게시(잠긴) 행 — 표엔 남되 펼칠 수 없음. 색은 일반 행과 동일,
+   클릭 어포던스(커서)만 제거 */
 table.sontable tr[data-slug][data-locked='true'] { cursor: default; }
-table.sontable tr[data-slug][data-locked='true'] td,
-table.sontable tr[data-slug][data-locked='true'] .num-badge,
-table.sontable tr[data-slug][data-locked='true'] .cat-tag { color: rgba(0, 0, 0, 0.4); }
 table.sontable tr[data-slug][data-locked='true'] .locked-title { cursor: default; }
 /* ───────────────────────────────────────────────────────────────────────
    이미지 / iframe (원본 그대로 + 비율 유지 보강)
