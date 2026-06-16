@@ -123,6 +123,8 @@ export function initAccordion() {
   // 표 행 클릭 — 블록(행) 전체가 토글 단위 (메모 블록과 같은 어법).
   // 연도 등 외부 링크는 본연의 동작대로 통과.
   document.querySelectorAll('table.sontable tr[data-slug]').forEach(function (tr) {
+    // 미게시(잠긴) 행 — 펼칠 수 없다. 연도 외부 링크만 본연대로 동작.
+    if (tr.getAttribute('data-locked') === 'true') return;
     tr.addEventListener('click', function (e) {
       var a = e.target.closest('a');
       if (a && !(a.getAttribute('href') || '').startsWith('#')) return;
