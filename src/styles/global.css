@@ -359,12 +359,11 @@ iframe {
   line-height: 1.25rem;
   color: var(--ink);
 }
-/* 인디웹 웹링 — 콜로폰 가운데. 화살표·이모지는 본문 링크 장식(밑줄·italic) 제거,
-   호버 때만 보라 강조. space-between의 가운데 자식이라 자동 중앙 정렬된다. */
+/* 인디웹 웹링 — 콜로폰 가운데. 한 줄 유지(화살표·텍스트 안 깨지게),
+   링크 장식(밑줄·italic) 제거하고 호버 때만 보라 강조.
+   space-between의 가운데 자식이라 자동 중앙 정렬된다. */
 .webring {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+  white-space: nowrap;
 }
 .webring a {
   text-decoration: none;
