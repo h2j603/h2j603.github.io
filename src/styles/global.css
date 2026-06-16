@@ -305,7 +305,7 @@ iframe {
   position: absolute;
   /* 띠(4.5rem)와 하단 .bottom(2.5rem) 사이 영역만 — 100%로 두면 같은
      특이도의 나중 선언이 calc를 덮어 바닥이 화면 밖으로 잘린다 */
-  height: calc(100% - 7rem);
+  height: calc(100% - 8rem); /* 띠 4.5rem + 하단 2줄 푸터 3.5rem */
   overflow-y: auto;
   overflow-x: hidden;
   padding: 1.25rem;
@@ -321,7 +321,7 @@ iframe {
 .col-divider {
   position: absolute;
   top: 0;
-  bottom: 2.5rem; /* .bottom 영역 윗선에서 정지 */
+  bottom: 3.5rem; /* .bottom 영역(2줄 푸터) 윗선에서 정지 */
   width: 0;
   /* hr과 같은 이유 — border 페인트로 표 세로 border와 두께 통일 */
   border-left: var(--line-w) solid var(--ink);
@@ -339,12 +339,13 @@ iframe {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 2.5rem; /* 컴팩트 — 줄(20px) 위아래 10px */
+  height: 3.5rem; /* 2줄 — 시각줄 + 웹링줄 (각 20px, 위아래 8px) */
   border-top: var(--line-w) solid var(--ink);
   background: var(--bg);
   z-index: 7; /* 세로선(6) 위, 커튼(100) 아래 */
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
   padding: 0 1.25rem; /* 컬럼 패딩과 같은 세로 라인 */
 }
 .bottom .colophon {
@@ -359,11 +360,16 @@ iframe {
   line-height: 1.25rem;
   color: var(--ink);
 }
-/* 인디웹 웹링 — 콜로폰 가운데. 한 줄 유지(화살표·텍스트 안 깨지게),
-   링크 장식(밑줄·italic) 제거하고 호버 때만 보라 강조.
-   space-between의 가운데 자식이라 자동 중앙 정렬된다. */
+/* 인디웹 웹링 — 푸터 둘째 줄 가운데. 전역 p(padding-top:1rem) 무력화,
+   한 줄 유지(화살표·텍스트 안 깨지게), 링크 장식(밑줄·italic) 제거 후
+   호버 때만 보라 강조. */
 .webring {
+  margin: 0;
+  padding: 0;
+  text-align: center;
   white-space: nowrap;
+  font-size: var(--fs);
+  line-height: 1.25rem;
 }
 .webring a {
   text-decoration: none;
