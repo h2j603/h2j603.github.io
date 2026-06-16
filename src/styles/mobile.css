@@ -92,7 +92,7 @@
     position: static;
     order: 4; /* Collection 다음, 맨 끝 */
     height: auto;
-    gap: 0.25rem; /* 시각줄 ↔ 웹링줄 사이 숨 */
+    gap: 1rem; /* 시각줄(블록) ↔ 웹링줄 — 문단 사이 여백(데스크탑과 동일) */
     padding: 0.75rem 0.625rem; /* 컴팩트 — 줄 20×2 + 위아래 12 */
   }
   .bottom .colophon {
