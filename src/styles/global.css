@@ -362,7 +362,7 @@ iframe {
 }
 /* 인디웹 웹링 — 푸터 둘째 줄 가운데. 전역 p(padding-top:1rem) 무력화,
    한 줄 유지(화살표·텍스트 안 깨지게). 링크는 본문 하이퍼링크와 같은
-   어법(보라+점멸+호버 밑줄, 외부 텍스트엔 ↗) — 위 본문 링크 규칙군에서 처리. */
+   어법(보라+점멸+호버 밑줄) — 단 ↗ 프리픽스는 예외로 제외(스니펫 원형 유지). */
 .webring {
   margin: 0;
   padding: 0;
@@ -961,9 +961,7 @@ table.sontable .col-cat   { width: 20%; }
 .intro a::before,
 .drawer-panel a::before,
 .work-card .card-body a::before,
-.work-card .card-link::before,
-/* 웹링은 외부 링크(텍스트)에만 ↗ — 방향 화살표(aria-label 보유)는 제외 */
-.webring a:not([aria-label])::before {
+.work-card .card-link::before {
   content: '↗';
   margin-right: 0.125rem;
   /* inline 글리프 — 아이콘과 첫 단어 사이 줄바꿈 방지 */
