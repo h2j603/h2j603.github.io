@@ -17,6 +17,11 @@ const { title } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
 
+    {/* rel=me — IndieAuth/RelMeAuth 신원 확인용. 인디웹 웹링(indielogin.com)이
+        이 링크로 GitHub 프로필 ↔ 사이트 양방향을 검증한다.
+        (GitHub 프로필 "Website" 칸이 hyuk.xyz를 가리켜야 양방향 성립) */}
+    <link rel="me" href="https://github.com/h2j603" />
+
     {/* 외부 리소스 연결 미리 열기 — 폰트(Typekit·jsdelivr)·iframe(h2j603.github.io) 로딩 단축 */}
     <link rel="preconnect" href="https://use.typekit.net" crossorigin />
     <link rel="preconnect" href="https://p.typekit.net" crossorigin />
