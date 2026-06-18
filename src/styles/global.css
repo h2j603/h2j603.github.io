@@ -186,7 +186,7 @@ iframe {
   z-index: 100;
   height: 4.5rem;
   overflow: hidden;
-  transition: height 0.5s ease, filter 0.3s ease, opacity 0.3s ease;
+  transition: height 0.5s ease;
   cursor: pointer;
   /* row 사이 공백 텍스트 노드가 body line-height(~0.9375rem) 만큼 차지하지 않게 차단.
      이게 시각적으로 stripe를 50~63px로 두껍게 보이게 만들던 진범. */
@@ -216,7 +216,6 @@ iframe {
   font-weight: inherit;
   color: var(--ink);
   line-height: 1;
-  transition: filter 0.3s ease, opacity 0.3s ease;
 }
 .curtain-tab:hover { background: var(--tint-accent); }
 
@@ -304,7 +303,7 @@ iframe {
   position: absolute;
   /* 띠(4.5rem)와 하단 .bottom(2.5rem) 사이 영역만 — 100%로 두면 같은
      특이도의 나중 선언이 calc를 덮어 바닥이 화면 밖으로 잘린다 */
-  height: calc(100% - 7rem); /* 띠 4.5rem + 하단 1줄 푸터 2.5rem */
+  height: calc(100% - 9rem); /* 띠 4.5rem + 하단 2줄 푸터 4.5rem */
   overflow-y: auto;
   overflow-x: hidden;
   padding: 1.25rem;
@@ -320,7 +319,7 @@ iframe {
 .col-divider {
   position: absolute;
   top: 0;
-  bottom: 2.5rem; /* .bottom 영역(1줄 푸터) 윗선에서 정지 */
+  bottom: 4.5rem; /* .bottom 영역(2줄 푸터) 윗선에서 정지 */
   width: 0;
   /* hr과 같은 이유 — border 페인트로 표 세로 border와 두께 통일 */
   border-left: var(--line-w) solid var(--ink);
@@ -338,12 +337,14 @@ iframe {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 2.5rem; /* 1줄 — built(좌) · 웹링(중앙 절대배치) · now(우), 20px + 위아래 10px */
+  height: 4.5rem; /* 2줄 — 시각줄 + 웹링줄 (각 20px) + 문단 간격 1rem, 위아래 8px */
   border-top: var(--line-w) solid var(--ink);
   background: var(--bg);
   z-index: 7; /* 세로선(6) 위, 커튼(100) 아래 */
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem; /* 시각줄 ↔ 웹링줄 — 문단 사이 여백(전역 p와 동일) */
   padding: 0 1.25rem; /* 컬럼 패딩과 같은 세로 라인 */
 }
 .bottom .colophon {
@@ -358,15 +359,10 @@ iframe {
   line-height: 1.25rem;
   color: var(--ink);
 }
-/* 인디웹 웹링 — 시각줄과 같은 줄 정중앙. built(좌)·now(우) 사이 빈 가운데에
-   절대배치로 얹어 한 줄에 셋이 나란히 보인다. 전역 p(padding-top:1rem) 무력화,
+/* 인디웹 웹링 — 푸터 둘째 줄 가운데. 전역 p(padding-top:1rem) 무력화,
    한 줄 유지(화살표·텍스트 안 깨지게). 링크는 본문 하이퍼링크와 같은
    어법(보라+점멸+호버 밑줄) — 단 ↗ 프리픽스는 예외로 제외(스니펫 원형 유지). */
 .webring {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
   margin: 0;
   padding: 0;
   text-align: center;
@@ -566,7 +562,7 @@ iframe {
 }
 
 /* 메모 아코디언 — 라벨(접힘) 클릭 → 본문 펼침. JS가 .open 토글 */
-.memo { cursor: pointer; transition: filter 0.3s ease, opacity 0.3s ease; }
+.memo { cursor: pointer; }
 .memo-head {
   border: none;
   background: none;
@@ -579,11 +575,15 @@ iframe {
   text-align: center;
   line-height: 1.25rem;
 }
-/* 메모가 열려 있는 동안 — 열린 메모만 빼고 같은 리스트의 모든 것(다른 메모 +
-   사이 hr 구분선)을 은은히 블러. 호버하면 그 메모만 다시 또렷하게. */
-.memo-list:has(.memo.open) > *:not(.memo.open) { filter: blur(2.5px); opacity: 0.7; }
+/* 메모가 열려 있는 동안 — 표와 같은 어법으로 다른 메모는 옅게,
+   호버하면 그 메모만 다시 또렷하게 (열린 메모로 시선 모으기) */
+.memo-list:has(.memo.open) .memo:not(.open) .memo-head { color: rgba(0, 0, 0, 0.32); }
+.memo-list:has(.memo.open) .memo:not(.open) .block-date { color: rgba(0, 0, 0, 0.2); }
+.memo-list:has(.memo.open) .memo:not(.open) .tag-chip { opacity: 0.45; }
 @media (hover: hover) {
-  .memo-list:has(.memo.open) .memo:not(.open):hover { filter: none; opacity: 1; }
+  .memo-list:has(.memo.open) .memo:not(.open):hover .memo-head { color: var(--ink); }
+  .memo-list:has(.memo.open) .memo:not(.open):hover .block-date { color: rgba(0, 0, 0, 0.45); }
+  .memo-list:has(.memo.open) .memo:not(.open):hover .tag-chip { opacity: 1; }
 }
 .memo-body {
   display: none;
@@ -614,60 +614,19 @@ iframe {
   font-weight: 400;
   text-decoration: none;
 }
-/* 작품이 열려 있는 동안 — 다른 행은 은은히 블러. 목록(지도)은 보이되 시선만
+/* 작품이 열려 있는 동안 — 다른 행은 옅게. 목록(지도)은 보이되 시선만
    열린 작품으로 모은다. 호버하면 그 행만 다시 또렷하게. */
-table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) td {
-  filter: blur(2.5px);
-  opacity: 0.7;
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) td,
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) td a,
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) .cat-tag,
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) .num-badge {
+  color: rgba(0, 0, 0, 0.32);
 }
-@media (hover: hover) {
-  table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']):hover td {
-    filter: none;
-    opacity: 1;
-  }
-}
-
-/* 아코디언이 열리면 — 펼친 부분만 또렷, 화면의 나머지 전부가 은은한 블러로
-   물러난다: 다른 컬럼 콘텐츠 + 여는 컬럼의 breadcrumb(라벨) + 격자선 + 하단
-   푸터까지. 여는 컬럼의 .content는 또렷 유지하고(:not(:has(...))) 그 안에서
-   열림 항목을 뺀 요소들은 위쪽 개별 규칙(메모 리스트·표 행)이 블러한다.
-   메모·작품이 동시에 열려도 각자 자기 컬럼은 선명하다.
-   모바일은 비활성 컬럼이 display:none이라 보이는 컬럼만 이 규칙을 받는다. */
-.three-col .content,
-.three-col .col-divider,
-.three-col .bottom,
-.arena-path,
-.memo-list > hr { transition: filter 0.3s ease, opacity 0.3s ease; }
-.three-col:has(.memo.open) .right .content,
-.three-col:has(.memo.open) .center:not(:has(tr[data-active='true'])) .content,
-.three-col:has(.memo.open) .left .arena-path,
-.three-col:has(tr[data-active='true']) .right .content,
-.three-col:has(tr[data-active='true']) .left:not(:has(.memo.open)) .content,
-.three-col:has(tr[data-active='true']) .center .arena-path,
-.three-col:has(.memo.open) .col-divider,
-.three-col:has(tr[data-active='true']) .col-divider,
-.three-col:has(.memo.open) .bottom,
-.three-col:has(tr[data-active='true']) .bottom {
-  filter: blur(2.5px);
-  opacity: 0.72;
-}
-/* reduced-motion — 블러 상태는 두되 전환만 즉시 */
-@media (prefers-reduced-motion: reduce) {
-  .three-col .content,
-  .three-col .col-divider,
-  .three-col .bottom,
-  .arena-path,
-  .memo,
-  .memo-list > hr { transition: none; }
-  table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, padding 0.15s ease; }
-}
-/* 상단 커튼(stripe)·칩(About 탭·언어 토글)도 함께 물러난다 — three-col 밖이라
-   body:has()로 잡는다. About 서랍이 펼쳐진 동안엔 제외 — 그땐 커튼이 읽기 면. */
-body:not(:has(.stripe-top.open)):has(.memo.open, tr[data-active='true']) .stripe-top,
-body:not(:has(.stripe-top.open)):has(.memo.open, tr[data-active='true']) .curtain-tab,
-body:not(:has(.stripe-top.open)):has(.memo.open, tr[data-active='true']) .lang-toggle {
-  filter: blur(2.5px);
-  opacity: 0.72;
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']):hover td,
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']):hover td a,
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']):hover .cat-tag,
+table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']):hover .num-badge {
+  color: var(--ink);
 }
 
 /* 표 행 활성 상태 — 링크 텍스트 아래 라인.
@@ -791,7 +750,7 @@ table.sontable tr[data-slug]:first-child td { border-top: 0; --pt: calc(0.3125re
    다른 기본값에도 한 규칙으로 먹게 한다 */
 table.sontable tr[data-slug] td { --pt: 0.75rem; --pb: 0.6875rem; padding-top: var(--pt); padding-bottom: var(--pb); }
 /* 표 셀 — 크기는 body(--fs) 상속. 호버 배경·패딩 전환 */
-table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, padding 0.15s ease, filter 0.3s ease, opacity 0.3s ease; }
+table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, padding 0.15s ease; }
 /* 호버 = 블록이 살짝 자란다 (펼쳐진 행 제외) */
 @media (hover: hover) {
   table.sontable tr[data-slug]:not([data-active='true']):not([data-locked='true']):hover td {
@@ -881,7 +840,6 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   font-weight: inherit;
   color: var(--ink);
   line-height: 1;
-  transition: filter 0.3s ease, opacity 0.3s ease;
 }
 .lang-toggle:hover {
   background: var(--tint-accent);

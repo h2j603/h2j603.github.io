@@ -92,8 +92,6 @@
     position: static;
     order: 4; /* Collection 다음, 맨 끝 */
     height: auto;
-    flex-direction: column; /* 데스크탑은 1줄(row), 모바일은 좁아서 다시 세로 적층 */
-    align-items: center;
     gap: 1rem; /* 시각줄(블록) ↔ 웹링줄 — 문단 사이 여백(데스크탑과 동일) */
     padding: 0.75rem 0.625rem; /* 컴팩트 — 줄 20×2 + 위아래 12 */
   }
@@ -102,8 +100,6 @@
     gap: 0.25rem;
     align-items: center; /* 라벨·블록과 같은 중앙 문법 */
   }
-  /* 웹링 — 모바일은 흐름 안 시각줄 아래 (데스크탑의 중앙 절대배치 해제) */
-  .webring { position: static; transform: none; }
   /* 영역 출처 라벨 — 모바일은 sticky 대신 섹션 머리띠(흐름 안).
      relative = static처럼 흐름 안에 있되, 페이저 화살표의 absolute 기준이 된다.
      center는 패딩 0이라 그대로 전폭, left는 자기 패딩(0.625rem)만 상쇄 */
