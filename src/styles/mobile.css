@@ -56,6 +56,7 @@
   .three-col .left .memo-list {
     width: calc(100% + 1.25rem);
     margin: 0 -0.625rem; /* 라벨 직하 — 여백은 첫 블록 padding(전역 1rem)이 가짐 */
+    border-bottom: 0; /* 바닥 마감선은 푸터 윗선이 담당 — link-list와 동일(이중선 방지) */
   }
   /* 리스트가 이미 전폭이므로 안의 hr은 그대로 — 위 .intro hr 음수 보정이
      여기까지 닿으면 화면 폭(390)을 넘겨 가로 스크롤이 생긴다 */
@@ -168,6 +169,7 @@
     border-collapse: separate;
     border-spacing: 0;
     border-top: 0;
+    border-bottom: 0; /* 바닥 마감선은 푸터 윗선이 담당 — 메모/링크 리스트와 동일(이중선 방지) */
     margin-bottom: 0; /* 표 바닥선이 곧 다음 섹션(Notepad) 경계선 — 빈 띠 제거 */
   }
   tr[data-slug] { scroll-margin-top: 5rem; }
