@@ -5,7 +5,7 @@
 //   #notepad #collection  모바일 섹션 (데스크탑은 data-section을 무시 — 무해)
 //   (없음)                Portfolio 기본, 아코디언 닫힘
 // → 새로고침·공유 링크에서도 모바일 섹션 상태가 유지된다.
-import { isMobileView, anchorY, glideScrollBy, springOpen } from './util.js';
+import { isMobileView, anchorY, glideScrollBy, springOpen, springX } from './util.js';
 import { rescanWave } from './wave.js';
 
 var SECTION_HASHES = ['portfolio', 'notepad', 'collection'];
@@ -71,6 +71,7 @@ function accOpen(slug) {
 // 모바일 섹션 전환 — 상태는 .three-col[data-section] 하나, 표시는 mobile.css.
 // 공간 배치(좌→우)와 같은 순서 — 슬라이드 방향 계산에 쓴다.
 var SECTION_ORDER = ['notepad', 'portfolio', 'collection'];
+var SECTION_EL = { notepad: '.third.left', portfolio: '.third.center', collection: '.third.right' };
 
 function setSection(name) {
   if (!threeCol || threeCol.getAttribute('data-section') === name) return;
@@ -79,11 +80,12 @@ function setSection(name) {
   threeCol.setAttribute('data-section', name);
   if (isMobileView()) {
     window.scrollTo(0, 0); // 새 섹션은 머리띠부터
-    // 들어오는 섹션이 이동 방향에서 살짝 밀려 들어옴 (mobile.css keyframes와 짝).
-    // 같은 방향 연속 전환에도 재생되게 속성 제거 → reflow → 재부여로 리셋.
-    threeCol.removeAttribute('data-slide');
-    void threeCol.offsetWidth;
-    threeCol.setAttribute('data-slide', to > from ? 'from-right' : 'from-left');
+    // 들어오는 섹션이 이동 방향에서 밀려 들어와 0으로 스프링(파동)으로 정착.
+    var nextEl = threeCol.querySelector(SECTION_EL[name]);
+    if (nextEl) {
+      var off = window.innerWidth * 0.22 * (to > from ? 1 : -1);
+      springX(nextEl, off, { stiffness: 240, damping: 22, fade: true });
+    }
   }
 }
 
@@ -153,7 +155,6 @@ export function initAccordion() {
   // 중 비스듬한 손가락에 오발동하지 않는다. 핀치 줌(멀티터치)·About 서랍
   // 열림 중엔 미발동. 전부 passive — 세로 스크롤은 touch-action: pan-y가
   // 브라우저 네이티브로 처리(mobile.css).
-  var SECTION_EL = { notepad: '.third.left', portfolio: '.third.center', collection: '.third.right' };
   var REDUCE_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)');
   var drag = null; // { x, y, t, name, el, axis, rawDx, dx, committing }
 
@@ -227,14 +228,8 @@ export function initAccordion() {
         goSection(next);
       }, 160);
     } else {
-      // 임계 미달 — 제자리 스프링 복귀
-      if (d.dx !== 0 && !REDUCE_MOTION.matches) {
-        d.el.style.transition = 'transform 0.2s ease-out';
-        d.el.style.transform = '';
-        setTimeout(function () { d.el.style.transition = ''; }, 220);
-      } else {
-        clearDragStyle(d.el);
-      }
+      // 임계 미달 — 제자리로 파동(스프링) 복귀
+      springX(d.el, d.dx, { stiffness: 300, damping: 24 });
       drag = null;
     }
   }, { passive: true });
