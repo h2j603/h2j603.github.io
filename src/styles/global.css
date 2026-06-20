@@ -24,7 +24,7 @@
   /* 행 호버 칠 — 두 틴트를 같은 L(0.90)·낮은 C로 파생 → 보라/갈 교차 무게 동일 */
   --tint-accent: oklch(from var(--accent) 0.90 0.055 h);
   --tint-brown:  oklch(from var(--person) 0.90 0.03 h);
-  /* 하이퍼링크 pill — 옅은 틴트 배경(L 0.93 통일) + 같은 hue 쨍한 글자(읽힘 위해 살짝 어둡게) */
+  /* 하이퍼링크 pill — 옅은 틴트 배경(L 0.96 통일) + 같은 hue 쨍한 글자(읽힘 위해 살짝 어둡게) */
   --pill-link-bg:     oklch(from var(--accent) 0.96 0.03 h);
   --pill-link-text:   oklch(from var(--accent) 0.53 0.25 h);
   --pill-person-bg:   oklch(from var(--person) 0.96 0.018 h);
@@ -683,7 +683,11 @@ table tr[data-active='true'] a {
 .drawer-panel a.mention:hover,
 .work-card .card-body a.mention:hover,
 .work-card .card-link.mention:hover {
+<<<<<<< HEAD
   background: oklch(from var(--person) 0.91 0.03 h);
+=======
+  background: oklch(from var(--person) 0.87 0.045 h);
+>>>>>>> origin/main
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -1008,7 +1012,11 @@ table.sontable .col-cat   { width: 20%; }
 .drawer-panel a:hover,
 .work-card .card-body a:hover,
 .work-card .card-link:hover {
+<<<<<<< HEAD
   background: oklch(from var(--accent) 0.91 0.05 h);
+=======
+  background: oklch(from var(--accent) 0.87 0.075 h);
+>>>>>>> origin/main
 }
 /* webring(텍스트형)만 밑줄 호버 유지 */
 .webring a:hover {
