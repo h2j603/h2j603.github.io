@@ -40,6 +40,10 @@
   --scrollbar: rgba(0, 0, 0, 0.35);
   --scrollbar-hover: rgba(0, 0, 0, 0.55);
   --muted: oklch(from var(--person) 0.64 0.025 h);
+  /* 동적 배경(커튼/줄무늬) 위 floating 버튼 보더 — solid 잉크 대신 반투명 잉크 링.
+     box-shadow로 흰 배경 바깥에 그려 뒤를 타게 하면 어떤 배경에서도 crisp +
+     대비가 알맞게 잡힌다 (solid 보더가 그림자·배경과 겹쳐 뭉개지는 문제 회피). */
+  --ring: color-mix(in oklab, var(--ink) 80%, transparent);
   /* 상세 페이지([slug].astro)가 참조하는 별칭 */
   --line: var(--ink);
   --brown: var(--ink);
@@ -222,7 +226,9 @@ iframe {
   align-items: center;
   height: 1.5rem;
   padding: 0 0.5625rem;
-  border: var(--line-w) solid var(--ink);
+  /* 보더를 box-shadow 링으로 — 동적 배경 위에서도 crisp (--ring 주석 참고) */
+  border: none;
+  box-shadow: 0 0 0 var(--line-w) var(--ring);
   border-radius: 999px;
   background: var(--bg);
   cursor: pointer;
@@ -850,7 +856,9 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   align-items: center;
   height: 1.5rem;
   padding: 0 0.5625rem;
-  border: var(--line-w) solid var(--ink);
+  /* 보더를 box-shadow 링으로 — 동적 배경 위에서도 crisp (--ring 주석 참고) */
+  border: none;
+  box-shadow: 0 0 0 var(--line-w) var(--ring);
   border-radius: 999px;
   background: var(--bg);
   cursor: pointer;
