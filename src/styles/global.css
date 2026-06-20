@@ -996,11 +996,17 @@ table.sontable .col-cat   { width: 20%; }
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
-/* webring — 문장형이라 pill 제외: 쨍한 보라 텍스트만 (화살표·스니펫 원형 유지) */
+/* webring — 본문 링크와 같은 pill (단, ↗ 아이콘 없음: ::before 그룹 비포함).
+   링크 3개(←, indieweb webring, →)가 각각 pill 칩이 된다. */
 .webring a {
+  background: var(--pill-link-bg);
   color: var(--pill-link-text);
   text-decoration: none;
   font-style: normal;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 0.75rem;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 .intro a::before,
 .drawer-panel a::before,
@@ -1023,9 +1029,11 @@ table.sontable .col-cat   { width: 20%; }
     background: oklch(from var(--accent) 0.91 0.05 h);
   }
 }
-/* webring(텍스트형)만 밑줄 호버 유지 */
-.webring a:hover {
-  text-decoration: underline;
+/* webring pill 호버 — 본문 링크와 동일(배경 진하게), 포인터 기기 한정 */
+@media (hover: hover) {
+  .webring a:hover {
+    background: oklch(from var(--accent) 0.91 0.05 h);
+  }
 }
 
 /* 하이퍼링크 점멸은 JS 사인 파동으로 이전 (src/scripts/wave.js).
