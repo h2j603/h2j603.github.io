@@ -683,11 +683,7 @@ table tr[data-active='true'] a {
 .drawer-panel a.mention:hover,
 .work-card .card-body a.mention:hover,
 .work-card .card-link.mention:hover {
-<<<<<<< HEAD
   background: oklch(from var(--person) 0.91 0.03 h);
-=======
-  background: oklch(from var(--person) 0.87 0.045 h);
->>>>>>> origin/main
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -1012,11 +1008,7 @@ table.sontable .col-cat   { width: 20%; }
 .drawer-panel a:hover,
 .work-card .card-body a:hover,
 .work-card .card-link:hover {
-<<<<<<< HEAD
   background: oklch(from var(--accent) 0.91 0.05 h);
-=======
-  background: oklch(from var(--accent) 0.87 0.075 h);
->>>>>>> origin/main
 }
 /* webring(텍스트형)만 밑줄 호버 유지 */
 .webring a:hover {
