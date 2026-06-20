@@ -1,17 +1,15 @@
 // 하이퍼링크 점멸 — 사인 파동 드라이버. "wave는 그냥 하나의 숫자"라
-// opacity에 꽂는다(map(sin, -1..1, LO..HI)). pill마다 문서 순서로 위상을
-// 어긋내(-i*PHASE_STEP) 파동이 링크들을 가로질러 흐른다. 구 CSS
-// @keyframes link-blink 대체 — 위상 오프셋을 동적 콘텐츠에 주기엔 JS가 깔끔.
+// opacity에 꽂는다(map(sin, -1..1, LO..HI)). 전 pill이 같은 위상으로
+// 동기화돼 함께 숨쉰다(PHASE_STEP=0). 구 CSS @keyframes link-blink 대체.
 // 호버 링크는 또렷하게 고정, 모션 줄이기 선호 시 루프를 돌리지 않는다.
 
 var SEL = '.intro a:not(.memo-source), .drawer-panel a, ' +
           '.work-card .card-body a, .work-card .card-link, .webring a';
 
-// 추천값 — 구 blink 박자(1.4s) 유지, opacity 0.45~1 부드러운 호흡,
-// pill 간 0.5rad 위상차로 흐르는 파동.
-var PERIOD = 1.4;          // s
-var LO = 0.45, HI = 1;     // opacity 진폭
-var PHASE_STEP = 0.5;      // rad — pill 사이 위상차(흐름의 촘촘함)
+// 느린 박자(2.8s)로 깊게(opacity 0.2~1) 동기 호흡.
+var PERIOD = 2.8;          // s — 한 호흡(밝음→어두움→밝음)
+var LO = 0.2, HI = 1;      // opacity 진폭 (깊은 펄스)
+var PHASE_STEP = 0;        // rad — 0이면 전원 동기(>0이면 흐르는 파동)
 var OMEGA = (Math.PI * 2) / PERIOD;
 
 var els = [];
