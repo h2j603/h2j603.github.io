@@ -1,5 +1,5 @@
 // 좌측 메모 아코디언 — 블록 전체가 토글 단위, 한 번에 하나만.
-import { isMobileView, anchorY, glideScrollBy } from './util.js';
+import { isMobileView, anchorY, glideScrollBy, springOpen } from './util.js';
 
 export function initMemos() {
   var leftEl = document.querySelector('.three-col .left');
@@ -11,6 +11,7 @@ export function initMemos() {
       });
       if (!wasOpen) {
         memo.classList.add('open');
+        springOpen(memo.querySelector('.memo-body')); // 파동 높이 펼침
         if (!isMobileView()) {
           // 표와 같은 시점 이동 — 펼친 메모를 화면 상단 기준선(anchorY)으로
           glideScrollBy(leftEl, memo.getBoundingClientRect().top - anchorY(), 500);
