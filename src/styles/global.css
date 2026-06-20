@@ -684,12 +684,14 @@ table tr[data-active='true'] a {
   vertical-align: -0.0625rem;
   margin-right: 0.1875rem;
 }
-/* 멘션 호버 — pill 배경 한 단계 진하게 (밑줄 대신) */
-.intro a.mention:hover,
-.drawer-panel a.mention:hover,
-.work-card .card-body a.mention:hover,
-.work-card .card-link.mention:hover {
-  background: oklch(from var(--person) 0.91 0.03 h);
+/* 멘션 호버 — pill 배경 한 단계 진하게. 터치 sticky-hover 회피 위해 포인터 한정 */
+@media (hover: hover) {
+  .intro a.mention:hover,
+  .drawer-panel a.mention:hover,
+  .work-card .card-body a.mention:hover,
+  .work-card .card-link.mention:hover {
+    background: oklch(from var(--person) 0.91 0.03 h);
+  }
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -1011,12 +1013,15 @@ table.sontable .col-cat   { width: 20%; }
   font-size: 0.8em;
   vertical-align: 0.0625rem;
 }
-/* 본문 링크(pill) 호버 — 배경 한 단계 진하게 (밑줄 대신) */
-.intro a:not(.memo-source):hover,
-.drawer-panel a:hover,
-.work-card .card-body a:hover,
-.work-card .card-link:hover {
-  background: oklch(from var(--accent) 0.91 0.05 h);
+/* 본문 링크(pill) 호버 — 배경 한 단계 진하게. hover 가능한 포인터에서만:
+   터치 기기는 탭 후 :hover가 들러붙어(sticky) 누른 pill이 진한 채 남는다. */
+@media (hover: hover) {
+  .intro a:not(.memo-source):hover,
+  .drawer-panel a:hover,
+  .work-card .card-body a:hover,
+  .work-card .card-link:hover {
+    background: oklch(from var(--accent) 0.91 0.05 h);
+  }
 }
 /* webring(텍스트형)만 밑줄 호버 유지 */
 .webring a:hover {
