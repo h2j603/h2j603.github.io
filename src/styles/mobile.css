@@ -89,18 +89,26 @@
   .default-state { display: none; }
   /* 하단 시간 — 고정 띠 대신 흐름 맨 끝(About 섹션 아래).
      좁아서 두 줄: built 좌 / now 우 (대각 호응) */
+  /* 데스크탑 3칸 그리드 → 모바일은 흐름 맨 끝 세로 적층(built / now / webring).
+     셀 border·거터는 컬럼이 없는 모바일에선 해제, 전부 가운데. */
   .three-col .bottom {
     position: static;
     order: 4; /* Collection 다음, 맨 끝 */
     height: auto;
-    gap: 1rem; /* 시각줄(블록) ↔ 웹링줄 — 문단 사이 여백(데스크탑과 동일) */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
     padding: 0.75rem 0.625rem; /* 컴팩트 — 줄 20×2 + 위아래 12 */
   }
-  .bottom .colophon {
-    flex-direction: column;
-    gap: 0.25rem;
-    align-items: center; /* 라벨·블록과 같은 중앙 문법 */
+  .bottom .foot-cell {
+    border-left: 0;
+    padding: 0;
+    justify-content: center;
   }
+  .bottom .foot-built { order: 1; }
+  .bottom .foot-now { order: 2; }
+  .bottom .webring { order: 3; margin-top: 0.75rem; } /* 시각 묶음 ↔ 웹링 띄움 */
   /* 영역 출처 라벨 — 모바일은 sticky 대신 섹션 머리띠(흐름 안).
      relative = static처럼 흐름 안에 있되, 페이저 화살표의 absolute 기준이 된다.
      center는 패딩 0이라 그대로 전폭, left는 자기 패딩(0.625rem)만 상쇄 */
