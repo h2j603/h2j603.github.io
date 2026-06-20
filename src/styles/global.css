@@ -890,6 +890,11 @@ table.sontable .col-cat   { width: 20%; }
    동일하게 맞춘다. 데스크탑 1rem(=.bilingual gap), 모바일 1.25rem(mobile.css). */
 .work-card .card-body {
   margin-top: 1rem;
+  /* measure(줄 길이) 상한 — 본문 칸은 뷰포트의 36%(center 60%의 60%)라 폭
+     상한이 없으면 넓은 모니터에서 한 줄이 85ch+로 길어져 읽기 피로. 66ch로
+     캡(읽기 권장 45~75ch). 본문 칸보다 좁아지면 이미지 아래 좌측 정렬로 흐른다.
+     좁은 화면(노트북·모바일)에선 이미 66ch 미만이라 무영향. */
+  max-width: 66ch;
 }
 
 /* 작품 카드 본문 — 그룹 사이 hr 없이 적당한 여백만 */
