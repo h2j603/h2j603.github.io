@@ -9,6 +9,7 @@ import { initText } from './text.js';
 import { initMemos } from './memos.js';
 import { initLinkFilter } from './link-filter.js';
 import { initClock } from './clock.js';
+import { initWave } from './wave.js';
 
 // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작.
 // 홈 링크가 About 서랍 안에 있으므로 서랍도 닫는다.
@@ -40,4 +41,6 @@ export function initSite() {
   initText();
   initMosaic();
   initHomeLinks();
+  initWave(); // 하이퍼링크 점멸 — 사인 파동(흐르는 위상)
+
 }
