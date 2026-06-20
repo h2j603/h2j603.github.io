@@ -205,40 +205,21 @@ iframe {
   z-index: 100;
   height: 4.5rem;
   overflow: hidden;
-  transition: height 0.5s ease;
-  cursor: pointer;
+  /* 높이는 drawer.js가 드래그+스프링으로 inline 구동 (CSS 트랜지션 없음).
+     세로 드래그 핸들 — 브라우저 스크롤/당겨 새로고침 제스처 차단. */
+  cursor: grab;
+  touch-action: none;
   /* row 사이 공백 텍스트 노드가 body line-height(~0.9375rem) 만큼 차지하지 않게 차단.
      이게 시각적으로 stripe를 50~63px로 두껍게 보이게 만들던 진범. */
   line-height: 0;
   font-size: 0;
 }
+/* 무JS·초기 폴백 — 보통은 drawer.js가 inline height로 덮어쓴다 */
 .stripe-top.open {
   height: 100vh;
   height: 100dvh;
 }
-/* 띠 우측 about 탭 — 상시 노출, 화살표만 ↓/↑ 반전. 클릭 = 토글 */
-.curtain-tab {
-  position: fixed;
-  top: 1.5rem; /* 띠(4.5rem) 세로 중앙 */
-  right: 1.25rem;
-  z-index: 102; /* 서랍 레이어(101) 위 — 열린 상태에서도 클릭 가능 */
-  display: inline-flex;
-  align-items: center;
-  height: 1.5rem;
-  padding: 0 0.5625rem;
-  /* 보더를 box-shadow 링으로 — 동적 배경 위에서도 crisp (--ring 주석 참고) */
-  border: none;
-  box-shadow: 0 0 0 var(--line-w) var(--ring);
-  border-radius: 999px;
-  background: var(--bg);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: var(--fs);
-  font-weight: inherit;
-  color: var(--ink);
-  line-height: 1;
-}
-.curtain-tab:hover { background: var(--tint-accent); }
+.stripe-top.grabbing { cursor: grabbing; }
 
 /* About 서랍 — 펼쳐진 커튼 위 패널 레이어. 레이어 자체는 클릭을 통과시켜
    (천 클릭 = 닫기, stripe 핸들러) 패널만 클릭을 소화한다. */
@@ -249,7 +230,10 @@ iframe {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  overflow-y: auto;
+  /* 천은 스크롤하지 않는다(고정) — 위로 드래그=닫기가 스크롤과 충돌하지 않게.
+     긴 About는 패널이 내부 스크롤한다. 천 세로 드래그 = 닫기 제스처. */
+  overflow: hidden;
+  touch-action: none;
   padding: 5rem 1.25rem 3rem;
   pointer-events: none;
   opacity: 0;
@@ -266,6 +250,12 @@ iframe {
 .drawer-panel {
   position: relative;
   width: min(38.75rem, 92vw);
+  /* 패널이 스크롤 컨테이너 — 천(5rem+3rem 패딩) 사이에 맞추고 내부 스크롤.
+     세로 스와이프는 패널 안에서만 스크롤(천 드래그-닫기와 분리). */
+  max-height: calc(100dvh - 8rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   background: var(--bg);
   border: var(--line-w) solid var(--ink);
   padding: 1.5rem; /* 균일 24px — 바닥만 28이던 것 스케일로 통일 */
@@ -851,8 +841,8 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
    서랍 본문(한/영)을 토글하면서 읽을 수 있다. 버튼은 UA 폰트라 명시 상속. */
 .lang-toggle {
   position: fixed;
-  top: 1.5rem; /* about 탭과 같은 줄 (띠 세로 중앙) */
-  right: 6.375rem;
+  top: 1.5rem; /* 띠(4.5rem) 세로 중앙 */
+  right: 1.25rem;
   z-index: 102; /* 서랍 레이어(101) 위 */
   display: inline-flex;
   align-items: center;
