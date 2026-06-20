@@ -211,7 +211,7 @@
   .accordion-detail .card-title,
   .accordion-detail .card-meta { display: none; }
   /* 규격+링크 — 모바일은 2단 대신 세로로 쌓음 (좁아서) */
-  .accordion-detail .card-meta-row { flex-direction: column; gap: 0.375rem; }
+  .accordion-detail .card-meta-row { flex-direction: column; gap: 0.5rem; }
 
   /* 본문 링크 pill — 모바일에선 단어(어절) 단위로 줄바꿈 허용.
      base가 inline + box-decoration-break:clone이라 줄별로 각각 pill이 된다.
