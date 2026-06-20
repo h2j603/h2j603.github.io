@@ -260,6 +260,26 @@ iframe {
   border: var(--line-w) solid var(--ink);
   padding: 1.5rem; /* 균일 24px — 바닥만 28이던 것 스케일로 통일 */
 }
+/* 패널 등장 — 커튼이 화면을 다 덮은 뒤(.entered, drawer.js) 아래서 또렷하게
+   솟아오른다. 드래그·하강 중엔 숨김(opacity 0). 불투명도는 55%에서 도달해
+   "반투명 점진 노출"이 아니라 한 번에 등장하는 느낌. */
+.about-drawer .drawer-panel {
+  opacity: 0;
+  transform: translateY(18px) scale(0.985);
+  will-change: opacity, transform;
+}
+.about-drawer.entered .drawer-panel {
+  animation: panel-in 0.42s cubic-bezier(0.2, 0.85, 0.25, 1) forwards;
+}
+@keyframes panel-in {
+  0%   { opacity: 0; transform: translateY(18px) scale(0.985); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .about-drawer .drawer-panel { transform: none; }
+  .about-drawer.entered .drawer-panel { animation: none; opacity: 1; }
+}
 .drawer-panel hr {
   margin-left: -1.5rem;
   margin-right: -1.5rem;
