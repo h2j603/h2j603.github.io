@@ -86,7 +86,7 @@ export function toggleDrawer(force) {
 }
 
 // ── 드래그 ──────────────────────────────────────────────────
-var startY = 0, startPos = 0, moved = 0, downT = 0;
+var startY = 0, startPos = 0, moved = 0, downT = 0, startOpen = false;
 var lastY = 0, lastT = 0, vTrack = 0;
 
 function onDown(e) {
@@ -99,6 +99,7 @@ function onDown(e) {
   vel = 0;
   startY = lastY = e.clientY;
   startPos = pos;
+  startOpen = open;
   moved = 0;
   downT = lastT = performance.now();
   vTrack = 0;
@@ -147,7 +148,11 @@ function onUp() {
     return;
   }
   var pr = progress();
-  var goOpen = vTrack > 600 ? true : vTrack < -600 ? false : pr > 0.4;
+  var goOpen;
+  if (vTrack > 600) goOpen = true;        // 아래로 플릭 → 열기
+  else if (vTrack < -300) goOpen = false; // 위로 살짝만 플릭해도 → 닫기(민감)
+  else if (startOpen) goOpen = pr > 0.9;  // 열림에서 시작: 살짝만 올려도 닫힘
+  else goOpen = pr > 0.4;                 // 닫힘에서 시작: 평소 임계
   vel = Math.max(-4000, Math.min(4000, vTrack)); // 플릭 속도 실어 찰지게
   stripe.classList.toggle('open', goOpen);
   springTo(goOpen ? hOpen() : hClosed());
