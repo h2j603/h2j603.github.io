@@ -24,6 +24,9 @@
   --tint-brown: #e3dad3;   /* 브라운 틴트 */
   /* 커튼 아래 콘텐츠 공통 최소 여백 — 좌(메모)/중(표)/우(링크) 동일 */
   --top-gap: 0.5rem;
+  /* 세로 여백 모듈러 스케일 — 콘텐츠 리듬은 4·8·16·24·32px(0.25/0.5/1/1.5/2rem)
+     안에서만 고른다. 예외(리듬 아님): line-height 20px(컴팩트 UI 격자),
+     1px hr·border 보정값(11·12·13px → 합이 격자), 컬럼 구조 패딩, 커튼 오프셋. */
   /* 모든 선의 단일 두께 — 환경별 들쭉남 방지 (위치는 JS가 정수 px 스냅) */
   --line-w: 1px;
   --mention: #000000;      /* @멘션 링크 — 브라운 일괄 블랙 전환에 포함 */
@@ -252,7 +255,7 @@ iframe {
   width: min(38.75rem, 92vw);
   background: var(--bg);
   border: var(--line-w) solid var(--ink);
-  padding: 1.5rem 1.5rem 1.75rem;
+  padding: 1.5rem; /* 균일 24px — 바닥만 28이던 것 스케일로 통일 */
 }
 .drawer-panel hr {
   margin-left: -1.5rem;
@@ -793,7 +796,7 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   display: grid;
   grid-template-columns: 20% 60% 20%;
   align-items: start;
-  row-gap: 0.75rem;
+  row-gap: 1rem; /* 미디어↔본문 — 16px(본문 그룹 간격과 동일 리듬, 12→16) */
   padding: 0.5rem 0 1.5rem;
 }
 /* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 */
@@ -816,7 +819,7 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 .accordion-detail .card-meta-row {
   display: flex;
   gap: 1rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem; /* 규격·링크 줄 아래 — 16px(본문 그룹 간격과 통일, 12→16) */
 }
 .accordion-detail .card-meta-row > * { flex: 1; margin: 0; }
 .accordion-detail .card-spec p { padding-top: 0; margin-top: 0; line-height: 1.25rem; }
