@@ -1023,45 +1023,10 @@ table.sontable .col-cat   { width: 20%; }
   text-decoration: underline;
 }
 
-/* 하이퍼링크 점멸 — CSS 애니메이션 한 박자(1.4s = 구 0.7s 토글의 왕복)로
-   전 링크가 같이 숨쉰다. (구 JS 0.7s html 클래스 토글은 매번 문서 전체
-   스타일 재계산을 일으켰음 → 타이머 제거.) 페이지 로드 때 같이 시작해
-   박자가 맞고, DOM 이동으로 애니메이션이 재시작되는 작품 카드 링크는
-   accordion JS가 animation-delay로 위상을 재동기화한다.
-   호버 중인 링크는 점멸에서 제외(또렷하게 고정). */
-@keyframes link-blink {
-  0%   { opacity: 1; }
-  39%  { opacity: 0.3; } /* ≈0.55s ease 페이드-아웃 (구 transition과 동일 감각) */
-  50%  { opacity: 0.3; }
-  89%  { opacity: 1; }   /* ≈0.55s ease 페이드-인 */
-  100% { opacity: 1; }
-}
-.intro a,
-.drawer-panel a,
-.work-card .card-body a,
-.work-card .card-link,
-.webring a {
-  animation: link-blink 1.4s ease infinite;
-}
-.intro a:hover,
-.drawer-panel a:hover,
-.work-card .card-body a:hover,
-.work-card .card-link:hover,
-.webring a:hover,
-/* 출처 링크는 메타 어법 — 점멸 제외 */
-.intro a.memo-source {
-  animation: none;
-}
-/* 모션 줄이기 선호 — 점멸 끔 (링크 식별은 보라색이 담당) */
-@media (prefers-reduced-motion: reduce) {
-  .intro a,
-  .drawer-panel a,
-  .work-card .card-body a,
-  .work-card .card-link,
-  .webring a {
-    animation: none;
-  }
-}
+/* 하이퍼링크 점멸은 JS 사인 파동으로 이전 (src/scripts/wave.js).
+   pill마다 위상을 어긋낸 "흐르는 파동" — opacity를 map(sin,-1..1,0.45..1)로
+   매 프레임 구동한다. CSS @keyframes로는 동적 콘텐츠(펼침 카드)에 위상
+   오프셋을 주기가 번거로워 JS로. 호버 제외·모션 줄이기 존중은 wave.js가 처리. */
 
 /* anchor 스크롤 위로 살짝 띄움 */
 [id] { scroll-margin-top: 1.125rem; }
