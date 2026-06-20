@@ -16,12 +16,13 @@ var pos = 72;      // 현재 커튼 높이(px)
 var vel = 0;       // 스프링 속도(px/s) — 드래그 릴리스 속도를 이어받는다
 var target = 72;   // 스프링 목표
 var open = false;
+var entered = false; // 커튼이 다 내려와 패널이 등장했는가
 var dragging = false;
 var raf = 0;
 
-// 스프링 — 약한 감쇠(ζ≈0.6)로 한 번 분명히 오버슈트하고 안착(찰짐).
-var STIFFNESS = 180; // k
-var DAMPING = 16;    // c  (임계감쇠 2√k≈26.8보다 작아 underdamped)
+// 스프링 — 느릿하게(낮은 k) + 약한 감쇠(ζ≈0.67)로 한 번 분명히 오버슈트.
+var STIFFNESS = 110; // k  (낮출수록 느림)
+var DAMPING = 14;    // c  (임계감쇠 2√k≈21보다 작아 underdamped)
 
 function hClosed() { return BASE; }
 function hOpen() { return window.innerHeight; }
@@ -31,13 +32,20 @@ function progress() {
   return p < 0 ? 0 : p > 1 ? 1 : p;
 }
 
-// pos → 시각. 커튼 높이 + 천 페이드 + (안착 시)패널 인터랙션.
+// 패널 등장 래치 — 커튼이 화면을 다 덮은 뒤에만 .entered (CSS 등장 애니메이션).
+function setEntered(v) {
+  if (entered === v) return;
+  entered = v;
+  drawer.classList.toggle('entered', v);
+}
+
+// pos → 시각. 커튼 높이만 따라가고, 패널은 풀 도달 후 .entered로 별도 등장.
+// (드래그 진행률에 묶인 반투명 페이드는 폐지 — 내려오는 동안 패널은 숨김.)
 function render() {
   stripe.style.height = pos + 'px';
-  var pr = progress();
-  drawer.style.opacity = pr;
-  drawer.style.visibility = pr > 0.002 ? 'visible' : 'hidden';
-  drawer.style.pointerEvents = (open && !dragging) ? 'auto' : 'none';
+  if (open && !entered && pos >= hOpen() - 0.5) setEntered(true);
+  drawer.style.visibility = entered ? 'visible' : 'hidden';
+  drawer.style.pointerEvents = (entered && !dragging) ? 'auto' : 'none';
 }
 
 // 감쇠 스프링 적분(semi-implicit Euler) — target으로 진동 수렴.
@@ -72,6 +80,7 @@ export function toggleDrawer(force) {
   if (!stripe) return;
   var wantOpen = typeof force === 'boolean' ? force : !open;
   vel = 0;
+  if (!wantOpen) setEntered(false); // 닫힐 땐 패널 즉시 숨기고 커튼만 올라감
   stripe.classList.toggle('open', wantOpen);
   springTo(wantOpen ? hOpen() : hClosed());
 }
@@ -85,6 +94,7 @@ function onDown(e) {
   // 열림 상태: 패널(스크롤/링크) 위에서 시작하면 드래그 안 함 — 천만 잡는다
   if (open && e.target.closest('.drawer-panel')) return;
   dragging = true;
+  setEntered(false); // 드래그 동안엔 커튼만 움직이고 패널은 숨김
   if (raf) { cancelAnimationFrame(raf); raf = 0; }
   vel = 0;
   startY = lastY = e.clientY;
@@ -153,6 +163,7 @@ export function initDrawer() {
   pos = target = BASE;
   stripe.style.transition = 'none';
   drawer.style.transition = 'none';
+  drawer.style.opacity = '1'; // 레이어는 불투명 고정 — 패널이 자체 등장으로 드러남
   render();
 
   // 닫힘=띠, 열림=천 에서 드래그 시작 (move/up은 onDown이 드래그 동안만 부착)
