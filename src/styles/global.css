@@ -1011,7 +1011,9 @@ table.sontable .col-cat   { width: 20%; }
 .intro a::before,
 .drawer-panel a::before,
 .work-card .card-body a::before,
-.work-card .card-link::before {
+.work-card .card-link::before,
+/* 웹링은 가운데 'indieweb webring' 링크에만 ↗ (양옆 화살표 제외) */
+.webring a.ring-link::before {
   content: '↗';
   margin-right: 0.125rem;
   /* inline 글리프 — 아이콘과 첫 단어 사이 줄바꿈 방지 */
