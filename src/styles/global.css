@@ -17,11 +17,18 @@
   /* 전 사이트 단일 폰트 크기 — 16px(=1rem) 고정. 비례 곡선 폐기. */
   --fs: 1rem;
   --bg: #ffffff;
-  --ink: #000000;          /* UI 잉크 — 브라운(#775d4f)에서 블랙으로. 줄무늬·모자이크 브라운은 유지 */
-  --accent: #b362ff;       /* hyuk repo의 lawngreen → 보라 */
-  /* 호버 칠 — 풀 채도가 시끄러워 옅은 틴트로 (보라/브라운 모티프 유지) */
-  --tint-accent: #e6d6ff;  /* 보라 틴트 */
-  --tint-brown: #e3dad3;   /* 브라운 틴트 */
+  --ink: #000000;          /* UI 잉크 — 무채(블랙). 줄무늬·모자이크 브라운은 JS/SVG에 유지 */
+  /* OKLCH 베이스 — 보라(일반 링크)·갈(인물 링크) 두 계열. 명도를 맞춰 파생한다. */
+  --accent: oklch(0.62 0.26 305);   /* 보라 ≈ 기존 #b362ff — selection·일반 링크 hue 소스 */
+  --person: oklch(0.47 0.05 60);    /* 갈 ≈ 기존 #775d4f — 인물 링크·뮤티드 hue 소스 */
+  /* 행 호버 칠 — 두 틴트를 같은 L(0.90)·낮은 C로 파생 → 보라/갈 교차 무게 동일 */
+  --tint-accent: oklch(from var(--accent) 0.90 0.055 h);
+  --tint-brown:  oklch(from var(--person) 0.90 0.03 h);
+  /* 하이퍼링크 pill — 옅은 틴트 배경(L 0.93 통일) + 같은 hue 쨍한 글자(읽힘 위해 살짝 어둡게) */
+  --pill-link-bg:     oklch(from var(--accent) 0.93 0.05 h);
+  --pill-link-text:   oklch(from var(--accent) 0.53 0.25 h);
+  --pill-person-bg:   oklch(from var(--person) 0.93 0.03 h);
+  --pill-person-text: oklch(from var(--person) 0.42 0.06 h);
   /* 커튼 아래 콘텐츠 공통 최소 여백 — 좌(메모)/중(표)/우(링크) 동일 */
   --top-gap: 0.5rem;
   /* 세로 여백 모듈러 스케일 — 콘텐츠 리듬은 4·8·16·24·32px(0.25/0.5/1/1.5/2rem)
@@ -32,7 +39,7 @@
   --mention: #000000;      /* @멘션 링크 — 브라운 일괄 블랙 전환에 포함 */
   --scrollbar: rgba(0, 0, 0, 0.35);
   --scrollbar-hover: rgba(0, 0, 0, 0.55);
-  --muted: #a08d80;
+  --muted: oklch(from var(--person) 0.64 0.025 h);
   /* 상세 페이지([slug].astro)가 참조하는 별칭 */
   --line: var(--ink);
   --brown: var(--ink);
@@ -646,12 +653,14 @@ table tr[data-active='true'] a {
   border-bottom: var(--line-w) solid currentColor;
 }
 
-/* 인물 멘션(@) 링크 — 화살표 대신 인물 아이콘. 색은 일반 링크와 같은 보라 */
+/* 인물 멘션(@) 링크 — 갈색 계열 pill (일반 링크 보라 pill과 L 통일). 화살표
+   대신 인물 아이콘. pill 배경·padding은 위 본문 링크 규칙에서 상속, 색만 갈색으로. */
 .intro a.mention,
 .drawer-panel a.mention,
 .work-card .card-body a.mention,
 .work-card .card-link.mention {
-  color: var(--accent);
+  background: var(--pill-person-bg);
+  color: var(--pill-person-text);
 }
 .intro a.mention::before,
 .drawer-panel a.mention::before,
@@ -669,12 +678,12 @@ table tr[data-active='true'] a {
   vertical-align: -0.0625rem;
   margin-right: 0.1875rem;
 }
-/* 멘션 호버 — 일반 링크와 동일 (밑줄) */
+/* 멘션 호버 — pill 배경 한 단계 진하게 (밑줄 대신) */
 .intro a.mention:hover,
 .drawer-panel a.mention:hover,
 .work-card .card-body a.mention:hover,
 .work-card .card-link.mention:hover {
-  text-decoration: underline;
+  background: oklch(from var(--person) 0.87 0.045 h);
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -962,15 +971,26 @@ table.sontable .col-cat   { width: 20%; }
    적용: About 서랍 본문 / 작품 카드 본문 / 카드 web 링크
    제외: 표(table a)
    ─────────────────────────────────────────────────────────────────────── */
-.intro a,
+.intro a:not(.memo-source),
 .drawer-panel a,
 .work-card .card-body a,
-.work-card .card-link,
-.webring a {
-  color: var(--accent);
+.work-card .card-link {
+  background: var(--pill-link-bg);
+  color: var(--pill-link-text);
   text-decoration: none;
   font-style: normal;
   word-break: keep-all;
+  /* pill — 1.5rem 줄 안에 들어가는 컴팩트 칩. 줄바꿈 시 양 끝 모두 둥글게. */
+  padding: 0.0625rem 0.375rem;
+  border-radius: 0.75rem;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+/* webring — 문장형이라 pill 제외: 쨍한 보라 텍스트만 (화살표·스니펫 원형 유지) */
+.webring a {
+  color: var(--pill-link-text);
+  text-decoration: none;
+  font-style: normal;
 }
 .intro a::before,
 .drawer-panel a::before,
@@ -983,10 +1003,14 @@ table.sontable .col-cat   { width: 20%; }
   font-size: 0.8em;
   vertical-align: 0.0625rem;
 }
-.intro a:hover,
+/* 본문 링크(pill) 호버 — 배경 한 단계 진하게 (밑줄 대신) */
+.intro a:not(.memo-source):hover,
 .drawer-panel a:hover,
 .work-card .card-body a:hover,
-.work-card .card-link:hover,
+.work-card .card-link:hover {
+  background: oklch(from var(--accent) 0.87 0.075 h);
+}
+/* webring(텍스트형)만 밑줄 호버 유지 */
 .webring a:hover {
   text-decoration: underline;
 }
