@@ -36,9 +36,9 @@
 }
 
 /* ───────────────────────────────────────────────────────────────────────
-   리셋 + 베이스 (hyuk repo 원본 그대로)
-   line-height / font-feature-settings / antialiased는 의도적으로 비움 —
-   원본과 동일한 렌더링 시각을 위해 브라우저 기본을 따른다.
+   리셋 + 베이스 (hyuk repo 원본 기반)
+   line-height / font-feature-settings는 브라우저 기본을 따른다.
+   font-smoothing만 antialiased로 — UI 텍스트를 한 단계 샤프하게 (body 참조).
    ─────────────────────────────────────────────────────────────────────── */
 * {
   margin: 0;
@@ -66,6 +66,11 @@ body {
   font-style: normal;
   color: var(--ink);
   background: var(--bg);
+  /* UI 텍스트 스무딩 — Mac/webkit·Firefox에서 grayscale AA로 한 단계 얇고
+     샤프하게 (다른 OS·모바일엔 무효과). line-height·font-feature-settings는
+     여전히 브라우저 기본을 따른다. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   /* 한글 어절(단어) 단위 줄바꿈. CJK 기본 글자단위 끊김 방지. */
   word-break: keep-all;
   overflow-wrap: break-word;
