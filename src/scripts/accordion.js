@@ -6,6 +6,7 @@
 //   (없음)                Portfolio 기본, 아코디언 닫힘
 // → 새로고침·공유 링크에서도 모바일 섹션 상태가 유지된다.
 import { isMobileView, anchorY, glideScrollBy } from './util.js';
+import { rescanWave } from './wave.js';
 
 var SECTION_HASHES = ['portfolio', 'notepad', 'collection'];
 
@@ -32,6 +33,7 @@ export function accClose() {
   }
   accRow = null;
   accSlug = null;
+  rescanWave(); // 닫혀 storage로 돌아간 카드 링크 반영 (파동 위상 일관성 유지)
 }
 
 function accOpen(slug) {
@@ -52,12 +54,8 @@ function accOpen(slug) {
   tr.setAttribute('data-active', 'true');
   accSlug = slug;
   accRow = detail;
-  // 점멸 위상 동기화 — DOM 이동으로 재시작된 카드 링크의 link-blink를
-  // 문서 로드 기준 전역 박자(1.4s, global.css와 짝)에 다시 맞춘다
-  var phase = -(performance.now() % 1400);
-  panel.querySelectorAll('.card-body a, .card-link').forEach(function (a) {
-    a.style.animationDelay = phase + 'ms';
-  });
+  // 새로 삽입된 카드 링크를 점멸 파동에 편입 (문서 순서 기준으로 위상 재부여)
+  rescanWave();
   if (isMobileView()) {
     // 모바일: 펼친 행이 보이게 부드럽게 스크롤
     tr.scrollIntoView({ block: 'start', behavior: 'smooth' });
