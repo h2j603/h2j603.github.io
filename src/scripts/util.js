@@ -46,6 +46,40 @@ export function springOpen(el, opts) {
   el._spuRaf = requestAnimationFrame(step);
 }
 
+// 가로 슬라이드 스프링 — translateX를 from(px)→0으로 감쇠 스프링(파동)으로
+// 되돌린다. 모바일 섹션 페이지 넘김(슬라이드인·제자리 복귀)에 쓴다. opts.fade면
+// 거리 비례로 opacity도 0→1. reduced-motion이면 즉시 정착. onDone 콜백 지원.
+export function springX(el, from, opts, onDone) {
+  if (!el) return;
+  cancelAnimationFrame(el._sxRaf || 0);
+  el._sxRaf = 0;
+  el.style.transition = ''; // 프레임별 transform이 CSS 트랜지션과 겹치지 않게
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.style.transform = ''; el.style.opacity = '';
+    if (onDone) onDone();
+    return;
+  }
+  opts = opts || {};
+  var k = opts.stiffness || 240, c = opts.damping || 20;
+  var fade = !!opts.fade, ref = Math.abs(from) || 1;
+  var pos = from, vel = opts.v0 || 0, last = performance.now();
+  function step(now) {
+    var dt = (now - last) / 1000; last = now;
+    if (!(dt > 0)) dt = 0.016; if (dt > 0.032) dt = 0.032;
+    var a = -k * pos - c * vel; // 목표 0
+    vel += a * dt; pos += vel * dt;
+    if (Math.abs(pos) < 0.4 && Math.abs(vel) < 12) {
+      el.style.transform = ''; if (fade) el.style.opacity = '';
+      el._sxRaf = 0; if (onDone) onDone();
+      return;
+    }
+    el.style.transform = 'translateX(' + pos.toFixed(1) + 'px)';
+    if (fade) el.style.opacity = String(Math.max(0, Math.min(1, 1 - Math.abs(pos) / ref)));
+    el._sxRaf = requestAnimationFrame(step);
+  }
+  el._sxRaf = requestAnimationFrame(step);
+}
+
 // 컬럼 스크롤 글라이드 — 목표 한계(scrollHeight)를 매 프레임 재계산
 // (패널 삽입으로 스크롤 공간이 변해도 끝까지 따라간다). 컬럼별 raf 분리.
 export function glideScrollBy(el, delta, dur) {
