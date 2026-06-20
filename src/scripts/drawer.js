@@ -43,7 +43,8 @@ function setEntered(v) {
 // (드래그 진행률에 묶인 반투명 페이드는 폐지 — 내려오는 동안 패널은 숨김.)
 function render() {
   stripe.style.height = pos + 'px';
-  if (open && !entered && pos >= hOpen() - 0.5) setEntered(true);
+  // 드래그 중엔 래치 금지 — 안 그러면 onDown에서 끈 패널을 즉시 되살린다.
+  if (open && !entered && !dragging && pos >= hOpen() - 0.5) setEntered(true);
   drawer.style.visibility = entered ? 'visible' : 'hidden';
   drawer.style.pointerEvents = (entered && !dragging) ? 'auto' : 'none';
 }
@@ -153,6 +154,7 @@ function onUp() {
   else if (vTrack < -300) goOpen = false; // 위로 살짝만 플릭해도 → 닫기(민감)
   else if (startOpen) goOpen = pr > 0.9;  // 열림에서 시작: 살짝만 올려도 닫힘
   else goOpen = pr > 0.4;                 // 닫힘에서 시작: 평소 임계
+  if (!goOpen) setEntered(false);         // 드래그-닫기도 패널 확실히 숨김
   vel = Math.max(-4000, Math.min(4000, vTrack)); // 플릭 속도 실어 찰지게
   stripe.classList.toggle('open', goOpen);
   springTo(goOpen ? hOpen() : hClosed());
