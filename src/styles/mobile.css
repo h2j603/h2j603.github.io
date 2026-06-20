@@ -232,16 +232,9 @@
     white-space: normal;
   }
 
-  /* 본문 영어/한글 설명 사이 간격 — 설명↔웹사이트링크 간격(1.25rem)과 동일하게 넓힘.
-     (모바일에선 bilingual이 1단으로 쌓이며 EN→KO 순) */
-  .work-card .card-body .bilingual {
-    gap: 1.25rem;
-  }
-  /* 모바일은 ko/en 둘 다 표시 — 데스크탑 언어 토글 숨김 규칙을 무효화 */
-  .three-col[data-lang='ko'] .bilingual > [lang='en'],
-  .three-col[data-lang='en'] .bilingual > [lang='ko'] {
-    display: block;
-  }
+  /* 작품 설명 — 모바일도 언어 토글(EN/KO) 따라 현재 언어만 1단 표시
+     (데스크탑과 동일). 과거의 ko/en 병기 복원 규칙은 제거 — global의
+     .three-col[data-lang] 숨김 규칙을 그대로 상속한다. */
 
   /* 미디어(이미지/iframe)→설명(본문) 간격 — 1.25rem은 너무 좁아 2rem로 확대 */
   .work-card .card-body {
