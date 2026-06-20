@@ -5,7 +5,7 @@
 //   #notepad #collection  모바일 섹션 (데스크탑은 data-section을 무시 — 무해)
 //   (없음)                Portfolio 기본, 아코디언 닫힘
 // → 새로고침·공유 링크에서도 모바일 섹션 상태가 유지된다.
-import { isMobileView, anchorY, glideScrollBy } from './util.js';
+import { isMobileView, anchorY, glideScrollBy, springOpen } from './util.js';
 import { rescanWave } from './wave.js';
 
 var SECTION_HASHES = ['portfolio', 'notepad', 'collection'];
@@ -56,6 +56,7 @@ function accOpen(slug) {
   accRow = detail;
   // 새로 삽입된 카드 링크를 점멸 파동에 편입 (문서 순서 기준으로 위상 재부여)
   rescanWave();
+  springOpen(panel); // 파동 높이 펼침 (살짝 오버슈트 후 안착)
   if (isMobileView()) {
     // 모바일: 펼친 행이 보이게 부드럽게 스크롤
     tr.scrollIntoView({ block: 'start', behavior: 'smooth' });
