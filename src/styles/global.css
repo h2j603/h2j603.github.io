@@ -869,11 +869,18 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   align-items: center;
   height: 1.5rem;
   padding: 0 0.5625rem;
-  /* 보더를 box-shadow 링으로 — 동적 배경 위에서도 crisp (--ring 주석 참고) */
   border: none;
-  box-shadow: 0 0 0 var(--line-w) var(--ring);
   border-radius: 999px;
-  background: var(--bg);
+  /* 회색에 가까운 보라(accent hue) OKLCH 그라데이션 — 위 밝고 아래 살짝 진해
+     입체감. 크리스프 링 + 상단 하이라이트 + 아래 보라톤 그림자로 살짝 떠 보임. */
+  background: linear-gradient(180deg,
+    oklch(from var(--accent) 0.975 0.012 h) 0%,
+    oklch(from var(--accent) 0.91 0.02 h) 100%);
+  box-shadow:
+    0 0 0 var(--line-w) var(--ring),
+    inset 0 1px 0 oklch(from var(--accent) 0.995 0.006 h),
+    0 1.5px 2.5px oklch(from var(--accent) 0.55 0.04 h / 0.22);
+  transition: box-shadow 0.12s ease, background 0.12s ease, transform 0.06s ease;
   cursor: pointer;
   font-family: inherit;
   font-size: var(--fs);
@@ -881,8 +888,27 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   color: var(--ink);
   line-height: 1;
 }
-.lang-toggle:hover {
-  background: var(--tint-accent);
+/* 호버(포인터 한정 — 터치 sticky 회피) — 더 밝게 + 한 단계 떠오름 */
+@media (hover: hover) {
+  .lang-toggle:hover {
+    background: linear-gradient(180deg,
+      oklch(from var(--accent) 0.99 0.012 h) 0%,
+      oklch(from var(--accent) 0.93 0.022 h) 100%);
+    box-shadow:
+      0 0 0 var(--line-w) var(--ring),
+      inset 0 1px 0 oklch(from var(--accent) 1 0.004 h),
+      0 2.5px 4px oklch(from var(--accent) 0.55 0.04 h / 0.26);
+  }
+}
+/* 눌림 — 그라데이션 반전 + 안쪽 음영, 살짝 가라앉음 (누르는 촉감) */
+.lang-toggle:active {
+  background: linear-gradient(180deg,
+    oklch(from var(--accent) 0.9 0.02 h) 0%,
+    oklch(from var(--accent) 0.95 0.014 h) 100%);
+  box-shadow:
+    0 0 0 var(--line-w) var(--ring),
+    inset 0 1.5px 2.5px oklch(from var(--accent) 0.78 0.03 h / 0.45);
+  transform: translateY(0.5px);
 }
 
 /* 표 컬럼 너비 — year는 controls의 sort 버튼과 grid-align 위해 고정.
