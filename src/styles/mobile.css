@@ -228,9 +228,9 @@
      (데스크탑과 동일). 과거의 ko/en 병기 복원 규칙은 제거 — global의
      .three-col[data-lang] 숨김 규칙을 그대로 상속한다. */
 
-  /* 미디어(이미지/iframe)→설명(본문) 간격 — 1.25rem은 너무 좁아 2rem로 확대 */
+  /* 미디어(이미지/iframe)→설명(본문) 간격 — 이미지 아래 숨통 32→40px */
   .work-card .card-body {
-    margin-top: var(--space-8);
+    margin-top: 2.5rem;
   }
 
   /* 작품 카드 — 표에서 클릭 시 stripe 가리지 않게 보정 */
