@@ -37,8 +37,8 @@
   /* 모든 선의 단일 두께 — 환경별 들쭉남 방지 (위치는 JS가 정수 px 스냅) */
   --line-w: 1px;
   --mention: #000000;      /* @멘션 링크 — 브라운 일괄 블랙 전환에 포함 */
-  --scrollbar: rgba(0, 0, 0, 0.35);
-  --scrollbar-hover: rgba(0, 0, 0, 0.55);
+  --scrollbar: color-mix(in oklab, var(--ink) 35%, transparent);
+  --scrollbar-hover: color-mix(in oklab, var(--ink) 55%, transparent);
   --muted: oklch(from var(--person) 0.64 0.025 h);
   /* 동적 배경(커튼/줄무늬) 위 floating 버튼 보더 — solid 잉크 대신 반투명 잉크 링.
      box-shadow로 흰 배경 바깥에 그려 뒤를 타게 하면 어떤 배경에서도 crisp +
@@ -422,7 +422,7 @@ iframe {
   font-size: var(--fs); /* 본문 크기와 동일 */
   line-height: 1.25rem;
   margin-left: 0.25rem;
-  color: rgba(0, 0, 0, 0.45);
+  color: color-mix(in oklab, var(--ink) 45%, transparent);
   pointer-events: none;
 }
 .link-filter select {
@@ -590,7 +590,7 @@ iframe {
   font-weight: 400;
   font-size: 0.75rem;
   line-height: 1rem; /* 정수 줄높이 — 4px 격자 */
-  color: rgba(0, 0, 0, 0.45);
+  color: color-mix(in oklab, var(--ink) 45%, transparent);
   text-align: center;
 }
 
@@ -610,12 +610,12 @@ iframe {
 }
 /* 메모가 열려 있는 동안 — 표와 같은 어법으로 다른 메모는 옅게,
    호버하면 그 메모만 다시 또렷하게 (열린 메모로 시선 모으기) */
-.memo-list:has(.memo.open) .memo:not(.open) .memo-head { color: rgba(0, 0, 0, 0.32); }
-.memo-list:has(.memo.open) .memo:not(.open) .block-date { color: rgba(0, 0, 0, 0.2); }
+.memo-list:has(.memo.open) .memo:not(.open) .memo-head { color: color-mix(in oklab, var(--ink) 32%, transparent); }
+.memo-list:has(.memo.open) .memo:not(.open) .block-date { color: color-mix(in oklab, var(--ink) 20%, transparent); }
 .memo-list:has(.memo.open) .memo:not(.open) .tag-chip { opacity: 0.45; }
 @media (hover: hover) {
   .memo-list:has(.memo.open) .memo:not(.open):hover .memo-head { color: var(--ink); }
-  .memo-list:has(.memo.open) .memo:not(.open):hover .block-date { color: rgba(0, 0, 0, 0.45); }
+  .memo-list:has(.memo.open) .memo:not(.open):hover .block-date { color: color-mix(in oklab, var(--ink) 45%, transparent); }
   .memo-list:has(.memo.open) .memo:not(.open):hover .tag-chip { opacity: 1; }
 }
 .memo-body {
@@ -636,7 +636,7 @@ iframe {
   margin-top: 0.5rem;
   font-size: 0.75rem;
   line-height: 1rem;
-  color: rgba(0, 0, 0, 0.45);
+  color: color-mix(in oklab, var(--ink) 45%, transparent);
   text-decoration: none;
   white-space: nowrap;
   animation: none;
@@ -653,7 +653,7 @@ table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true'
 table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) td a,
 table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) .cat-tag,
 table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']) .num-badge {
-  color: rgba(0, 0, 0, 0.32);
+  color: color-mix(in oklab, var(--ink) 32%, transparent);
 }
 table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']):hover td,
 table.sontable:has(tr[data-active='true']) tr[data-slug]:not([data-active='true']):hover td a,
