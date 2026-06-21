@@ -1027,10 +1027,11 @@ table.sontable .col-cat   { width: 20%; }
 .webring a.ring-link::before {
   content: '';
   display: inline-block;
-  /* 텍스트 크기에 맞춘 라인 아이콘 — 인물 아이콘과 동일 박스·정렬·선두께 */
-  width: 1em;
-  height: 1em;
-  vertical-align: -0.13em;
+  /* 라인 화살표 — 대각선이라 같은 박스서 더 커 보여 0.85em로 시각보정.
+     (인물 아이콘은 1em 그대로 — 별도 규칙) */
+  width: 0.85em;
+  height: 0.85em;
+  vertical-align: -0.08em;
   margin-right: 0.125rem;
   background-color: currentColor;
   mask: url('/icons/arrow-ne.svg') no-repeat center / contain;
