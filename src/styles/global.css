@@ -874,18 +874,11 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   /* 입체 — (1)둥근 표면 셰이딩: 상단 빛→중하단 음영→바닥 반사광(곡면감),
      (2)베벨: 상단 안쪽 하이라이트 + 하단 안쪽 음영(두께),
      (3)2단 드롭섀도(가깝고 진한 + 멀고 퍼진)로 떠오름. 전부 보라(accent) 파생. */
-  background:
-    /* 유리 돔 상단 광택 — 배경 레이어라 글자를 안 덮음 */
-    linear-gradient(180deg,
-      oklch(from var(--accent) 1 0.004 h / 0.9) 0%,
-      oklch(from var(--accent) 1 0.004 h / 0.18) 26%,
-      transparent 52%),
-    /* 곡면 셰이딩 — 어둠 하단 집중 */
-    linear-gradient(180deg,
-      oklch(from var(--accent) 0.985 0.01 h) 0%,
-      oklch(from var(--accent) 0.97 0.014 h) 52%,
-      oklch(from var(--accent) 0.905 0.026 h) 86%,
-      oklch(from var(--accent) 0.875 0.032 h) 100%);
+  background: linear-gradient(180deg,
+    oklch(from var(--accent) 0.985 0.01 h) 0%,
+    oklch(from var(--accent) 0.97 0.014 h) 52%,
+    oklch(from var(--accent) 0.905 0.026 h) 86%,
+    oklch(from var(--accent) 0.875 0.032 h) 100%);
   box-shadow:
     0 0 0 var(--line-w) var(--ring),
     inset 0 1.5px 0.5px oklch(from var(--accent) 1 0.008 h),
@@ -897,22 +890,17 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   font-family: inherit;
   font-size: var(--fs);
   font-weight: inherit;
-  color: oklch(from var(--accent) 0.48 0.22 h); /* 글자 보라 (밝은 표면 위 대비) */
+  color: var(--ink);
   line-height: 1;
 }
 /* 호버(포인터 한정 — 터치 sticky 회피) — 더 밝게 + 한 단계 더 떠오름 */
 @media (hover: hover) {
   .lang-toggle:hover {
-    background:
-      linear-gradient(180deg,
-        oklch(from var(--accent) 1 0.004 h / 0.95) 0%,
-        oklch(from var(--accent) 1 0.004 h / 0.2) 26%,
-        transparent 52%),
-      linear-gradient(180deg,
-        oklch(from var(--accent) 1 0.008 h) 0%,
-        oklch(from var(--accent) 0.985 0.012 h) 52%,
-        oklch(from var(--accent) 0.92 0.024 h) 86%,
-        oklch(from var(--accent) 0.89 0.03 h) 100%);
+    background: linear-gradient(180deg,
+      oklch(from var(--accent) 1 0.008 h) 0%,
+      oklch(from var(--accent) 0.985 0.012 h) 52%,
+      oklch(from var(--accent) 0.92 0.024 h) 86%,
+      oklch(from var(--accent) 0.89 0.03 h) 100%);
     box-shadow:
       0 0 0 var(--line-w) var(--ring),
       inset 0 1.5px 0.5px oklch(from var(--accent) 1 0.006 h),
