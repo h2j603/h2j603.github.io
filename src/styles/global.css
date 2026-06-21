@@ -684,15 +684,16 @@ table tr[data-active='true'] a {
 .work-card .card-link.mention::before {
   content: '';
   display: inline-block;
-  width: 0.95em;
-  height: 0.95em;
+  /* 화살표 아이콘과 동일 박스·정렬 — user.svg가 라인(stroke)형이라 외곽선만 */
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.13em;
+  margin-right: 0.125rem;
   /* 기본 ↗ 규칙의 보라(color)를 무효화 — 인물 아이콘은 텍스트색 따라감 */
   color: inherit;
   background-color: currentColor;
   mask: url('/icons/user.svg') no-repeat center / contain;
   -webkit-mask: url('/icons/user.svg') no-repeat center / contain;
-  vertical-align: -0.0625rem;
-  margin-right: 0.1875rem;
 }
 /* 멘션 호버 — pill 배경 한 단계 진하게. 터치 sticky-hover 회피 위해 포인터 한정 */
 @media (hover: hover) {
@@ -1024,12 +1025,16 @@ table.sontable .col-cat   { width: 20%; }
 .work-card .card-link::before,
 /* 웹링은 가운데 'indieweb webring' 링크에만 ↗ (양옆 화살표 제외) */
 .webring a.ring-link::before {
-  content: '↗';
+  content: '';
+  display: inline-block;
+  /* 텍스트 크기에 맞춘 라인 아이콘 — 인물 아이콘과 동일 박스·정렬·선두께 */
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.13em;
   margin-right: 0.125rem;
-  /* inline 글리프 — 아이콘과 첫 단어 사이 줄바꿈 방지 */
-  display: inline;
-  font-size: 0.8em;
-  vertical-align: 0.0625rem;
+  background-color: currentColor;
+  mask: url('/icons/arrow-ne.svg') no-repeat center / contain;
+  -webkit-mask: url('/icons/arrow-ne.svg') no-repeat center / contain;
 }
 /* 본문 링크(pill) 호버 — 배경 한 단계 진하게. hover 가능한 포인터에서만:
    터치 기기는 탭 후 :hover가 들러붙어(sticky) 누른 pill이 진한 채 남는다. */
