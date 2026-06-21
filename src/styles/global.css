@@ -16,6 +16,18 @@
   color-scheme: light;
   /* 전 사이트 단일 폰트 크기 — 16px(=1rem) 고정. 비례 곡선 폐기. */
   --fs: 1rem;
+  /* 여백 토큰 — 4px 격자 위 단일 소스. --space-N = N×4px (콘텐츠 리듬
+     4·8·16·24·32 + 구조 단위 20). 격자 밖 의도값만 따로: cell 10(표 셀)·
+     pill 6(pill 가로). 희소·특수값(1·2·9px, 3·5rem)은 리터럴 유지. */
+  --space-1: 0.25rem;     /* 4 */
+  --space-2: 0.5rem;      /* 8 */
+  --space-3: 0.75rem;     /* 12 */
+  --space-4: 1rem;        /* 16 */
+  --space-5: 1.25rem;     /* 20 — 컬럼/구조 단위 */
+  --space-6: 1.5rem;      /* 24 */
+  --space-8: 2rem;        /* 32 */
+  --space-cell: 0.625rem; /* 10 — 표 셀(격자 밖, 의도적) */
+  --space-pill: 0.375rem; /* 6 — pill 가로(격자 밖, 의도적) */
   --bg: oklch(0.99 0.004 305);   /* off-white — 미세한 보라끼(accent hue)로 포인트와 한 색온도 */
   --ink: oklch(0.21 0.012 305);  /* near-black — 순흑 대신 보라 기운, 경직 완화(대비 ~16:1). 줄무늬·모자이크 브라운은 JS/SVG에 유지 */
   /* OKLCH 베이스 — 보라(일반 링크)·갈(인물 링크) 두 계열. 명도를 맞춰 파생한다. */
@@ -30,10 +42,9 @@
   --pill-person-bg:   oklch(from var(--person) 0.96 0.018 h);
   --pill-person-text: oklch(from var(--person) 0.42 0.06 h);
   /* 커튼 아래 콘텐츠 공통 최소 여백 — 좌(메모)/중(표)/우(링크) 동일 */
-  --top-gap: 0.5rem;
-  /* 세로 여백 모듈러 스케일 — 콘텐츠 리듬은 4·8·16·24·32px(0.25/0.5/1/1.5/2rem)
-     안에서만 고른다. 예외(리듬 아님): line-height 20px(컴팩트 UI 격자),
-     1px hr·border 보정값(11·12·13px → 합이 격자), 컬럼 구조 패딩, 커튼 오프셋. */
+  --top-gap: var(--space-2);
+  /* 세로 리듬은 위 --space-* 토큰에서만 고른다. 예외(리듬 아님): line-height
+     20px(컴팩트 UI 격자), 1px hr·border 보정값, 커튼 오프셋(4.5rem 등). */
   /* 모든 선의 단일 두께 — 환경별 들쭉남 방지 (위치는 JS가 정수 px 스냅) */
   --line-w: 1px;
   --mention: #000000;      /* @멘션 링크 — 브라운 일괄 블랙 전환에 포함 */
@@ -110,7 +121,7 @@ h2 {
   text-align: center;
 }
 p {
-  padding-top: 1rem;
+  padding-top: var(--space-4);
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -142,12 +153,12 @@ hr {
   border-top: var(--line-w) solid var(--ink);
   height: 0;
   background: none;
-  margin: 1rem 0;
+  margin: var(--space-4) 0;
 }
 /* About 본문 가로선 — .third padding(1.25rem)을 상쇄해 컬럼 전체 너비로 */
 .intro hr {
-  margin-left: -1.25rem;
-  margin-right: -1.25rem;
+  margin-left: calc(var(--space-5) * -1);
+  margin-right: calc(var(--space-5) * -1);
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -156,8 +167,8 @@ hr {
 table {
   width: 100%;
   margin: auto;
-  margin-top: 1.25rem;
-  margin-bottom: 2rem;
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-8);
   text-align: left;
   border-top: 0;
 }
@@ -167,7 +178,7 @@ td,
 th {
   border-top: var(--line-w) solid var(--ink);
   border-collapse: collapse;
-  padding: 0.625rem;
+  padding: var(--space-cell);
 }
 /* 행 hover 밑줄은 폐기 — 밑줄은 펼친(active) 행의 표식으로만.
    행 전체가 토글 단위(메모 블록과 같은 어법)라 커서로 클릭 가능성을 알린다. */
@@ -188,7 +199,7 @@ iframe {
   height: 18.75rem;
   border: none;
   display: block;
-  margin: 1.25rem 0;
+  margin: var(--space-5) 0;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -234,7 +245,7 @@ iframe {
      긴 About는 패널이 내부 스크롤한다. 천 세로 드래그 = 닫기 제스처. */
   overflow: hidden;
   touch-action: none;
-  padding: 5rem 1.25rem 3rem;
+  padding: 5rem var(--space-5) 3rem;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
@@ -258,7 +269,7 @@ iframe {
   touch-action: pan-y;
   background: var(--bg);
   border: var(--line-w) solid var(--ink);
-  padding: 1.5rem; /* 균일 24px — 바닥만 28이던 것 스케일로 통일 */
+  padding: var(--space-6); /* 균일 24px — 바닥만 28이던 것 스케일로 통일 */
 }
 /* 패널 등장 — 커튼이 화면을 다 덮은 뒤(.entered, drawer.js) 아래서 또렷하게
    솟아오른다. 드래그·하강 중엔 숨김(opacity 0). 불투명도는 55%에서 도달해
@@ -281,8 +292,8 @@ iframe {
   .about-drawer.entered .drawer-panel { animation: none; opacity: 1; }
 }
 .drawer-panel hr {
-  margin-left: -1.5rem;
-  margin-right: -1.5rem;
+  margin-left: calc(var(--space-6) * -1);
+  margin-right: calc(var(--space-6) * -1);
 }
 /* 서랍 안 본문 — 인트로/푸터와 같은 프로즈 리듬 */
 .drawer-panel p {
@@ -337,7 +348,7 @@ iframe {
   height: calc(100% - 7rem); /* 띠 4.5rem + 하단 1줄 푸터(3칸 그리드) 2.5rem */
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 1.25rem;
+  padding: var(--space-5);
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -380,17 +391,17 @@ iframe {
   display: flex;
   align-items: center;
   margin: 0;
-  padding: 0; /* 전역 p(padding-top:1rem) 무력화 — built/now는 아래서 longhand로 거터 */
+  padding: 0; /* 전역 p(padding-top:var(--space-4)) 무력화 — built/now는 아래서 longhand로 거터 */
   white-space: nowrap;
   /* 본문과 같은 크기·색 */
   font-size: var(--fs);
   line-height: 1.25rem;
   color: var(--ink);
 }
-.bottom .foot-built { padding-left: 1.25rem; } /* 좌 컬럼 — 좌측 정렬, 컬럼 거터 */
+.bottom .foot-built { padding-left: var(--space-5); } /* 좌 컬럼 — 좌측 정렬, 컬럼 거터 */
 .bottom .foot-now { /* 우 컬럼 — 우측 정렬, d2(80%) 연장선 */
   justify-content: flex-end;
-  padding-right: 1.25rem;
+  padding-right: var(--space-5);
   border-left: var(--line-w) solid var(--ink);
 }
 /* 인디웹 웹링 — 가운데 칸. 한 줄 유지(화살표·텍스트 안 깨지게). 셀 왼변은
@@ -413,7 +424,7 @@ iframe {
   align-items: center;
   justify-content: center;
   height: 3rem;
-  padding: var(--top-gap) 1.25rem 0;
+  padding: var(--top-gap) var(--space-5) 0;
   cursor: pointer;
   transition: background 0.12s;
 }
@@ -421,7 +432,7 @@ iframe {
   content: '▾';
   font-size: var(--fs); /* 본문 크기와 동일 */
   line-height: 1.25rem;
-  margin-left: 0.25rem;
+  margin-left: var(--space-1);
   color: color-mix(in oklab, var(--ink) 45%, transparent);
   pointer-events: none;
 }
@@ -460,7 +471,7 @@ iframe {
   width: 60%;
   /* 좌우 패딩 0 — 표가 center(20~80%)를 꽉 채워 컬럼 경계가 정확히 56%/68%에
      오게 한다(세로 구분선 d3/d4와 정렬). 상단 여백은 표 margin-top(1.25rem)이 잡는다. */
-  padding: 0 0 1.25rem;
+  padding: 0 0 var(--space-5);
   /* 작업영역은 기본 스크롤바 노출 */
   scrollbar-width: auto;
   -ms-overflow-style: auto;
@@ -517,7 +528,7 @@ iframe {
 /* 좌/우 컬럼은 패딩(1.25rem)을 상쇄해 전체 폭 띠로 (center는 패딩 0) */
 .left .arena-path,
 .right .arena-path {
-  margin: 0 -1.25rem;
+  margin: 0 calc(var(--space-5) * -1);
 }
 /* 섹션 페이저 화살표 — 모바일 전용(mobile.css가 켠다). 데스크탑은 3컬럼 동시 노출 */
 .path-arrow {
@@ -530,7 +541,7 @@ iframe {
   flex-direction: column;
   align-items: stretch;
   width: calc(100% + 2.5rem);
-  margin: 0 -1.25rem;
+  margin: 0 calc(var(--space-5) * -1);
   /* 맨 마지막 블록 아래에도 구분선 — 컨테이너 바닥이라 필터로 끝이 바뀌어도 유지 */
   border-bottom: var(--line-w) solid var(--ink);
   /* 라벨 아래 공통 여백(--top-gap)은 첫 항목의 padding-top이 가짐 —
@@ -548,12 +559,12 @@ iframe {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
+  gap: var(--space-1);
   /* 위 11px = 기본 8px + 윗선(hr) 몫 3px — 호버 틴트가 선까지 닿게.
      패딩 변수 — 호버 성장(+0.25rem씩)이 첫 블록의 다른 기본값에도 한 규칙으로 */
   --pt: 0.6875rem;
   --pb: 0.5rem;
-  padding: var(--pt) 1.25rem var(--pb);
+  padding: var(--pt) var(--space-5) var(--pb);
   text-decoration: none;
   font-style: normal;
   color: var(--ink);
@@ -579,8 +590,8 @@ iframe {
   /* 호버 = 블록이 살짝 자란다 (+8px, 4px 격자 유지. 열린 메모 제외) */
   .memo-list .memo:not(.open):hover,
   .link-list a.link-item:hover {
-    padding-top: calc(var(--pt) + 0.5rem);
-    padding-bottom: calc(var(--pb) + 0.5rem);
+    padding-top: calc(var(--pt) + var(--space-2));
+    padding-bottom: calc(var(--pb) + var(--space-2));
   }
 }
 /* 링크 제목 — 텍스트만 가운데 */
@@ -621,7 +632,7 @@ iframe {
 .memo-body {
   display: none;
   width: 100%;
-  padding-top: 0.5rem;
+  padding-top: var(--space-2);
   text-align: left; /* 본문은 왼끝 정렬 */
   /* 서식 없이 원문 그대로 — 줄바꿈·공백 유지 */
   white-space: pre-wrap;
@@ -633,7 +644,7 @@ iframe {
    .intro a보다 높은 특이도로 메타 어법(회색·정적)을 되돌린다. */
 .intro a.memo-source {
   display: block;
-  margin-top: 0.5rem;
+  margin-top: var(--space-2);
   font-size: 0.75rem;
   line-height: 1rem;
   color: color-mix(in oklab, var(--ink) 45%, transparent);
@@ -709,7 +720,7 @@ table tr[data-active='true'] a {
    작품 카드 — 가운데 컬럼 (한 번에 하나만 표시)
    ─────────────────────────────────────────────────────────────────────── */
 .work-card {
-  padding-bottom: 1.5rem;
+  padding-bottom: var(--space-6);
 }
 /* 이미지 그리드 — layout 필드 기반.
    예) layout: 2,1,3  →  image-row 3개 (2단/1단/3단). */
@@ -719,14 +730,14 @@ table tr[data-active='true'] a {
 .card-images {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
   /* 아래 margin은 0 — 미디어→설명 간격은 .card-body의 margin-top이 결정한다
      (한·영 설명 사이 간격과 동일하게 맞추기 위함). */
-  margin: 0.75rem 0 0;
+  margin: var(--space-3) 0 0;
 }
 .card-images .image-row {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 .card-images .image-row img {
   width: 100%;
@@ -737,11 +748,11 @@ table tr[data-active='true'] a {
    더 커진다(비대칭). 선 위 여백 = 이전 카드 padding-bottom,
    선 아래 여백 = 다음 카드 padding-top — 둘 다 같은 값이라 대칭. */
 .work-card:not(:last-child) {
-  padding-bottom: 1.5rem;
+  padding-bottom: var(--space-6);
 }
 .work-card + .work-card {
   border-top: var(--line-w) solid var(--ink);
-  padding-top: 1.5rem;
+  padding-top: var(--space-6);
 }
 /* padding 안으로 새어드는 자식 가장자리 margin 제거 (여백을 padding만으로 고정) */
 .work-card > :first-child { margin-top: 0; }
@@ -752,13 +763,13 @@ table tr[data-active='true'] a {
   font-weight: 400;
   font-style: normal;
   text-align: left;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--space-1);
   color: var(--ink);
   user-select: none;
   -webkit-user-select: none;
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: var(--space-pill);
 }
 /* 영어 위 / 한국어 아래 — 둘 다 동등 위계 (같은 크기) */
 .work-card .card-title .card-title-en,
@@ -776,7 +787,7 @@ table tr[data-active='true'] a {
 .three-col .center > .content > .work-card { display: none; }
 /* border-collapse:separate — 행 사이 detail 삽입 시 셀 경계가 깔끔.
    구분선은 각 td border-top로 유지, table 자체 테두리는 끔 */
-/* padding:0 — table,td 공통 padding(0.625rem)이 표를 좌우로 들여 세로선과 어긋나게 함.
+/* padding:0 — table,td 공통 padding(var(--space-cell))이 표를 좌우로 들여 세로선과 어긋나게 함.
    table 자체 padding을 0으로 해 td 경계 = 세로선(d1/d3/d4/d2)에 정확히 맞춘다. */
 table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; border-bottom: var(--line-w) solid var(--ink); /* 마지막 행 아래에도 구분선 */ padding: 0; margin-top: 0; /* 라벨 아래 여백은 첫 행 padding이 가짐 — 호버 칠이 라벨 선까지 */ }
 /* 첫 행 — 위 가로선 제거. 상단 padding = 컴팩트 5px + 공통 여백 8px(옛 margin-top 몫).
@@ -792,8 +803,8 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, pad
 /* 호버 = 블록이 살짝 자란다 (펼쳐진 행 제외) */
 @media (hover: hover) {
   table.sontable tr[data-slug]:not([data-active='true']):not([data-locked='true']):hover td {
-    padding-top: calc(var(--pt) + 0.5rem);
-    padding-bottom: calc(var(--pb) + 0.5rem);
+    padding-top: calc(var(--pt) + var(--space-2));
+    padding-bottom: calc(var(--pb) + var(--space-2));
   }
 }
 /* 호버 — 행이 아닌 칸(셀) 단위 배경 칠. 행마다 보라/갈색 교차(빌드 시 .row-a/.row-b 부여).
@@ -826,8 +837,8 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   display: grid;
   grid-template-columns: 20% 60% 20%;
   align-items: start;
-  row-gap: 1rem; /* 미디어↔본문 — 16px(본문 그룹 간격과 동일 리듬, 12→16) */
-  padding: 0.5rem 0 1.5rem;
+  row-gap: var(--space-4); /* 미디어↔본문 — 16px(본문 그룹 간격과 동일 리듬, 12→16) */
+  padding: var(--space-2) 0 var(--space-6);
 }
 /* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 */
 .accordion-detail .card-title,
@@ -844,16 +855,16 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 .accordion-detail .iframe-wrap { aspect-ratio: 100 / 65; }
 /* 규격·웹링크는 이제 card-body 안 본문 위(.card-meta-row)에 — 본문과 같은 칸(제목칸)에 흐른다 */
 /* specificity 높임 — .work-card .card-body{margin-top:16}이 뒤에서 덮는 것 방지 */
-.accordion-detail .work-card .card-body { grid-column: 2; grid-row: 2; padding: 0 0.625rem; margin-top: 0; }
+.accordion-detail .work-card .card-body { grid-column: 2; grid-row: 2; padding: 0 var(--space-cell); margin-top: 0; }
 /* 규격+링크 줄 — 본문 위. 둘 다 있으면(웹작업) 2단으로 나란히. */
 .accordion-detail .card-meta-row {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem; /* 규격·링크 줄 아래 — 16px(본문 그룹 간격과 통일, 12→16) */
+  gap: var(--space-4);
+  margin-bottom: var(--space-4); /* 규격·링크 줄 아래 — 16px(본문 그룹 간격과 통일, 12→16) */
 }
 .accordion-detail .card-meta-row > * { flex: 1; margin: 0; }
 .accordion-detail .card-spec p { padding-top: 0; margin-top: 0; line-height: 1.25rem; }
-.accordion-detail .card-spec p + p { margin-top: 0.25rem; }
+.accordion-detail .card-spec p + p { margin-top: var(--space-1); }
 .accordion-detail .card-link-wrap { margin: 0; }
 /* 작품 이미지/iframe은 세로 구분선(z3) 위 레이어 — 펼친 카드 미디어가 선을 가린다 */
 .work-card .card-images,
@@ -948,7 +959,7 @@ table.sontable .col-cat   { width: 20%; }
      셀 높이를 분수로 만들던 것 방지. 20px = 줄높이와 동일 */
   min-width: 1.25rem;
   height: 1.25rem;
-  padding: 0 0.25rem;
+  padding: 0 var(--space-1);
   box-sizing: border-box;
   border: var(--line-w) solid currentColor; /* 디밍 시 원도 같이 옅어지게 */
   border-radius: 999px;
@@ -959,14 +970,14 @@ table.sontable .col-cat   { width: 20%; }
 .work-card .card-meta {
   font-size: var(--fs);
   letter-spacing: 0.06em;
-  margin: 0.25rem 0 0.75rem;
+  margin: var(--space-1) 0 var(--space-3);
   padding-top: 0;
 }
 
 /* 미디어(이미지/iframe)→설명 간격 — 한·영 설명 사이 간격(.bilingual gap)과
    동일하게 맞춘다. 데스크탑 1rem(=.bilingual gap), 모바일 1.25rem(mobile.css). */
 .work-card .card-body {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
   /* measure(줄 길이) 상한 — 본문 칸은 뷰포트의 36%(center 60%의 60%)라 폭
      상한이 없으면 넓은 모니터에서 한 줄이 85ch+로 길어져 읽기 피로. 66ch로
      캡(읽기 권장 45~75ch). 본문 칸보다 좁아지면 이미지 아래 좌측 정렬로 흐른다.
@@ -976,14 +987,14 @@ table.sontable .col-cat   { width: 20%; }
 
 /* 작품 카드 본문 — 그룹 사이 hr 없이 적당한 여백만 */
 .work-card .card-body > * + * {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
 }
 
 /* 작품 카드의 이미지 시퀀스 — 여러 이미지를 세로로 쌓음 */
 .work-card .card-images {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 .work-card .card-images img {
   width: 100%;
@@ -994,7 +1005,7 @@ table.sontable .col-cat   { width: 20%; }
 .bilingual {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
+  gap: var(--space-4);
   align-items: start;
 }
 .bilingual > [lang='en'] { order: 1; }
@@ -1007,11 +1018,11 @@ table.sontable .col-cat   { width: 20%; }
 
 /* 좌측 인트로 h2 — 크기는 전역 h2(--fs)와 동일, 본문과 여백만 */
 .intro > h2 {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-6);
 }
 
 /* 인트로 본문 + 작품 카드 본문 — 엔터(p+p)와 줄바꿈(br)의 간격을
-   동일하게 유지. 글로벌 `p { padding-top: 1.25rem }` 무력화.
+   동일하게 유지. 글로벌 `p { padding-top: var(--space-5) }` 무력화.
    line-height 고정 → pill(a inline-block)이 들어가도 p 높이 일정. */
 .intro-body p,
 .work-card .card-body p {
@@ -1039,7 +1050,7 @@ table.sontable .col-cat   { width: 20%; }
   font-style: normal;
   word-break: keep-all;
   /* pill — 1.5rem 줄 안에 들어가는 컴팩트 칩. 줄바꿈 시 양 끝 모두 둥글게. */
-  padding: 0.0625rem 0.375rem;
+  padding: 0.0625rem var(--space-pill);
   border-radius: 0.75rem;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
@@ -1051,7 +1062,7 @@ table.sontable .col-cat   { width: 20%; }
   color: var(--pill-link-text);
   text-decoration: none;
   font-style: normal;
-  padding: 0.0625rem 0.375rem;
+  padding: 0.0625rem var(--space-pill);
   border-radius: 0.75rem;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
@@ -1104,7 +1115,7 @@ table.sontable .col-cat   { width: 20%; }
   height: 18.75rem;
   border: none;
   display: block;
-  margin: 1.25rem 0;
+  margin: var(--space-5) 0;
 }
 
 /* iframe 페이지를 데스크탑 사이즈로 렌더해 축소 — 페이지 전체가 한눈에. */
@@ -1114,7 +1125,7 @@ table.sontable .col-cat   { width: 20%; }
   padding-top: 65%;
   overflow: hidden;
   /* 아래 margin은 0 — 미디어→설명 간격은 .card-body의 margin-top이 결정한다. */
-  margin: 1.25rem 0 0;
+  margin: var(--space-5) 0 0;
 }
 .iframe-wrap .embedded-iframe {
   position: absolute;
@@ -1186,7 +1197,7 @@ b, strong { font-weight: inherit; }
 .tag-chip {
   white-space: nowrap;
   display: inline-block;
-  padding: 0 0.375rem;
+  padding: 0 var(--space-pill);
   border-radius: 0.5rem;
   /* 간격은 마크업의 ' · ' 구분자가 담당 */
 }
