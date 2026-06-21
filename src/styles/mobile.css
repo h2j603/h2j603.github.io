@@ -228,11 +228,11 @@
      (데스크탑과 동일). 과거의 ko/en 병기 복원 규칙은 제거 — global의
      .three-col[data-lang] 숨김 규칙을 그대로 상속한다. */
 
-  /* 미디어(이미지/iframe)→설명(본문) 간격 — 이미지 아래 숨통 40px.
+  /* 미디어(이미지/iframe)→설명(본문) 간격 — 이미지 아래 숨통 32px(--space-8).
      셀렉터를 .accordion-detail .work-card .card-body로 맞춰야 global의
      같은 3-클래스 margin-top:0 룰(line 858)을 specificity+순서로 이긴다. */
   .accordion-detail .work-card .card-body {
-    margin-top: 2.5rem;
+    margin-top: var(--space-8);
   }
 
   /* 작품 카드 — 표에서 클릭 시 stripe 가리지 않게 보정 */
