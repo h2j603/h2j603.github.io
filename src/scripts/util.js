@@ -10,7 +10,7 @@ export function anchorY() {
 }
 
 // 아코디언 펼침 — 높이를 0→측정값으로 감쇠 스프링(파동)으로 키운다. 느릿한
-// 박자(낮은 k)에 부드러운 감쇠(ζ≈0.81)로 거의 바운스 없이 미끄러지듯 안착,
+// 박자(낮은 k)에 거의 임계감쇠(ζ≈0.99)라 바운스 없이 천천히 미끄러지듯 안착,
 // 끝나면 height auto로 되돌려 콘텐츠 변동(이미지 로드 등)에 자연스럽게 따라간다.
 // 닫기는 호출측이 instant로 처리. reduced-motion이면 애니메이션 없이 즉시 펼침.
 export function springOpen(el, opts) {
@@ -22,8 +22,8 @@ export function springOpen(el, opts) {
     return;
   }
   opts = opts || {};
-  var k = opts.stiffness || 85;
-  var c = opts.damping || 15;
+  var k = opts.stiffness || 50;
+  var c = opts.damping || 14;
   el.style.height = 'auto';
   var target = el.scrollHeight; // 목표 높이 측정
   if (target <= 0) { el.style.height = ''; return; }
