@@ -1027,15 +1027,15 @@ table.sontable .col-cat   { width: 20%; }
 .webring a.ring-link::before {
   content: '';
   display: inline-block;
-  /* 라인 화살표 — 대각선이라 같은 박스서 더 커 보여 0.85em로 시각보정.
+  /* 링크 아이콘(체인) — 대각선이라 같은 박스서 더 커 보여 0.85em로 시각보정.
      (인물 아이콘은 1em 그대로 — 별도 규칙) */
   width: 0.85em;
   height: 0.85em;
   vertical-align: -0.08em;
   margin-right: 0.125rem;
   background-color: currentColor;
-  mask: url('/icons/arrow-ne.svg') no-repeat center / contain;
-  -webkit-mask: url('/icons/arrow-ne.svg') no-repeat center / contain;
+  mask: url('/icons/link.svg') no-repeat center / contain;
+  -webkit-mask: url('/icons/link.svg') no-repeat center / contain;
 }
 /* 본문 링크(pill) 호버 — 배경 한 단계 진하게. hover 가능한 포인터에서만:
    터치 기기는 탭 후 :hover가 들러붙어(sticky) 누른 pill이 진한 채 남는다. */

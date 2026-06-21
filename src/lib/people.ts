@@ -127,6 +127,6 @@ export function rewriteMentions(
           ? person.nameKo || person.nameEn
           : text.replace(/^@/, ''); // lang 미상 블록은 쓴 그대로
     const url = person.url || href;
-    return `<a href="${escapeHtml(url)}" class="mention" data-person="${escapeHtml(person.slug)}">@${escapeHtml(name)}</a>`;
+    return `<a href="${escapeHtml(url)}" class="mention" data-person="${escapeHtml(person.slug)}">${escapeHtml(name)}</a>`;
   });
 }
