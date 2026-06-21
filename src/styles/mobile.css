@@ -46,20 +46,20 @@
     order: 2;
     overflow-y: visible; /* 데스크탑의 overflow-y:hidden 해제 — 흐름 안에서 전체 표시 */
     /* 경계선은 표의 바닥선이 담당(이중선 방지), 바닥 마감선은 푸터 윗선이 담당 */
-    padding: 0 0.625rem 0;
+    padding: 0 var(--space-cell) 0;
   }
   /* 메모 펼침 — 고정 띠(72px+여유)에 가리지 않게 스크롤 보정 */
   .memo { scroll-margin-top: 5.25rem; }
   /* intro 안 가로선 — 데스크탑은 .third padding 1.25rem 상쇄(-1.25rem)인데
-     모바일 .left padding은 좌우 0.625rem이므로 -0.625rem로 컬럼 전체 너비에 맞춘다. */
+     모바일 .left padding은 좌우 0.625rem이므로 calc(var(--space-cell) * -1)로 컬럼 전체 너비에 맞춘다. */
   .three-col .left .intro hr {
-    margin-left: -0.625rem;
-    margin-right: -0.625rem;
+    margin-left: calc(var(--space-cell) * -1);
+    margin-right: calc(var(--space-cell) * -1);
   }
   /* 블록 리스트·마키 — 모바일 left padding(0.625rem) 기준 상쇄 */
   .three-col .left .memo-list {
-    width: calc(100% + 1.25rem);
-    margin: 0 -0.625rem; /* 라벨 직하 — 여백은 첫 블록 padding(전역 1rem)이 가짐 */
+    width: calc(100% + var(--space-cell) * 2);
+    margin: 0 calc(var(--space-cell) * -1); /* 라벨 직하 — 여백은 첫 블록 padding(전역 1rem)이 가짐 */
     border-bottom: 0; /* 바닥 마감선은 푸터 윗선이 담당 — link-list와 동일(이중선 방지) */
   }
   /* 리스트가 이미 전폭이므로 안의 hr은 그대로 — 위 .intro hr 음수 보정이
@@ -72,18 +72,18 @@
     height: auto;
     top: auto;
     overflow: visible;
-    padding: 1rem;
+    padding: var(--space-4);
   }
   /* 우측 컬럼(Collection) — Notepad 아래 섹션으로 노출 */
   .three-col .third.right {
     order: 3;
     overflow-y: visible;
-    padding: 0 0.625rem 0; /* Notepad와 같은 좌우 라인, 마감선은 푸터 윗선 */
+    padding: 0 var(--space-cell) 0; /* Notepad와 같은 좌우 라인, 마감선은 푸터 윗선 */
   }
-  .three-col .right .arena-path { margin: 0 -0.625rem; }
+  .three-col .right .arena-path { margin: 0 calc(var(--space-cell) * -1); }
   .three-col .right .link-list {
-    width: calc(100% + 1.25rem);
-    margin: 0 -0.625rem;
+    width: calc(100% + var(--space-cell) * 2);
+    margin: 0 calc(var(--space-cell) * -1);
     border-bottom: 0; /* 바닥 마감선은 푸터 윗선이 담당 */
   }
   /* 단일 컬럼이라 세로 구분선 숨김 */
@@ -102,8 +102,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.75rem 0.625rem; /* 컴팩트 — 줄 20×2 + 위아래 12 */
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-cell); /* 컴팩트 — 줄 20×2 + 위아래 12 */
   }
   .bottom .foot-cell {
     border-left: 0;
@@ -113,7 +113,7 @@
   .bottom .foot-built { order: 1; }
   .bottom .foot-now { order: 2; }
   /* pill 폭이 늘어 좁은 폰에서 한 줄을 넘으면 줄바꿈 (각 pill은 온전히 유지) */
-  .bottom .webring { order: 3; margin-top: 0.75rem; flex-wrap: wrap; }
+  .bottom .webring { order: 3; margin-top: var(--space-3); flex-wrap: wrap; }
   /* 영역 출처 라벨 — 모바일은 sticky 대신 섹션 머리띠(흐름 안).
      relative = static처럼 흐름 안에 있되, 페이저 화살표의 absolute 기준이 된다.
      center는 패딩 0이라 그대로 전폭, left는 자기 패딩(0.625rem)만 상쇄 */
@@ -144,7 +144,7 @@
     top: 0;
     bottom: 0;
     align-items: center;
-    padding: 0 0.625rem; /* 표 셀 padding과 같은 좌우 라인 */
+    padding: 0 var(--space-cell); /* 표 셀 padding과 같은 좌우 라인 */
     border: 0;
     background: none;
     font: inherit;
@@ -153,7 +153,7 @@
   }
   .path-arrow.prev { left: 0; }
   .path-arrow.next { right: 0; }
-  .three-col .left .arena-path { margin: 0 -0.625rem; }
+  .three-col .left .arena-path { margin: 0 calc(var(--space-cell) * -1); }
   /* center가 표+아코디언 메인 (work-card 저장소 숨김은 global 공통 규칙이 처리) */
   .three-col .center {
     order: 1;
@@ -200,7 +200,7 @@
      상단 0.5rem = 제목↔작품 컴팩트 간격 (데스크탑과 동일) */
   .accordion-detail .work-card {
     display: block;
-    padding: 0.5rem 0.625rem 1.5rem;
+    padding: var(--space-2) var(--space-cell) var(--space-6);
   }
   /* 메타가 숨겨져 미디어가 첫 요소이므로, 미디어의 위 margin 제거 —
      제목↔이미지 간격은 work-card padding-top(0.5rem)으로만 잡는다 */
@@ -212,7 +212,7 @@
   .accordion-detail .card-title,
   .accordion-detail .card-meta { display: none; }
   /* 규격+링크 — 모바일은 2단 대신 세로로 쌓음 (좁아서) */
-  .accordion-detail .card-meta-row { flex-direction: column; gap: 0.5rem; }
+  .accordion-detail .card-meta-row { flex-direction: column; gap: var(--space-2); }
 
   /* 본문 링크 pill — 모바일에선 단어(어절) 단위로 줄바꿈 허용.
      base가 inline + box-decoration-break:clone이라 줄별로 각각 pill이 된다.
@@ -230,7 +230,7 @@
 
   /* 미디어(이미지/iframe)→설명(본문) 간격 — 1.25rem은 너무 좁아 2rem로 확대 */
   .work-card .card-body {
-    margin-top: 2rem;
+    margin-top: var(--space-8);
   }
 
   /* 작품 카드 — 표에서 클릭 시 stripe 가리지 않게 보정 */
