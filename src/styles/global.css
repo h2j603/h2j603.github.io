@@ -837,7 +837,7 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   display: grid;
   grid-template-columns: 20% 60% 20%;
   align-items: start;
-  row-gap: var(--space-4); /* 미디어↔본문 — 16px(본문 그룹 간격과 동일 리듬, 12→16) */
+  row-gap: var(--space-6); /* 미디어↔본문 — 24px (이미지 아래 숨통) */
   padding: var(--space-2) 0 var(--space-6);
 }
 /* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 */
