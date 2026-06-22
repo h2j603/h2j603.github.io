@@ -8,7 +8,7 @@ import path from 'node:path';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import { getWorks, resolveImage, getIntro, getLinks, getMemos, groupBilingual } from "../lib/site-data.js";
-import { tagHue, tagAnchor } from "../lib/tag-colors.js";
+import { tagHue, buildAnchorMap } from "../lib/tag-colors.js";
 
 const works = getWorks().slice().sort((a, b) => {
   // 표 정렬 — year desc(최신 위), 같은 연도는 stable sort로 index 채널 순서 유지.
@@ -46,6 +46,11 @@ const fmtDateTime = (iso: string) => {
 
 // 우측 드롭다운용 — 수집 링크에 등장하는 태그 목록 (채널 순서대로, 중복 제거)
 const linkTags = [...new Set(siteLinks.flatMap((l) => l.tags))];
+// 태그 앵커 맵 — 전체(memo+컬렉션) 태그를 정렬해 a/b 반반 교대 배정
+const tagAnchorMap = buildAnchorMap([
+  ...memos.flatMap((m) => m.tags),
+  ...siteLinks.flatMap((l) => l.tags),
+]);
 
 // 하단 콜로폰 — 빌드 시각 (SSG라 = 콘텐츠 스냅샷 시각)
 const buildStamp = fmtDateTime(new Date().toISOString());
@@ -124,7 +129,7 @@ const defaultMosaic = fs.readFileSync(
                   {(m.addedAt || m.tags.length > 0) && (
                     <span class="block-date">
                       {fmtDateTime(m.addedAt)}{m.addedBy && ` · ${m.addedBy}`}{m.tags.map((t) => (
-                        <>{' · '}<span class="tag-chip" data-anchor={tagAnchor(t)} style={`--th:${tagHue(t)}`}>#{t}</span></>
+                        <>{' · '}<span class="tag-chip" data-anchor={tagAnchorMap.get(t)} style={`--th:${tagHue(t)}`}>#{t}</span></>
                       ))}
                     </span>
                   )}
@@ -353,7 +358,7 @@ const defaultMosaic = fs.readFileSync(
                   {(l.addedAt || l.tags.length > 0) && (
                     <span class="block-date">
                       {fmtDateTime(l.addedAt)}{l.tags.map((t) => (
-                        <>{' · '}<span class="tag-chip" data-tag={t} data-anchor={tagAnchor(t)} style={`--th:${tagHue(t)}`}>#{t}</span></>
+                        <>{' · '}<span class="tag-chip" data-tag={t} data-anchor={tagAnchorMap.get(t)} style={`--th:${tagHue(t)}`}>#{t}</span></>
                       ))}
                     </span>
                   )}

@@ -19,9 +19,14 @@ function hashOf(tag: string): number {
   return h;
 }
 
-/** 태그가 속한 앵커 — 'a'=stripe-a 계열, 'b'=stripe-b 계열. */
-export function tagAnchor(tag: string): 'a' | 'b' {
-  return hashOf(tag) % 2 === 0 ? 'a' : 'b';
+/** 태그 앵커 맵 — 전체 태그를 정렬해 a/b 교대 배정 → 두 그룹이 반반(홀수면
+ *  ±1). 같은 태그는 memo·컬렉션 어디서든 같은 앵커. 빌드 타임에 전체 목록으로
+ *  한 번 만든다. */
+export function buildAnchorMap(tags: string[]): Map<string, 'a' | 'b'> {
+  const uniq = [...new Set(tags)].sort();
+  const map = new Map<string, 'a' | 'b'>();
+  uniq.forEach((t, i) => map.set(t, i % 2 === 0 ? 'a' : 'b'));
+  return map;
 }
 
 /** 앵커색 hue에 더할 오프셋(도, 부호 있음). 앵커와 약하게 decorrelate(상위 비트). */
