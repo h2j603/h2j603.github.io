@@ -1,36 +1,21 @@
 /**
- * 태그 색상 — 자유형 태그에 결정적(해시) **앵커 + hue 오프셋**을 부여.
- * 실제 색은 빌드 타임에 고정하지 않는다: CSS에서 활성 팔레트의 두 색
- * (--stripe-a / --stripe-b) 중 앵커가 가리키는 색의 hue를 오프셋만큼 돌려
- * 런타임에 파생한다 (.tag-chip 규칙). 로드마다 바뀌는 랜덤 팔레트를 그대로 탄다.
+ * 태그 색상 — 두 테마색(--stripe-a / --stripe-b) **사이 hue를 균등 분할**해
+ * 각 태그에 한 지점을 준다. 실제 색은 빌드 타임에 고정하지 않는다: CSS에서
+ * color-mix(in oklch, stripe-a N%, stripe-b)로 두 색을 보간한 뒤 그 hue만 뽑아
+ * 역할별 L/C(배경=옅은 틴트, 글자=진한 동색)를 입힌다 (.tag-chip 규칙). 따라서
+ * 로드마다 바뀌는 랜덤 팔레트의 두 색을 그대로 따라간다.
  *
- * - 앵커: 해시 짝/홀로 두 그룹 → 절반은 stripe-a(예: 보라) 계열, 절반은
- *   stripe-b(예: 갈) 계열. 팔레트의 두 색을 모두 쓴다.
- * - 오프셋: 각 앵커색 기준 ±SPREAD/2°의 **좁은 호** 안에서만 변주 → 같은
- *   가족(유사색)이되 태그별로 구분. (12칸을 호 위에 균등 배치)
- * 폭(SPREAD)을 좁히면 차분, 넓히면 또렷.
+ * 전체 태그를 정렬해 0..100%(stripe-a 비중)로 균등 배치 → 첫 태그=stripe-b쪽,
+ * 끝 태그=stripe-a쪽, 사이는 일정 간격. 같은 태그는 memo·컬렉션 어디서나 동일.
+ * 빌드 타임에 전체 목록으로 한 번 만든다.
  */
-const TAG_STEPS = 12;
-const SPREAD = 40; // 각 앵커 가족의 호 너비(도) — ±20°
-
-function hashOf(tag: string): number {
-  let h = 0;
-  for (const ch of tag) h = (h * 73 + (ch.codePointAt(0) ?? 0)) % 99991;
-  return h;
-}
-
-/** 태그 앵커 맵 — 전체 태그를 정렬해 a/b 교대 배정 → 두 그룹이 반반(홀수면
- *  ±1). 같은 태그는 memo·컬렉션 어디서든 같은 앵커. 빌드 타임에 전체 목록으로
- *  한 번 만든다. */
-export function buildAnchorMap(tags: string[]): Map<string, 'a' | 'b'> {
+export function buildTagMixMap(tags: string[]): Map<string, number> {
   const uniq = [...new Set(tags)].sort();
-  const map = new Map<string, 'a' | 'b'>();
-  uniq.forEach((t, i) => map.set(t, i % 2 === 0 ? 'a' : 'b'));
+  const n = uniq.length;
+  const map = new Map<string, number>();
+  uniq.forEach((t, i) => {
+    const frac = n <= 1 ? 0.5 : i / (n - 1); // 0..1, 균등
+    map.set(t, Math.round(frac * 100)); // stripe-a 비중 %
+  });
   return map;
-}
-
-/** 앵커색 hue에 더할 오프셋(도, 부호 있음). 앵커와 약하게 decorrelate(상위 비트). */
-export function tagHue(tag: string): number {
-  const step = Math.floor(hashOf(tag) / 2) % TAG_STEPS; // 0..11
-  return Math.round(-SPREAD / 2 + step * (SPREAD / (TAG_STEPS - 1)));
 }

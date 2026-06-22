@@ -1277,16 +1277,12 @@ b, strong { font-weight: inherit; }
   padding: 0 var(--space-pill);
   border-radius: 0.5rem;
   /* 간격은 마크업의 ' · ' 구분자가 담당 */
-  /* 색은 활성 팔레트에서 파생 — stripe-a의 hue를 태그별 오프셋(--th, 도)만큼
-     돌리고, 역할별로 L/C 고정(배경=옅은 틴트, 글자=진한 동색). 팔레트가
-     랜덤으로 바뀌면 모든 칩의 base hue가 함께 돌아간다. */
-  background: oklch(from var(--stripe-a) 0.965 0.034 calc(h + var(--th, 0)));
-  color: oklch(from var(--stripe-a) 0.57 0.135 calc(h + var(--th, 0)));
-}
-/* 앵커 b — stripe-b(둘째 테마색) 계열. 같은 역할별 L/C, hue만 stripe-b 기준. */
-.tag-chip[data-anchor='b'] {
-  background: oklch(from var(--stripe-b) 0.965 0.034 calc(h + var(--th, 0)));
-  color: oklch(from var(--stripe-b) 0.57 0.135 calc(h + var(--th, 0)));
+  /* 색은 두 테마색 사이를 보간 — color-mix(oklch)로 stripe-a/b를 --mix(%)
+     지점에서 섞은 뒤 그 hue만 뽑아 역할별 L/C 고정(배경=옅은 틴트, 글자=진한
+     동색). 태그마다 mix 비중이 달라 두 색 사이 hue가 균등 분할되고, 팔레트가
+     바뀌면 두 끝점이 함께 이동한다. */
+  background: oklch(from color-mix(in oklch, var(--stripe-a) var(--mix, 50%), var(--stripe-b)) 0.965 0.034 h);
+  color: oklch(from color-mix(in oklch, var(--stripe-a) var(--mix, 50%), var(--stripe-b)) 0.57 0.135 h);
 }
 /* 컬렉션 태그 — 색은 base .tag-chip의 태그별 --th 파생 그대로(통일), 단
    하이퍼링크처럼 클릭 가능(드롭다운 필터, link-filter.js)이라 커서만 포인터.
