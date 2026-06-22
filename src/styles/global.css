@@ -1283,6 +1283,11 @@ b, strong { font-weight: inherit; }
   background: oklch(from var(--stripe-a) 0.965 0.034 calc(h + var(--th, 0)));
   color: oklch(from var(--stripe-a) 0.57 0.135 calc(h + var(--th, 0)));
 }
+/* 앵커 b — stripe-b(둘째 테마색) 계열. 같은 역할별 L/C, hue만 stripe-b 기준. */
+.tag-chip[data-anchor='b'] {
+  background: oklch(from var(--stripe-b) 0.965 0.034 calc(h + var(--th, 0)));
+  color: oklch(from var(--stripe-b) 0.57 0.135 calc(h + var(--th, 0)));
+}
 /* 컬렉션 태그 — 색은 base .tag-chip의 태그별 --th 파생 그대로(통일), 단
    하이퍼링크처럼 클릭 가능(드롭다운 필터, link-filter.js)이라 커서만 포인터.
    점멸은 wave가 담당. */
