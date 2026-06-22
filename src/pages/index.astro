@@ -368,7 +368,7 @@ const defaultMosaic = fs.readFileSync(
     {/* ──────────── 하단: 3칸 그리드(20/60/20) — 좌 built / 중앙 웹링 / 우 now.
         세로 구분선(d1·d2)이 셀 border로 푸터 바닥까지 이어져 그리드가 끝까지 간다 ──────────── */}
     <div class="bottom">
-      <span class="foot-cell foot-built">built {buildStamp} KST</span>
+      <span class="foot-cell foot-built">built <span class="time-val">{buildStamp}</span> KST</span>
       {/* 인디웹 웹링 — 가운데 칸. 공식 임베드 스니펫, 위치는 referrer로
           판단(member id 없음). 화살표 = 링 이전/다음 (같은 탭 이동 = 웹링 관례) */}
       <p class="foot-cell webring">
