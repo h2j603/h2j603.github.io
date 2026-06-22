@@ -110,16 +110,21 @@
     padding: 0;
     justify-content: center;
   }
-  .bottom .foot-built { order: 1; }
-  .bottom .foot-now { order: 2; }
-  /* 라벨 칸 고정폭 + 라벨 우측 정렬 — BUILT·NOW가 칸 오른끝에 붙어 라벨→시간
-     간격이 column-gap(0.4em)으로 통일되고, 시간→KST도 0.4em이라 두 간격이
-     같다. 동시에 시간·KST 열이 세로로 정렬(남는 폭은 라벨 왼쪽으로 감). 칸이
-     BUILT보다 넓기만 하면 되니 정확한 글자폭에 안 의존. (데스크탑 영향 없음) */
-  .bottom .time-line { grid-template-columns: 3.6em auto auto; }
-  .bottom .t-label { text-align: right; }
+  /* built/now 두 줄을 하나의 공유 그리드로 — foot-cell·time-line을 display:
+     contents로 풀어 6개 span(라벨·시간·KST ×2)이 직접 그리드 셀이 된다. 컬럼이
+     BUILT 폭에 자동으로 맞아 라벨(왼끝)·시간·KST 열이 모두 정렬되고, 균일
+     column-gap이라 라벨→시간·시간→KST 간격도 같다. (정확한 글자폭에 비의존) */
+  .foot-times {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    column-gap: 0.4em;
+    row-gap: var(--space-1);
+    align-items: baseline;
+  }
+  .foot-times .foot-cell,
+  .foot-times .time-line { display: contents; }
   /* pill 폭이 늘어 좁은 폰에서 한 줄을 넘으면 줄바꿈 (각 pill은 온전히 유지) */
-  .bottom .webring { order: 3; margin-top: var(--space-3); flex-wrap: wrap; }
+  .bottom .webring { margin-top: var(--space-3); flex-wrap: wrap; }
   /* 영역 출처 라벨 — 모바일은 sticky 대신 섹션 머리띠(흐름 안).
      relative = static처럼 흐름 안에 있되, 페이저 화살표의 absolute 기준이 된다.
      center는 패딩 0이라 그대로 전폭, left는 자기 패딩(0.625rem)만 상쇄 */
