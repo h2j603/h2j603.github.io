@@ -68,6 +68,30 @@
   --brown: var(--ink);
 }
 
+/* ── 폴백: oklch(from …) 상대색 미지원 브라우저(매우 구버전 Safari<16.4 등) ──
+   전 컬러 시스템이 동적 파생(상대색·color-mix)에 의존하므로, 미지원 환경에선
+   기본(original) 팔레트의 정적 근사값으로 가독성·테마를 유지한다. 동적 팔레트
+   전환·태그/행 그라데이션은 단일 색으로 우아하게 degrade(텍스트는 --ink로 읽힘).
+   현행 브라우저(상대색 지원)엔 전혀 영향 없음. */
+@supports not (color: oklch(from white l c h)) {
+  :root {
+    --accent: #8a3de6;
+    --person: #6e5a4d;
+    --bg: #fbfaff;
+    --ink: #18161d;
+    --tint-accent: #ece0f7;
+    --tint-brown: #ebe4dd;
+    --pill-link-bg: #f4eefb;
+    --pill-link-text: #7328c4;
+    --pill-person-bg: #f5f1ed;
+    --pill-person-text: #62503f;
+    --muted: #9b9088;
+    --scrollbar: rgba(24, 22, 29, 0.35);
+    --scrollbar-hover: rgba(24, 22, 29, 0.55);
+    --ring: rgba(24, 22, 29, 0.8);
+  }
+}
+
 /* ── 컬러 팔레트 프리셋 — <html data-palette="…">로 교체 (JS 토글/랜덤 예정).
    기본(속성 없음) = original. stripe 두 색만 갈아끼우면 파생 전체가 따라온다.
    남긴 셋: original(보라/갈) · blue(스카이블루/포레스트그린) · gold(골드/퍼플그레이). ── */
