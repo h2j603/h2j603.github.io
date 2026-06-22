@@ -8,7 +8,7 @@ import path from 'node:path';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import { getWorks, resolveImage, getIntro, getLinks, getMemos, groupBilingual } from "../lib/site-data.js";
-import { tagColor } from "../lib/tag-colors.js";
+import { tagHue } from "../lib/tag-colors.js";
 
 const works = getWorks().slice().sort((a, b) => {
   // 표 정렬 — year desc(최신 위), 같은 연도는 stable sort로 index 채널 순서 유지.
@@ -124,7 +124,7 @@ const defaultMosaic = fs.readFileSync(
                   {(m.addedAt || m.tags.length > 0) && (
                     <span class="block-date">
                       {fmtDateTime(m.addedAt)}{m.addedBy && ` · ${m.addedBy}`}{m.tags.map((t) => (
-                        <>{' · '}<span class="tag-chip" style={`background:${tagColor(t).bg};color:${tagColor(t).fg}`}>#{t}</span></>
+                        <>{' · '}<span class="tag-chip" style={`--th:${tagHue(t)}`}>#{t}</span></>
                       ))}
                     </span>
                   )}
@@ -353,7 +353,7 @@ const defaultMosaic = fs.readFileSync(
                   {(l.addedAt || l.tags.length > 0) && (
                     <span class="block-date">
                       {fmtDateTime(l.addedAt)}{l.tags.map((t) => (
-                        <>{' · '}<span class="tag-chip" style={`background:${tagColor(t).bg};color:${tagColor(t).fg}`}>#{t}</span></>
+                        <>{' · '}<span class="tag-chip" style={`--th:${tagHue(t)}`}>#{t}</span></>
                       ))}
                     </span>
                   )}
