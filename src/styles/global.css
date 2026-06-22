@@ -28,11 +28,21 @@
   --space-8: 2rem;        /* 32 */
   --space-cell: 0.625rem; /* 10 — 표 셀(격자 밖, 의도적) */
   --space-pill: 0.375rem; /* 6 — pill 가로(격자 밖, 의도적) */
-  --bg: oklch(0.99 0.004 305);   /* off-white — 미세한 보라끼(accent hue)로 포인트와 한 색온도 */
-  --ink: oklch(0.21 0.012 305);  /* near-black — 순흑 대신 보라 기운, 경직 완화(대비 ~16:1). 줄무늬·모자이크 브라운은 JS/SVG에 유지 */
-  /* OKLCH 베이스 — 보라(일반 링크)·갈(인물 링크) 두 계열. 명도를 맞춰 파생한다. */
-  --accent: oklch(0.62 0.26 305);   /* 보라 ≈ 기존 #b362ff — selection·일반 링크 hue 소스 */
-  --person: oklch(0.47 0.05 60);    /* 갈 ≈ 기존 #775d4f — 인물 링크·뮤티드 hue 소스 */
+  /* ── 컬러 팔레트: 두 hue 각도가 사이트 전체 색을 결정한다 (파라메트릭 단일 소스).
+     교체/랜덤 = 이 두 값(--accent-h / --person-h)만 바꾸면 배경·잉크 톤, 링크·
+     hover·pill·selection, stripe·모자이크까지 전부 따라온다. L/C(명도·채도)는
+     역할별로 고정이라 팔레트가 바뀌어도 대비·가독성은 유지된다. ── */
+  --accent-h: 305;  /* 보라 슬롯 hue — 일반 링크·selection·stripe 계열 */
+  --person-h: 60;   /* 갈 슬롯 hue — 인물 링크·뮤티드 계열 */
+  /* 두 브랜드 색 — hue는 위 knob에서, L/C는 고정 (≈ 기존 #b362ff / #775d4f) */
+  --accent: oklch(0.62 0.26 var(--accent-h));   /* selection·일반 링크 hue 소스 */
+  --person: oklch(0.47 0.05 var(--person-h));   /* 인물 링크·뮤티드 hue 소스 */
+  /* 배경/잉크 — accent hue를 미세하게 머금어 한 색온도 (팔레트 따라 톤 이동) */
+  --bg:  oklch(0.99 0.004 var(--accent-h));   /* off-white */
+  --ink: oklch(0.21 0.012 var(--accent-h));   /* near-black, 대비 ~16:1 */
+  /* stripe(커튼)·모자이크 채움 — 같은 hue, 타일 고유 L/C (기존 #a966ff / #775d4f 재현) */
+  --stripe-a: oklch(0.6555 0.219 var(--accent-h));   /* 보라 타일 */
+  --stripe-b: oklch(0.5007 0.04 var(--person-h));    /* 갈 타일 */
   /* 행 호버 칠 — 두 틴트를 같은 L(0.90)·낮은 C로 파생 → 보라/갈 교차 무게 동일 */
   --tint-accent: oklch(from var(--accent) 0.90 0.055 h);
   --tint-brown:  oklch(from var(--person) 0.90 0.03 h);
@@ -315,8 +325,8 @@ iframe {
   flex: 1 1 var(--cell-w, 1.667%);
   min-width: 0;
 }
-.stripe-row .cell.purple { background: #a966ff; }
-.stripe-row .cell.brown  { background: #775d4f; }
+.stripe-row .cell.purple { background: var(--stripe-a); }
+.stripe-row .cell.brown  { background: var(--stripe-b); }
 
 /* 3-Column — stripe 2줄(36×2=4.5rem) 바로 아래, 여유 0.
    스크롤 콘텐츠가 띠 밑에서 바로 잘리므로 띠 아래 흰 띠(구 sticky 네비
