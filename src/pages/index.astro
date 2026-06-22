@@ -67,7 +67,7 @@ const defaultMosaic = fs.readFileSync(
   {/* 줄(.stripe-row)은 JS buildStripe가 화면 높이만큼 생성 — 기본 노출은 위 72px.
       띠를 아래로 땡기면 커튼이 따라 내려오고 그 위에 About 패널이 인쇄된다(서랍).
       위로 땡기면/천 탭/ESC로 닫힘 — 별도 버튼 없음. (drawer.js) */}
-  <div class="stripe-top" role="button" tabindex="0" aria-label="about — 아래로 당겨 열기"></div>
+  <div class="stripe-top" role="button" tabindex="0" aria-expanded="false" aria-label="about — 아래로 당겨 열기"></div>
   {/* 띠 우측 칩 — 언어 토글 (about 탭은 드래그 인터랙션으로 폐지) */}
   <button type="button" class="lang-toggle" data-lang="en">KO</button>
   {/* About 서랍 — 커튼(형제) 위에 얹히는 패널 레이어. 천 클릭은 통과시켜
@@ -169,7 +169,7 @@ const defaultMosaic = fs.readFileSync(
             </colgroup>
             <tbody>
               {works.map((w, i) => (
-                <tr data-slug={w.slug} data-locked={w.published ? undefined : 'true'} style={`--row-mix:${works.length <= 1 ? 50 : Math.round((i / (works.length - 1)) * 100)}%`}>
+                <tr data-slug={w.slug} data-locked={w.published ? undefined : 'true'} aria-expanded={w.published ? 'false' : undefined} style={`--row-mix:${works.length <= 1 ? 50 : Math.round((i / (works.length - 1)) * 100)}%`}>
                   {/* 번호 = 연도 내림차순 고정. --row-mix = 호버 배경을 위→아래
                       두 테마색 사이 그라데이션의 한 지점으로 (빌드 시 행 인덱스로). */}
                   <td class="num-cell"><span class="num-badge">{i + 1}</span></td>
@@ -340,6 +340,8 @@ const defaultMosaic = fs.readFileSync(
                       <option value={t}>{t}</option>
                     ))}
                   </select>
+                  {/* 필터 활성 시에만 나타나는 해제 칩 — 전체로 되돌림 */}
+                  <button type="button" id="linkFilterClear" class="link-filter-clear" hidden aria-label="필터 해제 — 전체 보기">✕</button>
                 </label>
                 <hr />
               </>

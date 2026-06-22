@@ -37,6 +37,17 @@ function setEntered(v) {
   if (entered === v) return;
   entered = v;
   drawer.classList.toggle('entered', v);
+  // 접근성 — 열리면 패널로 포커스 이동 + 뒤 콘텐츠(.three-col, 드로어와 형제라
+  // 패널엔 영향 없음)를 inert로 포커스 차단. 닫히면 inert 해제. (닫힘 포커스
+  // 복귀는 명시적 닫기 지점 toggleDrawer에서.)
+  var main = document.querySelector('.three-col');
+  if (v) {
+    if (main) main.setAttribute('inert', '');
+    var panel = drawer.querySelector('.drawer-panel');
+    if (panel && !dragging) panel.focus();
+  } else if (main) {
+    main.removeAttribute('inert');
+  }
 }
 
 // pos → 시각. 커튼 높이만 따라가고, 패널은 풀 도달 후 .entered로 별도 등장.
@@ -70,6 +81,7 @@ function springStep(now) {
 function springTo(t) {
   target = t;
   open = (t === hOpen());
+  stripe.setAttribute('aria-expanded', String(open)); // 커튼 핸들 열림 상태 노출
   if (!raf) {
     springStep._last = performance.now();
     raf = requestAnimationFrame(springStep);
@@ -81,7 +93,10 @@ export function toggleDrawer(force) {
   if (!stripe) return;
   var wantOpen = typeof force === 'boolean' ? force : !open;
   vel = 0;
-  if (!wantOpen) setEntered(false); // 닫힐 땐 패널 즉시 숨기고 커튼만 올라감
+  if (!wantOpen) {
+    setEntered(false); // 닫힐 땐 패널 즉시 숨기고 커튼만 올라감
+    stripe.focus();    // 포커스 복귀 (ESC·홈링크·탭닫기)
+  }
   stripe.classList.toggle('open', wantOpen);
   springTo(wantOpen ? hOpen() : hClosed());
 }
@@ -164,6 +179,9 @@ export function initDrawer() {
   stripe = document.querySelector('.stripe-top');
   drawer = document.querySelector('.about-drawer');
   if (!stripe || !drawer) return;
+  // 패널을 프로그램 포커스 대상으로 (열림 시 여기로 포커스 이동)
+  var panelEl = drawer.querySelector('.drawer-panel');
+  if (panelEl) panelEl.setAttribute('tabindex', '-1');
 
   // JS가 시각을 전담 — CSS 트랜지션 끄고 실제 닫힘 높이 측정.
   BASE = stripe.offsetHeight || 72;

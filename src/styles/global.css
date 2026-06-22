@@ -146,6 +146,15 @@ body {
   overflow-wrap: break-word;
 }
 
+/* 팔레트 1분 전환 크로스페이드 — 파생 칠(페이지 톤·태그칩)만 부드럽게 잇는다.
+   stripe 타일·모자이크는 '그대로' 즉시(여기 transition 안 줌 → 의도 유지).
+   transition은 상속 안 되므로 칠을 가진 요소에만. 호버는 색이 아니라 opacity·
+   밑줄로 바뀌어 충돌 없음. reduced-motion에선 끔. */
+@media (prefers-reduced-motion: no-preference) {
+  body { transition: background-color 0.6s ease, color 0.6s ease; }
+  .tag-chip { transition: background-color 0.6s ease, color 0.6s ease; }
+}
+
 /* 텍스트 드래그 하이라이트 — 포인트 보라 + 흰 텍스트 */
 ::selection {
   background: var(--accent);
@@ -558,6 +567,24 @@ iframe {
 @media (hover: hover) {
   .link-filter:hover { background: var(--tint-accent); }
 }
+/* 필터 상태 — 활성 태그 칩은 자기 색 외곽선으로 강조 */
+.link-list .tag-chip.tag-active {
+  outline: 1.5px solid currentColor;
+  outline-offset: 2px;
+}
+/* 해제 칩(✕) — 필터 활성 시에만(JS가 hidden 토글). 드롭다운 옆 accent ✕ */
+.link-filter-clear {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  line-height: 1.25rem;
+  color: var(--accent);
+  cursor: pointer;
+  margin-left: var(--space-1);
+  padding: 0 0.25rem;
+}
+.link-filter-clear[hidden] { display: none; }
 /* 표 컬럼 기준선 — center(20~80%) 안에서 번호 10/연도 10/제목 60/분류 20 경계 */
 .col-divider.d5 { left: 26%; } /* 번호|연도 */
 .col-divider.d3 { left: 32%; } /* 연도|제목 */
