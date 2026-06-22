@@ -181,7 +181,7 @@ const defaultMosaic = fs.readFileSync(
                   <td class="cat-cell">
                     {orderedTagsOf(w).length
                       ? orderedTagsOf(w).map((t) => (
-                          <span class="cat-tag" data-tag={t}>{t}</span>
+                          <span class="cat-tag tag-chip" data-tag={t} style={`--th:${tagHue(t)}`}>#{t}</span>
                         ))
                       : '—'}
                   </td>
@@ -343,7 +343,7 @@ const defaultMosaic = fs.readFileSync(
                   {(l.addedAt || l.tags.length > 0) && (
                     <span class="block-date">
                       {fmtDateTime(l.addedAt)}{l.tags.map((t) => (
-                        <>{' · '}<span class="tag-chip" data-tag={t}>#{t}</span></>
+                        <>{' · '}<span class="tag-chip" data-tag={t} style={`--th:${tagHue(t)}`}>#{t}</span></>
                       ))}
                     </span>
                   )}
