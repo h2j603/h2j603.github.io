@@ -200,50 +200,8 @@ th {
 table.sontable tr[data-slug] { cursor: pointer; }
 /* 미게시(잠긴) 행 — 표엔 남되 펼칠 수 없음. 색은 일반 행과 동일,
    클릭 어포던스(커서)만 제거 */
-/* 미게시 행 — 펼침은 불가하지만 클릭하면 스트라이프 띠 피드백(locked.js) */
-table.sontable tr[data-slug][data-locked='true'] { cursor: pointer; }
-table.sontable tr[data-slug][data-locked='true'] .locked-title { cursor: pointer; }
-
-/* 미게시 행 클릭 피드백 — 줄무늬 띠가 그 행을 채우며 아래서 올라와(scaleY)
-   '비공개/private'를 찍었다가 후퇴. 커튼 모티프의 행 단위 에코. JS가 행
-   bounding box에 맞춰 body에 fixed로 띄운다(레이아웃 비침습). */
-.row-stripe {
-  position: fixed;
-  z-index: 90; /* 콘텐츠 위, 커튼(100)·서랍(101) 아래 */
-  overflow: hidden;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* stripe-row와 같은 보라/갈 세로 바 교차 (타일폭 18px = 커튼 셀폭과 짝) */
-  background-image: repeating-linear-gradient(
-    to right,
-    var(--stripe-a) 0, var(--stripe-a) 18px,
-    var(--stripe-b) 18px, var(--stripe-b) 36px
-  );
-  transform: scaleY(0);
-  transform-origin: bottom; /* 아래서 위로 차오름 */
-  transition: transform 0.28s cubic-bezier(0.2, 0.85, 0.25, 1);
-}
-.row-stripe.rise { transform: scaleY(1); }
-.row-stripe.fall { transform: scaleY(0); transition: transform 0.3s ease-in; }
-.row-stripe-label {
-  font-size: var(--fs);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--bg); /* 줄무늬 위 녹아웃(밝은) 글자 */
-  opacity: 0; /* 띠가 다 차오른 뒤 살짝 늦게 등장 */
-  transition: opacity 0.16s ease 0.16s;
-}
-.row-stripe.rise .row-stripe-label { opacity: 1; }
-.row-stripe.fall .row-stripe-label { opacity: 0; transition: opacity 0.12s ease; }
-@media (prefers-reduced-motion: reduce) {
-  .row-stripe { transform: none; opacity: 0; transition: opacity 0.2s ease; }
-  .row-stripe.rise { opacity: 1; }
-  .row-stripe.fall { opacity: 0; }
-  .row-stripe-label { transition: none; }
-}
+table.sontable tr[data-slug][data-locked='true'] { cursor: default; }
+table.sontable tr[data-slug][data-locked='true'] .locked-title { cursor: default; }
 /* ───────────────────────────────────────────────────────────────────────
    이미지 / iframe (원본 그대로 + 비율 유지 보강)
    ─────────────────────────────────────────────────────────────────────── */
