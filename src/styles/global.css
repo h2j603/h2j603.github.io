@@ -443,8 +443,13 @@ iframe {
   line-height: 1.25rem;
   color: var(--ink);
 }
-.bottom .foot-built { padding-left: var(--space-5); } /* 좌 컬럼 — 좌측 정렬, 컬럼 거터 */
+/* 데스크탑 — 래퍼는 투명(풀림). built·webring·now를 .bottom 3칸 그리드에
+   명시 위치로 둔다 (DOM 순서 = built,now,webring 이라 auto-place는 어긋남). */
+.foot-times { display: contents; }
+.bottom .foot-built { padding-left: var(--space-5); grid-column: 1; } /* 좌 컬럼 — 좌측 정렬, 컬럼 거터 */
+.bottom .webring { grid-column: 2; }
 .bottom .foot-now { /* 우 컬럼 — 우측 정렬, d2(80%) 연장선 */
+  grid-column: 3;
   justify-content: flex-end;
   padding-right: var(--space-5);
   border-left: var(--line-w) solid var(--ink);
