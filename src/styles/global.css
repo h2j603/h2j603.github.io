@@ -975,7 +975,7 @@ table.sontable .col-cat   { width: 20%; }
   min-width: 1.25rem;
   height: 1.25rem;
   box-sizing: border-box;
-  font-size: 0.75rem;
+  font-size: var(--fs); /* 다른 텍스트(본문·표)와 동일 */
   line-height: 1;
   color: var(--ink);
   /* 고정폭 숫자 — 자릿수 무관 동일 글리프 폭으로 세로 정렬 */
