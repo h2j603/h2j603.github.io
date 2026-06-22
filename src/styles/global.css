@@ -455,6 +455,7 @@ iframe {
 .bottom .foot-now {
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
+  text-transform: uppercase; /* built/now 라벨 대문자 (KST·숫자는 영향 없음) */
 }
 /* 숫자 값만 테마색(라벨 built/now/KST는 ink 유지) — 활성 팔레트 accent라
    1분 순환에 맞춰 함께 바뀐다. */
