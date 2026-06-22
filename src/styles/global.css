@@ -146,6 +146,15 @@ body {
   overflow-wrap: break-word;
 }
 
+/* 팔레트 1분 전환 크로스페이드 — 파생 칠(페이지 톤·태그칩)만 부드럽게 잇는다.
+   stripe 타일·모자이크는 '그대로' 즉시(여기 transition 안 줌 → 의도 유지).
+   transition은 상속 안 되므로 칠을 가진 요소에만. 호버는 색이 아니라 opacity·
+   밑줄로 바뀌어 충돌 없음. reduced-motion에선 끔. */
+@media (prefers-reduced-motion: no-preference) {
+  body { transition: background-color 0.6s ease, color 0.6s ease; }
+  .tag-chip { transition: background-color 0.6s ease, color 0.6s ease; }
+}
+
 /* 텍스트 드래그 하이라이트 — 포인트 보라 + 흰 텍스트 */
 ::selection {
   background: var(--accent);
