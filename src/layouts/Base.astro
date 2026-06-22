@@ -17,6 +17,15 @@ const { title } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
 
+    {/* 컬러 팔레트 — 로드마다 셋(original/blue/gold) 중 하나 무작위.
+        head 초반 인라인이라 첫 페인트 전에 data-palette가 박혀 깜빡임이 없다. */}
+    <script is:inline>
+      (function () {
+        var p = ['original', 'blue', 'gold'];
+        document.documentElement.dataset.palette = p[(Math.random() * p.length) | 0];
+      })();
+    </script>
+
     {/* rel=me — IndieAuth/RelMeAuth 신원 확인용. 인디웹 웹링(indielogin.com)이
         이 링크로 GitHub 프로필 ↔ 사이트 양방향을 검증한다.
         (GitHub 프로필 "Website" 칸이 hyuk.xyz를 가리켜야 양방향 성립) */}
