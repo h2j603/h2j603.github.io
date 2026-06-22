@@ -15,7 +15,7 @@ import { buildPeople } from '../src/lib/people.js';
 import { buildLinks } from "../src/lib/links.js";
 import { buildMemos } from "../src/lib/memos.js";
 import { buildIntro } from "../src/lib/intro.js";
-import { worksFileSchema, peopleFileSchema, linksFileSchema, memosFileSchema } from "../src/lib/schema.js";
+import { worksFileSchema, introFileSchema, peopleFileSchema, linksFileSchema, memosFileSchema } from "../src/lib/schema.js";
 import { DATA_FILE, INTRO_FILE, PEOPLE_FILE, LINKS_FILE, MEMO_FILE } from "../src/lib/config.js";
 
 const dryRun = process.argv.includes('--dry-run');
@@ -30,6 +30,7 @@ async function main() {
   const memos = await buildMemos();
 
   const validated = worksFileSchema.parse(works);
+  const validatedIntro = introFileSchema.parse(intro);
   const validatedPeople = peopleFileSchema.parse(people);
   const validatedLinks = linksFileSchema.parse(links);
   const validatedMemos = memosFileSchema.parse(memos);
@@ -38,7 +39,7 @@ async function main() {
     await mkdir(dirname(DATA_FILE), { recursive: true });
     await writeFile(DATA_FILE, JSON.stringify(validated, null, 2) + '\n');
     await mkdir(dirname(INTRO_FILE), { recursive: true });
-    await writeFile(INTRO_FILE, JSON.stringify(intro, null, 2) + '\n');
+    await writeFile(INTRO_FILE, JSON.stringify(validatedIntro, null, 2) + '\n');
     await mkdir(dirname(PEOPLE_FILE), { recursive: true });
     await writeFile(PEOPLE_FILE, JSON.stringify(validatedPeople, null, 2) + '\n');
     await mkdir(dirname(LINKS_FILE), { recursive: true });

@@ -4,7 +4,7 @@ import { isMobileView, anchorY, glideScrollBy, springOpen } from './util.js';
 export function initMemos() {
   var leftEl = document.querySelector('.three-col .left');
   document.querySelectorAll('.memo').forEach(function (memo) {
-    memo.addEventListener('click', function () {
+    function toggle() {
       var wasOpen = memo.classList.contains('open');
       document.querySelectorAll('.memo.open').forEach(function (m) {
         m.classList.remove('open');
@@ -19,6 +19,15 @@ export function initMemos() {
           // 모바일 — 표 행과 같은 어법: 펼친 메모가 보이게 부드럽게 스크롤
           memo.scrollIntoView({ block: 'start', behavior: 'smooth' });
         }
+      }
+    }
+    memo.addEventListener('click', toggle);
+    // role="button" tabindex="0"라 키보드 활성화도 지원 (Enter/Space).
+    // Space 기본 스크롤 방지. (drawer 핸들과 같은 어법)
+    memo.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle();
       }
     });
   });
