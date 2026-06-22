@@ -430,7 +430,10 @@ iframe {
   background: var(--bg);
   z-index: 7; /* 세로선(6) 위, 커튼(100) 아래 */
   display: grid;
-  grid-template-columns: 20% 60% 20%; /* 컬럼 그대로 — 셀 경계 = d1(20%)·d2(80%) */
+  /* 콘텐츠 기반 — built(좌)·webring(중앙 auto)·now(우)가 폭에 상관없이 넘침 없이
+     한 줄. (옛 20/60/20 고정폭은 좁은 데스크탑에서 시간 문자열이 칸을 넘쳐 충돌) */
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
 }
 .bottom .foot-cell {
   display: flex;
@@ -448,11 +451,10 @@ iframe {
 .foot-times { display: contents; }
 .bottom .foot-built { padding-left: var(--space-5); grid-column: 1; } /* 좌 컬럼 — 좌측 정렬, 컬럼 거터 */
 .bottom .webring { grid-column: 2; }
-.bottom .foot-now { /* 우 컬럼 — 우측 정렬, d2(80%) 연장선 */
+.bottom .foot-now { /* 우 컬럼 — 우측 정렬 */
   grid-column: 3;
   justify-content: flex-end;
   padding-right: var(--space-5);
-  border-left: var(--line-w) solid var(--ink);
 }
 /* 시간 두 줄 — 고정폭 숫자. now 시계가 초 단위로 갱신돼도 자릿수 폭이 일정해
    숫자가 흔들리지 않는다. */
@@ -481,7 +483,6 @@ iframe {
    단 ↗ 프리픽스는 예외로 제외(스니펫 원형 유지). */
 .webring {
   justify-content: center;
-  border-left: var(--line-w) solid var(--ink);
   white-space: nowrap;
   font-size: var(--fs);
   line-height: 1.25rem;
@@ -894,18 +895,9 @@ tr[data-slug] { scroll-margin-top: 0.5rem; }
 /* 표 정렬 — 숫자 왼쪽 · 제목 가운데 · 카테고리 오른쪽 (연도는 기본 왼쪽) */
 .title-cell { text-align: center; }
 .cat-cell { text-align: right; }
-/* 작업 태그 — 데이터는 소문자 토큰 유지, 표기만 첫자 대문자 */
-/* 분류 — 컬렉션 태그와 같은 칩 스타일(테마 accent pill). 작아져서 분류 칸이
-   좁아지므로 num·cat 대칭(20%) + 제목 정중앙이 자연스레 성립한다. */
-.cat-cell .cat-tag {
-  display: inline-block;
-  padding: 0 var(--space-pill);
-  border-radius: 0.5rem;
-  background: var(--pill-link-bg);
-  color: var(--pill-link-text);
-  white-space: nowrap;
-  text-transform: capitalize;
-}
+/* 분류 — memo·컬렉션과 같은 칩(.tag-chip)으로 통일: 색은 태그별 --th 파생,
+   #프리픽스·소문자. 작아져서 num·cat 대칭(20%) + 제목 정중앙이 자연스레 성립.
+   칩 사이 간격만 여기서 (시각은 base .tag-chip이 담당). */
 .cat-cell .cat-tag + .cat-tag { margin-left: 0.25rem; }
 
 .accordion-detail,
@@ -1290,11 +1282,7 @@ b, strong { font-weight: inherit; }
   background: oklch(from var(--stripe-a) 0.965 0.034 calc(h + var(--th, 0)));
   color: oklch(from var(--stripe-a) 0.57 0.135 calc(h + var(--th, 0)));
 }
-/* 컬렉션 태그 — 하이퍼링크처럼: 색을 전부 테마 accent에서 파생(균일 pill,
-   per-tag rainbow 폐기), 클릭하면 그 태그로 드롭다운 필터(link-filter.js),
-   wave가 점멸시킨다. (memo 태그는 위 rainbow 유지) */
-.link-list .tag-chip {
-  background: var(--pill-link-bg);
-  color: var(--pill-link-text);
-  cursor: pointer;
-}
+/* 컬렉션 태그 — 색은 base .tag-chip의 태그별 --th 파생 그대로(통일), 단
+   하이퍼링크처럼 클릭 가능(드롭다운 필터, link-filter.js)이라 커서만 포인터.
+   점멸은 wave가 담당. */
+.link-list .tag-chip { cursor: pointer; }
