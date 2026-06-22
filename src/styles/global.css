@@ -887,7 +887,9 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, pad
    sticky 헤더가 없어졌으므로 작은 여백만 */
 tr[data-slug] { scroll-margin-top: 0.5rem; }
 /* 표 분류(cat) 칸 — 태그를 pill 없이 텍스트로, 왼끝 정렬(d4 선 기준), · 구분. */
-.cat-cell { text-align: left; }
+/* 표 정렬 — 숫자 왼쪽 · 제목 가운데 · 카테고리 오른쪽 (연도는 기본 왼쪽) */
+.title-cell { text-align: center; }
+.cat-cell { text-align: right; }
 /* 작업 태그 — 데이터는 소문자 토큰 유지, 표기만 첫자 대문자 */
 .cat-cell .cat-tag { color: var(--ink); white-space: nowrap; text-transform: capitalize; }
 .cat-cell .cat-tag + .cat-tag::before { content: ' · '; }
