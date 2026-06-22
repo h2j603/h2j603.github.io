@@ -17,12 +17,16 @@ const { title } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
 
-    {/* 컬러 팔레트 — 로드마다 셋(original/blue/gold) 중 하나 무작위.
-        head 초반 인라인이라 첫 페인트 전에 data-palette가 박혀 깜빡임이 없다. */}
+    {/* 컬러 팔레트 — 방문자 로컬 시간대로 결정(셋: original/blue/gold).
+        밤=보라(original), 낮=블루, 해질녘=골드. head 초반 인라인이라 첫 페인트
+        전에 data-palette가 박혀 깜빡임이 없다. */}
     <script is:inline>
       (function () {
-        var p = ['original', 'blue', 'gold'];
-        document.documentElement.dataset.palette = p[(Math.random() * p.length) | 0];
+        var h = new Date().getHours();
+        var p = h < 6 || h >= 21 ? 'original' /* 21:00–06:00 밤 */
+          : h < 15 ? 'blue'                   /* 06:00–15:00 낮 */
+          : 'gold';                           /* 15:00–21:00 해질녘 */
+        document.documentElement.dataset.palette = p;
       })();
     </script>
 
