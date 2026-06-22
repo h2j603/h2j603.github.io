@@ -449,13 +449,17 @@ iframe {
   padding-right: var(--space-5);
   border-left: var(--line-w) solid var(--ink);
 }
-/* 시간 두 줄 — 고정폭 숫자 + 테마색. now 시계가 초 단위로 갱신돼도 자릿수
-   폭이 일정해 숫자가 흔들리지 않는다. 글자색은 활성 팔레트 accent라
-   1분 순환에 맞춰 함께 바뀐다. */
+/* 시간 두 줄 — 고정폭 숫자. now 시계가 초 단위로 갱신돼도 자릿수 폭이 일정해
+   숫자가 흔들리지 않는다. */
 .bottom .foot-built,
 .bottom .foot-now {
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
+}
+/* 숫자 값만 테마색(라벨 built/now/KST는 ink 유지) — 활성 팔레트 accent라
+   1분 순환에 맞춰 함께 바뀐다. */
+.bottom .foot-built .time-val,
+.bottom .now-clock {
   color: var(--accent);
 }
 /* 인디웹 웹링 — 가운데 칸. 한 줄 유지(화살표·텍스트 안 깨지게). 셀 왼변은
