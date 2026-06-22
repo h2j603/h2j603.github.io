@@ -285,6 +285,9 @@ iframe {
   background: var(--bg);
   border: var(--line-w) solid var(--ink);
   padding: var(--space-6); /* 균일 24px — 바닥만 28이던 것 스케일로 통일 */
+  /* text-wrap은 상속 속성 — 여기 한 번 걸면 문단·제목·리스트 등 모든
+     About 텍스트가 균형 줄바꿈(고아줄 방지)을 받는다. */
+  text-wrap: pretty;
 }
 /* 패널 등장 — 커튼이 화면을 다 덮은 뒤(.entered, drawer.js) 아래서 또렷하게
    솟아오른다. 드래그·하강 중엔 숨김(opacity 0). 불투명도는 55%에서 도달해
@@ -338,12 +341,11 @@ iframe {
   .about-drawer .intro-group { opacity: 1; transform: none; }
   .about-drawer.entered .intro-group { animation: none; }
 }
-/* 서랍 안 본문 — 인트로/푸터와 같은 프로즈 리듬 */
+/* 서랍 안 본문 — 인트로/푸터와 같은 프로즈 리듬 (text-wrap은 .drawer-panel에서 상속) */
 .drawer-panel p {
   padding-top: 0;
   margin-top: 0;
   line-height: 1.5rem;
-  text-wrap: pretty;
 }
 /* 언어 — .three-col 밖이라 자체 data-lang으로 같은 규칙 적용 */
 .about-drawer[data-lang='ko'] .bilingual > [lang='en'] { display: none; }
