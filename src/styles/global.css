@@ -90,6 +90,12 @@
     --scrollbar-hover: rgba(24, 22, 29, 0.55);
     --ring: rgba(24, 22, 29, 0.8);
   }
+  /* 태그칩·행 호버는 요소 단계 color-mix 보간이라 토큰 폴백만으론 색이 빠진다.
+     미지원 환경에선 단일 틴트(pill/accent)로 보완 — 균일하지만 읽히고 테마에 맞음. */
+  .tag-chip { background: var(--pill-link-bg); color: var(--pill-link-text); }
+  table.sontable tr[data-slug]:not([data-active='true']):not([data-locked='true']) td:hover {
+    background: var(--tint-accent);
+  }
 }
 
 /* ── 컬러 팔레트 프리셋 — <html data-palette="…">로 교체 (JS 토글/랜덤 예정).
