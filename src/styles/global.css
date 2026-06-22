@@ -886,6 +886,37 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 .work-card .iframe-wrap { position: relative; z-index: 4; }
 /* 언어 토글 — 띠 위 칩 (about 탭 왼쪽). 서랍이 열려 있어도 그대로 노출 —
    서랍 본문(한/영)을 토글하면서 읽을 수 있다. 버튼은 UA 폰트라 명시 상속. */
+/* 컬러 팔레트 스와치 — 언어 칩 왼쪽 형제. 현재 팔레트 두 색(stripe-a/b)을
+   대각 분할로 보여주고, 클릭하면 다음 팔레트로 순환(palette.js). data-palette가
+   바뀌면 두 색이 자동 갱신된다. 링/드롭섀도는 lang-toggle과 통일. */
+.palette-swatch {
+  position: fixed;
+  top: 1.5rem;
+  right: 3.75rem; /* lang-toggle(우 1.25rem) 왼쪽, 약 0.35rem 간격 */
+  z-index: 102;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--stripe-a) 0 50%, var(--stripe-b) 50% 100%);
+  box-shadow:
+    0 0 0 var(--line-w) var(--ring),
+    0 1px 1.5px oklch(from var(--accent) 0.5 0.05 h / 0.3),
+    0 4px 8px oklch(from var(--accent) 0.5 0.05 h / 0.2);
+  transition: box-shadow 0.12s ease, transform 0.07s ease;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .palette-swatch:hover {
+    box-shadow:
+      0 0 0 var(--line-w) var(--ring),
+      0 2px 2px oklch(from var(--accent) 0.5 0.05 h / 0.3),
+      0 6px 13px oklch(from var(--accent) 0.5 0.05 h / 0.22);
+  }
+}
+.palette-swatch:active { transform: translateY(0.5px) scale(0.96); }
+
 .lang-toggle {
   position: fixed;
   top: 1.5rem; /* 띠(4.5rem) 세로 중앙 */
