@@ -33,8 +33,8 @@
      인물링크·배경·잉크·hover·pill)는 그 색의 hue만 빌려 역할별 L/C(명도·채도)로
      '보정'된다 → 어떤 색을 넣어도 대비·가독성 유지. 값은 hex/oklch 무엇이든 가능.
      팔레트 교체/랜덤 = --stripe-a / --stripe-b 두 값만 바꾸면 된다. ── */
-  --stripe-a: #F5DF4D;   /* 옐로우 타일 — stripe·모자이크에 그대로, 나머지 파생 소스 */
-  --stripe-b: #4A6E92;   /* 스틸 블루 타일 — stripe·모자이크에 그대로, 인물 계열 파생 소스 */
+  --stripe-a: #A966FF;   /* 보라 타일 — stripe·모자이크에 그대로, 나머지 파생 소스 */
+  --stripe-b: #775D4F;   /* 갈 타일 — stripe·모자이크에 그대로, 인물 계열 파생 소스 */
   /* 링크·selection·인물링크 — 소스 hue + 역할 L/C 보정 (≈ 기존 #b362ff / 갈) */
   --accent: oklch(from var(--stripe-a) 0.62 0.26 h);
   --person: oklch(from var(--stripe-b) 0.47 0.05 h);
@@ -67,6 +67,13 @@
   --line: var(--ink);
   --brown: var(--ink);
 }
+
+/* ── 컬러 팔레트 프리셋 — <html data-palette="…">로 교체 (JS 토글/랜덤 예정).
+   기본(속성 없음) = original. stripe 두 색만 갈아끼우면 파생 전체가 따라온다.
+   남긴 셋: original(보라/갈) · blue(스카이블루/포레스트그린) · gold(골드/퍼플그레이). ── */
+:root[data-palette="original"] { --stripe-a: #A966FF; --stripe-b: #775D4F; }
+:root[data-palette="blue"]     { --stripe-a: #7AAAF7; --stripe-b: #2E5138; }
+:root[data-palette="gold"]     { --stripe-a: #C2A14E; --stripe-b: #7B7689; }
 
 /* ───────────────────────────────────────────────────────────────────────
    리셋 + 베이스 (hyuk repo 원본 기반)
