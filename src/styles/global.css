@@ -310,6 +310,34 @@ iframe {
   margin-left: calc(var(--space-6) * -1);
   margin-right: calc(var(--space-6) * -1);
 }
+
+/* 점진적 공개 — 패널(종이)이 솟아 안착하면, 본문이 블록 단위로 순차로 떠오른다.
+   .entered가 트리거: 닫히면(.entered 제거) 기본 숨김으로 되돌아가 다음 열림에
+   다시 재생. 블록은 사이트의 '블록 단위 교차 호버' 문법대로 보라/갈 틴트. */
+.about-drawer .intro-group {
+  opacity: 0;
+  transform: translateY(12px);
+  /* 호버 밴드 — 본문은 제자리(padding으로 되밀고), 틴트만 패널 안쪽 끝까지(margin) */
+  padding: 0 var(--space-6);
+  margin: 0 calc(var(--space-6) * -1);
+  transition: background 0.12s ease;
+}
+.about-drawer.entered .intro-group {
+  animation: intro-rise 0.5s cubic-bezier(0.2, 0.85, 0.25, 1) forwards;
+  /* 패널이 솟은 뒤(~0.12s) 블록마다 0.09s 계단 */
+  animation-delay: calc(0.12s + var(--i, 0) * 0.09s);
+}
+@keyframes intro-rise {
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (hover: hover) {
+  .about-drawer .intro-group:nth-child(odd):hover  { background: var(--tint-accent); }
+  .about-drawer .intro-group:nth-child(even):hover { background: var(--tint-brown); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .about-drawer .intro-group { opacity: 1; transform: none; }
+  .about-drawer.entered .intro-group { animation: none; }
+}
 /* 서랍 안 본문 — 인트로/푸터와 같은 프로즈 리듬 */
 .drawer-panel p {
   padding-top: 0;
