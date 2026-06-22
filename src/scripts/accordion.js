@@ -57,7 +57,6 @@ function accOpen(slug) {
   // 새로 삽입된 카드 링크를 점멸 파동에 편입 (문서 순서 기준으로 위상 재부여)
   rescanWave();
   springOpen(panel); // 파동 높이 펼침 (살짝 오버슈트 후 안착)
-  revealCurtain(panel); // 스트라이프 커튼 리브 — 줄무늬가 덮었다 걷혀 카드를 드러냄
   if (isMobileView()) {
     // 모바일: 펼친 행이 보이게 부드럽게 스크롤
     tr.scrollIntoView({ block: 'start', behavior: 'smooth' });
@@ -67,20 +66,6 @@ function accOpen(slug) {
     //  패널이 자라며 생기는 공간을 못 따라감 → 수동 글라이드 사용)
     glideScrollBy(centerEl, tr.getBoundingClientRect().top - anchorY(), 500);
   }
-}
-
-// 스트라이프 커튼 리브 — 카드가 펼쳐지는 동안 줄무늬가 패널을 덮고(About
-// 커튼의 행 단위 메아리), 패널이 자리잡으면 위로 걷혀(scaleY→0, origin top)
-// 카드를 아래→위로 드러낸다. 패널 height가 0에서 자라므로 inset:0 커튼도 같이
-// 자라 항상 덮는다. reduced-motion이면 생략(springOpen도 즉시 펼침).
-function revealCurtain(panel) {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  var c = document.createElement('div');
-  c.className = 'card-curtain';
-  panel.appendChild(c);
-  // 패널이 거의 다 펼쳐진 뒤 걷힘 → 줄무늬가 잠깐 덮였다 올라간다
-  setTimeout(function () { c.classList.add('lift'); }, 380);
-  setTimeout(function () { if (c.parentNode) c.parentNode.removeChild(c); }, 980);
 }
 
 // 모바일 섹션 전환 — 상태는 .three-col[data-section] 하나, 표시는 mobile.css.
