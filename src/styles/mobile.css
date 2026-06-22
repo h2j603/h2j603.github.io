@@ -195,6 +195,13 @@
   /* 표 분류 칸 — 태그 묶음이 칸 폭을 넘으면 영역 밖으로 삐져나가 레이아웃이
      깨짐(데스크탑 nowrap 규칙). 모바일은 칸 안에서 줄바꿈 허용. */
   .cat-cell .cat-tag { white-space: normal; }
+  /* 표 세로선 — 데스크탑 col-divider(절대배치·뷰포트 %)는 모바일에서 숨기므로,
+     보이는 컬럼 경계(번호|제목, 제목|분류)를 셀 border-left로 그어 데스크탑과
+     같은 격자를 만든다. 연도 칸은 폭 0이라 자연히 num|title 경계로 합쳐진다. */
+  .three-col .center table.sontable tr[data-slug] .title-cell,
+  .three-col .center table.sontable tr[data-slug] .cat-cell {
+    border-left: var(--line-w) solid var(--ink);
+  }
   /* tr/td 둘 다 border-top 제거 — tr 셀렉터의 border-top(1px)이
      border-collapse에서 그려져 제목↔이미지 사이에 선으로 보였음 */
   .accordion-detail,
