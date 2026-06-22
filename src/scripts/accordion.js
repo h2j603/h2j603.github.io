@@ -44,7 +44,7 @@ function accOpen(slug) {
   var detail = document.createElement('tr');
   detail.className = 'accordion-detail';
   var td = document.createElement('td');
-  td.colSpan = 4;
+  td.colSpan = 3;
   var panel = document.createElement('div');
   panel.className = 'accordion-panel';
   panel.appendChild(card);
