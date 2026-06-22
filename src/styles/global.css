@@ -1215,4 +1215,9 @@ b, strong { font-weight: inherit; }
   padding: 0 var(--space-pill);
   border-radius: 0.5rem;
   /* 간격은 마크업의 ' · ' 구분자가 담당 */
+  /* 색은 활성 팔레트에서 파생 — stripe-a의 hue를 태그별 오프셋(--th, 도)만큼
+     돌리고, 역할별로 L/C 고정(배경=옅은 틴트, 글자=진한 동색). 팔레트가
+     랜덤으로 바뀌면 모든 칩의 base hue가 함께 돌아간다. */
+  background: oklch(from var(--stripe-a) 0.95 0.045 calc(h + var(--th, 0)));
+  color: oklch(from var(--stripe-a) 0.52 0.17 calc(h + var(--th, 0)));
 }
