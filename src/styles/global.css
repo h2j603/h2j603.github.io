@@ -29,18 +29,18 @@
   --space-cell: 0.625rem; /* 10 — 표 셀(격자 밖, 의도적) */
   --space-pill: 0.375rem; /* 6 — pill 가로(격자 밖, 의도적) */
   /* ── 컬러 팔레트: 두 소스 색이 사이트 전체를 결정한다 (단일 소스).
-     팔레트 교체/랜덤 = --accent / --person 두 값만 바꾸면 된다. 두 색은 준 그대로
-     나오고(링크·selection·인물링크), 파생 틴트(배경·잉크·hover·pill·stripe·모자이크)는
-     그 색의 hue만 빌려 L/C(명도·채도)를 역할별로 고정한다 → 어떤 색을 넣어도 대비·
-     가독성 유지. 값은 hex(#b362ff)든 oklch()든 무엇이든 가능. ── */
-  --accent: oklch(0.62 0.26 305);   /* 쨍한 포인트 — 링크·selection·stripe(≈#b362ff) */
-  --person: oklch(0.47 0.05 60);    /* 차분한 보조 — 인물 링크·뮤티드(≈#775d4f) */
-  /* 배경/잉크 — accent hue만 미세하게 머금어 한 색온도 (팔레트 따라 톤 이동) */
-  --bg:  oklch(from var(--accent) 0.99 0.004 h);   /* off-white */
-  --ink: oklch(from var(--accent) 0.21 0.012 h);   /* near-black, 대비 ~16:1 */
-  /* stripe(커튼)·모자이크 채움 — 같은 hue, 타일 고유 L/C (기존 #a966ff / #775d4f 재현) */
-  --stripe-a: oklch(from var(--accent) 0.6555 0.219 h);   /* 보라 타일 */
-  --stripe-b: oklch(from var(--person) 0.5007 0.04 h);    /* 갈 타일 */
+     소스 색은 stripe(커튼)·모자이크에 '그대로' 박히고, 나머지(링크·selection·
+     인물링크·배경·잉크·hover·pill)는 그 색의 hue만 빌려 역할별 L/C(명도·채도)로
+     '보정'된다 → 어떤 색을 넣어도 대비·가독성 유지. 값은 hex/oklch 무엇이든 가능.
+     팔레트 교체/랜덤 = --stripe-a / --stripe-b 두 값만 바꾸면 된다. ── */
+  --stripe-a: #a966ff;   /* 보라 타일 — stripe·모자이크에 그대로, 나머지 파생 소스 */
+  --stripe-b: #775d4f;   /* 갈 타일 — stripe·모자이크에 그대로, 인물 계열 파생 소스 */
+  /* 링크·selection·인물링크 — 소스 hue + 역할 L/C 보정 (≈ 기존 #b362ff / 갈) */
+  --accent: oklch(from var(--stripe-a) 0.62 0.26 h);
+  --person: oklch(from var(--stripe-b) 0.47 0.05 h);
+  /* 배경/잉크 — 소스(보라) hue만 미세하게 머금어 한 색온도 */
+  --bg:  oklch(from var(--stripe-a) 0.99 0.004 h);   /* off-white */
+  --ink: oklch(from var(--stripe-a) 0.21 0.012 h);   /* near-black, 대비 ~16:1 */
   /* 행 호버 칠 — 두 틴트를 같은 L(0.90)·낮은 C로 파생 → 보라/갈 교차 무게 동일 */
   --tint-accent: oklch(from var(--accent) 0.90 0.055 h);
   --tint-brown:  oklch(from var(--person) 0.90 0.03 h);
