@@ -449,6 +449,13 @@ iframe {
   padding-right: var(--space-5);
   border-left: var(--line-w) solid var(--ink);
 }
+/* 시간 두 줄 — 고정폭 숫자. now 시계가 초 단위로 갱신돼도 자릿수 폭이 일정해
+   숫자가 흔들리지 않는다. */
+.bottom .foot-built,
+.bottom .foot-now {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
 /* 인디웹 웹링 — 가운데 칸. 한 줄 유지(화살표·텍스트 안 깨지게). 셀 왼변은
    d1(20%) 연장선. 링크는 본문 하이퍼링크와 같은 어법(보라+점멸+호버 밑줄) —
    단 ↗ 프리픽스는 예외로 제외(스니펫 원형 유지). */
