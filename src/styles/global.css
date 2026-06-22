@@ -28,21 +28,19 @@
   --space-8: 2rem;        /* 32 */
   --space-cell: 0.625rem; /* 10 — 표 셀(격자 밖, 의도적) */
   --space-pill: 0.375rem; /* 6 — pill 가로(격자 밖, 의도적) */
-  /* ── 컬러 팔레트: 두 hue 각도가 사이트 전체 색을 결정한다 (파라메트릭 단일 소스).
-     교체/랜덤 = 이 두 값(--accent-h / --person-h)만 바꾸면 배경·잉크 톤, 링크·
-     hover·pill·selection, stripe·모자이크까지 전부 따라온다. L/C(명도·채도)는
-     역할별로 고정이라 팔레트가 바뀌어도 대비·가독성은 유지된다. ── */
-  --accent-h: 305;  /* 보라 슬롯 hue — 일반 링크·selection·stripe 계열 */
-  --person-h: 60;   /* 갈 슬롯 hue — 인물 링크·뮤티드 계열 */
-  /* 두 브랜드 색 — hue는 위 knob에서, L/C는 고정 (≈ 기존 #b362ff / #775d4f) */
-  --accent: oklch(0.62 0.26 var(--accent-h));   /* selection·일반 링크 hue 소스 */
-  --person: oklch(0.47 0.05 var(--person-h));   /* 인물 링크·뮤티드 hue 소스 */
-  /* 배경/잉크 — accent hue를 미세하게 머금어 한 색온도 (팔레트 따라 톤 이동) */
-  --bg:  oklch(0.99 0.004 var(--accent-h));   /* off-white */
-  --ink: oklch(0.21 0.012 var(--accent-h));   /* near-black, 대비 ~16:1 */
+  /* ── 컬러 팔레트: 두 소스 색이 사이트 전체를 결정한다 (단일 소스).
+     팔레트 교체/랜덤 = --accent / --person 두 값만 바꾸면 된다. 두 색은 준 그대로
+     나오고(링크·selection·인물링크), 파생 틴트(배경·잉크·hover·pill·stripe·모자이크)는
+     그 색의 hue만 빌려 L/C(명도·채도)를 역할별로 고정한다 → 어떤 색을 넣어도 대비·
+     가독성 유지. 값은 hex(#b362ff)든 oklch()든 무엇이든 가능. ── */
+  --accent: oklch(0.62 0.26 305);   /* 쨍한 포인트 — 링크·selection·stripe(≈#b362ff) */
+  --person: oklch(0.47 0.05 60);    /* 차분한 보조 — 인물 링크·뮤티드(≈#775d4f) */
+  /* 배경/잉크 — accent hue만 미세하게 머금어 한 색온도 (팔레트 따라 톤 이동) */
+  --bg:  oklch(from var(--accent) 0.99 0.004 h);   /* off-white */
+  --ink: oklch(from var(--accent) 0.21 0.012 h);   /* near-black, 대비 ~16:1 */
   /* stripe(커튼)·모자이크 채움 — 같은 hue, 타일 고유 L/C (기존 #a966ff / #775d4f 재현) */
-  --stripe-a: oklch(0.6555 0.219 var(--accent-h));   /* 보라 타일 */
-  --stripe-b: oklch(0.5007 0.04 var(--person-h));    /* 갈 타일 */
+  --stripe-a: oklch(from var(--accent) 0.6555 0.219 h);   /* 보라 타일 */
+  --stripe-b: oklch(from var(--person) 0.5007 0.04 h);    /* 갈 타일 */
   /* 행 호버 칠 — 두 틴트를 같은 L(0.90)·낮은 C로 파생 → 보라/갈 교차 무게 동일 */
   --tint-accent: oklch(from var(--accent) 0.90 0.055 h);
   --tint-brown:  oklch(from var(--person) 0.90 0.03 h);
