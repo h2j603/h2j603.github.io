@@ -33,8 +33,8 @@
      인물링크·배경·잉크·hover·pill)는 그 색의 hue만 빌려 역할별 L/C(명도·채도)로
      '보정'된다 → 어떤 색을 넣어도 대비·가독성 유지. 값은 hex/oklch 무엇이든 가능.
      팔레트 교체/랜덤 = --stripe-a / --stripe-b 두 값만 바꾸면 된다. ── */
-  --stripe-a: #DDA0F0;   /* 연보라(라일락) 타일 — stripe·모자이크에 그대로, 나머지 파생 소스 */
-  --stripe-b: #1E4E3E;   /* 딥 포레스트 그린 타일 — stripe·모자이크에 그대로, 인물 계열 파생 소스 */
+  --stripe-a: #7AAAF7;   /* 스카이 블루 타일 — stripe·모자이크에 그대로, 나머지 파생 소스 */
+  --stripe-b: #2E5138;   /* 딥 포레스트 그린 타일 — stripe·모자이크에 그대로, 인물 계열 파생 소스 */
   /* 링크·selection·인물링크 — 소스 hue + 역할 L/C 보정 (≈ 기존 #b362ff / 갈) */
   --accent: oklch(from var(--stripe-a) 0.62 0.26 h);
   --person: oklch(from var(--stripe-b) 0.47 0.05 h);
