@@ -112,6 +112,14 @@
   }
   .bottom .foot-built { order: 1; }
   .bottom .foot-now { order: 2; }
+  /* built/now 라벨 고정폭 — 타임스탬프·KST는 tabular라 동일폭이므로 라벨 칸만
+     맞추면 두 줄 전체폭이 같아져, 가운데 정렬에서 라벨·시간·KST 열이 세로로
+     정렬된다. (데스크탑은 좌/우 끝 분리라 영향 없음) */
+  .bottom .t-label {
+    display: inline-block;
+    width: 3.6em;
+    text-align: left;
+  }
   /* pill 폭이 늘어 좁은 폰에서 한 줄을 넘으면 줄바꿈 (각 pill은 온전히 유지) */
   .bottom .webring { order: 3; margin-top: var(--space-3); flex-wrap: wrap; }
   /* 영역 출처 라벨 — 모바일은 sticky 대신 섹션 머리띠(흐름 안).
