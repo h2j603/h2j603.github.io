@@ -23,4 +23,16 @@ export function initLinkFilter() {
     });
   }
   tagFilterEl.addEventListener('change', applyLinkFilter);
+
+  // 태그 칩 클릭 → 그 태그로 드롭다운 필터 설정(같은 태그 재클릭 시 전체로 토글).
+  // 칩이 link-item(<a>) 안에 있으므로 링크 이동은 막는다.
+  document.querySelectorAll('.link-list .tag-chip[data-tag]').forEach(function (chip) {
+    chip.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var t = chip.getAttribute('data-tag');
+      tagFilterEl.value = tagFilterEl.value === t ? '' : t;
+      applyLinkFilter();
+    });
+  });
 }

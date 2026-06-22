@@ -1280,3 +1280,11 @@ b, strong { font-weight: inherit; }
   background: oklch(from var(--stripe-a) 0.965 0.034 calc(h + var(--th, 0)));
   color: oklch(from var(--stripe-a) 0.57 0.135 calc(h + var(--th, 0)));
 }
+/* 컬렉션 태그 — 하이퍼링크처럼: 색을 전부 테마 accent에서 파생(균일 pill,
+   per-tag rainbow 폐기), 클릭하면 그 태그로 드롭다운 필터(link-filter.js),
+   wave가 점멸시킨다. (memo 태그는 위 rainbow 유지) */
+.link-list .tag-chip {
+  background: var(--pill-link-bg);
+  color: var(--pill-link-text);
+  cursor: pointer;
+}
