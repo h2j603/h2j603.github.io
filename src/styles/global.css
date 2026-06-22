@@ -447,12 +447,15 @@ iframe {
   color: var(--ink);
 }
 /* 데스크탑 — 래퍼는 투명(풀림). built·webring·now를 .bottom 3칸 그리드에
-   명시 위치로 둔다 (DOM 순서 = built,now,webring 이라 auto-place는 어긋남). */
+   명시 위치로 둔다. DOM 순서가 built→now→webring(col 1→3→2)이라 grid-row를
+   안 박으면 sparse auto-place가 webring(col2<직전 col3)을 다음 행으로 넘긴다
+   — 셋 다 row 1 고정으로 한 줄 보장. */
 .foot-times { display: contents; }
-.bottom .foot-built { padding-left: var(--space-5); grid-column: 1; } /* 좌 컬럼 — 좌측 정렬, 컬럼 거터 */
-.bottom .webring { grid-column: 2; }
+.bottom .foot-built { padding-left: var(--space-5); grid-column: 1; grid-row: 1; } /* 좌 컬럼 — 좌측 정렬, 컬럼 거터 */
+.bottom .webring { grid-column: 2; grid-row: 1; }
 .bottom .foot-now { /* 우 컬럼 — 우측 정렬 */
   grid-column: 3;
+  grid-row: 1;
   justify-content: flex-end;
   padding-right: var(--space-5);
 }
