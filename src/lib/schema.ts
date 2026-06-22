@@ -145,3 +145,12 @@ export const memoSchema = z.object({
 });
 export const memosFileSchema = z.array(memoSchema);
 export type Memo = z.infer<typeof memoSchema>;
+
+/** About 서랍 인트로 텍스트 블록 — buildIntro()/TextBlock과 같은 형태.
+ *  다른 스냅샷과 일관되게 빌드 타임에 검증한다. */
+export const introBlockSchema = z.object({
+  lang: z.enum(['ko', 'en']).nullable(),
+  html: z.string(),
+});
+export const introFileSchema = z.array(introBlockSchema);
+export type IntroBlock = z.infer<typeof introBlockSchema>;
