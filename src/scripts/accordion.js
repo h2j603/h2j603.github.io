@@ -26,7 +26,10 @@ export function accClose() {
   var card = accRow.querySelector('.work-card');
   if (card && centerContent) centerContent.appendChild(card); // 저장소로 복귀
   if (accRow.parentNode) accRow.parentNode.removeChild(accRow);
-  if (tr) tr.setAttribute('data-active', 'false');
+  if (tr) {
+    tr.setAttribute('data-active', 'false');
+    tr.setAttribute('aria-expanded', 'false');
+  }
   if (tr && centerEl && pinTop !== null) {
     var after = tr.getBoundingClientRect().top;
     if (after !== pinTop) centerEl.scrollTop += after - pinTop;
@@ -52,6 +55,7 @@ function accOpen(slug) {
   detail.appendChild(td);
   tr.parentNode.insertBefore(detail, tr.nextSibling);
   tr.setAttribute('data-active', 'true');
+  tr.setAttribute('aria-expanded', 'true');
   accSlug = slug;
   accRow = detail;
   // 새로 삽입된 카드 링크를 점멸 파동에 편입 (문서 순서 기준으로 위상 재부여)

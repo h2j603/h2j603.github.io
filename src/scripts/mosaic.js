@@ -62,6 +62,12 @@ function mosaicOpts() {
 // 다시 떨어지기 — home 클릭 등에서 호출
 export function replayMosaic() {
   if (!defaultEl) return;
+  // 모션 줄이기 — 낙하 인트로 생략. 모자이크는 콘텐츠를 덮으므로(떨어져 사라지는
+  // 연출) 그냥 숨겨 콘텐츠를 바로 노출한다.
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    defaultEl.hidden = true;
+    return;
+  }
   defaultEl.hidden = false;
   triggerMosaicFall(mosaicOpts());
 }
