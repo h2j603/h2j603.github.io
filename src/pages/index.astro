@@ -340,6 +340,8 @@ const defaultMosaic = fs.readFileSync(
                       <option value={t}>{t}</option>
                     ))}
                   </select>
+                  {/* 필터 활성 시에만 나타나는 해제 칩 — 전체로 되돌림 */}
+                  <button type="button" id="linkFilterClear" class="link-filter-clear" hidden aria-label="필터 해제 — 전체 보기">✕</button>
                 </label>
                 <hr />
               </>

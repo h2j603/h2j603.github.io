@@ -567,6 +567,24 @@ iframe {
 @media (hover: hover) {
   .link-filter:hover { background: var(--tint-accent); }
 }
+/* 필터 상태 — 활성 태그 칩은 자기 색 외곽선으로 강조 */
+.link-list .tag-chip.tag-active {
+  outline: 1.5px solid currentColor;
+  outline-offset: 2px;
+}
+/* 해제 칩(✕) — 필터 활성 시에만(JS가 hidden 토글). 드롭다운 옆 accent ✕ */
+.link-filter-clear {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  line-height: 1.25rem;
+  color: var(--accent);
+  cursor: pointer;
+  margin-left: var(--space-1);
+  padding: 0 0.25rem;
+}
+.link-filter-clear[hidden] { display: none; }
 /* 표 컬럼 기준선 — center(20~80%) 안에서 번호 10/연도 10/제목 60/분류 20 경계 */
 .col-divider.d5 { left: 26%; } /* 번호|연도 */
 .col-divider.d3 { left: 32%; } /* 연도|제목 */
