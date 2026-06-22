@@ -63,8 +63,6 @@ const defaultMosaic = fs.readFileSync(
       띠를 아래로 땡기면 커튼이 따라 내려오고 그 위에 About 패널이 인쇄된다(서랍).
       위로 땡기면/천 탭/ESC로 닫힘 — 별도 버튼 없음. (drawer.js) */}
   <div class="stripe-top" role="button" tabindex="0" aria-label="about — 아래로 당겨 열기"></div>
-  {/* 띠 우측 칩 — 컬러 팔레트 스와치(현재 두 색 표시, 클릭 시 다음 팔레트로 순환) */}
-  <button type="button" class="palette-swatch" aria-label="컬러 팔레트 바꾸기" title="팔레트 바꾸기"></button>
   {/* 띠 우측 칩 — 언어 토글 (about 탭은 드래그 인터랙션으로 폐지) */}
   <button type="button" class="lang-toggle" data-lang="en">KO</button>
   {/* About 서랍 — 커튼(형제) 위에 얹히는 패널 레이어. 천 클릭은 통과시켜
