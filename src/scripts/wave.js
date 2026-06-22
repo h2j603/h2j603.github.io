@@ -4,7 +4,8 @@
 // 호버 링크는 또렷하게 고정, 모션 줄이기 선호 시 루프를 돌리지 않는다.
 
 var SEL = '.intro a:not(.memo-source), .drawer-panel a, ' +
-          '.work-card .card-body a, .work-card .card-link, .webring a';
+          '.work-card .card-body a, .work-card .card-link, .webring a, ' +
+          '.link-list .tag-chip'; // 컬렉션 태그도 하이퍼링크처럼 점멸
 
 // 느린 박자(2.8s)로 깊게(opacity 0.2~1) 동기 호흡.
 var PERIOD = 2.8;          // s — 한 호흡(밝음→어두움→밝음)
