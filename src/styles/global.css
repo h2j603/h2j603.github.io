@@ -886,6 +886,28 @@ tr[data-slug] { scroll-margin-top: 0.5rem; }
 
 .accordion-detail,
 .accordion-detail > td { padding: 0; border-top: 0; }
+
+/* 스트라이프 커튼 리브 — 카드 열림 시 줄무늬가 패널을 덮었다 위로 걷힌다
+   (accordion.js). 패널을 stacking 기준으로 삼아 커튼이 카드 위를 덮는다. */
+.accordion-panel { position: relative; }
+.card-curtain {
+  position: absolute;
+  inset: 0;
+  z-index: 5; /* 카드 이미지/iframe(z4) 위 */
+  pointer-events: none;
+  /* stripe-row와 같은 보라/갈 세로 바 (타일폭 18px = 커튼 셀폭과 짝) */
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--stripe-a) 0, var(--stripe-a) 18px,
+    var(--stripe-b) 18px, var(--stripe-b) 36px
+  );
+  transform: scaleY(1);
+  transform-origin: top; /* 위로 말려 올라가며 아래→위로 드러냄 */
+}
+.card-curtain.lift {
+  transform: scaleY(0);
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
 /* 펼친 행 — 제목과 작품(미디어) 사이 여백 0: 제목 칸 아래 padding 제거 */
 table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 /* 펼쳐진 카드 — 제목↔작품 간격은 카드 상단 0.5rem 하나로만 (제목 칸 아래 0).
