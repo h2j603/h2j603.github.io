@@ -883,14 +883,15 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, pad
     padding-bottom: calc(var(--pb) + var(--space-2));
   }
 }
-/* 호버 — 행이 아닌 칸(셀) 단위 배경 칠. 행마다 보라/갈색 교차(빌드 시 .row-a/.row-b 부여).
-   칠 색은 줄무늬 모티프(보라/브라운)라 잉크 블랙 전환과 무관하게 유지.
-   글자·뱃지는 색 반전 없이 블랙 그대로. 펼쳐진(active) 행은 호버 칠 없음.
-   @media (hover: hover) — 터치 기기(모바일)에선 탭 시 sticky hover로 칸이
-   칠해진 채 남는 문제가 있어 진짜 호버 가능한 기기에서만 적용. */
+/* 호버 — 행이 아닌 칸(셀) 단위 배경 칠. 행마다 색이 다르되, 교차가 아니라
+   위→아래 순서대로 두 테마색(stripe-a↔b) 사이를 균등 분할한 한 지점(--row-mix,
+   빌드 시 행 인덱스로 부여) — 태그 색과 같은 color-mix 시스템. 칠은 옅은 틴트
+   L/C. 펼쳐진(active)·잠긴(locked) 행은 호버 칠 없음.
+   @media (hover: hover) — 터치 기기에선 sticky hover 회피로 진짜 호버만. */
 @media (hover: hover) {
-  table.sontable tr.row-a:not([data-active='true']):not([data-locked='true']) td:hover { background: var(--tint-accent); }
-  table.sontable tr.row-b:not([data-active='true']):not([data-locked='true']) td:hover { background: var(--tint-brown); }
+  table.sontable tr[data-slug]:not([data-active='true']):not([data-locked='true']) td:hover {
+    background: oklch(from color-mix(in oklch, var(--stripe-a) var(--row-mix, 50%), var(--stripe-b)) 0.90 0.05 h);
+  }
 }
 /* 펼칠 때 행이 컬럼(스크롤 컨테이너) 상단에서 살짝 떨어지게 —
    sticky 헤더가 없어졌으므로 작은 여백만 */
