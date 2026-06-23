@@ -188,17 +188,19 @@
   /* 연도 열만 모바일에서 숨김 (좁은 폭에서 줄바꿈/공간 낭비). td에 display:none을
      쓰면 table-layout:fixed에서 셀이 한 칸씩 밀려 컬럼 폭이 어긋나므로, 열 폭 0 +
      셀 내용물 제거로 접는다. 번호 열은 다시 표시한다. */
-  table.sontable .col-num   { width: 12%; }
+  /* 번호·분류 열 폭을 같게 둬 제목 열이 좌우 대칭 → 제목이 화면 가로 정중앙에
+     온다(번호 왼쪽 끝, 태그 오른쪽 끝, 제목 가운데). */
+  table.sontable .col-num   { width: 14%; }
   table.sontable .col-year  { width: 0; }
-  table.sontable .col-title { width: 55%; }
-  table.sontable .col-cat   { width: 33%; }
+  table.sontable .col-title { width: 72%; }
+  table.sontable .col-cat   { width: 14%; }
   table.sontable tr[data-slug] td:nth-child(2) {
     padding: 0;
     font-size: 0;
     overflow: hidden;
   }
-  /* 정렬 — 모바일은 제목 왼쪽, 태그 오른쪽 (데스크탑 제목 가운데는 그대로) */
-  .title-cell { text-align: left; }
+  /* 정렬 — 제목 가운데(좌우 대칭 열로 화면 정중앙), 태그 오른쪽 */
+  .title-cell { text-align: center; }
   /* 표 분류 칸 — 태그 묶음이 칸 폭을 넘으면 영역 밖으로 삐져나가 레이아웃이
      깨짐(데스크탑 nowrap 규칙). 모바일은 칸 안에서 줄바꿈 허용. */
   .cat-cell .cat-tag { white-space: normal; }
