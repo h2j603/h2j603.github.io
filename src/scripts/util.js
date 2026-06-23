@@ -27,10 +27,9 @@ export function springOpen(el, opts) {
   if (target <= 0) { el.style.height = ''; return; }
   // 속도 정규화 — 지속시간을 높이에 맞춰 키워(클램프) 길이에 자연스러운 속도로
   // 열린다. 고정 stiffness는 거리와 무관히 비슷한 시간에 끝나, 짧은 카드는 굼뜨고
-  // 긴 카드는 휙 열려 보였음. 이제 짧은 카드 ~0.4s · 긴 카드 ~0.8s로 점증.
-  // 오버슈트 느낌(ζ)은 일정.
-  var ZETA = 0.9;                                          // 감쇠비 — 살짝 생기(찰진)
-  var dur = Math.min(0.78, Math.max(0.42, target / 1500)); // 길이 비례, 0.42~0.78s 클램프
+  // 긴 카드는 휙 열려 보였음. 느리고 부드러운 호흡 — 짧은 카드 ~1.0s · 긴 카드 ~2.2s.
+  var ZETA = 0.92;                                         // 감쇠비 — 부드러운 안착(미세 생기)
+  var dur = Math.min(2.5, Math.max(1.3, target / 500));    // 길이 비례, 1.3~2.5s 클램프
   var omega = 8.5 / (ZETA * dur);                          // 안착 시간 ≈ dur 범위
   var k = opts.stiffness != null ? opts.stiffness : omega * omega;
   var c = opts.damping != null ? opts.damping : 2 * ZETA * omega;
