@@ -39,7 +39,11 @@ export function accClose() {
   rescanWave(); // 닫혀 storage로 돌아간 카드 링크 반영 (파동 위상 일관성 유지)
 }
 
-function accOpen(slug) {
+// 모바일 스크롤-아코디언 기준선 — 화면 높이의 이 비율 지점에 닿는 행이 열린다.
+var FOCUS_LINE = 0.32;
+var suppressScrollUntil = 0; // 프로그램 스크롤(탭) 동안 드라이버 잠시 정지
+
+function accOpen(slug, opts) {
   var tr = document.querySelector('tr[data-slug="' + slug + '"]');
   var card = document.getElementById(slug);
   if (!tr || !card) return;
@@ -62,8 +66,13 @@ function accOpen(slug) {
   rescanWave();
   springOpen(panel); // 파동 높이 펼침 (살짝 오버슈트 후 안착)
   if (isMobileView()) {
-    // 모바일: 펼친 행이 보이게 부드럽게 스크롤
-    tr.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    // 모바일: 스크롤-드라이버 호출(opts 없음)은 자체 핀 보정 → 여기선 스크롤 안 함.
+    // 탭(scrollToLine)일 때만 행을 기준선으로 부드럽게 데려와 드라이버와 일관.
+    if (opts && opts.scrollToLine) {
+      var target = window.scrollY + (tr.getBoundingClientRect().top - window.innerHeight * FOCUS_LINE);
+      suppressScrollUntil = performance.now() + 800; // 부드러운 스크롤 동안 드라이버 정지
+      window.scrollTo({ top: target < 0 ? 0 : target, behavior: 'smooth' });
+    }
   } else {
     // 데스크탑 시점 이동 — 행을 화면 상단 ~22% 지점(anchorY)으로 글라이드.
     // (브라우저 smooth scrollTo는 호출 시점의 스크롤 한계로 clamp돼서,
@@ -139,7 +148,7 @@ export function initAccordion() {
         accClose();
         if (location.hash) history.replaceState(null, '', location.pathname);
       } else {
-        accOpen(slug);
+        accOpen(slug, { scrollToLine: true });
         history.replaceState(null, '', '#' + slug);
       }
     });
@@ -243,6 +252,65 @@ export function initAccordion() {
     clearDragStyle(drag.el);
     drag = null;
   }, { passive: true });
+
+  // ── 모바일 스크롤-아코디언 — 보이지 않는 기준선(화면 FOCUS_LINE 지점)에 닿는
+  // 작품 행이 자연스레 열린다(springOpen으로 피어남). 한 번에 하나, 지나가면 닫힘.
+  // 포커스 행을 열기 전후로 핀(scrollBy 보정)해 레이아웃 변화가 화면을 흔들지 않게
+  // 한다. 데스크탑은 window 스크롤이 없어 발동 안 함(섹션 가드 + 빈 행). 탭은
+  // suppressScrollUntil로 잠시 양보. About 커튼 열림·섹션 전환 중엔 미발동.
+  var scrollTicking = false;
+  var lastScrollY = window.scrollY;
+  var lastScrollT = performance.now();
+  function onAccScroll() {
+    if (scrollTicking) return;
+    scrollTicking = true;
+    requestAnimationFrame(updateScrollAccordion);
+  }
+  function updateScrollAccordion() {
+    scrollTicking = false;
+    if (!isMobileView()) return;
+    if (!threeCol || threeCol.getAttribute('data-section') !== 'portfolio') return;
+    if (drag && (drag.axis === 'h' || drag.committing)) return; // 가로 스와이프 중
+    if (performance.now() < suppressScrollUntil) return;        // 탭 부드러운 스크롤 중
+    if (document.querySelector('.stripe-top.open')) return;     // About 커튼 열림
+    // 속도 게이팅 — 빠른 플릭 중엔 안 열고, 느려져 '멈춰 읽으려 할 때'만 발동.
+    // (플릭 중 잦은 개폐·momentum 방해 회피 → 더 자연스럽고 점프 적음)
+    var nowT = performance.now();
+    var nowY = window.scrollY;
+    var dt = nowT - lastScrollT;
+    var v = dt > 0 ? Math.abs(nowY - lastScrollY) / dt : 0; // px/ms
+    lastScrollY = nowY; lastScrollT = nowT;
+    if (v > 1.1) return; // ≈1100px/s 이상이면 대기 (천천히 멈출 때 열림)
+    var rows = document.querySelectorAll('table.sontable tr[data-slug]:not([data-locked="true"])');
+    if (!rows.length) return;
+    var line = window.innerHeight * FOCUS_LINE;
+    // 기준선 위로 올라온 마지막 행 = 현재 포커스
+    var cand = null;
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].getBoundingClientRect().top <= line) cand = rows[i];
+      else break;
+    }
+    if (!cand) {
+      // 최상단 — 기준선 위에 행 없음. 열린 게 있으면 닫되 닫는 행을 핀(점프 방지).
+      if (accSlug) {
+        var oldTr = document.querySelector('tr[data-slug="' + accSlug + '"]');
+        var ob = oldTr ? oldTr.getBoundingClientRect().top : 0;
+        accClose();
+        if (oldTr) {
+          var oa = oldTr.getBoundingClientRect().top;
+          if (oa !== ob) { window.scrollBy(0, oa - ob); lastScrollY = window.scrollY; }
+        }
+      }
+      return;
+    }
+    var slug = cand.getAttribute('data-slug');
+    if (slug === accSlug) return; // 이미 그 행이 열려 있음
+    var before = cand.getBoundingClientRect().top;
+    accOpen(slug); // opts 없음 → 모바일 자체 스크롤 안 함
+    var after = cand.getBoundingClientRect().top;
+    if (after !== before) { window.scrollBy(0, after - before); lastScrollY = window.scrollY; } // 포커스 행 핀
+  }
+  window.addEventListener('scroll', onAccScroll, { passive: true });
 
   window.addEventListener('hashchange', applyHash);
   applyHash();
