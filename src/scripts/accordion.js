@@ -301,10 +301,11 @@ export function initAccordion() {
     var idx = rows.indexOf(document.querySelector('tr[data-slug="' + accSlug + '"]'));
     var nextTr = idx >= 0 ? rows[idx + 1] : null;
     if (!nextTr) return;           // 마지막 칸 — 다음 없음
-    var before = nextTr.getBoundingClientRect().top;
     accOpen(nextTr.getAttribute('data-slug')); // 현재 닫고 다음 열기(모바일 자체 스크롤 안 함)
-    var after = nextTr.getBoundingClientRect().top;
-    if (after !== before) { window.scrollBy(0, after - before); lastDriverY = window.scrollY; } // 다음 행 핀(점프 방지)
+    // 다음 행 맨 위를 기준선에 정렬 — locked(published:false)가 사이에 끼면 그만큼
+    // 위로 당겨 시각적으로도 건너뛴다(다음 게시작은 pubRows가 이미 고름).
+    var bt = nextTr.getBoundingClientRect().top;
+    if (Math.abs(bt - line) > 0.5) { window.scrollBy(0, bt - line); lastDriverY = window.scrollY; }
   }
   window.addEventListener('scroll', onAccScroll, { passive: true });
 
