@@ -337,7 +337,7 @@ iframe {
   will-change: opacity, transform;
 }
 .about-drawer.entered .drawer-panel {
-  animation: panel-in 0.42s cubic-bezier(0.2, 0.85, 0.25, 1) forwards;
+  animation: panel-in 0.84s cubic-bezier(0.2, 0.85, 0.25, 1) forwards;
 }
 @keyframes panel-in {
   0%   { opacity: 0; transform: translateY(18px) scale(0.985); }
@@ -365,9 +365,9 @@ iframe {
   transition: background 0.12s ease;
 }
 .about-drawer.entered .intro-group {
-  animation: intro-rise 0.5s cubic-bezier(0.2, 0.85, 0.25, 1) forwards;
-  /* 패널이 솟은 뒤(~0.12s) 블록마다 0.09s 계단 */
-  animation-delay: calc(0.12s + var(--i, 0) * 0.09s);
+  animation: intro-rise 1s cubic-bezier(0.2, 0.85, 0.25, 1) forwards;
+  /* 패널이 솟은 뒤(~0.24s) 블록마다 0.18s 계단 (전체 ~2배 느리게) */
+  animation-delay: calc(0.24s + var(--i, 0) * 0.18s);
 }
 @keyframes intro-rise {
   to { opacity: 1; transform: translateY(0); }
