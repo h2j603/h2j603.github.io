@@ -253,14 +253,23 @@ export function initAccordion() {
     drag = null;
   }, { passive: true });
 
-  // ── 모바일 스크롤-아코디언 — 보이지 않는 기준선(화면 FOCUS_LINE 지점)에 닿는
-  // 작품 행이 자연스레 열린다(springOpen으로 피어남). 한 번에 하나, 지나가면 닫힘.
-  // 포커스 행을 열기 전후로 핀(scrollBy 보정)해 레이아웃 변화가 화면을 흔들지 않게
-  // 한다. 데스크탑은 window 스크롤이 없어 발동 안 함(섹션 가드 + 빈 행). 탭은
-  // suppressScrollUntil로 잠시 양보. About 커튼 열림·섹션 전환 중엔 미발동.
+  // ── 모바일 스크롤-아코디언 (가이드 리딩) ──────────────────────────────
+  // 규칙: ① 이미 열린 아코디언이 있을 때만 작동(첫 칸은 탭으로 연다).
+  // ② 그 본문(카드)을 끝까지 — 카드 바닥이 기준선(화면 FOCUS_LINE) 위로 올라갈
+  //    때까지 — 읽어 내려가야 ③ '다음' 행이 열린다(맨 위가 기준선에 오게).
+  // ④ 역방향(위로 스크롤)은 무시 — 닫거나 이전으로 되돌리지 않는다.
+  // 새로 열릴 때마다 '재무장'(카드가 기준선 아래로 자란 뒤에야 트리거 가능)이라
+  // 한 번 스크롤에 여러 칸이 우르르 열리지 않는다. 데스크탑은 window 스크롤이
+  // 없어 비활성. 탭·섹션전환·About 커튼 중엔 미발동.
+  var pubRows = function () {
+    return Array.prototype.slice.call(
+      document.querySelectorAll('table.sontable tr[data-slug]:not([data-locked="true"])'),
+    );
+  };
   var scrollTicking = false;
-  var lastScrollY = window.scrollY;
-  var lastScrollT = performance.now();
+  var lastDriverY = window.scrollY;
+  var armed = false;       // 카드가 기준선 아래로 자라 '읽을 거리'가 생겼나
+  var lastSeenSlug = null; // 열린 칸이 바뀌면 재무장
   function onAccScroll() {
     if (scrollTicking) return;
     scrollTicking = true;
@@ -273,42 +282,29 @@ export function initAccordion() {
     if (drag && (drag.axis === 'h' || drag.committing)) return; // 가로 스와이프 중
     if (performance.now() < suppressScrollUntil) return;        // 탭 부드러운 스크롤 중
     if (document.querySelector('.stripe-top.open')) return;     // About 커튼 열림
-    // 속도 게이팅 — 빠른 플릭 중엔 안 열고, 느려져 '멈춰 읽으려 할 때'만 발동.
-    // (플릭 중 잦은 개폐·momentum 방해 회피 → 더 자연스럽고 점프 적음)
-    var nowT = performance.now();
-    var nowY = window.scrollY;
-    var dt = nowT - lastScrollT;
-    var v = dt > 0 ? Math.abs(nowY - lastScrollY) / dt : 0; // px/ms
-    lastScrollY = nowY; lastScrollT = nowT;
-    if (v > 1.1) return; // ≈1100px/s 이상이면 대기 (천천히 멈출 때 열림)
-    var rows = document.querySelectorAll('table.sontable tr[data-slug]:not([data-locked="true"])');
-    if (!rows.length) return;
+    var y = window.scrollY;
+    var goingDown = y > lastDriverY + 0.5;
+    lastDriverY = y;
+    if (!accSlug || !accRow) return; // 열린 아코디언에서만 작동
+    if (accSlug !== lastSeenSlug) { lastSeenSlug = accSlug; armed = false; } // 새 칸 → 재무장
     var line = window.innerHeight * FOCUS_LINE;
-    // 기준선 위로 올라온 마지막 행 = 현재 포커스
-    var cand = null;
-    for (var i = 0; i < rows.length; i++) {
-      if (rows[i].getBoundingClientRect().top <= line) cand = rows[i];
-      else break;
-    }
-    if (!cand) {
-      // 최상단 — 기준선 위에 행 없음. 열린 게 있으면 닫되 닫는 행을 핀(점프 방지).
-      if (accSlug) {
-        var oldTr = document.querySelector('tr[data-slug="' + accSlug + '"]');
-        var ob = oldTr ? oldTr.getBoundingClientRect().top : 0;
-        accClose();
-        if (oldTr) {
-          var oa = oldTr.getBoundingClientRect().top;
-          if (oa !== ob) { window.scrollBy(0, oa - ob); lastScrollY = window.scrollY; }
-        }
-      }
+    var bottom = accRow.getBoundingClientRect().bottom; // 카드(본문) 바닥
+    if (!armed) {
+      // 카드가 기준선 아래로 자라 읽을 내용이 생기면 무장 (그 전엔 트리거 금지)
+      if (bottom > line) armed = true;
       return;
     }
-    var slug = cand.getAttribute('data-slug');
-    if (slug === accSlug) return; // 이미 그 행이 열려 있음
-    var before = cand.getBoundingClientRect().top;
-    accOpen(slug); // opts 없음 → 모바일 자체 스크롤 안 함
-    var after = cand.getBoundingClientRect().top;
-    if (after !== before) { window.scrollBy(0, after - before); lastScrollY = window.scrollY; } // 포커스 행 핀
+    if (!goingDown) return;        // ④ 역방향 막기 — 아래로 읽어내릴 때만
+    if (bottom > line) return;     // ② 아직 본문 끝(카드 바닥)이 기준선 위로 안 옴
+    // ③ 끝까지 읽음 → 다음 게시 행 열기
+    var rows = pubRows();
+    var idx = rows.indexOf(document.querySelector('tr[data-slug="' + accSlug + '"]'));
+    var nextTr = idx >= 0 ? rows[idx + 1] : null;
+    if (!nextTr) return;           // 마지막 칸 — 다음 없음
+    var before = nextTr.getBoundingClientRect().top;
+    accOpen(nextTr.getAttribute('data-slug')); // 현재 닫고 다음 열기(모바일 자체 스크롤 안 함)
+    var after = nextTr.getBoundingClientRect().top;
+    if (after !== before) { window.scrollBy(0, after - before); lastDriverY = window.scrollY; } // 다음 행 핀(점프 방지)
   }
   window.addEventListener('scroll', onAccScroll, { passive: true });
 
