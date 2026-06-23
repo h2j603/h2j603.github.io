@@ -1156,7 +1156,7 @@ table.sontable .col-cat   { width: 20%; }
    flush로 남는다(인쇄 관례). 들여쓰기가 문단 경계를 표시하므로 연속 문단 사이
    빈 간격(> * + *의 16px)은 없앤다. em 기반이라 모바일서도 글자 크기에 비례. */
 .work-card .card-body p + p {
-  text-indent: 2.5em;
+  text-indent: 1.8rem;
   margin-top: 0;
 }
 
