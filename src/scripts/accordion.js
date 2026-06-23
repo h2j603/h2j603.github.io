@@ -39,11 +39,11 @@ export function accClose() {
   rescanWave(); // 닫혀 storage로 돌아간 카드 링크 반영 (파동 위상 일관성 유지)
 }
 
-// 모바일 스크롤-아코디언 '다 읽음' 기준선 = 콘텐츠 최상단(고정 줄무늬 띠 바로
-// 아래). 카드 바닥이 이 선 위로 올라가면 본문을 끝까지 읽은 것 → 다음 칸 개방.
-function contentTopLine() {
-  var s = document.querySelector('.stripe-top');
-  return s ? s.getBoundingClientRect().height : 72; // 닫힌 띠 높이 ≈ 4.5rem
+// 모바일 스크롤-아코디언 '다 읽음' 기준선 — 카드 바닥이 이 선 위로 올라가면
+// 다음 칸을 연다. 화면 최상단(띠 아래)까지 다 밀어 올릴 필요 없이, 화면 중간쯤
+// (≈45%)에서 본문 끝이 보이면 넘어가도록 둬 전환이 가볍게 일어난다.
+function readDoneLine() {
+  return Math.round(window.innerHeight * 0.45);
 }
 
 function accOpen(slug) {
@@ -290,7 +290,7 @@ export function initAccordion() {
     lastDriverY = y;
     if (!accSlug || !accRow) return; // 열린 아코디언에서만 작동
     if (accSlug !== lastSeenSlug) { lastSeenSlug = accSlug; armed = false; } // 새 칸 → 재무장
-    var line = contentTopLine();
+    var line = readDoneLine();
     var bottom = accRow.getBoundingClientRect().bottom; // 카드(본문) 바닥
     if (!armed) {
       // 카드가 기준선 아래로 자라 읽을 내용이 생기면 무장 (그 전엔 트리거 금지)
