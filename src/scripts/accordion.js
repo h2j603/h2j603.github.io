@@ -289,45 +289,8 @@ export function initAccordion() {
   var lastDriverY = window.scrollY;
   var armed = false;       // 카드가 기준선 아래로 자라 '읽을 거리'가 생겼나
   var lastSeenSlug = null; // 열린 칸이 바뀌면 재무장
-  var idleTimer = 0;       // 스크롤이 멎으면 화면 밖 칸 조용히 정리
-
-  // progressive로 열린 칸이 화면 밖으로 흘러가면 조용히 닫는다. 스크롤이 멎은
-  // 뒤(관성 끝)에만 돌아 플링을 끊지 않고, 현재 카드(accRow)를 핀으로 잡아
-  // 위쪽 칸이 사라지며 생기는 점프를 상쇄한다 — 시각적으론 아무 일도 없다.
-  function cleanupOffscreen() {
-    idleTimer = 0;
-    if (!isMobileView() || !accRow) return;
-    if (drag && (drag.axis === 'h' || drag.committing)) return;
-    if (document.querySelector('.stripe-top.open')) return;
-    var vh = window.innerHeight;
-    var toClose = [];
-    document.querySelectorAll('tr.accordion-detail').forEach(function (d) {
-      if (d === accRow) return; // 현재(추적 중) 칸은 유지 — 드라이버의 기준
-      var r = d.getBoundingClientRect();
-      if (r.bottom <= 0 || r.top >= vh) toClose.push(d); // 화면 위/아래로 완전히 벗어남
-    });
-    if (!toClose.length) return;
-    var before = accRow.getBoundingClientRect().top; // 현재 카드 위치 기억(핀)
-    toClose.forEach(function (d) {
-      var row = d.previousElementSibling; // detail은 자기 데이터 행 바로 뒤
-      var card = d.querySelector('.work-card');
-      if (card && centerContent) centerContent.appendChild(card); // 저장소로 복귀
-      if (d.parentNode) d.parentNode.removeChild(d);
-      if (row && row.hasAttribute('data-slug')) {
-        row.setAttribute('data-active', 'false');
-        row.setAttribute('aria-expanded', 'false');
-      }
-    });
-    rescanWave();
-    // 위쪽 칸이 사라져 현재 카드가 위로 밀렸으면 그만큼 되돌려 제자리에 고정.
-    // 스크롤이 멎은 상태라 이 scrollBy는 플링을 끊지 않고 눈에 띄지도 않는다.
-    var after = accRow.getBoundingClientRect().top;
-    if (Math.abs(after - before) > 0.5) { window.scrollBy(0, after - before); lastDriverY = window.scrollY; }
-  }
 
   function onAccScroll() {
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(cleanupOffscreen, 220); // 스크롤 멎고 ~220ms 뒤 정리
     if (scrollTicking) return;
     scrollTicking = true;
     requestAnimationFrame(updateScrollAccordion);
@@ -344,7 +307,14 @@ export function initAccordion() {
     if (!accSlug || !accRow) return; // 열린 아코디언에서만 작동
     if (accSlug !== lastSeenSlug) { lastSeenSlug = accSlug; armed = false; } // 새 칸 → 재무장
     var line = readDoneLine();
-    var bottom = accRow.getBoundingClientRect().bottom; // 카드(본문) 바닥
+    // 카드(본문)의 '최종' 바닥 — 펼침 애니메이션 중에는 height가 작아 화면상
+    // bottom이 부분 높이라 '다 읽음'을 오판(미리·두 개 열림)했다. panel.scrollHeight는
+    // height가 줄어든 상태에서도 전체 콘텐츠 높이를 주므로, top + scrollHeight로
+    // 애니메이션과 무관한 최종 바닥을 쓴다.
+    var panel = accRow.querySelector('.accordion-panel');
+    var bottom = panel
+      ? panel.getBoundingClientRect().top + panel.scrollHeight
+      : accRow.getBoundingClientRect().bottom;
     if (!armed) {
       // 카드가 기준선 아래로 자라 읽을 내용이 생기면 무장 (그 전엔 트리거 금지)
       if (bottom > line) armed = true;
@@ -360,8 +330,8 @@ export function initAccordion() {
     // progressive 펼침 — 이전 칸을 닫지 않고, 읽는 위치 '아래'에 다음 카드를
     // 삽입해 0→높이로 펼친다. 위쪽은 그대로라 행은 제자리(위쪽 고정)·패널만
     // 아래로 자란다. window 스크롤을 일절 건드리지 않아 관성 스크롤이 멈추지
-    // 않고 흐른다 — 스크롤은 스크롤대로, 아코디언은 아코디언대로. 화면 밖으로
-    // 흘러간 이전 칸들은 스크롤이 멎으면 cleanupOffscreen이 조용히 닫는다.
+    // 않고 흐른다 — 스크롤은 스크롤대로, 아코디언은 아코디언대로. 지나친 이전
+    // 칸들은 열린 채 위로 흘러가고, 탭·섹션전환·hash 진입 때 accClose가 정리한다.
     mountDetail(nextTr.getAttribute('data-slug'));
   }
   window.addEventListener('scroll', onAccScroll, { passive: true });
