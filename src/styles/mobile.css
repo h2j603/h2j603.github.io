@@ -204,8 +204,10 @@
   /* 번호·태그는 본문보다 한 단위 작게 — 0.75rem(블록 날짜와 같은 보조 크기 티어) */
   table.sontable tr[data-slug] .num-badge,
   table.sontable .cat-cell .cat-tag { font-size: 0.75rem; }
-  /* 표 분류 칸 — 태그 묶음이 칸 폭을 넘으면 영역 밖으로 삐져나가 레이아웃이
-     깨짐(데스크탑 nowrap 규칙). 모바일은 칸 안에서 줄바꿈 허용. */
+  /* 표 분류 칸 — 좁은 폭에서 태그가 여럿이면 줄바꿈/삐져나감. 모바일은 첫
+     태그 하나만 노출(나머지는 숨김). 둘째+ 태그의 ' · ' 구분자(::before)도 함께
+     사라지므로 첫 태그가 단독으로 깔끔히 남는다. */
+  table.sontable .cat-cell .cat-tag:not(:first-child) { display: none; }
   .cat-cell .cat-tag { white-space: normal; }
   /* tr/td 둘 다 border-top 제거 — tr 셀렉터의 border-top(1px)이
      border-collapse에서 그려져 제목↔이미지 사이에 선으로 보였음 */
