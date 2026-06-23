@@ -191,10 +191,10 @@
   /* 번호·분류 열 폭을 같게 둬 제목 열이 좌우 대칭 → 제목이 화면 가로 정중앙에
      온다(번호 왼쪽 끝, 태그 오른쪽 끝, 제목 가운데). 합 100%라야 제목이 정확히
      68%로 잡힌다(fixed 테이블에서 미달 시 잔여폭이 분배됨). */
-  table.sontable .col-num   { width: 16%; }
+  table.sontable .col-num   { width: 18%; }
   table.sontable .col-year  { width: 0; }
-  table.sontable .col-title { width: 68%; }
-  table.sontable .col-cat   { width: 16%; }
+  table.sontable .col-title { width: 64%; }
+  table.sontable .col-cat   { width: 18%; }
   table.sontable tr[data-slug] td:nth-child(2) {
     padding: 0;
     font-size: 0;
