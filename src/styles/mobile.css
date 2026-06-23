@@ -201,6 +201,9 @@
   }
   /* 정렬 — 제목 가운데(좌우 대칭 열로 화면 정중앙), 태그 오른쪽 */
   .title-cell { text-align: center; }
+  /* 번호·태그는 본문보다 한 단위 작게 — 0.75rem(블록 날짜와 같은 보조 크기 티어) */
+  table.sontable tr[data-slug] .num-badge,
+  table.sontable .cat-cell .cat-tag { font-size: 0.75rem; }
   /* 표 분류 칸 — 태그 묶음이 칸 폭을 넘으면 영역 밖으로 삐져나가 레이아웃이
      깨짐(데스크탑 nowrap 규칙). 모바일은 칸 안에서 줄바꿈 허용. */
   .cat-cell .cat-tag { white-space: normal; }
