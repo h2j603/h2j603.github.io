@@ -185,21 +185,18 @@
     margin-bottom: 0; /* 표 바닥선이 곧 다음 섹션(Notepad) 경계선 — 빈 띠 제거 */
   }
   tr[data-slug] { scroll-margin-top: 5rem; }
-  /* 번호·연도 열 — 모바일에선 표시하지 않음 (좁은 폭에서 줄바꿈/공간 낭비).
-     td에 display:none을 쓰면 table-layout:fixed에서 셀이 한 칸씩 밀려 컬럼
-     폭이 어긋나므로, 열 폭 0 + 셀 내용물 제거로 접는다. */
-  table.sontable .col-num   { width: 0; }
+  /* 연도 열만 모바일에서 숨김 (좁은 폭에서 줄바꿈/공간 낭비). td에 display:none을
+     쓰면 table-layout:fixed에서 셀이 한 칸씩 밀려 컬럼 폭이 어긋나므로, 열 폭 0 +
+     셀 내용물 제거로 접는다. 번호 열은 다시 표시한다. */
+  table.sontable .col-num   { width: 12%; }
   table.sontable .col-year  { width: 0; }
-  table.sontable .col-title { width: 65%; }
-  table.sontable .col-cat   { width: 35%; }
+  table.sontable .col-title { width: 55%; }
+  table.sontable .col-cat   { width: 33%; }
   table.sontable tr[data-slug] td:nth-child(2) {
     padding: 0;
     font-size: 0;
     overflow: hidden;
   }
-  /* 번호 칸 접기 — 뱃지(inline-flex min-width)는 font-size:0로 안 줄어드니 제거 */
-  table.sontable tr[data-slug] .num-cell { padding: 0; overflow: hidden; }
-  table.sontable tr[data-slug] .num-cell .num-badge { display: none; }
   /* 정렬 — 모바일은 제목 왼쪽, 태그 오른쪽 (데스크탑 제목 가운데는 그대로) */
   .title-cell { text-align: left; }
   /* 표 분류 칸 — 태그 묶음이 칸 폭을 넘으면 영역 밖으로 삐져나가 레이아웃이
