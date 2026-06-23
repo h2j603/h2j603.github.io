@@ -39,14 +39,21 @@ export function accClose() {
   rescanWave(); // 닫혀 storage로 돌아간 카드 링크 반영 (파동 위상 일관성 유지)
 }
 
-// 모바일 스크롤-아코디언 기준선 — 화면 높이의 이 비율 지점에 닿는 행이 열린다.
-var FOCUS_LINE = 0.32;
-var suppressScrollUntil = 0; // 프로그램 스크롤(탭) 동안 드라이버 잠시 정지
+// 모바일 스크롤-아코디언 '다 읽음' 기준선 = 콘텐츠 최상단(고정 줄무늬 띠 바로
+// 아래). 카드 바닥이 이 선 위로 올라가면 본문을 끝까지 읽은 것 → 다음 칸 개방.
+function contentTopLine() {
+  var s = document.querySelector('.stripe-top');
+  return s ? s.getBoundingClientRect().height : 72; // 닫힌 띠 높이 ≈ 4.5rem
+}
 
-function accOpen(slug, opts) {
+function accOpen(slug) {
   var tr = document.querySelector('tr[data-slug="' + slug + '"]');
   var card = document.getElementById(slug);
   if (!tr || !card) return;
+  var mobile = isMobileView();
+  // 모바일: 열기 전 행의 화면상 위치를 기억해 둔다 — 이전 아코디언이 닫히며
+  // 생기는 레이아웃 점프를 직후 상쇄해 '위쪽 위치 고정 + 아래로 펼침'을 만든다.
+  var preTop = mobile ? tr.getBoundingClientRect().top : 0;
   accClose();
   var detail = document.createElement('tr');
   detail.className = 'accordion-detail';
@@ -65,14 +72,11 @@ function accOpen(slug, opts) {
   // 새로 삽입된 카드 링크를 점멸 파동에 편입 (문서 순서 기준으로 위상 재부여)
   rescanWave();
   springOpen(panel); // 파동 높이 펼침 (살짝 오버슈트 후 안착)
-  if (isMobileView()) {
-    // 모바일: 스크롤-드라이버 호출(opts 없음)은 자체 핀 보정 → 여기선 스크롤 안 함.
-    // 탭(scrollToLine)일 때만 행을 기준선으로 부드럽게 데려와 드라이버와 일관.
-    if (opts && opts.scrollToLine) {
-      var target = window.scrollY + (tr.getBoundingClientRect().top - window.innerHeight * FOCUS_LINE);
-      suppressScrollUntil = performance.now() + 800; // 부드러운 스크롤 동안 드라이버 정지
-      window.scrollTo({ top: target < 0 ? 0 : target, behavior: 'smooth' });
-    }
+  if (mobile) {
+    // 시점 이동 없이 — 행 상단을 원래 자리에 고정하고 패널만 아래로 자란다.
+    // (이전 칸이 닫히며 위쪽이 줄면 행이 위로 튀므로 그만큼 즉시 되돌린다.)
+    var postTop = tr.getBoundingClientRect().top;
+    if (Math.abs(postTop - preTop) > 0.5) window.scrollBy(0, postTop - preTop);
   } else {
     // 데스크탑 시점 이동 — 행을 화면 상단 ~22% 지점(anchorY)으로 글라이드.
     // (브라우저 smooth scrollTo는 호출 시점의 스크롤 한계로 clamp돼서,
@@ -148,7 +152,7 @@ export function initAccordion() {
         accClose();
         if (location.hash) history.replaceState(null, '', location.pathname);
       } else {
-        accOpen(slug, { scrollToLine: true });
+        accOpen(slug);
         history.replaceState(null, '', '#' + slug);
       }
     });
@@ -255,8 +259,8 @@ export function initAccordion() {
 
   // ── 모바일 스크롤-아코디언 (가이드 리딩) ──────────────────────────────
   // 규칙: ① 이미 열린 아코디언이 있을 때만 작동(첫 칸은 탭으로 연다).
-  // ② 그 본문(카드)을 끝까지 — 카드 바닥이 기준선(화면 FOCUS_LINE) 위로 올라갈
-  //    때까지 — 읽어 내려가야 ③ '다음' 행이 열린다(맨 위가 기준선에 오게).
+  // ② 그 본문(카드)을 끝까지 — 카드 바닥이 기준선(콘텐츠 최상단, 띠 바로 아래)
+  //    위로 올라갈 때까지 — 읽어 내려가야 ③ '다음' 행이 열린다(맨 위가 기준선에).
   // ④ 역방향(위로 스크롤)은 무시 — 닫거나 이전으로 되돌리지 않는다.
   // 새로 열릴 때마다 '재무장'(카드가 기준선 아래로 자란 뒤에야 트리거 가능)이라
   // 한 번 스크롤에 여러 칸이 우르르 열리지 않는다. 데스크탑은 window 스크롤이
@@ -280,14 +284,13 @@ export function initAccordion() {
     if (!isMobileView()) return;
     if (!threeCol || threeCol.getAttribute('data-section') !== 'portfolio') return;
     if (drag && (drag.axis === 'h' || drag.committing)) return; // 가로 스와이프 중
-    if (performance.now() < suppressScrollUntil) return;        // 탭 부드러운 스크롤 중
     if (document.querySelector('.stripe-top.open')) return;     // About 커튼 열림
     var y = window.scrollY;
     var goingDown = y > lastDriverY + 0.5;
     lastDriverY = y;
     if (!accSlug || !accRow) return; // 열린 아코디언에서만 작동
     if (accSlug !== lastSeenSlug) { lastSeenSlug = accSlug; armed = false; } // 새 칸 → 재무장
-    var line = window.innerHeight * FOCUS_LINE;
+    var line = contentTopLine();
     var bottom = accRow.getBoundingClientRect().bottom; // 카드(본문) 바닥
     if (!armed) {
       // 카드가 기준선 아래로 자라 읽을 내용이 생기면 무장 (그 전엔 트리거 금지)
@@ -301,11 +304,10 @@ export function initAccordion() {
     var idx = rows.indexOf(document.querySelector('tr[data-slug="' + accSlug + '"]'));
     var nextTr = idx >= 0 ? rows[idx + 1] : null;
     if (!nextTr) return;           // 마지막 칸 — 다음 없음
-    accOpen(nextTr.getAttribute('data-slug')); // 현재 닫고 다음 열기(모바일 자체 스크롤 안 함)
-    // 다음 행 맨 위를 기준선에 정렬 — locked(published:false)가 사이에 끼면 그만큼
-    // 위로 당겨 시각적으로도 건너뛴다(다음 게시작은 pubRows가 이미 고름).
-    var bt = nextTr.getBoundingClientRect().top;
-    if (Math.abs(bt - line) > 0.5) { window.scrollBy(0, bt - line); lastDriverY = window.scrollY; }
+    // 현재 닫고 다음 열기 — accOpen이 다음 행을 제자리에 고정(위쪽 고정)하고
+    // 패널을 아래로 펼친다. 시점 이동 없음. 닫힘으로 scrollY가 바뀌니 동기화.
+    accOpen(nextTr.getAttribute('data-slug'));
+    lastDriverY = window.scrollY;
   }
   window.addEventListener('scroll', onAccScroll, { passive: true });
 
