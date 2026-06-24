@@ -520,6 +520,38 @@ iframe {
 .bottom .now-clock {
   color: var(--accent);
 }
+/* now 시계 자릿수 팝인 (transitions.dev digit pop-in) — 값이 바뀐 글리프만
+   아래서 솟아오르며 블러가 풀린다. clock.js가 변경된 자리 span에만 .is-animating을
+   재생. tabular-nums라 폭은 일정(가로 흔들림 없음). 첫 로드는 정적, reduced-motion
+   이면 정지. 자릿수 span(.t-digit)은 inline-flex 그룹(.now-clock) 안에 깔린다. */
+.bottom .now-clock {
+  display: inline-flex;
+  align-items: baseline;
+  --digit-dur: 500ms;
+  --digit-distance: 0.45em;
+  --digit-blur: 2px;
+  --digit-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --digit-dir-y: 1; /* 아래(+)에서 솟아오름 */
+}
+.bottom .now-clock .t-digit {
+  display: inline-block;
+  white-space: pre; /* 공백 구분자 폭 보존 (flex 항목 단독 공백 붕괴 방지) */
+  will-change: transform, opacity, filter;
+}
+.bottom .now-clock .t-digit.is-animating {
+  animation: t-digit-pop-in var(--digit-dur) var(--digit-ease) both;
+}
+@keyframes t-digit-pop-in {
+  0% {
+    transform: translateY(calc(var(--digit-distance) * var(--digit-dir-y)));
+    opacity: 0;
+    filter: blur(var(--digit-blur));
+  }
+  100% { transform: translateY(0); opacity: 1; filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bottom .now-clock .t-digit { animation: none !important; }
+}
 /* 인디웹 웹링 — 가운데 칸. 한 줄 유지(화살표·텍스트 안 깨지게). 셀 왼변은
    d1(20%) 연장선. 링크는 본문 하이퍼링크와 같은 어법(보라+점멸+호버 밑줄) —
    단 ↗ 프리픽스는 예외로 제외(스니펫 원형 유지). */
