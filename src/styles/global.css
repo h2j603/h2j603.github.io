@@ -887,10 +887,63 @@ table tr[data-active='true'] a {
 .card-images .image-row {
   display: grid;
   gap: var(--space-2);
+  align-items: start; /* 칸을 늘리지 않고 내용 높이로 — 스켈레톤 오버레이가 이미지에 딱 맞게 */
 }
 .card-images .image-row img {
   width: 100%;
   height: auto;
+}
+
+/* ── 이미지 스켈레톤 로더 + 리빌 (transitions.dev) ─────────────────────────
+   이미지는 흐름 안(.t-skel-content)에 그대로 둬 width/height 비율로 자리를 미리
+   잡으므로 레이아웃 시프트가 없다. 스켈레톤은 그 위 절대 오버레이. 기본 상태(JS
+   없음/이미 로드됨)는 스켈레톤 숨김 + 이미지 노출이라 평소와 동일. JS가 '로딩 중'을
+   .is-loading으로 표시하면 스켈레톤(펄스)이 뜨고 이미지가 숨겨지며, 로드되면
+   .is-revealed로 둘이 같은 박자(reveal-dur)로 크로스페이드한다. */
+.t-skel {
+  position: relative;
+  --reveal-dur: 400ms;
+  --reveal-blur: 2px;
+  --reveal-ease: ease-in-out;
+  --pulse-dur: 1000ms;
+  --pulse-min: 0.5;
+}
+.t-skel-content img { display: block; width: 100%; height: auto; }
+.t-skel-content,
+.t-skel-skeleton {
+  transition:
+    opacity var(--reveal-dur) var(--reveal-ease),
+    filter var(--reveal-dur) var(--reveal-ease);
+}
+.t-skel-skeleton {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;            /* 기본 숨김 — JS가 로딩 중일 때만 노출 */
+  pointer-events: none;
+}
+.t-skel-bar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: color-mix(in oklab, var(--ink) 8%, transparent);
+}
+/* 로딩 중 — 스켈레톤 노출(펄스) + 이미지 숨김 */
+.t-skel.is-loading .t-skel-skeleton { opacity: 1; }
+.t-skel.is-loading .t-skel-content { opacity: 0; filter: blur(var(--reveal-blur)); }
+.t-skel.is-loading .t-skel-skeleton.is-pulsing > * {
+  animation: t-skel-pulse var(--pulse-dur) ease-in-out infinite;
+}
+/* 로드 완료 — 스켈레톤 빠지고 이미지 드러남 */
+.t-skel.is-loading.is-revealed .t-skel-skeleton { opacity: 0; filter: blur(var(--reveal-blur)); }
+.t-skel.is-loading.is-revealed .t-skel-content { opacity: 1; filter: blur(0); }
+@keyframes t-skel-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: var(--pulse-min); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-skel-content, .t-skel-skeleton { transition: none !important; }
+  .t-skel-skeleton.is-pulsing > * { animation: none !important; }
 }
 /* 작품 사이 구분선 + 위아래 여백 — margin 대신 padding으로만 잡는다.
    margin-top을 쓰면 이전 카드 콘텐츠의 margin-bottom과 collapse돼 위 여백이
