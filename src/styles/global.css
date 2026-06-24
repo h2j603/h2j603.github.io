@@ -311,41 +311,22 @@ iframe {
   pointer-events: auto; /* 레이어가 스크롤·클릭 받음 — 패널 밖 클릭은 JS가 닫기로 */
   transition: opacity 0.3s ease 0.22s, visibility 0s;
 }
-/* About 본문 — 컨테이너(흰 종이) 없이 커튼 줄무늬 위에 직접 띄운다. 흰 글자 +
-   어두운 그림자로 밝은 보라/갈색 줄무늬 위에서도 읽힌다. */
+/* 패널 — 커튼 천에 핀으로 꽂은 흰 종이 (포스터의 뒷면) */
 .drawer-panel {
   position: relative;
   width: min(38.75rem, 92vw);
-  /* 스크롤 컨테이너 — 천(5rem+3rem 패딩) 사이에 맞추고 내부 스크롤.
+  /* 패널이 스크롤 컨테이너 — 천(5rem+3rem 패딩) 사이에 맞추고 내부 스크롤.
      세로 스와이프는 패널 안에서만 스크롤(천 드래그-닫기와 분리). */
   max-height: calc(100dvh - 8rem);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
-  padding: var(--space-6);
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 0 2px rgba(0, 0, 0, 0.35);
+  background: var(--bg);
+  border: var(--line-w) solid var(--ink);
+  padding: var(--space-6); /* 균일 24px — 바닥만 28이던 것 스케일로 통일 */
   /* text-wrap은 상속 속성 — 여기 한 번 걸면 문단·제목·리스트 등 모든
      About 텍스트가 균형 줄바꿈(고아줄 방지)을 받는다. */
   text-wrap: pretty;
-}
-/* 커튼 위 About — 링크도 흰 밑줄로(흰 종이 전제의 보라 pill 폐기). 멘션 인물
-   아이콘·↗ 링크 아이콘은 currentColor라 흰색을 따라온다. */
-.about-drawer .drawer-panel a,
-.about-drawer .drawer-panel a.mention {
-  background: none;
-  color: #fff;
-  padding: 0;
-  border-radius: 0;
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
-}
-@media (hover: hover) {
-  .about-drawer .drawer-panel a:hover,
-  .about-drawer .drawer-panel a.mention:hover {
-    background: none;
-    text-decoration-thickness: 0.1em; /* 호버 = 밑줄 굵게 */
-  }
 }
 /* 패널 등장 — 커튼이 화면을 다 덮은 뒤(.entered, drawer.js) 아래서 또렷하게
    솟아오른다. 드래그·하강 중엔 숨김(opacity 0). 불투명도는 55%에서 도달해
@@ -389,7 +370,10 @@ iframe {
 @keyframes intro-rise {
   to { opacity: 1; transform: translateY(0); }
 }
-/* (블록 호버 틴트 폐지 — 흰 종이 전제였고, 줄무늬 위 흰 텍스트엔 탁해진다) */
+@media (hover: hover) {
+  .about-drawer .intro-group:nth-child(odd):hover  { background: var(--tint-accent); }
+  .about-drawer .intro-group:nth-child(even):hover { background: var(--tint-brown); }
+}
 @media (prefers-reduced-motion: reduce) {
   .about-drawer .intro-group { opacity: 1; transform: none; }
   .about-drawer.entered .intro-group { animation: none; }
