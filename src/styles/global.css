@@ -921,6 +921,10 @@ table tr[data-active='true'] a {
   z-index: 2;
   opacity: 0;            /* 기본 숨김 — JS가 로딩 중일 때만 노출 */
   pointer-events: none;
+  /* 불투명 — 아래 미디어를 완전히 덮는다. 특히 iframe은 .t-skel-content로 감싸지
+     않아(absolute 채움 구조 보존) 가려줄 레이어가 이것뿐이라 로딩 중 빈 iframe이
+     비치지 않게 한다. */
+  background: var(--bg);
 }
 .t-skel-bar {
   display: block;
