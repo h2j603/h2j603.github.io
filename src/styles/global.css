@@ -348,10 +348,8 @@ iframe {
   .about-drawer .drawer-panel { transform: none; }
   .about-drawer.entered .drawer-panel { animation: none; opacity: 1; }
 }
-.drawer-panel hr {
-  margin-left: calc(var(--space-6) * -1);
-  margin-right: calc(var(--space-6) * -1);
-}
+/* About 그룹 사이 — 구분선 없이 여백만(이전 hr의 위아래 16px 합과 같은 리듬). */
+.about-drawer .intro-group + .intro-group { margin-top: var(--space-8); }
 
 /* 점진적 공개 — 패널(종이)이 솟아 안착하면, 본문이 블록 단위로 순차로 떠오른다.
    .entered가 트리거: 닫히면(.entered 제거) 기본 숨김으로 되돌아가 다음 열림에
