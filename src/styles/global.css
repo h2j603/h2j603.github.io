@@ -1090,17 +1090,21 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   padding: 0 0.5625rem;
   border: none;
   border-radius: 999px;
-  /* 글래스모피즘 — 줄무늬 띠 위에 떠 있는 프로스트 칩. 반투명 라이트 틴트로
-     뒤(줄무늬·커튼)가 비치고, backdrop blur(아래 @supports)가 그걸 흐린다.
-     유리 가장자리 = 상단 안쪽 하이라이트 + accent 보더 링 + 옅은 떠오름 그림자.
-     색은 전부 accent 파생. backdrop 미지원이면 이 반투명 틴트만으로 충분히 읽힘. */
-  background: oklch(from var(--accent) 0.97 0.03 h / 0.5);
+  /* 입체 — (1)둥근 표면 셰이딩: 상단 빛→중하단 음영→바닥 반사광(곡면감),
+     (2)베벨: 상단 안쪽 하이라이트 + 하단 안쪽 음영(두께),
+     (3)2단 드롭섀도(가깝고 진한 + 멀고 퍼진)로 떠오름. 전부 보라(accent) 파생. */
+  background: linear-gradient(180deg,
+    oklch(from var(--accent) 0.985 0.022 h) 0%,
+    oklch(from var(--accent) 0.97 0.032 h) 52%,
+    oklch(from var(--accent) 0.905 0.055 h) 86%,
+    oklch(from var(--accent) 0.875 0.07 h) 100%);
   box-shadow:
-    0 0 0 var(--line-w) oklch(from var(--accent) 0.72 0.05 h / 0.35),
-    inset 0 1px 0.5px oklch(from var(--accent) 1 0.012 h / 0.7),
-    inset 0 -2px 3px oklch(from var(--accent) 0.85 0.04 h / 0.25),
-    0 2px 8px oklch(from var(--accent) 0.5 0.05 h / 0.18);
-  transition: box-shadow 0.16s ease, background 0.16s ease, transform 0.07s ease;
+    0 0 0 var(--line-w) var(--ring),
+    inset 0 1.5px 0.5px oklch(from var(--accent) 1 0.008 h),
+    inset 0 -3px 3px oklch(from var(--accent) 0.74 0.045 h / 0.5),
+    0 1px 1.5px oklch(from var(--accent) 0.5 0.05 h / 0.3),
+    0 4px 8px oklch(from var(--accent) 0.5 0.05 h / 0.2);
+  transition: box-shadow 0.12s ease, background 0.12s ease, transform 0.07s ease;
   cursor: pointer;
   font-family: inherit;
   font-size: var(--fs);
@@ -1108,40 +1112,32 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   color: var(--ink);
   line-height: 1;
 }
-/* backdrop-filter 지원 시 — 틴트를 더 투명하게 낮추고 프로스트 블러를 켠다
-   (진짜 글래스). 버튼은 fixed라 움직이지 않으니 블러 비용은 작은 면적뿐. */
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .lang-toggle {
-    background: oklch(from var(--accent) 0.98 0.025 h / 0.32);
-    -webkit-backdrop-filter: blur(8px) saturate(1.5);
-    backdrop-filter: blur(8px) saturate(1.5);
-  }
-}
-/* 투명도 줄이기 선호(접근성) — 불투명 틴트로 폴백 + 블러 해제 */
-@media (prefers-reduced-transparency: reduce) {
-  .lang-toggle {
-    background: color-mix(in oklch, var(--accent) 18%, var(--bg));
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-/* 호버(포인터 한정 — 터치 sticky 회피) — 살짝 더 또렷 + 한 단계 더 떠오름 */
+/* 호버(포인터 한정 — 터치 sticky 회피) — 더 밝게 + 한 단계 더 떠오름 */
 @media (hover: hover) {
   .lang-toggle:hover {
+    background: linear-gradient(180deg,
+      oklch(from var(--accent) 1 0.02 h) 0%,
+      oklch(from var(--accent) 0.985 0.03 h) 52%,
+      oklch(from var(--accent) 0.92 0.052 h) 86%,
+      oklch(from var(--accent) 0.89 0.066 h) 100%);
     box-shadow:
-      0 0 0 var(--line-w) oklch(from var(--accent) 0.72 0.05 h / 0.45),
-      inset 0 1px 0.5px oklch(from var(--accent) 1 0.012 h / 0.85),
-      inset 0 -2px 3px oklch(from var(--accent) 0.85 0.04 h / 0.28),
-      0 4px 12px oklch(from var(--accent) 0.5 0.05 h / 0.22);
+      0 0 0 var(--line-w) var(--ring),
+      inset 0 1.5px 0.5px oklch(from var(--accent) 1 0.006 h),
+      inset 0 -2.5px 2.5px oklch(from var(--accent) 0.78 0.038 h / 0.5),
+      0 2px 2px oklch(from var(--accent) 0.5 0.05 h / 0.3),
+      0 6px 13px oklch(from var(--accent) 0.5 0.05 h / 0.22);
   }
 }
-/* 눌림 — 유리가 살짝 가라앉으며 안쪽 음영 + 떠오름 그림자 붕괴 */
+/* 눌림 — 베벨 반전(위 안쪽 음영=눌림) + 드롭섀도 붕괴 + 가라앉음 (누르는 촉감) */
 .lang-toggle:active {
-  background: oklch(from var(--accent) 0.93 0.035 h / 0.55);
+  background: linear-gradient(180deg,
+    oklch(from var(--accent) 0.875 0.028 h) 0%,
+    oklch(from var(--accent) 0.93 0.02 h) 100%);
   box-shadow:
-    0 0 0 var(--line-w) oklch(from var(--accent) 0.72 0.05 h / 0.4),
-    inset 0 2px 3px oklch(from var(--accent) 0.8 0.04 h / 0.3),
-    0 1px 3px oklch(from var(--accent) 0.5 0.05 h / 0.15);
+    0 0 0 var(--line-w) var(--ring),
+    inset 0 2px 3px oklch(from var(--accent) 0.72 0.04 h / 0.55),
+    inset 0 -1px 0.5px oklch(from var(--accent) 1 0.006 h),
+    0 0.5px 1px oklch(from var(--accent) 0.5 0.05 h / 0.2);
   transform: translateY(1px);
 }
 
