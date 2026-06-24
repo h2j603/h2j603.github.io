@@ -3,6 +3,7 @@ import { isMobileView, anchorY, glideScrollBy, springOpen } from './util.js';
 
 export function initMemos() {
   var leftEl = document.querySelector('.three-col .left');
+  var threeCol = document.querySelector('.three-col');
   document.querySelectorAll('.memo').forEach(function (memo) {
     function toggle() {
       var wasOpen = memo.classList.contains('open');
@@ -20,6 +21,9 @@ export function initMemos() {
           memo.scrollIntoView({ block: 'start', behavior: 'smooth' });
         }
       }
+      // 데스크탑 — 메모가 열려 있으면 좌·중 폭을 40/40으로 넓히고(memo-wide),
+      // 닫히면 원복. (포트폴리오 행을 열면 accordion.js가 이 클래스를 제거)
+      if (threeCol) threeCol.classList.toggle('memo-wide', !isMobileView() && !wasOpen);
     }
     memo.addEventListener('click', toggle);
     // role="button" tabindex="0"라 키보드 활성화도 지원 (Enter/Space).
