@@ -1,8 +1,8 @@
 /* ───────────────────────────────────────────────────────────────────────
-   한글·본문 폰트 — Heitz Wide (self-hosted, /fonts/HeitzWide-Regular.woff2).
-   Pretendard(jsdelivr) 대체. Heitz Wide를 라틴·한글 통합 주폰트로 써 단일
-   메트릭을 유지(혼합 라인박스 부풀림 방지), 누락 글리프만 neue-haas-unica로
-   폴백. Heitz-Regular도 함께 호스팅(현재 미사용).
+   한글 폰트 — Heitz Wide (self-hosted, /fonts/HeitzWide-Regular.woff2),
+   Pretendard(jsdelivr) 대체. 라틴은 종전대로 neue-haas-unica(Typekit) 유지 —
+   스택을 neue-haas 먼저 두어 라틴은 neue-haas, 한글은 글리프가 없어 Heitz Wide로
+   폴백된다. Heitz-Regular도 함께 호스팅(현재 미사용).
    ─────────────────────────────────────────────────────────────────────── */
 @font-face {
   font-family: 'Heitz Wide';
@@ -146,7 +146,7 @@ body {
   /* 수직 4px 격자 — 줄높이를 정수 px로 고정해 구분선 y가 디바이스 픽셀
      격자에 정렬되게 한다 (윈도우 125%/150% 배율의 선 굵기 들쭉 방지) */
   line-height: 1.25rem; /* 컴팩트 — 20px */
-  font-family: 'Heitz Wide', neue-haas-unica, sans-serif; /* 단일 메트릭 — 혼합 라인박스 부풀림 방지 */
+  font-family: neue-haas-unica, 'Heitz Wide', sans-serif; /* 라틴=neue-haas-unica, 한글=Heitz Wide(폴백) */
   font-weight: 400; /* 전체 웨이트 400 통일 */
   font-style: normal;
   color: var(--ink);
@@ -978,7 +978,7 @@ table tr[data-active='true'] a {
 .work-card > :last-child { margin-bottom: 0; }
 
 .work-card .card-title {
-  font-family: 'Heitz Wide', neue-haas-unica, sans-serif; /* 단일 메트릭 — 혼합 라인박스 부풀림 방지 */
+  font-family: neue-haas-unica, 'Heitz Wide', sans-serif; /* 라틴=neue-haas-unica, 한글=Heitz Wide(폴백) */
   font-weight: 400;
   font-style: normal;
   text-align: left;
