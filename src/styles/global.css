@@ -410,16 +410,6 @@ iframe {
 .three-col .right {
   top: 4.5rem;
 }
-/* 메모 아코디언 열림 = 좌·중을 균등(40/40)으로 넓혀 메모 읽기 폭 확보(우 20% 유지).
-   포트폴리오 행을 열거나 메모를 닫으면 .memo-wide 제거 → 20/60/20 원복. left/width를
-   부드럽게 보간(reduced-motion이면 즉시). 데스크탑 전용 — 모바일은 mobile.css가
-   .third를 static/flex로 덮어 무영향. */
-@media (prefers-reduced-motion: no-preference) {
-  .three-col .left,
-  .three-col .center { transition: left 0.45s cubic-bezier(0.2, 0.85, 0.25, 1), width 0.45s cubic-bezier(0.2, 0.85, 0.25, 1); }
-}
-.three-col.memo-wide .left   { width: 40%; }
-.three-col.memo-wide .center { left: 40%; width: 40%; }
 /* stripe-row 안 line-height 잔여 픽셀 차단 — height: 1.5rem 정확히 보장 */
 .stripe-row { line-height: 0; }
 
@@ -704,13 +694,15 @@ iframe {
 .link-list > a.link-item:first-child {
   --pt: calc(0.5rem + var(--top-gap));
 }
-/* 호버 — 항목별 보라/갈색 교차 틴트 (hr 제외, 같은 태그끼리 홀짝).
-   링크 쪽은 드롭다운 필터로 항목이 숨겨질 수 있어 JS가 row-a/row-b를 단다.
+/* 호버 — 메모는 교차가 아니라 위→아래 순차 색(표 행과 같은 color-mix 시스템:
+   --row-mix는 빌드 시 인덱스로 부여, 두 테마색 stripe-a↔b 사이 균등 분할 한 지점).
+   링크는 드롭다운 필터로 항목이 숨겨질 수 있어 교차 유지(JS가 row-a/row-b).
    열린 메모는 표 활성 행처럼 호버 칠 없음. */
 @media (hover: hover) {
-  .memo-list .memo:nth-of-type(odd):not(.open):hover,
+  .memo-list .memo:not(.open):hover {
+    background: oklch(from color-mix(in oklch, var(--stripe-a) var(--row-mix, 50%), var(--stripe-b)) 0.90 0.05 h);
+  }
   .link-list a.link-item.row-a:hover { background: var(--tint-accent); }
-  .memo-list .memo:nth-of-type(even):not(.open):hover,
   .link-list a.link-item.row-b:hover { background: var(--tint-brown); }
   /* 호버 = 블록이 살짝 자란다 (+8px, 4px 격자 유지. 열린 메모 제외) */
   .memo-list .memo:not(.open):hover,
