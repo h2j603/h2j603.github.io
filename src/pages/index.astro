@@ -229,7 +229,7 @@ const defaultMosaic = fs.readFileSync(
                 </p>
 
                 {isWeb && externalUrl ? (
-                  <div class="iframe-wrap">
+                  <div class="iframe-wrap t-skel">
                     <iframe
                       src={externalUrl}
                       class="embedded-iframe"
@@ -237,6 +237,7 @@ const defaultMosaic = fs.readFileSync(
                       loading="lazy"
                       allowfullscreen
                     ></iframe>
+                    <div class="t-skel-skeleton is-pulsing" aria-hidden="true"><span class="t-skel-bar"></span></div>
                   </div>
                 ) : w.images.length > 0 ? (
                   <div class="card-images">
