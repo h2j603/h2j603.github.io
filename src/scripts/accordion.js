@@ -84,8 +84,6 @@ function accOpen(slug) {
   var trExisting = document.querySelector('tr[data-slug="' + slug + '"]');
   if (!trExisting || !document.getElementById(slug)) return;
   var mobile = isMobileView();
-  // 포트폴리오 행을 열면 메모-넓힘(좌·중 40/40)을 원복 → 20/60/20 (데스크탑).
-  if (threeCol) threeCol.classList.remove('memo-wide');
   var preTop = mobile ? trExisting.getBoundingClientRect().top : 0;
   accClose();
   var tr = mountDetail(slug);

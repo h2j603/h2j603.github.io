@@ -123,8 +123,9 @@ const defaultMosaic = fs.readFileSync(
             {memos.map((m, i) => (
               <>
                 {i > 0 && <hr />}
-                {/* 블록 전체가 토글 단위 — 라벨/날짜/본문 어디를 눌러도 접고 펼침 */}
-                <div class="memo" role="button" tabindex="0">
+                {/* 블록 전체가 토글 단위 — 라벨/날짜/본문 어디를 눌러도 접고 펼침.
+                    --row-mix = 호버 배경을 위→아래 순서대로(표와 같은 색 시스템) */}
+                <div class="memo" role="button" tabindex="0" style={`--row-mix:${memos.length <= 1 ? 50 : Math.round((i / (memos.length - 1)) * 100)}%`}>
                   <span class="memo-head">{m.title}</span>
                   {(m.addedAt || m.tags.length > 0) && (
                     <span class="block-date">
