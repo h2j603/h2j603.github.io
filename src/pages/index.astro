@@ -79,7 +79,6 @@ const defaultMosaic = fs.readFileSync(
           {
             introGroups.map((g, i) => (
               <div class="intro-group" style={`--i:${i}`}>
-                {i > 0 && <hr />}
                 {g.ko && g.en ? (
                   <div class="bilingual">
                     <div class="ko-body" lang="ko" set:html={g.ko} />
