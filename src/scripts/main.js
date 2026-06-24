@@ -11,6 +11,7 @@ import { initLinkFilter } from './link-filter.js';
 import { initClock } from './clock.js';
 import { initWave } from './wave.js';
 import { initPalette } from './palette.js';
+import { initImageSkel } from './image-skel.js';
 
 // hyuk.xyz 텍스트 클릭 → 홈(작품 선택 해제) + 모자이크 다시 떨어지기 시작.
 // 홈 링크가 About 서랍 안에 있으므로 서랍도 닫는다.
@@ -44,5 +45,6 @@ export function initSite() {
   initHomeLinks();
   initWave(); // 하이퍼링크 점멸 — 사인 파동(흐르는 위상)
   initPalette(); // 테마 팔레트 — 1분마다 순환
+  initImageSkel(); // 작품 이미지 스켈레톤 — 로드 전 펄스 → 로드 시 크로스페이드
 
 }

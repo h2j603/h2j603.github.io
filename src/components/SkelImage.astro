@@ -1,0 +1,15 @@
+---
+// 작품 이미지 + 스켈레톤 로더 (transitions.dev skeleton reveal).
+// 이미지는 흐름 안(.t-skel-content)에 두어 width/height 비율로 자리를 미리
+// 잡으므로 레이아웃 시프트가 없다. 스켈레톤(.t-skel-skeleton)은 그 위 절대
+// 오버레이 — 로드 전 펄스, 로드되면 image-skel.js가 .is-revealed로 크로스페이드.
+// JS 없으면 스켈레톤은 숨김(.is-loading 미부여)이라 이미지가 그냥 평소대로 뜬다.
+import { Image } from 'astro:assets';
+const { src, alt, widths, sizes } = Astro.props;
+---
+<div class="t-skel">
+  <div class="t-skel-content">
+    <Image src={src} alt={alt} widths={widths} sizes={sizes} />
+  </div>
+  <div class="t-skel-skeleton is-pulsing" aria-hidden="true"><span class="t-skel-bar"></span></div>
+</div>

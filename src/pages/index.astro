@@ -5,8 +5,8 @@
 //   right  : 비움 (새 컨텐츠 예정)
 import fs from 'node:fs';
 import path from 'node:path';
-import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
+import SkelImage from '../components/SkelImage.astro';
 import { getWorks, resolveImage, getIntro, getLinks, getMemos, groupBilingual } from "../lib/site-data.js";
 import { buildTagMixMap } from "../lib/tag-colors.js";
 
@@ -261,7 +261,7 @@ const defaultMosaic = fs.readFileSync(
                           {row.imgs.map((img) => {
                             const asset = resolveImage(img.localPath);
                             return asset ? (
-                              <Image
+                              <SkelImage
                                 src={asset}
                                 alt={img.alt || w.title || w.slug}
                                 widths={[420, 640, 960]}
@@ -274,7 +274,7 @@ const defaultMosaic = fs.readFileSync(
                     })()}
                   </div>
                 ) : cover ? (
-                  <Image src={cover} alt={w.title || w.slug} widths={[420, 640, 960]} sizes="40vw" />
+                  <SkelImage src={cover} alt={w.title || w.slug} widths={[420, 640, 960]} sizes="40vw" />
                 ) : null}
 
                 {(w.bodyBlocks.some((b) => b.lang === null && b.html) ||
