@@ -1299,6 +1299,20 @@ table.sontable .col-cat   { width: 20%; }
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
+/* pill baseline — 보정을 안쪽 글자(.en/.ko)에 걸면 배경(<a>)이 안 따라와 pill이
+   안 감싸진다. 안쪽은 0으로 되돌리고 pill(<a>)을 통째로 0.09em 내려 배경+텍스트가
+   함께 본문 baseline에 맞으며 컴팩트 유지. (콘텐츠 영역 pill만 — 푸터·우측은 무관) */
+.work-card .card-body a,
+.work-card .card-link,
+.drawer-panel a {
+  position: relative;
+  top: 0.09em;
+}
+.work-card .card-body a .en, .work-card .card-body a .ko,
+.work-card .card-link .en, .work-card .card-link .ko,
+.drawer-panel a .en, .drawer-panel a .ko {
+  top: 0;
+}
 /* webring — 본문 링크와 같은 pill (단, ↗ 아이콘 없음: ::before 그룹 비포함).
    링크 3개(←, indieweb webring, →)가 각각 pill 칩이 된다. */
 .webring a {
