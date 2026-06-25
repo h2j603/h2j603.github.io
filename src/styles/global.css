@@ -1055,8 +1055,7 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, pad
 tr[data-slug] { scroll-margin-top: 0.5rem; }
 /* 표 분류(cat) 칸 — 태그를 pill 없이 텍스트로, 왼끝 정렬(d4 선 기준), · 구분. */
 /* 표 정렬 — 숫자 왼쪽 · 제목 가운데 · 카테고리 오른쪽 (연도는 기본 왼쪽) */
-/* 아코디언(표 목록) 제목 — 한글은 Heitz Wide로 강조(라틴은 neue-haas 유지) */
-.title-cell { text-align: center; font-family: neue-haas-unica, 'Heitz Wide', sans-serif; }
+.title-cell { text-align: center; }
 .cat-cell { text-align: right; }
 .cat-cell .cat-tag { color: var(--ink); white-space: nowrap; text-transform: capitalize; }
 .cat-cell .cat-tag + .cat-tag::before { content: ' · '; }
