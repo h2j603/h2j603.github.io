@@ -9,18 +9,28 @@ function markMentions() {
   });
 }
 
-// 한글 char만 .ko span으로 감싸기 (영문 baseline에 맞춰 미세 위치 조정용)
+// 한글 char는 .ko, 영문(라틴 letter) char는 .en span으로 감싼다 — 두 폰트의
+// baseline 차이를 CSS(.ko/.en top)로 보정하기 위한 래핑. 숫자·문장부호·공백은
+// 중립이라 감싸지 않는다(번호·연도·시간 등 영향 없음). .lang-toggle·.now-clock은
+// JS가 textContent를 갱신해 래핑이 덮어써지므로 제외.
 var KO_RE = /[ㄱ-힝]/;
+var EN_RE = /[A-Za-z]/;
+function charClass(ch) {
+  return KO_RE.test(ch) ? 'ko' : EN_RE.test(ch) ? 'en' : 'x';
+}
 
-function wrapKoreanIn(root) {
+function wrapScripts(root) {
   var skip = { SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, IFRAME: 1, TEXTAREA: 1 };
   var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode: function (n) {
       var p = n.parentNode;
       if (!p) return NodeFilter.FILTER_REJECT;
       if (skip[p.nodeName]) return NodeFilter.FILTER_REJECT;
-      if (p.classList && p.classList.contains('ko')) return NodeFilter.FILTER_REJECT;
-      if (!KO_RE.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+      if (p.classList && (p.classList.contains('ko') || p.classList.contains('en'))) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      if (p.closest && p.closest('.lang-toggle, .now-clock')) return NodeFilter.FILTER_REJECT;
+      if (!KO_RE.test(n.nodeValue) && !EN_RE.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
       return NodeFilter.FILTER_ACCEPT;
     },
   });
@@ -30,12 +40,12 @@ function wrapKoreanIn(root) {
     var text = node.nodeValue;
     var frag = document.createDocumentFragment();
     var buf = '';
-    var isKo = false;
+    var cur = null;
     function flush() {
       if (!buf) return;
-      if (isKo) {
+      if (cur === 'ko' || cur === 'en') {
         var span = document.createElement('span');
-        span.className = 'ko';
+        span.className = cur;
         span.textContent = buf;
         frag.appendChild(span);
       } else {
@@ -45,10 +55,10 @@ function wrapKoreanIn(root) {
     }
     for (var i = 0; i < text.length; i++) {
       var ch = text.charAt(i);
-      var ko = KO_RE.test(ch);
-      if (ko !== isKo) {
+      var c = charClass(ch);
+      if (c !== cur) {
         flush();
-        isKo = ko;
+        cur = c;
       }
       buf += ch;
     }
@@ -59,5 +69,5 @@ function wrapKoreanIn(root) {
 
 export function initText() {
   markMentions();
-  wrapKoreanIn(document.body);
+  wrapScripts(document.body);
 }
