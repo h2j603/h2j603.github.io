@@ -13,10 +13,15 @@ function markMentions() {
 // baseline 차이를 CSS(.ko/.en top)로 보정하기 위한 래핑. 숫자·문장부호·공백은
 // 중립이라 감싸지 않는다(번호·연도·시간 등 영향 없음). .lang-toggle·.now-clock은
 // JS가 textContent를 갱신해 래핑이 덮어써지므로 제외.
+// 숫자·문장부호·기호도 라틴 폰트(neue-haas)로 그려지므로 영문과 같은 baseline
+// 보정을 받아야 한다 → 한글이 아닌 '글자가 있는' char는 전부 .en으로 묶는다.
+// (공백은 글리프가 없어 중립 'x' — 래핑하지 않아 줄바꿈/공백 붕괴 회피)
 var KO_RE = /[ㄱ-힝]/;
-var EN_RE = /[A-Za-z]/;
+var WS_RE = /\s/;
 function charClass(ch) {
-  return KO_RE.test(ch) ? 'ko' : EN_RE.test(ch) ? 'en' : 'x';
+  if (KO_RE.test(ch)) return 'ko';
+  if (WS_RE.test(ch)) return 'x';
+  return 'en';
 }
 
 function wrapScripts(root) {
