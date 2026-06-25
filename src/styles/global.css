@@ -982,7 +982,9 @@ table tr[data-active='true'] a {
 .work-card > :last-child { margin-bottom: 0; }
 
 .work-card .card-title {
-  font-family: neue-haas-unica, 'Heitz', sans-serif; /* 라틴=neue-haas-unica, 한글=Heitz(폴백) */
+  /* 아코디언(작품 카드) 제목만 Heitz Wide — 한글 제목을 와이드로 강조.
+     라틴은 그대로 neue-haas-unica. */
+  font-family: neue-haas-unica, 'Heitz Wide', sans-serif;
   font-weight: 400;
   font-style: normal;
   text-align: left;
