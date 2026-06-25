@@ -20,13 +20,24 @@
   font-display: swap;
   size-adjust: 96%;
 }
-/* 한글 글리프 baseline 보정 — 한글(.ko)을 라틴(neue-haas)에 맞춰 위로 당긴다.
-   Heitz 한글이 라틴보다 낮게 앉아 라틴이 상대적으로 높아 보이므로, em(폰트크기
-   비례) 단위로 올린다(절대 px 아님 → 모든 글자 크기에서 같은 비율로 정렬).
-   값을 키울수록 한글이 더 올라가 라틴이 상대적으로 더 내려간 듯 보인다. */
+/* 라틴(neue-haas) baseline 보정 — Heitz 한글보다 라틴이 높이 앉아 영문이 떠 보인다.
+   한글(.ko)은 기준으로 두고(top:0), 영문 글자(.en, text.js가 래핑)를 콘텐츠
+   영역에서 em(폰트크기 비례) 단위로 아래로 내려 한글 baseline에 맞춘다. em이라
+   모든 글자 크기에서 같은 비율(절대 px 아님). UI 크롬(푸터·버튼·라벨)의 .en은
+   기준 0이라 영향 없음 — 콘텐츠 셀렉터에서만 내린다. 값 키울수록 영문이 더 내려감. */
 .ko {
   position: relative;
-  top: -0.14em;
+  top: 0;
+}
+.en {
+  position: relative;
+  top: 0; /* 기본 0 — 콘텐츠에서만 아래로 내린다(아래 셀렉터) */
+}
+.work-card .en,
+.drawer-panel .en,
+.memo .en,
+table.sontable .title-cell .en {
+  top: 0.18em;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
