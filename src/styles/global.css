@@ -808,6 +808,7 @@ iframe {
   font-weight: inherit;
   color: var(--ink);
   text-align: center;
+  letter-spacing: 0.02em; /* 제목 자간 살짝 넓힘 (em — 글자 크기 비례) */
   line-height: 1.25rem;
 }
 /* 메모가 열려 있는 동안 — 표와 같은 어법으로 다른 메모는 옅게,
@@ -1071,7 +1072,7 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, pad
 tr[data-slug] { scroll-margin-top: 0.5rem; }
 /* 표 분류(cat) 칸 — 태그를 pill 없이 텍스트로, 왼끝 정렬(d4 선 기준), · 구분. */
 /* 표 정렬 — 숫자 왼쪽 · 제목 가운데 · 카테고리 오른쪽 (연도는 기본 왼쪽) */
-.title-cell { text-align: center; }
+.title-cell { text-align: center; letter-spacing: 0.02em; /* 제목 자간 살짝 넓힘 */ }
 .cat-cell { text-align: right; }
 .cat-cell .cat-tag { color: var(--ink); white-space: nowrap; text-transform: capitalize; }
 .cat-cell .cat-tag + .cat-tag::before { content: ' · '; }
