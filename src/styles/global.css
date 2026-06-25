@@ -21,10 +21,11 @@
   size-adjust: 96%;
 }
 /* 라틴(neue-haas) baseline 보정 — Heitz 한글보다 라틴이 높이 앉아 영문이 떠 보인다.
-   한글(.ko)은 기준으로 두고(top:0), 영문 글자(.en, text.js가 래핑)를 콘텐츠
-   영역에서 em(폰트크기 비례) 단위로 아래로 내려 한글 baseline에 맞춘다. em이라
-   모든 글자 크기에서 같은 비율(절대 px 아님). UI 크롬(푸터·버튼·라벨)의 .en은
-   기준 0이라 영향 없음 — 콘텐츠 셀렉터에서만 내린다. 값 키울수록 영문이 더 내려감. */
+   한글(.ko)은 기준으로 두고(top:0), 라틴 글자(.en = 영문·숫자·부호, text.js가
+   래핑)를 콘텐츠 영역에서 em(폰트크기 비례) 단위로 아래로 내려 한글 baseline에
+   맞춘다. 숫자·부호도 라틴 폰트라 영문과 같은 보정 — 표 번호 칸까지 포함(표 전체).
+   em이라 모든 글자 크기에서 같은 비율(절대 px 아님). UI 크롬(푸터·버튼·라벨)의
+   .en은 기준 0이라 영향 없음 — 콘텐츠 셀렉터에서만 내린다. */
 .ko {
   position: relative;
   top: 0;
@@ -36,7 +37,7 @@
 .work-card .en,
 .drawer-panel .en,
 .memo .en,
-table.sontable .title-cell .en {
+table.sontable .en {
   top: 0.08em;
 }
 
@@ -1054,9 +1055,7 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, pad
 tr[data-slug] { scroll-margin-top: 0.5rem; }
 /* 표 분류(cat) 칸 — 태그를 pill 없이 텍스트로, 왼끝 정렬(d4 선 기준), · 구분. */
 /* 표 정렬 — 숫자 왼쪽 · 제목 가운데 · 카테고리 오른쪽 (연도는 기본 왼쪽) */
-/* 표 목록의 작품 제목 — 본문 12pt(16px)에서 전통 포인트 스케일 한 단계 위 14pt.
-   (12 → 14 → 18). line-height는 4px 격자(24px=1.5rem) 유지. */
-.title-cell { text-align: center; font-size: 14pt; line-height: 1.5rem; }
+.title-cell { text-align: center; }
 .cat-cell { text-align: right; }
 .cat-cell .cat-tag { color: var(--ink); white-space: nowrap; text-transform: capitalize; }
 .cat-cell .cat-tag + .cat-tag::before { content: ' · '; }
