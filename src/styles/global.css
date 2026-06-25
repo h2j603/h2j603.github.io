@@ -1325,19 +1325,26 @@ table.sontable .col-cat   { width: 20%; }
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
-/* pill baseline — 보정을 안쪽 글자(.en/.ko)에 걸면 배경(<a>)이 안 따라와 pill이
-   안 감싸진다. 안쪽은 0으로 되돌리고 pill(<a>)을 통째로 0.09em 내려 배경+텍스트가
-   함께 본문 baseline에 맞으며 컴팩트 유지. (콘텐츠 영역 pill만 — 푸터·우측은 무관) */
+/* pill baseline — 보정을 안쪽 글자에만 걸면 배경(<a>)이 안 따라와 pill이 안 감싸진다.
+   그래서 pill(<a>)을 통째로 0.09em 내려 배경+영문 텍스트가 함께 본문 영문 baseline에
+   맞으며 컴팩트 유지. 단 한글(.ko)은 그 보정을 -0.09em으로 상쇄(net 0)해 본문 한글
+   baseline에 맞춘다 → pill 안에서도 영문이 한글보다 0.09em 아래 = 본문과 같은 baseline
+   관계. (콘텐츠 영역 pill만 — 푸터·우측은 무관) */
 .work-card .card-body a,
 .work-card .card-link,
 .drawer-panel a {
   position: relative;
   top: 0.09em;
 }
-.work-card .card-body a .en, .work-card .card-body a .ko,
-.work-card .card-link .en, .work-card .card-link .ko,
-.drawer-panel a .en, .drawer-panel a .ko {
-  top: 0;
+.work-card .card-body a .en,
+.work-card .card-link .en,
+.drawer-panel a .en {
+  top: 0; /* <a>의 +0.09em 그대로 → 본문 영문과 동일 */
+}
+.work-card .card-body a .ko,
+.work-card .card-link .ko,
+.drawer-panel a .ko {
+  top: -0.09em; /* <a> 보정 상쇄(net 0) → 본문 한글과 동일 */
 }
 /* webring — 본문 링크와 같은 pill (단, ↗ 아이콘 없음: ::before 그룹 비포함).
    링크 3개(←, indieweb webring, →)가 각각 pill 칩이 된다. */
