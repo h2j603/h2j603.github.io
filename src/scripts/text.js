@@ -35,7 +35,7 @@ function wrapScripts(root) {
         return NodeFilter.FILTER_REJECT;
       }
       if (p.closest && p.closest('.lang-toggle, .now-clock')) return NodeFilter.FILTER_REJECT;
-      if (!KO_RE.test(n.nodeValue) && !EN_RE.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+      if (!/\S/.test(n.nodeValue)) return NodeFilter.FILTER_REJECT; // 공백뿐인 노드는 건너뜀
       return NodeFilter.FILTER_ACCEPT;
     },
   });
