@@ -1,29 +1,32 @@
 /* ───────────────────────────────────────────────────────────────────────
-   한글 폰트 — Heitz Wide (self-hosted, /fonts/HeitzWide-Regular.woff2),
+   한글 폰트 — Heitz (Regular, self-hosted, /fonts/Heitz-Regular.woff2),
    Pretendard(jsdelivr) 대체. 라틴은 종전대로 neue-haas-unica(Typekit) 유지 —
-   스택을 neue-haas 먼저 두어 라틴은 neue-haas, 한글은 글리프가 없어 Heitz Wide로
-   폴백된다. 한글 글리프가 라틴보다 커 보여 size-adjust: 96%로 메트릭 축소
-   (같은 줄에 섞여도 라틴은 그대로, 한글만 줄어든다).
-   Heitz(Regular)도 @font-face로 호스팅만 — 현재 미사용. */
+   스택을 neue-haas 먼저 두어 라틴은 neue-haas, 한글은 글리프가 없어 Heitz로
+   폴백된다. 한글 글리프가 라틴보다 커 보여 size-adjust: 96%로 메트릭 축소.
+   Heitz Wide도 @font-face로 호스팅만 — 현재 미사용. */
 @font-face {
-  font-family: 'Heitz Wide';
-  src: url('/fonts/HeitzWide-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  size-adjust: 96%;
-}
-@font-face {
-  font-family: 'Heitz'; /* 호스팅만 — 현재 미사용 */
+  font-family: 'Heitz';
   src: url('/fonts/Heitz-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
   size-adjust: 96%;
 }
+@font-face {
+  font-family: 'Heitz Wide'; /* 호스팅만 — 현재 미사용 */
+  src: url('/fonts/HeitzWide-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 96%;
+}
+/* 한글 글리프 baseline 보정 — 한글(.ko)을 라틴(neue-haas)에 맞춰 위로 당긴다.
+   Heitz 한글이 라틴보다 낮게 앉아 라틴이 상대적으로 높아 보이므로, em(폰트크기
+   비례) 단위로 올린다(절대 px 아님 → 모든 글자 크기에서 같은 비율로 정렬).
+   값을 키울수록 한글이 더 올라가 라틴이 상대적으로 더 내려간 듯 보인다. */
 .ko {
   position: relative;
-  top: 0;
+  top: -0.14em;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -149,7 +152,7 @@ body {
   /* 수직 4px 격자 — 줄높이를 정수 px로 고정해 구분선 y가 디바이스 픽셀
      격자에 정렬되게 한다 (윈도우 125%/150% 배율의 선 굵기 들쭉 방지) */
   line-height: 1.25rem; /* 컴팩트 — 20px */
-  font-family: neue-haas-unica, 'Heitz Wide', sans-serif; /* 라틴=neue-haas-unica, 한글=Heitz Wide(폴백) */
+  font-family: neue-haas-unica, 'Heitz', sans-serif; /* 라틴=neue-haas-unica, 한글=Heitz(폴백) */
   font-weight: 400; /* 전체 웨이트 400 통일 */
   font-style: normal;
   color: var(--ink);
@@ -209,10 +212,6 @@ table a {
   font-style: normal;
   color: inherit;
 }
-/* 표 제목 안 한글(.ko)의 baseline 미세 이동(top:-0.08em)을 무효화 —
-   한글 행과 영문 행의 글자 수직 위치를 통일해 행 사이 여백을 균일하게 한다.
-   (본문/제목의 .ko baseline 정렬은 표 밖에선 그대로 유지) */
-table.sontable td .ko { top: 0; }
 
 /* ───────────────────────────────────────────────────────────────────────
    hr — 브라운 1px 라인
@@ -981,7 +980,7 @@ table tr[data-active='true'] a {
 .work-card > :last-child { margin-bottom: 0; }
 
 .work-card .card-title {
-  font-family: neue-haas-unica, 'Heitz Wide', sans-serif; /* 본문과 동일(라틴=neue-haas, 한글=Heitz Wide) */
+  font-family: neue-haas-unica, 'Heitz', sans-serif; /* 본문과 동일(라틴=neue-haas, 한글=Heitz) */
   font-weight: 400;
   font-style: normal;
   text-align: left;
