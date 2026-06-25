@@ -85,6 +85,12 @@ table.sontable .en {
   --pill-link-text:   oklch(from var(--accent) 0.53 0.25 h);
   --pill-person-bg:   oklch(from var(--person) 0.96 0.018 h);
   --pill-person-text: oklch(from var(--person) 0.42 0.06 h);
+  /* pill 배경 그라디언트 — 위는 틴트색, 아래로 갈수록 배경(off-white)에 가깝게
+     밝아져 '빠지는' 느낌. 호버는 윗색만 한 단계 진하게(아래는 동일 페이드). */
+  --pill-link-grad:     linear-gradient(180deg, var(--pill-link-bg) 0%, oklch(from var(--accent) 0.99 0.012 h) 100%);
+  --pill-link-grad-h:   linear-gradient(180deg, oklch(from var(--accent) 0.91 0.05 h) 0%, oklch(from var(--accent) 0.975 0.02 h) 100%);
+  --pill-person-grad:   linear-gradient(180deg, var(--pill-person-bg) 0%, oklch(from var(--person) 0.99 0.008 h) 100%);
+  --pill-person-grad-h: linear-gradient(180deg, oklch(from var(--person) 0.91 0.03 h) 0%, oklch(from var(--person) 0.975 0.012 h) 100%);
   /* 커튼 아래 콘텐츠 공통 최소 여백 — 좌(메모)/중(표)/우(링크) 동일 */
   --top-gap: var(--space-2);
   /* 세로 리듬은 위 --space-* 토큰에서만 고른다. 예외(리듬 아님): line-height
@@ -122,6 +128,10 @@ table.sontable .en {
     --pill-link-text: #7328c4;
     --pill-person-bg: #f5f1ed;
     --pill-person-text: #62503f;
+    --pill-link-grad: linear-gradient(180deg, #f4eefb 0%, #fbfaff 100%);
+    --pill-link-grad-h: linear-gradient(180deg, #ece0f7 0%, #f7f2fc 100%);
+    --pill-person-grad: linear-gradient(180deg, #f5f1ed 0%, #fbfaf8 100%);
+    --pill-person-grad-h: linear-gradient(180deg, #ebe4dd 0%, #f6f2ee 100%);
     --muted: #9b9088;
     --scrollbar: rgba(24, 22, 29, 0.35);
     --scrollbar-hover: rgba(24, 22, 29, 0.55);
@@ -868,7 +878,7 @@ table tr[data-active='true'] a {
 .drawer-panel a.mention,
 .work-card .card-body a.mention,
 .work-card .card-link.mention {
-  background: var(--pill-person-bg);
+  background: var(--pill-person-grad);
   color: var(--pill-person-text);
 }
 .intro a.mention::before,
@@ -894,7 +904,7 @@ table tr[data-active='true'] a {
   .drawer-panel a.mention:hover,
   .work-card .card-body a.mention:hover,
   .work-card .card-link.mention:hover {
-    background: oklch(from var(--person) 0.91 0.03 h);
+    background: var(--pill-person-grad-h);
   }
 }
 
@@ -1314,7 +1324,7 @@ table.sontable .col-cat   { width: 20%; }
 .drawer-panel a,
 .work-card .card-body a,
 .work-card .card-link {
-  background: var(--pill-link-bg);
+  background: var(--pill-link-grad);
   color: var(--pill-link-text);
   text-decoration: none;
   font-style: normal;
@@ -1349,7 +1359,7 @@ table.sontable .col-cat   { width: 20%; }
 /* webring — 본문 링크와 같은 pill (단, ↗ 아이콘 없음: ::before 그룹 비포함).
    링크 3개(←, indieweb webring, →)가 각각 pill 칩이 된다. */
 .webring a {
-  background: var(--pill-link-bg);
+  background: var(--pill-link-grad);
   color: var(--pill-link-text);
   text-decoration: none;
   font-style: normal;
@@ -1383,13 +1393,13 @@ table.sontable .col-cat   { width: 20%; }
   .drawer-panel a:hover,
   .work-card .card-body a:hover,
   .work-card .card-link:hover {
-    background: oklch(from var(--accent) 0.91 0.05 h);
+    background: var(--pill-link-grad-h);
   }
 }
 /* webring pill 호버 — 본문 링크와 동일(배경 진하게), 포인터 기기 한정 */
 @media (hover: hover) {
   .webring a:hover {
-    background: oklch(from var(--accent) 0.91 0.05 h);
+    background: var(--pill-link-grad-h);
   }
 }
 
@@ -1495,7 +1505,9 @@ b, strong { font-weight: inherit; }
      지점에서 섞은 뒤 그 hue만 뽑아 역할별 L/C 고정(배경=옅은 틴트, 글자=진한
      동색). 태그마다 mix 비중이 달라 두 색 사이 hue가 균등 분할되고, 팔레트가
      바뀌면 두 끝점이 함께 이동한다. */
-  background: oklch(from color-mix(in oklch, var(--stripe-a) var(--mix, 50%), var(--stripe-b)) 0.965 0.034 h);
+  background: linear-gradient(180deg,
+    oklch(from color-mix(in oklch, var(--stripe-a) var(--mix, 50%), var(--stripe-b)) 0.965 0.034 h) 0%,
+    oklch(from color-mix(in oklch, var(--stripe-a) var(--mix, 50%), var(--stripe-b)) 0.99 0.012 h) 100%);
   color: oklch(from color-mix(in oklch, var(--stripe-a) var(--mix, 50%), var(--stripe-b)) 0.57 0.135 h);
 }
 /* 컬렉션 태그 — 색은 base .tag-chip의 태그별 --th 파생 그대로(통일), 단
