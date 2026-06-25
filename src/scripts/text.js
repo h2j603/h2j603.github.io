@@ -76,3 +76,9 @@ export function initText() {
   markMentions();
   wrapScripts(document.body);
 }
+
+// 단일 요소 재래핑 — lang 토글이 표 제목의 textContent를 갈아끼우면 .ko/.en
+// 래핑이 날아가 baseline 보정이 사라진다. 스왑 직후 그 요소만 다시 감싸 복구.
+export function wrapText(root) {
+  wrapScripts(root);
+}
