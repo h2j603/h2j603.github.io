@@ -10,6 +10,9 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+  /* 한글 글리프가 라틴(neue-haas)보다 커 보여 96%로 축소 — 폰트 자체 메트릭을
+     스케일하므로 같은 줄에 섞여도 라틴은 그대로, 한글만 줄어든다. */
+  size-adjust: 96%;
 }
 @font-face {
   font-family: 'Heitz';
