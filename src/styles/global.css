@@ -1054,9 +1054,9 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, pad
 tr[data-slug] { scroll-margin-top: 0.5rem; }
 /* 표 분류(cat) 칸 — 태그를 pill 없이 텍스트로, 왼끝 정렬(d4 선 기준), · 구분. */
 /* 표 정렬 — 숫자 왼쪽 · 제목 가운데 · 카테고리 오른쪽 (연도는 기본 왼쪽) */
-/* 표 목록의 작품 제목만 한 단위 크게 — 1rem → 1.25rem(20px, 4px 격자 +1칸),
-   줄높이 1.5rem(정수 격자). 행이 그만큼 높아진다. */
-.title-cell { text-align: center; font-size: 1.25rem; line-height: 1.5rem; }
+/* 표 목록의 작품 제목 — 본문 12pt(16px)에서 전통 포인트 스케일 한 단계 위 14pt.
+   (12 → 14 → 18). line-height는 4px 격자(24px=1.5rem) 유지. */
+.title-cell { text-align: center; font-size: 14pt; line-height: 1.5rem; }
 .cat-cell { text-align: right; }
 .cat-cell .cat-tag { color: var(--ink); white-space: nowrap; text-transform: capitalize; }
 .cat-cell .cat-tag + .cat-tag::before { content: ' · '; }
