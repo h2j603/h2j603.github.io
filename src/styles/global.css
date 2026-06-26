@@ -1,8 +1,11 @@
 /* ───────────────────────────────────────────────────────────────────────
-   한글 폰트 — Heitz (Regular, self-hosted, /fonts/Heitz-Regular.woff2),
-   Pretendard(jsdelivr) 대체. 라틴은 종전대로 neue-haas-unica(Typekit) 유지 —
-   스택을 neue-haas 먼저 두어 라틴은 neue-haas, 한글은 글리프가 없어 Heitz로
-   폴백된다. 한글 글리프가 라틴보다 커 보여 size-adjust: 96%로 메트릭 축소.
+   한글 폰트 — Heitz (Regular, self-hosted, /fonts/Heitz-Regular.woff2).
+   라틴은 neue-haas-unica(Typekit). 스택은 neue-haas 먼저 — 라틴은 neue-haas,
+   한글은 Heitz로 폴백. 단 Heitz엔 Latin 글리프도 들어 있어 unicode-range가
+   없으면, neue-haas(네트워크)가 안 뜰 때 Heitz가 라틴까지 통째로 그려버린다
+   (= '하이츠가 전체 폰트 잡아먹는' 증상). 그래서 Heitz를 한글(Hangul) 블록으로
+   한정해 라틴을 절대 못 그리게 막는다 → 라틴은 neue-haas, 안 뜨면 시스템 sans.
+   한글 글리프가 라틴보다 커 보여 size-adjust: 96%로 메트릭 축소.
    Heitz Wide도 @font-face로 호스팅만 — 현재 미사용. */
 @font-face {
   font-family: 'Heitz';
@@ -11,6 +14,8 @@
   font-style: normal;
   font-display: swap;
   size-adjust: 96%;
+  /* 한글만 — Hangul 자모/호환자모/확장A·B/음절. 라틴·숫자·부호는 제외(neue-haas 몫) */
+  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF;
 }
 @font-face {
   font-family: 'Heitz Wide'; /* 호스팅만 — 현재 미사용 */
@@ -19,6 +24,7 @@
   font-style: normal;
   font-display: swap;
   size-adjust: 96%;
+  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF;
 }
 /* 라틴(neue-haas) baseline 보정 — Heitz 한글보다 라틴이 높이 앉아 영문이 떠 보인다.
    한글(.ko)은 기준으로 두고(top:0), 라틴 글자(.en = 영문·숫자·부호, text.js가
