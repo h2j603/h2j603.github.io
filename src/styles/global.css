@@ -1290,7 +1290,7 @@ table.sontable .col-cat   { width: 20%; }
   font-style: normal;
   word-break: keep-all;
   /* pill — 1.5rem 줄 안에 들어가는 컴팩트 칩. 줄바꿈 시 양 끝 모두 둥글게. */
-  padding: 0 var(--space-pill) 0.0625rem;
+  padding: 0.0625rem var(--space-pill);
   border-radius: 0.75rem;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
@@ -1302,7 +1302,7 @@ table.sontable .col-cat   { width: 20%; }
   color: var(--pill-link-text);
   text-decoration: none;
   font-style: normal;
-  padding: 0 var(--space-pill) 0.0625rem;
+  padding: 0.0625rem var(--space-pill);
   border-radius: 0.75rem;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
