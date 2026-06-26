@@ -1,11 +1,7 @@
 /* ───────────────────────────────────────────────────────────────────────
-   한글 폰트 — Heitz (Regular, self-hosted, /fonts/Heitz-Regular.woff2).
-   라틴은 neue-haas-unica(Typekit). 스택은 neue-haas 먼저 — 라틴은 neue-haas,
-   한글은 Heitz로 폴백. 단 Heitz엔 Latin 글리프도 들어 있어 unicode-range가
-   없으면, neue-haas(네트워크)가 안 뜰 때 Heitz가 라틴까지 통째로 그려버린다
-   (= '하이츠가 전체 폰트 잡아먹는' 증상). 그래서 Heitz를 한글(Hangul) 블록으로
-   한정해 라틴을 절대 못 그리게 막는다 → 라틴은 neue-haas, 안 뜨면 시스템 sans.
-   한글 글리프가 라틴보다 커 보여 size-adjust: 96%로 메트릭 축소.
+   단일 폰트 — Heitz (Regular, self-hosted, /fonts/Heitz-Regular.woff2).
+   한글·라틴·숫자·부호 전부 Heitz로 그린다(Typekit/neue-haas 폐기). 한 폰트라
+   한글·라틴이 같은 baseline을 공유 → .ko/.en 섞어짜기 보정이 더는 필요 없다.
    Heitz Wide도 @font-face로 호스팅만 — 현재 미사용. */
 @font-face {
   font-family: 'Heitz';
@@ -13,9 +9,6 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
-  size-adjust: 96%;
-  /* 한글만 — Hangul 자모/호환자모/확장A·B/음절. 라틴·숫자·부호는 제외(neue-haas 몫) */
-  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF;
 }
 @font-face {
   font-family: 'Heitz Wide'; /* 호스팅만 — 현재 미사용 */
@@ -23,29 +16,6 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
-  size-adjust: 96%;
-  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF;
-}
-/* 라틴(neue-haas) baseline 보정 — Heitz 한글보다 라틴이 높이 앉아 영문이 떠 보인다.
-   한글(.ko)은 기준으로 두고(top:0), 라틴 글자(.en = 영문·숫자·부호, text.js가
-   래핑)를 콘텐츠 영역에서 em(폰트크기 비례) 단위로 아래로 내려 한글 baseline에
-   맞춘다. 숫자·부호도 라틴 폰트라 영문과 같은 보정 — 표 번호 칸까지 포함(표 전체).
-   em이라 모든 글자 크기에서 같은 비율(절대 px 아님). UI 크롬(푸터·버튼·라벨)의
-   .en은 기준 0이라 영향 없음 — 콘텐츠 셀렉터에서만 내린다. */
-.ko {
-  position: relative;
-  top: 0;
-}
-.en {
-  position: relative;
-  top: 0; /* 기본 0 — 콘텐츠에서만 아래로 내린다(아래 셀렉터) */
-}
-.work-card .en,
-.drawer-panel .en,
-.memo .en,
-.link-list .en,
-table.sontable .en {
-  top: 0.09em;
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -185,7 +155,7 @@ body {
   /* 수직 4px 격자 — 줄높이를 정수 px로 고정해 구분선 y가 디바이스 픽셀
      격자에 정렬되게 한다 (윈도우 125%/150% 배율의 선 굵기 들쭉 방지) */
   line-height: 1.25rem; /* 컴팩트 — 20px */
-  font-family: neue-haas-unica, 'Heitz', sans-serif; /* 라틴=neue-haas-unica, 한글=Heitz(폴백) */
+  font-family: 'Heitz', sans-serif; /* 단일 폰트 — 한글·라틴 모두 Heitz */
   font-weight: 400; /* 전체 웨이트 400 통일 */
   font-style: normal;
   color: var(--ink);
@@ -1016,7 +986,7 @@ table tr[data-active='true'] a {
 .work-card > :last-child { margin-bottom: 0; }
 
 .work-card .card-title {
-  font-family: neue-haas-unica, 'Heitz', sans-serif; /* 본문과 동일(라틴=neue-haas, 한글=Heitz) */
+  font-family: 'Heitz', sans-serif; /* 본문과 동일 — 단일 폰트 Heitz */
   font-weight: 400;
   font-style: normal;
   text-align: left;
@@ -1342,27 +1312,6 @@ table.sontable .col-cat   { width: 20%; }
   border-radius: 0.75rem;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
-}
-/* pill baseline — 보정을 안쪽 글자에만 걸면 배경(<a>)이 안 따라와 pill이 안 감싸진다.
-   그래서 pill(<a>)을 통째로 0.09em 내려 배경+영문 텍스트가 함께 본문 영문 baseline에
-   맞으며 컴팩트 유지. 단 한글(.ko)은 그 보정을 -0.09em으로 상쇄(net 0)해 본문 한글
-   baseline에 맞춘다 → pill 안에서도 영문이 한글보다 0.09em 아래 = 본문과 같은 baseline
-   관계. (콘텐츠 영역 pill만 — 푸터·우측은 무관) */
-.work-card .card-body a,
-.work-card .card-link,
-.drawer-panel a {
-  position: relative;
-  top: 0.09em;
-}
-.work-card .card-body a .en,
-.work-card .card-link .en,
-.drawer-panel a .en {
-  top: 0; /* <a>의 +0.09em 그대로 → 본문 영문과 동일 */
-}
-.work-card .card-body a .ko,
-.work-card .card-link .ko,
-.drawer-panel a .ko {
-  top: -0.09em; /* <a> 보정 상쇄(net 0) → 본문 한글과 동일 */
 }
 /* webring — 본문 링크와 같은 pill (단, ↗ 아이콘 없음: ::before 그룹 비포함).
    링크 3개(←, indieweb webring, →)가 각각 pill 칩이 된다. */

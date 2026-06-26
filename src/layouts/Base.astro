@@ -1,5 +1,5 @@
 ---
-// hyuk repo의 디자인을 원본 그대로 복제 — Typekit 폰트 + 한글 woff2 포함.
+// hyuk repo의 디자인 복제 — 단일 self-hosted 폰트(Heitz woff2).
 import '../styles/global.css';
 // 모바일 전용 — 모든 룰이 @media (max-width: 600px) 안에 격리. 데스크탑 영향 0.
 import '../styles/mobile.css';
@@ -57,45 +57,12 @@ const { title } = Astro.props;
         (GitHub 프로필 "Website" 칸이 hyuk.xyz를 가리켜야 양방향 성립) */}
     <link rel="me" href="https://github.com/h2j603" />
 
-    {/* 외부 리소스 연결 미리 열기 — 폰트(Typekit)·iframe(h2j603.github.io) 로딩 단축 */}
-    <link rel="preconnect" href="https://use.typekit.net" crossorigin />
-    <link rel="preconnect" href="https://p.typekit.net" crossorigin />
+    {/* 외부 리소스 연결 미리 열기 — iframe(h2j603.github.io) 로딩 단축 */}
     <link rel="dns-prefetch" href="https://h2j603.github.io" />
 
-    {/* 한글 = Heitz (self-hosted). 본문 한글 폰트라 preload로 첫 페인트 단축 */}
+    {/* 단일 폰트 = Heitz (self-hosted). 본문 폰트라 preload로 첫 페인트 단축.
+        (Typekit/neue-haas는 폐기 — 한글·라틴 모두 Heitz로 그린다) */}
     <link rel="preload" href="/fonts/Heitz-Regular.woff2" as="font" type="font/woff2" crossorigin />
-
-    {/* Typekit — neue-haas-unica (라틴 폴백). t26-carbon은 폐기(미사용) */}
-    <link rel="stylesheet" href="https://use.typekit.net/rhy6are.css" />
-
-    {/* Typekit JS loader (원본과 동일 — wf-loading 등 lifecycle 관리) */}
-    <script is:inline>
-      (function (d) {
-        var config = { kitId: 'fpx8ely', scriptTimeout: 3000, async: true },
-          h = d.documentElement,
-          t = setTimeout(function () {
-            h.className = h.className.replace(/\bwf-loading\b/g, '') + ' wf-inactive';
-          }, config.scriptTimeout),
-          tk = d.createElement('script'),
-          f = false,
-          s = d.getElementsByTagName('script')[0],
-          a;
-        h.className += ' wf-loading';
-        tk.src = 'https://use.typekit.net/' + config.kitId + '.js';
-        tk.async = true;
-        tk.onload = tk.onreadystatechange = function () {
-          a = this.readyState;
-          if (f || (a && a != 'complete' && a != 'loaded')) return;
-          f = true;
-          clearTimeout(t);
-          try {
-            // eslint-disable-next-line no-undef
-            Typekit.load(config);
-          } catch (e) {}
-        };
-        s.parentNode.insertBefore(tk, s);
-      })(document);
-    </script>
   </head>
   <body>
     <slot />
