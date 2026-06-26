@@ -810,7 +810,7 @@ iframe {
 }
 .memo.open .memo-body { display: block; }
 /* 펼침 본문 맨 아래 — 원 블록으로 가는 출처 링크 (회색, 작게).
-   좌측 컬럼이 .intro 스코프라 본문 링크 규칙(보라·점멸·↗)을 받아서
+   좌측 컬럼이 .intro 스코프라 본문 링크 규칙(보라·점멸)을 받아서
    .intro a보다 높은 특이도로 메타 어법(회색·정적)을 되돌린다. */
 .intro a.memo-source {
   display: block;
@@ -822,7 +822,6 @@ iframe {
   white-space: nowrap;
   animation: none;
 }
-.intro a.memo-source::before { content: none; } /* ↗는 마크업 리터럴 하나만 */
 .intro a.memo-source:hover {
   color: var(--accent);
   font-weight: 400;
@@ -858,23 +857,6 @@ table tr[data-active='true'] a {
 .work-card .card-link.mention {
   background: var(--pill-person-grad);
   color: var(--pill-person-text);
-}
-.intro a.mention::before,
-.drawer-panel a.mention::before,
-.work-card .card-body a.mention::before,
-.work-card .card-link.mention::before {
-  content: '';
-  display: inline-block;
-  /* 화살표 아이콘과 동일 박스·정렬 — user.svg가 라인(stroke)형이라 외곽선만 */
-  width: 1em;
-  height: 1em;
-  vertical-align: -0.13em;
-  margin-right: 0.125rem;
-  /* 기본 ↗ 규칙의 보라(color)를 무효화 — 인물 아이콘은 텍스트색 따라감 */
-  color: inherit;
-  background-color: currentColor;
-  mask: url('/icons/user.svg') no-repeat center / contain;
-  -webkit-mask: url('/icons/user.svg') no-repeat center / contain;
 }
 /* 멘션 호버 — pill 배경 한 단계 진하게. 터치 sticky-hover 회피 위해 포인터 한정 */
 @media (hover: hover) {
@@ -1313,8 +1295,8 @@ table.sontable .col-cat   { width: 20%; }
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
-/* webring — 본문 링크와 같은 pill (단, ↗ 아이콘 없음: ::before 그룹 비포함).
-   링크 3개(←, indieweb webring, →)가 각각 pill 칩이 된다. */
+/* webring — 본문 링크와 같은 pill. 링크 3개(←, indieweb webring, →)가
+   각각 pill 칩이 된다. (앞 아이콘은 색으로 구분되므로 전부 제거) */
 .webring a {
   background: var(--pill-link-grad);
   color: var(--pill-link-text);
@@ -1324,24 +1306,6 @@ table.sontable .col-cat   { width: 20%; }
   border-radius: 0.75rem;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
-}
-.intro a::before,
-.drawer-panel a::before,
-.work-card .card-body a::before,
-.work-card .card-link::before,
-/* 웹링은 가운데 'indieweb webring' 링크에만 ↗ (양옆 화살표 제외) */
-.webring a.ring-link::before {
-  content: '';
-  display: inline-block;
-  /* 링크 아이콘(체인) — 대각선이라 같은 박스서 더 커 보여 0.85em로 시각보정.
-     (인물 아이콘은 1em 그대로 — 별도 규칙) */
-  width: 0.85em;
-  height: 0.85em;
-  vertical-align: -0.08em;
-  margin-right: 0.125rem;
-  background-color: currentColor;
-  mask: url('/icons/link.svg') no-repeat center / contain;
-  -webkit-mask: url('/icons/link.svg') no-repeat center / contain;
 }
 /* 본문 링크(pill) 호버 — 배경 한 단계 진하게. hover 가능한 포인터에서만:
    터치 기기는 탭 후 :hover가 들러붙어(sticky) 누른 pill이 진한 채 남는다. */
