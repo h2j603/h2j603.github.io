@@ -1,7 +1,5 @@
 // 한·영 토글 — 띠 위 칩(.lang-toggle)이 .three-col[data-lang]을 바꾼다.
 
-import { wrapText } from './text.js';
-
 export function initLang() {
   var langToggle = document.querySelector('.lang-toggle');
   var threeCol = document.querySelector('.three-col');
@@ -15,12 +13,9 @@ export function initLang() {
     // About 서랍(.three-col 밖 형제 레이어)도 같은 언어 규칙을 타게
     var drawer = document.querySelector('.about-drawer');
     if (drawer) drawer.setAttribute('data-lang', lang);
-    // 표 제목 — data-ko/en 스왑 (게시 행은 <a>, 미게시 잠긴 행은 <span>).
-    // textContent 교체로 .ko/.en 래핑이 날아가므로 스왑 직후 다시 감싸
-    // baseline 보정(본문과 동일한 섞어짜기 기준선)을 복구한다.
+    // 표 제목 — data-ko/en 스왑 (게시 행은 <a>, 미게시 잠긴 행은 <span>)
     document.querySelectorAll('table.sontable [data-ko]').forEach(function (el) {
       el.textContent = el.getAttribute('data-' + lang) || '';
-      wrapText(el);
     });
   }
   applyLang(langToggle.getAttribute('data-lang') || 'ko'); // 초기 동기화
