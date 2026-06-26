@@ -1,7 +1,9 @@
 /* ───────────────────────────────────────────────────────────────────────
-   단일 폰트 — Heitz (Regular, self-hosted, /fonts/Heitz-Regular.woff2).
-   한글·라틴·숫자·부호 전부 Heitz로 그린다(Typekit/neue-haas 폐기). 한 폰트라
-   한글·라틴이 같은 baseline을 공유 → .ko/.en 섞어짜기 보정이 더는 필요 없다.
+   한글 = Heitz (self-hosted, /fonts/Heitz-Regular.woff2).
+   라틴·숫자·부호 = IBM Plex Mono (Google Fonts, Base.astro에서 로드).
+   스택은 Plex Mono 먼저 — 라틴은 Plex Mono, 한글은 글리프가 없어 Heitz로 폴백.
+   Heitz엔 Latin 글리프도 있어 unicode-range로 한글(Hangul)만 그리게 한정 →
+   Plex Mono가 안 떠도 Heitz가 라틴을 잠식하지 않는다.
    Heitz Wide도 @font-face로 호스팅만 — 현재 미사용. */
 @font-face {
   font-family: 'Heitz';
@@ -9,6 +11,8 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+  /* 한글만 — Hangul 자모/호환자모/확장A·B/음절. 라틴·숫자·부호는 Plex Mono 몫 */
+  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF;
 }
 @font-face {
   font-family: 'Heitz Wide'; /* 호스팅만 — 현재 미사용 */
@@ -155,7 +159,7 @@ body {
   /* 수직 4px 격자 — 줄높이를 정수 px로 고정해 구분선 y가 디바이스 픽셀
      격자에 정렬되게 한다 (윈도우 125%/150% 배율의 선 굵기 들쭉 방지) */
   line-height: 1.25rem; /* 컴팩트 — 20px */
-  font-family: 'Heitz', sans-serif; /* 단일 폰트 — 한글·라틴 모두 Heitz */
+  font-family: 'IBM Plex Mono', 'Heitz', monospace; /* 라틴=Plex Mono, 한글=Heitz */
   font-weight: 400; /* 전체 웨이트 400 통일 */
   font-style: normal;
   color: var(--ink);
@@ -986,7 +990,7 @@ table tr[data-active='true'] a {
 .work-card > :last-child { margin-bottom: 0; }
 
 .work-card .card-title {
-  font-family: 'Heitz', sans-serif; /* 본문과 동일 — 단일 폰트 Heitz */
+  font-family: 'IBM Plex Mono', 'Heitz', monospace; /* 본문과 동일 — 라틴=Plex Mono, 한글=Heitz */
   font-weight: 400;
   font-style: normal;
   text-align: left;
