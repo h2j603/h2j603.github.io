@@ -57,19 +57,12 @@ const { title } = Astro.props;
         (GitHub 프로필 "Website" 칸이 hyuk.xyz를 가리켜야 양방향 성립) */}
     <link rel="me" href="https://github.com/h2j603" />
 
-    {/* 외부 리소스 연결 미리 열기 — 폰트(Google Fonts)·iframe(h2j603.github.io) */}
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    {/* 외부 리소스 연결 미리 열기 — iframe(h2j603.github.io) 로딩 단축 */}
     <link rel="dns-prefetch" href="https://h2j603.github.io" />
 
-    {/* 한글 = Heitz (self-hosted). 본문 폰트라 preload로 첫 페인트 단축 */}
+    {/* 단일 폰트 = Heitz (self-hosted). 본문 폰트라 preload로 첫 페인트 단축.
+        (Typekit/neue-haas는 폐기 — 한글·라틴 모두 Heitz로 그린다) */}
     <link rel="preload" href="/fonts/Heitz-Regular.woff2" as="font" type="font/woff2" crossorigin />
-
-    {/* 라틴 = IBM Plex Mono (Google Fonts). 한글은 글리프가 없어 Heitz로 폴백 */}
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap"
-      rel="stylesheet"
-    />
   </head>
   <body>
     <slot />
