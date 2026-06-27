@@ -617,9 +617,9 @@ iframe {
 @media (hover: hover) {
   .link-filter:hover { background: var(--tint-accent); }
 }
-/* 표 컬럼 기준선 — center(20~80%) 안에서 번호 10/연도 10/제목 60/분류 20 경계 */
-.col-divider.d5 { left: 26%; } /* 번호|연도 */
-.col-divider.d3 { left: 32%; } /* 연도|제목 */
+/* 표 컬럼 기준선 — center(20~80%) 안에서 번호 20/제목 60/분류 20 경계
+   (연도 칸 폐기 → 번호 칸이 32%까지. d5(번호|연도, 26%) 삭제, d3가 번호|제목) */
+.col-divider.d3 { left: 32%; } /* 번호|제목 */
 .col-divider.d4 { left: 68%; } /* 제목|분류 */
 
 .three-col .left {
