@@ -55,22 +55,19 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 8. **Deploy:** GitHub Pages via `.github/workflows/deploy.yml` (push to `main`
    or manual dispatch). The runner has open internet so the Are.na fetch works
    there.
-9. **인물 레지스트리 (`people` 채널, 실제 슬러그 `people-vbm5erq60ra` / #5296875,
-   private).** 링크 블록 1개 = 인물 1명: value(URL) = 대표 링크, title =
-   `"한국어 / English"`, description = `slug:` + `aliases:`(쉼표 구분 표기 변형,
-   선택 `role:`). 본문 @멘션(링크 텍스트가 `@`로 시작)이 **빌드 타임에 이름으로
-   매칭**되어 — href가 레지스트리 URL로 통일되고, 블록 언어에 맞는 이름(한/영)
-   으로 표기가 바뀌며, `class="mention" data-person="slug"`가 박히고, 작품의
-   `people[]`(관계형 조인 키)에 기록된다. 미등록 인물은 원본 그대로(fallback).
-   스냅샷은 `src/data/people.json`. intro 채널 멘션은 매칭하지 않음
-   (자기 SNS 핸들이라 의도적 제외).
+9. **인물 — 별도 레지스트리 없음(폐기됨).** 예전엔 `people` 채널 + 빌드타임
+   @멘션 매칭이 있었으나, 본문 @멘션을 **인라인 마크다운 링크 `[이름](url)`로
+   직접 변환**(Are.na API)하고 `people` 채널을 삭제했다. 이제 인물 링크는 그냥
+   본문 하이퍼링크다 — 새 인물을 넣을 땐 본문에 `[이름](url)`로 쓰면 된다.
+   (한/영 이름 자동전환·작품 조인·`data-person`은 더 이상 없음.)
 10. **메모 (`memo` 채널, 혁이 직접 만든 채널 — 불변 ID `5297539`로 참조).**
     채널 이름 rename 시 Are.na slug가 바뀌어 연결이 끊기므로 slug 대신 숫자
     ID로 건다 (config의 `ARENA_MEMO_CHANNEL`). 텍스트 블록 1개 = 메모 1개 —
     좌측 컬럼 아코디언(블록 title = 접힌 라벨, 본문 = 펼침). 블록의
     connection.created_at을 "추가 시점"으로 표기 (links도 동일). 스냅샷
-    `src/data/memos.json`. (people·links 채널은 아직 slug 참조 — 같은 rename
-    취약점, 필요 시 동일하게 ID로 전환: people #5296875, links #5297302.)
+    `src/data/memos.json`. ⚠️ `.env`의 `ARENA_MEMO_CHANNEL`은 반드시 ID `5297539`
+    (옛 슬러그 `notepad-...`는 rename으로 죽음). 배포는 secret 없이 config 기본
+    ID를 써서 정상. (links 채널은 아직 slug 참조 — 필요 시 ID로 전환: #5297302.)
 11. **수집 링크 (`links` 채널, 실제 슬러그 `collection-gxx8lqhxixg` / #5297302,
     private).** 링크 블록 1개 = 사이트 1개, title = 표시 이름. 우측 컬럼에
     채널 순서대로 본문 pill 스타일 스택으로 렌더 (모바일은 숨김). 스냅샷
@@ -85,16 +82,14 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 | `src/lib/body.ts` | Markdown → semantic HTML (`marked`), defensive |
 | `src/lib/images.ts` | `classifyBlock` (image/link/text), download + skip-cache |
 | `src/lib/works.ts` | orchestrate channel → validated `Work[]` (per-work error isolation) |
-| `src/lib/people.ts` | 인물 레지스트리 fetch + @멘션 매칭·재작성 (`rewriteMentions`) |
 | `src/lib/links.ts` | 수집 링크 채널 fetch (우측 컬럼) |
-| `src/lib/schema.ts` | `Work`·`Person` zod schema (source of truth) + `TAGS` |
+| `src/lib/schema.ts` | `Work` zod schema (source of truth) + `TAGS` |
 | `src/lib/site-data.ts` | page-side: read snapshot + resolve image assets |
 | `scripts/build-data.ts` | build-time data step (`--dry-run` supported) |
 | `scripts/setup-arena.ts` | idempotent Are.na structure bootstrap |
-| `scripts/setup-people.ts` | 인물 채널 생성 + 기존 멘션 시드 (멱등) |
 | `scripts/setup-links.ts` | 수집 링크 채널 생성 + 예시 시드 (멱등) |
 | `src/pages/index.astro` | 단일 페이지 — 3컬럼 마크업 (JS는 `src/scripts/`로 분리) |
-| `src/scripts/*.js` | 인터랙션 모듈 — main(진입점)·accordion(표+hash+모바일 페이저)·drawer·stripe·mosaic·lang·memos·link-filter·clock·text·util |
+| `src/scripts/*.js` | 인터랙션 모듈 — main(진입점)·accordion·drawer·stripe(줄무늬+세로선 드래그 리사이즈)·mosaic·lang·memos·link-filter·clock·text·util |
 
 ## Commands
 
@@ -102,7 +97,6 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 npm install
 cp .env.example .env          # fill ARENA_TOKEN + ARENA_INDEX_CHANNEL
 npm run setup:arena           # one-time: create the Are.na structure (write token)
-npm run setup:people          # one-time: 인물 레지스트리 채널 생성 + 멘션 시드
 npm run setup:links           # one-time: 수집 링크 채널 생성 + 예시 시드
 npm run check:arena           # dry-run fetch + report (writes nothing)
 npm run build                 # fetch Are.na + astro build → dist/
@@ -120,7 +114,7 @@ npm run build:nofetch         # astro build only, against existing works.json
 
 ## Status (2026-06-12 기준)
 
-- Are.na 라이브 API 검증 완료, 채널 전부 운영 중 (works / people / memo / links).
+- Are.na 라이브 API 검증 완료, 채널 운영 중 (works / memo / links). people 채널 폐기.
 - GitHub Pages 배포 정상 (`deploy.yml`, main push 또는 수동 dispatch).
 - **소유자는 당분간 폰만 사용 가능 (군 복무)** — 모든 작업은 클라우드 세션에서
   하고, 반드시 PR로 만든 뒤 **세션이 즉시 머지한다** (소유자 사전 확인 불요 —

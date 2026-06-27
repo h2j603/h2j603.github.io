@@ -8,7 +8,6 @@ dist/
 # generated build data (fetched from Are.na at build time)
 src/data/works.json
 src/data/intro.json
-src/data/people.json
 src/data/links.json
 src/data/memos.json
 

@@ -6,7 +6,6 @@
   "description": "Portfolio site (hyuk.xyz) with an Are.na backend, built at compile time into a static Astro site.",
   "scripts": {
     "setup:arena": "tsx scripts/setup-arena.ts",
-    "setup:people": "tsx scripts/setup-people.ts",
     "setup:links": "tsx scripts/setup-links.ts",
     "setup:memo": "tsx scripts/setup-memo.ts",
     "build:data": "tsx scripts/build-data.ts",

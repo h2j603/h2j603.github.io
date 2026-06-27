@@ -12,18 +12,15 @@ import type { ImageMetadata } from 'astro';
 import {
   worksFileSchema,
   linksFileSchema,
-  peopleFileSchema,
   memosFileSchema,
   type Work,
   type SiteLink,
-  type Person,
   type Memo,
 } from './schema.js';
 
 const DATA_PATH = resolve(process.cwd(), 'src/data/works.json');
 const INTRO_PATH = resolve(process.cwd(), 'src/data/intro.json');
 const LINKS_PATH = resolve(process.cwd(), 'src/data/links.json');
-const PEOPLE_PATH = resolve(process.cwd(), 'src/data/people.json');
 const MEMOS_PATH = resolve(process.cwd(), 'src/data/memos.json');
 
 let cache: Work[] | null = null;
@@ -93,18 +90,6 @@ export function getIntro(): BilingualGroup[] {
   if (introCache !== null) return introCache;
   introCache = groupBilingual(readBlocks(INTRO_PATH));
   return introCache;
-}
-
-/** 좌측 컬럼 인물 인덱스 — people.json 스냅샷 (없으면 빈 배열). */
-let peopleCache: Person[] | null = null;
-export function getPeople(): Person[] {
-  if (peopleCache !== null) return peopleCache;
-  try {
-    peopleCache = peopleFileSchema.parse(JSON.parse(readFileSync(PEOPLE_PATH, 'utf8')));
-  } catch {
-    peopleCache = [];
-  }
-  return peopleCache;
 }
 
 /** 우측 컬럼 수집 링크 — links.json 스냅샷 (없으면 빈 배열). */
