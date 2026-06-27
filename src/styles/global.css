@@ -1037,11 +1037,12 @@ tr[data-slug] { scroll-margin-top: 0.5rem; }
 table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 /* 펼쳐진 카드 — 제목↔작품 간격은 카드 상단 0.5rem 하나로만 (제목 칸 아래 0).
    사이트 마이크로 간격 리듬(이미지 그리드·pill 스택 0.5rem)과 동일 */
-/* 아코디언 펼침을 표 3컬럼 그리드(20/60/20)에 맞춰 배치:
-   규격=연도칸(1), 이미지·본문=제목칸(2), web 링크=분류칸(3). */
+/* 아코디언 펼침을 표 3컬럼 그리드(10/70/20)에 맞춰 배치 — 연도 칸이 사라졌으므로
+   왼쪽 빈자리(옛 연도칸 20%)를 없애 표 컬럼과 정렬:
+   빈칸=번호칸(1, 10%), 이미지·본문=제목칸(2, 70%), web 링크=분류칸(3, 20%). */
 .accordion-detail .work-card {
   display: grid;
-  grid-template-columns: 20% 60% 20%;
+  grid-template-columns: 10% 70% 20%;
   align-items: start;
   row-gap: var(--space-6); /* 미디어↔본문 — 24px (이미지 아래 숨통) */
   padding: var(--space-2) 0 var(--space-6);
