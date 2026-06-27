@@ -2,6 +2,8 @@
 // (구 index.astro 인라인 450줄 단일 클로저를 기능별 모듈로 분리)
 import { initStripe, initDividers } from './stripe.js';
 import { initDrawer, toggleDrawer } from './drawer.js';
+import { initAbout } from './about.js';
+import { initGuestbook } from './guestbook.js';
 import { initMosaic, replayMosaic } from './mosaic.js';
 import { initAccordion, accClose, applyHash } from './accordion.js';
 import { initLang } from './lang.js';
@@ -35,6 +37,8 @@ export function initSite() {
   initStripe();
   initDividers();
   initDrawer();
+  initAbout();      // 'Hyuk Jang' → 가운데 About 오버레이
+  initGuestbook();  // 커튼 = 방명록 (구글 시트)
   initLang();
   initAccordion();
   initMemos();
