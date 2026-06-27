@@ -57,6 +57,9 @@
   /* 행 호버 칠 — 두 틴트를 같은 L(0.90)·낮은 C로 파생 → 보라/갈 교차 무게 동일 */
   --tint-accent: oklch(from var(--accent) 0.90 0.055 h);
   --tint-brown:  oklch(from var(--person) 0.90 0.03 h);
+  /* 행 호버 그라디언트 — 위=틴트색 → 아래로 밝아져 배경에 빠진다(L 0.90→0.99). */
+  --tint-accent-grad: linear-gradient(180deg, var(--tint-accent) 0%, oklch(from var(--accent) 0.99 0.012 h) 100%);
+  --tint-brown-grad:  linear-gradient(180deg, var(--tint-brown) 0%, oklch(from var(--person) 0.99 0.008 h) 100%);
   /* 하이퍼링크 pill — 옅은 틴트 배경(L 0.96 통일) + 같은 hue 쨍한 글자(읽힘 위해 살짝 어둡게) */
   --pill-link-bg:     oklch(from var(--accent) 0.96 0.03 h);
   --pill-link-text:   oklch(from var(--accent) 0.53 0.25 h);
@@ -101,6 +104,8 @@
     --ink-body: #49464f;
     --tint-accent: #ece0f7;
     --tint-brown: #ebe4dd;
+    --tint-accent-grad: linear-gradient(180deg, #ece0f7 0%, #fbfaff 100%);
+    --tint-brown-grad: linear-gradient(180deg, #ebe4dd 0%, #fbfaf8 100%);
     --pill-link-bg: #f4eefb;
     --pill-link-text: #7328c4;
     --pill-person-bg: #f5f1ed;
@@ -766,13 +771,14 @@ iframe {
   --pt: calc(0.5rem + var(--top-gap));
 }
 /* 호버 — 메모·링크 모두 보라/갈색 2색 교차(row-a/row-b, 빌드 시 인덱스로 부여).
+   칠은 위=틴트색 → 아래로 갈수록 밝아져 빠지는 세로 그라디언트.
    링크는 드롭다운 필터로 항목이 숨겨질 수 있어 JS가 row-a/row-b를 재계산한다.
    열린 메모는 표 활성 행처럼 호버 칠 없음. */
 @media (hover: hover) {
   .memo-list .memo.row-a:not(.open):hover,
-  .link-list a.link-item.row-a:hover { background: var(--tint-accent); }
+  .link-list a.link-item.row-a:hover { background: var(--tint-accent-grad); }
   .memo-list .memo.row-b:not(.open):hover,
-  .link-list a.link-item.row-b:hover { background: var(--tint-brown); }
+  .link-list a.link-item.row-b:hover { background: var(--tint-brown-grad); }
   /* 호버 = 블록이 살짝 자란다 (+8px, 4px 격자 유지. 열린 메모 제외) */
   .memo-list .memo:not(.open):hover,
   .link-list a.link-item:hover {
@@ -803,7 +809,7 @@ iframe {
   font-weight: inherit;
   color: var(--ink);
   text-align: center;
-  letter-spacing: 0.02em; /* 제목 자간 살짝 넓힘 (em — 글자 크기 비례) */
+  letter-spacing: 0.05em; /* 메모 제목 자간 — 표 제목(.title-cell)과 동일 */
   line-height: 1.25rem;
 }
 /* 메모가 열려 있는 동안 — 표와 같은 어법으로 다른 메모는 옅게,
@@ -1044,8 +1050,8 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, pad
    펼쳐진(active)·잠긴(locked) 행은 호버 칠 없음.
    @media (hover: hover) — 터치 기기에선 sticky hover 회피로 진짜 호버만. */
 @media (hover: hover) {
-  table.sontable tr.row-a[data-slug]:not([data-active='true']):not([data-locked='true']) td:hover { background: var(--tint-accent); }
-  table.sontable tr.row-b[data-slug]:not([data-active='true']):not([data-locked='true']) td:hover { background: var(--tint-brown); }
+  table.sontable tr.row-a[data-slug]:not([data-active='true']):not([data-locked='true']) td:hover { background: var(--tint-accent-grad); }
+  table.sontable tr.row-b[data-slug]:not([data-active='true']):not([data-locked='true']) td:hover { background: var(--tint-brown-grad); }
 }
 /* 펼칠 때 행이 컬럼(스크롤 컨테이너) 상단에서 살짝 떨어지게 —
    sticky 헤더가 없어졌으므로 작은 여백만 */
