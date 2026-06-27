@@ -46,7 +46,7 @@ export function initStripe() {
 // 두 경계 위치(0~1): 좌|중 = splitA, 중|우 = splitB. 컬럼 폭(CSS 변수)·세로선이
 // 이 두 값에서 파생된다. 선 위치는 % 그대로 두면 분수 디바이스 픽셀에 떨어져
 // 1px 선이 번지므로(특히 배율 125/150%), px로 ×dpr 반올림 ÷dpr 스냅해 인라인 부여.
-var SPLIT_KEY = 'hyuk.split';
+// 드래그 위치는 저장하지 않는다 — 새로고침하면 항상 기본 비율로 되돌아간다.
 var DEFAULT_A = 0.2, DEFAULT_B = 0.8;
 var MIN_SIDE = 0.12;   // 좌·우 컬럼 최소 폭
 var MIN_CENTER = 0.32; // 중앙(작품 표) 최소 폭
@@ -56,16 +56,6 @@ function clampSplits() {
   // 좌: [MIN_SIDE, 1-MIN_SIDE-MIN_CENTER] / 우: [좌+MIN_CENTER, 1-MIN_SIDE]
   splitA = Math.min(Math.max(splitA, MIN_SIDE), 1 - MIN_SIDE - MIN_CENTER);
   splitB = Math.min(Math.max(splitB, splitA + MIN_CENTER), 1 - MIN_SIDE);
-}
-
-function loadSplit() {
-  try {
-    var s = JSON.parse(localStorage.getItem(SPLIT_KEY));
-    if (s && typeof s.a === 'number' && typeof s.b === 'number') { splitA = s.a; splitB = s.b; }
-  } catch (e) { /* 저장값 없음/파손 — 기본값 유지 */ }
-}
-function saveSplit() {
-  try { localStorage.setItem(SPLIT_KEY, JSON.stringify({ a: splitA, b: splitB })); } catch (e) { /* noop */ }
 }
 
 function snapDividers() {
@@ -103,7 +93,6 @@ function initDrag() {
         document.body.style.userSelect = '';
         window.removeEventListener('pointermove', move);
         window.removeEventListener('pointerup', up);
-        saveSplit();
       }
       window.addEventListener('pointermove', move);
       window.addEventListener('pointerup', up);
@@ -112,8 +101,7 @@ function initDrag() {
 }
 
 export function initDividers() {
-  loadSplit();
-  applySplit();
+  applySplit(); // 항상 기본 비율로 시작 (저장 안 함)
   initDrag();
   window.addEventListener('resize', snapDividers); // 폭(%)은 자동 스케일, 선 px만 재스냅
 }
