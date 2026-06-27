@@ -191,6 +191,9 @@
   table.sontable .col-num   { width: 18%; }
   table.sontable .col-title { width: 64%; }
   table.sontable .col-cat   { width: 18%; }
+  /* 세로선 미적용 — 데스크탑 col-divider는 display:none, 표 셀 컬럼선도 끈다 */
+  table.sontable tr[data-slug] td.title-cell,
+  table.sontable tr[data-slug] td.cat-cell { border-left: 0; }
   /* 정렬 — 제목 가운데(좌우 대칭 열로 화면 정중앙), 태그 오른쪽.
      text-wrap: balance — 여러 줄 제목의 줄 길이를 고르게 나눠 가운데 정렬 안정. */
   .title-cell { text-align: center; text-wrap: balance; }
