@@ -183,16 +183,6 @@ body {
   .tag-chip { transition: background-color 0.6s ease, color 0.6s ease; }
 }
 
-/* 텍스트 드래그 하이라이트 — 포인트 보라 + 흰 텍스트 */
-::selection {
-  background: var(--accent);
-  color: #fff;
-}
-::-moz-selection {
-  background: var(--accent);
-  color: #fff;
-}
-
 /* ───────────────────────────────────────────────────────────────────────
    타이포 (원본 그대로)
    ─────────────────────────────────────────────────────────────────────── */
@@ -295,8 +285,10 @@ iframe {
   height: 4.5rem;
   overflow: hidden;
   /* 높이는 drawer.js가 드래그+스프링으로 inline 구동 (CSS 트랜지션 없음).
-     세로 드래그 핸들 — 브라우저 스크롤/당겨 새로고침 제스처 차단. */
-  cursor: grab;
+     세로 드래그 핸들 — 브라우저 스크롤/당겨 새로고침 제스처 차단.
+     커서 = 세로 리사이즈(ns-resize) — 세로선 드래그(col-resize)와 같은 어법으로
+     "끌어 늘릴 수 있음"을 알린다. */
+  cursor: ns-resize;
   touch-action: none;
   /* row 사이 공백 텍스트 노드가 body line-height(~0.9375rem) 만큼 차지하지 않게 차단.
      이게 시각적으로 stripe를 50~63px로 두껍게 보이게 만들던 진범. */
@@ -308,7 +300,7 @@ iframe {
   height: 100vh;
   height: 100dvh;
 }
-.stripe-top.grabbing { cursor: grabbing; }
+.stripe-top.grabbing { cursor: ns-resize; }
 
 /* About 서랍 — 펼쳐진 커튼 위 패널 레이어. 레이어 자체는 클릭을 통과시켜
    (천 클릭 = 닫기, stripe 핸들러) 패널만 클릭을 소화한다. */
@@ -372,46 +364,163 @@ iframe {
   .about-drawer .drawer-panel { transform: none; }
   .about-drawer.entered .drawer-panel { animation: none; opacity: 1; }
 }
-/* About 그룹 사이 — 구분선 없이 여백만(이전 hr의 위아래 16px 합과 같은 리듬). */
-.about-drawer .intro-group + .intro-group { margin-top: var(--space-8); }
+/* ── About 오버레이 — 'Hyuk Jang' 버튼이 토글. 가운데(작품 표) 위를 덮는다.
+   center 컬럼과 같은 좌표(top 4.5rem ~ bottom 2.5rem, split 변수 폭). ── */
+/* About = 전체 영역 한 장 — 띠(4.5rem)~푸터(2.5rem) 사이 전폭을 차지(3컬럼 위 덮음).
+   상단 arena-path 가로선 + 본문 2~3단 사이 세로 구분선(column-rule)으로
+   "세로·가로 구분선"을 살린다. 호버 없음(읽기 전용). */
+.about-overlay {
+  position: absolute;
+  top: 4.5rem;
+  bottom: 2.5rem;
+  left: 0;
+  width: 100%;
+  z-index: 8; /* 3컬럼·세로선 위, 커튼(100)·버튼(102) 아래 */
+  background: var(--bg);
+  overflow-y: auto;
+  overflow-x: hidden;
+  text-wrap: pretty;
+}
+.about-overlay[hidden] { display: none; }
+/* 열림 — 아래서 살짝 솟아 페이드인 */
+.about-overlay:not([hidden]) { animation: about-overlay-in 0.4s cubic-bezier(0.2, 0.85, 0.25, 1); }
+@keyframes about-overlay-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+/* 본문 — 넓은 About 전용 예외: 한/영 2단 병기(설정 언어 좌측). */
+.about-overlay .intro-body {
+  position: relative;
+  padding: var(--space-8) var(--space-6);
+  letter-spacing: 0.02em; /* 포트폴리오 본문과 동일 자간 */
+}
+/* 가운데 세로 구분선 — 한/영 2단 경계(전체 높이 연속) */
+.about-overlay .intro-body::before {
+  content: '';
+  position: absolute;
+  top: var(--space-8);
+  bottom: var(--space-8);
+  left: 50%;
+  border-left: var(--line-w) solid var(--ink);
+}
+.about-overlay .intro-group { margin: 0; }
+.about-overlay .intro-group + .intro-group { margin-top: var(--space-6); }
+/* 한/영 병기 — 2단 (설정 언어 좌, 다른 언어 우). 가운데 거터에 세로선이 지난다. */
+.about-overlay .bilingual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 3rem;
+  align-items: start;
+}
+/* About은 예외 — 두 언어 모두 표시(병기) */
+.three-col[data-lang='ko'] .about-overlay .bilingual > [lang='en'],
+.three-col[data-lang='en'] .about-overlay .bilingual > [lang='ko'] { display: block; }
+/* 설정 언어를 좌측(1단)으로 */
+.about-overlay .bilingual > [lang] { order: 2; }
+.three-col[data-lang='ko'] .about-overlay .bilingual > [lang='ko'],
+.three-col[data-lang='en'] .about-overlay .bilingual > [lang='en'] { order: 1; }
 
-/* 점진적 공개 — 패널(종이)이 솟아 안착하면, 본문이 블록 단위로 순차로 떠오른다.
-   .entered가 트리거: 닫히면(.entered 제거) 기본 숨김으로 되돌아가 다음 열림에
-   다시 재생. 블록은 사이트의 '블록 단위 교차 호버' 문법대로 보라/갈 틴트. */
-.about-drawer .intro-group {
-  opacity: 0;
-  transform: translateY(12px);
-  /* 호버 밴드 — 본문은 제자리(padding으로 되밀고), 틴트만 패널 안쪽 끝까지(margin) */
-  padding: 0 var(--space-6);
-  margin: 0 calc(var(--space-6) * -1);
-  transition: background 0.12s ease;
+/* ── 방명록 (커튼 패널) — 라인·플랫 (디자인 규칙: 박스·그림자 없음) ── */
+.guestbook .gb-title {
+  font-size: var(--fs);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  margin: 0 0 var(--space-5);
+  cursor: grab; /* 제목 바를 잡고 입력창을 옮긴다 */
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
 }
-.about-drawer.entered .intro-group {
-  animation: intro-rise 1s cubic-bezier(0.2, 0.85, 0.25, 1) forwards;
-  /* 패널이 솟은 뒤(~0.24s) 블록마다 0.18s 계단 (전체 ~2배 느리게) */
-  animation-delay: calc(0.24s + var(--i, 0) * 0.18s);
+.guestbook .gb-title.grabbing { cursor: grabbing; }
+.gb-form { display: flex; flex-direction: column; gap: var(--space-3); }
+.gb-name,
+.gb-message {
+  font: inherit;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: var(--line-w) solid var(--ink); /* 하단 라인만 (디자인 규칙) */
+  padding: var(--space-2) 0;
+  width: 100%;
 }
-@keyframes intro-rise {
-  to { opacity: 1; transform: translateY(0); }
+.gb-message { resize: none; line-height: 1.6; display: block; }
+.gb-message::-webkit-resizer { display: none; } /* 기본 손잡이 제거 */
+.gb-name::placeholder,
+.gb-message::placeholder { color: var(--muted); }
+/* 입력칸 바닥 가로선 = 리사이즈 핸들 — 호버 시 ns-resize 커서(커튼·세로선과 같은 어법) */
+.gb-field { position: relative; }
+.gb-resize {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0.5rem;
+  cursor: ns-resize;
 }
-@media (hover: hover) {
-  .about-drawer .intro-group:nth-child(odd):hover  { background: var(--tint-accent); }
-  .about-drawer .intro-group:nth-child(even):hover { background: var(--tint-brown); }
+.gb-actions { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.gb-status { font-size: 0.75rem; color: var(--muted); }
+/* '남기기' — 언어 토글과 같은 pill 스킨(위 .lang-toggle 규칙 공유). 고정배치만 해제. */
+.gb-submit {
+  position: static;
+  top: auto;
+  right: auto;
+}
+.gb-submit[disabled] { opacity: 0.5; cursor: default; }
+/* 입력창 패널 — 기본 화면 중앙(.about-drawer flex-center), 잡고 옮기면 JS가
+   transform으로 이동. 떠다니는 메시지 위에 떠 있다. 콤팩트 폭. */
+.drawer-panel.guestbook {
+  position: relative;
+  z-index: 2;
+  width: min(26rem, 90vw);
+  max-height: none;
+  height: auto;
+  overflow: visible;
+  border-radius: 1.5rem; /* 둥근 모서리 */
+  align-self: center; /* 천 레이어(flex)에서 세로 중앙 */
+  /* JS가 transform으로 이동하므로 entrance 변형 애니메이션은 끈다(충돌 방지) */
+  opacity: 1;
+  transform: none;
+}
+.about-drawer.entered .drawer-panel.guestbook { animation: none; opacity: 1; }
+
+/* ── 남겨진 메시지들 — 커튼 위를 하나씩 떠오른다 ── */
+.gb-float-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none; /* 입력창·천 클릭을 막지 않는다 */
+  z-index: 1;
+}
+.gb-float {
+  position: absolute;
+  top: 100vh; /* 화면 아래에서 시작 → 위로 떠오름(JS가 left·속도·sway 랜덤) */
+  max-width: 16rem;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg);
+  border: var(--line-w) solid var(--ink); /* 줄무늬 위에서 읽히게 — 플랫 노트 */
+  border-radius: 1.5rem; /* 둥근 모서리 */
+  animation: gb-rise linear infinite;
+  will-change: transform, opacity;
+}
+.gb-float .gb-item-head {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: var(--space-1);
+}
+.gb-float .gb-item-name { color: var(--ink); }
+.gb-float .gb-item-msg { color: var(--ink-body); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+@keyframes gb-rise {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { transform: translateY(-120vh) translateX(var(--sway, 0)); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .about-drawer .intro-group { opacity: 1; transform: none; }
-  .about-drawer.entered .intro-group { animation: none; }
+  .gb-float { animation: none; } /* JS가 정적 위치로 배치 */
 }
-/* 서랍 안 본문 — 인트로/푸터와 같은 프로즈 리듬 (text-wrap은 .drawer-panel에서 상속) */
-.drawer-panel p {
-  padding-top: 0;
-  margin-top: 0;
-  color: var(--ink-body);
-  line-height: 1.75rem;
-}
-/* 언어 — .three-col 밖이라 자체 data-lang으로 같은 규칙 적용 */
-.about-drawer[data-lang='ko'] .bilingual > [lang='en'] { display: none; }
-.about-drawer[data-lang='en'] .bilingual > [lang='ko'] { display: none; }
 .stripe-row {
   display: flex;
   height: 2.25rem;
@@ -1127,7 +1236,9 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 .work-card .iframe-wrap { position: relative; z-index: 4; }
 /* 언어 토글 — 띠 위 칩 (about 탭 왼쪽). 서랍이 열려 있어도 그대로 노출 —
    서랍 본문(한/영)을 토글하면서 읽을 수 있다. 버튼은 UA 폰트라 명시 상속. */
-.lang-toggle {
+.lang-toggle,
+.about-toggle,
+.gb-submit {
   position: fixed;
   top: 1.5rem; /* 띠(4.5rem) 세로 중앙 */
   right: 1.25rem;
@@ -1163,7 +1274,9 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 /* 상단 광택(specular gloss) — 둥근 표면 위 유리 반사. 좌우·상단에서 살짝 안으로
    들인 둥근 띠를 accent 머금은 흰빛으로 깔고 아래로 페이드 → 유광 입체감 강화.
    포인터 통과(클릭은 버튼이 받음). 본문 글자 위 옅게 얹혀 반사처럼 읽힌다. */
-.lang-toggle::before {
+.lang-toggle::before,
+.about-toggle::before,
+.gb-submit::before {
   content: '';
   position: absolute;
   top: 1.5px;
@@ -1179,7 +1292,9 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 }
 /* 호버(포인터 한정 — 터치 sticky 회피) — 더 밝게 + 한 단계 더 떠오름 */
 @media (hover: hover) {
-  .lang-toggle:hover {
+  .lang-toggle:hover,
+  .about-toggle:hover,
+  .gb-submit:not([disabled]):hover {
     background: linear-gradient(180deg,
       oklch(from var(--accent) 1 0.02 h) 0%,
       oklch(from var(--accent) 0.985 0.03 h) 52%,
@@ -1194,7 +1309,9 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   }
 }
 /* 눌림 — 베벨 반전(위 안쪽 음영=눌림) + 드롭섀도 붕괴 + 가라앉음 (누르는 촉감) */
-.lang-toggle:active {
+.lang-toggle:active,
+.about-toggle:active,
+.gb-submit:active {
   background: linear-gradient(180deg,
     oklch(from var(--accent) 0.875 0.028 h) 0%,
     oklch(from var(--accent) 0.93 0.02 h) 100%);
@@ -1206,7 +1323,14 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   transform: translateY(1px);
 }
 /* 눌림 시 광택 살짝 죽여 가라앉는 느낌과 일치 */
-.lang-toggle:active::before { opacity: 0.55; }
+.lang-toggle:active::before,
+.about-toggle:active::before,
+.gb-submit:active::before { opacity: 0.55; }
+/* About 토글 — 언어 토글과 같은 pill, 왼쪽 위 (top/right 기본값 무력화) */
+.about-toggle {
+  right: auto;
+  left: 1.25rem;
+}
 
 /* 표 컬럼 폭 고정 — 연도 칸은 폐기(연도는 카드 본문 맨 위 .card-info로 이동).
    번호 칸이 옛 연도 칸 폭을 흡수해 20% → 제목(60%)·분류(20%) 위치는 종전 그대로.
@@ -1306,7 +1430,9 @@ table.sontable .col-cat   { width: 20%; }
    동일하게 유지. 글로벌 `p { padding-top: var(--space-5) }` 무력화.
    line-height 고정 → pill(a inline-block)이 들어가도 p 높이 일정. */
 .intro-body p,
-.work-card .card-body p {
+/* 포트폴리오·About 본문 공유 스타일 */
+.work-card .card-body p,
+.about-overlay p {
   padding-top: 0;
   margin-top: 0;
   color: var(--ink-body);
@@ -1317,7 +1443,8 @@ table.sontable .col-cat   { width: 20%; }
 }
 
 /* 본문 문단 구분 — 들여쓰기 대신 한 줄 띄움(여백). 연속 문단 사이 16px 간격. */
-.work-card .card-body p + p {
+.work-card .card-body p + p,
+.about-overlay p + p {
   text-indent: 0;
   margin-top: var(--space-4);
 }
@@ -1330,6 +1457,7 @@ table.sontable .col-cat   { width: 20%; }
    ─────────────────────────────────────────────────────────────────────── */
 .intro a:not(.memo-source),
 .drawer-panel a,
+.about-overlay a,
 .work-card .card-body a,
 .work-card .card-link {
   background: var(--pill-link-grad);
@@ -1360,6 +1488,7 @@ table.sontable .col-cat   { width: 20%; }
 @media (hover: hover) {
   .intro a:not(.memo-source):hover,
   .drawer-panel a:hover,
+  .about-overlay a:hover,
   .work-card .card-body a:hover,
   .work-card .card-link:hover {
     background: var(--pill-link-grad-h);
