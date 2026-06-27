@@ -489,8 +489,11 @@ iframe {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: -0.3125rem;
-  width: 0.625rem;
+  left: -0.5rem;
+  width: 1rem; /* 16px 잡이존 — 1px 선 좌우 8px씩 */
+  /* zero-width 부모의 ::before라 히트·커서를 명시 (상속만으론 일부 브라우저에서 누락) */
+  pointer-events: auto;
+  cursor: col-resize;
 }
 
 /* 하단 영역 — 3칸 그리드(20/60/20)로 컬럼 echo: 좌 built / 중앙 웹링 / 우 now.
