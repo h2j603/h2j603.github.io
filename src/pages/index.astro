@@ -70,10 +70,42 @@ const defaultMosaic = fs.readFileSync(
   <div class="stripe-top" role="button" tabindex="0" aria-label="about — 아래로 당겨 열기"></div>
   {/* 띠 우측 칩 — 언어 토글 (about 탭은 드래그 인터랙션으로 폐지) */}
   <button type="button" class="lang-toggle" data-lang="en">KO</button>
-  {/* About 서랍 — 커튼(형제) 위에 얹히는 패널 레이어. 천 클릭은 통과시켜
-      stripe 토글로 가고, 패널 자신만 클릭을 소화한다. */}
+  {/* 왼쪽 위 — About 토글. 누르면 가운데(작품 표) 위로 About 오버레이가 덮인다. */}
+  <button type="button" class="about-toggle" aria-expanded="false">Hyuk Jang</button>
+  {/* 방명록 서랍 — 커튼(형제) 위에 얹히는 패널 레이어. 띠를 끌어내려 연다.
+      천 클릭은 통과시켜 stripe 토글로 가고, 패널 자신만 클릭을 소화한다.
+      읽기는 JSONP, 쓰기는 no-cors POST (구글 시트 Apps Script). */}
   <div class="about-drawer" data-lang="en">
-    <div class="drawer-panel">
+    {/* 남겨진 메시지들 — 커튼 위를 하나씩 떠다닌다 (JS가 채움) */}
+    <div class="gb-float-layer" aria-hidden="true"></div>
+    {/* 입력창 — 기본 화면 중앙, 제목 바를 잡고 커튼 안에서 옮길 수 있다 */}
+    <div class="drawer-panel guestbook">
+      <h2 class="gb-title" title="잡고 옮기기">방명록</h2>
+      <form class="gb-form">
+        <input class="gb-name" type="text" maxlength="40" placeholder="이름 (선택)" autocomplete="off" />
+        {/* 입력칸 — 기본 리사이즈 손잡이 대신 바닥 가로선을 핸들로(커서로 늘림 표시) */}
+        <div class="gb-field">
+          <textarea class="gb-message" maxlength="500" rows="3" placeholder="한마디 남기기…" required></textarea>
+          <div class="gb-resize" aria-hidden="true"></div>
+        </div>
+        <div class="gb-actions">
+          <span class="gb-status" aria-live="polite"></span>
+          <button type="submit" class="gb-submit">남기기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {/* data-section: 모바일 섹션 페이저 상태 — 기본 Portfolio. 데스크탑 CSS는 무시 */}
+  <div class="three-col" data-section="portfolio">
+    {/* 세로 구분선 — d1/d2: 3구역(메모|작품|수집) 경계, 전체 높이.
+        표 컬럼 내부선(번호|제목|분류)은 좌표 고정이 아니라 표 셀 border가 직접 그린다. */}
+    <div class="col-divider d1" aria-hidden="true"></div>
+    <div class="col-divider d2" aria-hidden="true"></div>
+
+    {/* About 오버레이 — 'Hyuk Jang' 버튼이 토글. 가운데(작품 표) 위를 덮는다.
+        한/영 전환은 .three-col[data-lang] 규칙을 그대로 탄다. */}
+    <div class="about-overlay" id="aboutOverlay" hidden>
+      <div class="arena-path"><span aria-hidden="true">Are.na/Hyuk Jang/About</span></div>
       {introGroups.length > 0 && (
         <div class="intro-body">
           {
@@ -95,13 +127,6 @@ const defaultMosaic = fs.readFileSync(
         </div>
       )}
     </div>
-  </div>
-  {/* data-section: 모바일 섹션 페이저 상태 — 기본 Portfolio. 데스크탑 CSS는 무시 */}
-  <div class="three-col" data-section="portfolio">
-    {/* 세로 구분선 — d1/d2: 3구역(메모|작품|수집) 경계, 전체 높이.
-        표 컬럼 내부선(번호|제목|분류)은 좌표 고정이 아니라 표 셀 border가 직접 그린다. */}
-    <div class="col-divider d1" aria-hidden="true"></div>
-    <div class="col-divider d2" aria-hidden="true"></div>
 
     {/* ──────────── 좌측: 메모 — Are.na memo 채널의 텍스트 블록 아코디언.
         접힌 라벨 클릭 → 본문 펼침 (한 번에 하나). 인물 레지스트리는
