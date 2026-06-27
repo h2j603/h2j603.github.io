@@ -1058,6 +1058,23 @@ tr[data-slug] { scroll-margin-top: 0.5rem; }
 .accordion-detail > td { padding: 0; border-top: 0; }
 /* 펼친 행 — 제목과 작품(미디어) 사이 여백 0: 제목 칸 아래 padding 제거 */
 table.sontable tr[data-active='true'] td { padding-bottom: 0; }
+/* 펼친 카드에도 컬럼 세로선이 이어지게 — 표 셀 border는 colspan 행엔 안 생기므로
+   패널 전폭(=center)의 20%/80%(번호|제목, 제목|분류 경계)에 선을 직접 그린다.
+   z-index로 카드 이미지(z4) 위에 둬 내용에 가리지 않는다. 모바일은 mobile.css에서 끔. */
+.accordion-detail .accordion-panel { position: relative; }
+.accordion-detail .accordion-panel::before,
+.accordion-detail .accordion-panel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: var(--line-w) solid var(--ink);
+  z-index: 5;
+  pointer-events: none;
+}
+.accordion-detail .accordion-panel::before { left: 20%; }
+.accordion-detail .accordion-panel::after  { left: 80%; }
 /* 펼쳐진 카드 — 제목↔작품 간격은 카드 상단 0.5rem 하나로만 (제목 칸 아래 0).
    사이트 마이크로 간격 리듬(이미지 그리드·pill 스택 0.5rem)과 동일 */
 /* 아코디언 펼침을 표 3컬럼 그리드(20/60/20)에 맞춰 배치 — 번호 칸이 20%이므로
