@@ -1037,12 +1037,12 @@ tr[data-slug] { scroll-margin-top: 0.5rem; }
 table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 /* 펼쳐진 카드 — 제목↔작품 간격은 카드 상단 0.5rem 하나로만 (제목 칸 아래 0).
    사이트 마이크로 간격 리듬(이미지 그리드·pill 스택 0.5rem)과 동일 */
-/* 아코디언 펼침을 표 3컬럼 그리드(10/70/20)에 맞춰 배치 — 연도 칸이 사라졌으므로
-   왼쪽 빈자리(옛 연도칸 20%)를 없애 표 컬럼과 정렬:
-   빈칸=번호칸(1, 10%), 이미지·본문=제목칸(2, 70%), web 링크=분류칸(3, 20%). */
+/* 아코디언 펼침을 표 3컬럼 그리드(20/60/20)에 맞춰 배치 — 번호 칸이 20%이므로
+   이미지·본문(제목칸 60%)이 표 제목과 정렬:
+   빈칸=번호칸(1, 20%), 이미지·본문=제목칸(2, 60%), web 링크=분류칸(3, 20%). */
 .accordion-detail .work-card {
   display: grid;
-  grid-template-columns: 10% 70% 20%;
+  grid-template-columns: 20% 60% 20%;
   align-items: start;
   row-gap: var(--space-6); /* 미디어↔본문 — 24px (이미지 아래 숨통) */
   padding: var(--space-2) 0 var(--space-6);
@@ -1160,10 +1160,11 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 .lang-toggle:active::before { opacity: 0.55; }
 
 /* 표 컬럼 폭 고정 — 연도 칸은 폐기(연도는 카드 본문 맨 위 .card-info로 이동).
-   번호·제목·분류 3칸 (1:7:2). 내용에 따라 칸이 움직이지 않게 명확한 비율. */
+   번호 칸이 옛 연도 칸 폭을 흡수해 20% → 제목(60%)·분류(20%) 위치는 종전 그대로.
+   번호·제목·분류 3칸 (2:6:2). */
 table.sontable { table-layout: fixed; }
-table.sontable .col-num   { width: 10%; }
-table.sontable .col-title { width: 70%; }
+table.sontable .col-num   { width: 20%; }
+table.sontable .col-title { width: 60%; }
 table.sontable .col-cat   { width: 20%; }
 
 /* 카탈로그 번호 글리프 — 테두리 없이 고정폭(tabular) 숫자만. 자릿수가 달라도
