@@ -114,12 +114,11 @@
     --scrollbar-hover: rgba(24, 22, 29, 0.55);
     --ring: rgba(24, 22, 29, 0.8);
   }
-  /* 태그칩·행 호버는 요소 단계 color-mix 보간이라 토큰 폴백만으론 색이 빠진다.
-     미지원 환경에선 단일 틴트(pill/accent)로 보완 — 균일하지만 읽히고 테마에 맞음. */
+  /* 태그칩은 요소 단계 color-mix 보간이라 토큰 폴백만으론 색이 빠진다.
+     미지원 환경에선 단일 틴트(pill/accent)로 보완 — 균일하지만 읽히고 테마에 맞음.
+     (행·메모 호버는 이제 --tint-accent/--tint-brown 토큰을 직접 참조 → hex 폴백으로
+     2색 교차가 그대로 degrade되므로 별도 오버라이드 불필요.) */
   .tag-chip { background: var(--pill-link-bg); color: var(--pill-link-text); }
-  table.sontable tr[data-slug]:not([data-active='true']):not([data-locked='true']) td:hover {
-    background: var(--tint-accent);
-  }
 }
 
 /* ── 컬러 팔레트 프리셋 — <html data-palette="…">로 교체 (JS 토글/랜덤 예정).
@@ -745,15 +744,13 @@ iframe {
 .link-list > a.link-item:first-child {
   --pt: calc(0.5rem + var(--top-gap));
 }
-/* 호버 — 메모는 교차가 아니라 위→아래 순차 색(표 행과 같은 color-mix 시스템:
-   --row-mix는 빌드 시 인덱스로 부여, 두 테마색 stripe-a↔b 사이 균등 분할 한 지점).
-   링크는 드롭다운 필터로 항목이 숨겨질 수 있어 교차 유지(JS가 row-a/row-b).
+/* 호버 — 메모·링크 모두 보라/갈색 2색 교차(row-a/row-b, 빌드 시 인덱스로 부여).
+   링크는 드롭다운 필터로 항목이 숨겨질 수 있어 JS가 row-a/row-b를 재계산한다.
    열린 메모는 표 활성 행처럼 호버 칠 없음. */
 @media (hover: hover) {
-  .memo-list .memo:not(.open):hover {
-    background: oklch(from color-mix(in oklch, var(--stripe-a) var(--row-mix, 50%), var(--stripe-b)) 0.90 0.05 h);
-  }
+  .memo-list .memo.row-a:not(.open):hover,
   .link-list a.link-item.row-a:hover { background: var(--tint-accent); }
+  .memo-list .memo.row-b:not(.open):hover,
   .link-list a.link-item.row-b:hover { background: var(--tint-brown); }
   /* 호버 = 블록이 살짝 자란다 (+8px, 4px 격자 유지. 열린 메모 제외) */
   .memo-list .memo:not(.open):hover,
@@ -1016,15 +1013,13 @@ table.sontable tr[data-slug] td { transition: background 0.12s, color 0.12s, pad
     padding-bottom: calc(var(--pb) + var(--space-2));
   }
 }
-/* 호버 — 행이 아닌 칸(셀) 단위 배경 칠. 행마다 색이 다르되, 교차가 아니라
-   위→아래 순서대로 두 테마색(stripe-a↔b) 사이를 균등 분할한 한 지점(--row-mix,
-   빌드 시 행 인덱스로 부여) — 태그 색과 같은 color-mix 시스템. 칠은 옅은 틴트
-   L/C. 펼쳐진(active)·잠긴(locked) 행은 호버 칠 없음.
+/* 호버 — 행이 아닌 칸(셀) 단위 배경 칠. 행마다 보라/갈색 2색 교차(row-a/row-b,
+   빌드 시 행 인덱스로 부여 — .right 링크·메모와 같은 어법). 칠은 옅은 틴트 토큰.
+   펼쳐진(active)·잠긴(locked) 행은 호버 칠 없음.
    @media (hover: hover) — 터치 기기에선 sticky hover 회피로 진짜 호버만. */
 @media (hover: hover) {
-  table.sontable tr[data-slug]:not([data-active='true']):not([data-locked='true']) td:hover {
-    background: oklch(from color-mix(in oklch, var(--stripe-a) var(--row-mix, 50%), var(--stripe-b)) 0.90 0.05 h);
-  }
+  table.sontable tr.row-a[data-slug]:not([data-active='true']):not([data-locked='true']) td:hover { background: var(--tint-accent); }
+  table.sontable tr.row-b[data-slug]:not([data-active='true']):not([data-locked='true']) td:hover { background: var(--tint-brown); }
 }
 /* 펼칠 때 행이 컬럼(스크롤 컨테이너) 상단에서 살짝 떨어지게 —
    sticky 헤더가 없어졌으므로 작은 여백만 */
