@@ -163,7 +163,6 @@ const defaultMosaic = fs.readFileSync(
           <table class="sontable">
             <colgroup>
               <col class="col-num" />
-              <col class="col-year" />
               <col class="col-title" />
               <col class="col-cat" />
             </colgroup>
@@ -173,14 +172,6 @@ const defaultMosaic = fs.readFileSync(
                   {/* 번호 = 연도 내림차순 고정. row-a/row-b = 호버 배경 보라/갈색
                       2색 교차 (빌드 시 행 인덱스로, .right 링크와 같은 어법). */}
                   <td class="num-cell"><span class="num-badge">{i + 1}</span></td>
-                  <td>
-                    {/* 연도 → 위키피디아 해당 연도 문서 */}
-                    {w.year ? (
-                      <a href={`https://en.wikipedia.org/wiki/${w.year}`} target="_blank" rel="noopener">{w.year}</a>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
                   <td class="title-cell">
                     {w.published ? (
                       <a href={`#${w.slug}`} data-ko={w.title || w.slug} data-en={w.titleEn || w.title || w.slug}>
@@ -214,6 +205,8 @@ const defaultMosaic = fs.readFileSync(
             const cover = w.cover ? resolveImage(w.cover) : undefined;
             const externalUrl = w.links[0]?.url;
             const isWeb = w.tags.includes('web');
+            // 본문 맨 위 간략 정보 — 연도·재료·규격·클라이언트(있는 것만). 회색 파생색.
+            const infoLine = [w.year, w.medium, w.size, w.client].filter(Boolean).join(' · ');
             return (
               <article class="work-card" id={w.slug}>
                 <h2 class="card-title">
@@ -277,10 +270,13 @@ const defaultMosaic = fs.readFileSync(
                   <SkelImage src={cover} alt={w.title || w.slug} widths={[420, 640, 960]} sizes="40vw" />
                 ) : null}
 
-                {(w.bodyBlocks.some((b) => b.lang === null && b.html) ||
+                {(infoLine ||
+                  w.bodyBlocks.some((b) => b.lang === null && b.html) ||
                   w.bodyBlocks.some((b) => b.lang !== null && b.html) ||
                   externalUrl) && (
                   <div class="card-body">
+                    {/* 본문 맨 위 간략 정보 — 연도·재료·규격·클라이언트, 회색 파생색 */}
+                    {infoLine && <p class="card-info">{infoLine}</p>}
                     {/* 규격(lang null) + 웹링크 — 본문 위. 둘 다 있으면(웹작업) 2단. */}
                     {(w.bodyBlocks.some((b) => b.lang === null && b.html) || externalUrl) && (
                       <div class="card-meta-row">
