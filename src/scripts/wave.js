@@ -3,7 +3,7 @@
 // 동기화돼 함께 숨쉰다(PHASE_STEP=0). 구 CSS @keyframes link-blink 대체.
 // 호버 링크는 또렷하게 고정, 모션 줄이기 선호 시 루프를 돌리지 않는다.
 
-var SEL = '.intro a:not(.memo-source), .drawer-panel a, ' +
+var SEL = '.intro a:not(.memo-source), .drawer-panel a, .about-overlay a, ' +
           '.work-card .card-body a, .work-card .card-link, .webring a, ' +
           '.link-list .tag-chip'; // 컬렉션 태그도 하이퍼링크처럼 점멸
 
