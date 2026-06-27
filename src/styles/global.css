@@ -803,7 +803,7 @@ iframe {
   font-weight: inherit;
   color: var(--ink);
   text-align: center;
-  letter-spacing: 0.02em; /* 제목 자간 살짝 넓힘 (em — 글자 크기 비례) */
+  letter-spacing: 0.05em; /* 메모 제목 자간 — 표 제목(.title-cell)과 동일 */
   line-height: 1.25rem;
 }
 /* 메모가 열려 있는 동안 — 표와 같은 어법으로 다른 메모는 옅게,
@@ -1121,7 +1121,8 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 .work-card .iframe-wrap { position: relative; z-index: 4; }
 /* 언어 토글 — 띠 위 칩 (about 탭 왼쪽). 서랍이 열려 있어도 그대로 노출 —
    서랍 본문(한/영)을 토글하면서 읽을 수 있다. 버튼은 UA 폰트라 명시 상속. */
-.lang-toggle {
+.lang-toggle,
+.view-shuffle {
   position: fixed;
   top: 1.5rem; /* 띠(4.5rem) 세로 중앙 */
   right: 1.25rem;
@@ -1157,7 +1158,8 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 /* 상단 광택(specular gloss) — 둥근 표면 위 유리 반사. 좌우·상단에서 살짝 안으로
    들인 둥근 띠를 accent 머금은 흰빛으로 깔고 아래로 페이드 → 유광 입체감 강화.
    포인터 통과(클릭은 버튼이 받음). 본문 글자 위 옅게 얹혀 반사처럼 읽힌다. */
-.lang-toggle::before {
+.lang-toggle::before,
+.view-shuffle::before {
   content: '';
   position: absolute;
   top: 1.5px;
@@ -1173,7 +1175,8 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
 }
 /* 호버(포인터 한정 — 터치 sticky 회피) — 더 밝게 + 한 단계 더 떠오름 */
 @media (hover: hover) {
-  .lang-toggle:hover {
+  .lang-toggle:hover,
+  .view-shuffle:hover {
     background: linear-gradient(180deg,
       oklch(from var(--accent) 1 0.02 h) 0%,
       oklch(from var(--accent) 0.985 0.03 h) 52%,
@@ -1188,7 +1191,8 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   }
 }
 /* 눌림 — 베벨 반전(위 안쪽 음영=눌림) + 드롭섀도 붕괴 + 가라앉음 (누르는 촉감) */
-.lang-toggle:active {
+.lang-toggle:active,
+.view-shuffle:active {
   background: linear-gradient(180deg,
     oklch(from var(--accent) 0.875 0.028 h) 0%,
     oklch(from var(--accent) 0.93 0.02 h) 100%);
@@ -1200,7 +1204,19 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   transform: translateY(1px);
 }
 /* 눌림 시 광택 살짝 죽여 가라앉는 느낌과 일치 */
-.lang-toggle:active::before { opacity: 0.55; }
+.lang-toggle:active::before,
+.view-shuffle:active::before { opacity: 0.55; }
+
+/* 다른 방식으로 보기 — 언어 토글과 같은 pill 스킨, 폰트 2단계 크게(1.5rem).
+   위치는 JS가 랜덤 px로 인라인 지정(top/right 기본값 무력화). */
+.view-shuffle {
+  right: auto; /* JS가 left/top을 px로 잡는다 */
+  height: auto;
+  padding: 0.4em 0.85em;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  white-space: nowrap;
+}
 
 /* 표 컬럼 폭 고정 — 연도 칸은 폐기(연도는 카드 본문 맨 위 .card-info로 이동).
    번호 칸이 옛 연도 칸 폭을 흡수해 20% → 제목(60%)·분류(20%) 위치는 종전 그대로.

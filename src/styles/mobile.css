@@ -259,4 +259,6 @@
   .work-card:not(:last-child) {
     padding-bottom: 3rem;
   }
+  /* '다른 방식으로 보기'는 데스크탑 전용 (모바일은 컬럼 리사이즈 없음) */
+  .view-shuffle { display: none; }
 }

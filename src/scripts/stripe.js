@@ -100,8 +100,40 @@ function initDrag() {
   });
 }
 
+// 컬럼 비율을 클램프 범위 안에서 랜덤하게 — '다른 방식으로 보기' 버튼이 호출.
+function randomizeSplit() {
+  // 좌: [MIN_SIDE, 1-MIN_SIDE-MIN_CENTER] / 우: [좌+MIN_CENTER, 1-MIN_SIDE]
+  var aMax = 1 - MIN_SIDE - MIN_CENTER;
+  splitA = MIN_SIDE + Math.random() * (aMax - MIN_SIDE);
+  var bMin = splitA + MIN_CENTER;
+  var bMax = 1 - MIN_SIDE;
+  splitB = bMin + Math.random() * (bMax - bMin);
+  applySplit();
+}
+
+// '다른 방식으로 보기' 버튼 — 화면에 랜덤 위치(새로고침마다), 누르면 비율 랜덤.
+function initViewShuffle() {
+  var btn = document.querySelector('.view-shuffle');
+  if (!btn) return;
+  function place() {
+    // 데스크탑에서만 배치 (모바일은 display:none이라 크기 0 → 스킵)
+    if (window.getComputedStyle(btn).display === 'none') return;
+    var stripe = 4.5 * 16; // 상단 띠
+    var footer = 2.5 * 16; // 하단 푸터
+    var m = 16;
+    var r = btn.getBoundingClientRect();
+    var minLeft = m, maxLeft = Math.max(m, window.innerWidth - r.width - m);
+    var minTop = stripe + m, maxTop = Math.max(minTop, window.innerHeight - footer - r.height - m);
+    btn.style.left = (minLeft + Math.random() * (maxLeft - minLeft)) + 'px';
+    btn.style.top = (minTop + Math.random() * (maxTop - minTop)) + 'px';
+  }
+  place();
+  btn.addEventListener('click', randomizeSplit);
+}
+
 export function initDividers() {
   applySplit(); // 항상 기본 비율로 시작 (저장 안 함)
   initDrag();
+  initViewShuffle();
   window.addEventListener('resize', snapDividers); // 폭(%)은 자동 스케일, 선 px만 재스냅
 }
