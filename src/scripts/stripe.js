@@ -42,23 +42,78 @@ export function initStripe() {
   buildStripe();
 }
 
-// ── 세로 구분선 디바이스 픽셀 스냅 ─────────────────────────────
-// % 위치는 분수 픽셀에 떨어져 1px 선이 두 픽셀에 번진다. CSS 정수만으론
-// 윈도우 배율(125%/150% = DPR 1.25/1.5)에서 여전히 분수 디바이스 픽셀이
-// 되므로, 디바이스 픽셀 격자(×dpr 반올림 ÷dpr)에 스냅해 두께를 통일.
-var DIVIDER_POS = { d1: 0.2, d5: 0.26, d3: 0.32, d4: 0.68, d2: 0.8 };
+// ── 세로 구분선 d1·d2 — 드래그로 3컬럼 크기 조절 + 디바이스 픽셀 스냅 ──────
+// 두 경계 위치(0~1): 좌|중 = splitA, 중|우 = splitB. 컬럼 폭(CSS 변수)·세로선이
+// 이 두 값에서 파생된다. 선 위치는 % 그대로 두면 분수 디바이스 픽셀에 떨어져
+// 1px 선이 번지므로(특히 배율 125/150%), px로 ×dpr 반올림 ÷dpr 스냅해 인라인 부여.
+var SPLIT_KEY = 'hyuk.split';
+var DEFAULT_A = 0.2, DEFAULT_B = 0.8;
+var MIN_SIDE = 0.12;   // 좌·우 컬럼 최소 폭
+var MIN_CENTER = 0.32; // 중앙(작품 표) 최소 폭
+var splitA = DEFAULT_A, splitB = DEFAULT_B;
+
+function clampSplits() {
+  // 좌: [MIN_SIDE, 1-MIN_SIDE-MIN_CENTER] / 우: [좌+MIN_CENTER, 1-MIN_SIDE]
+  splitA = Math.min(Math.max(splitA, MIN_SIDE), 1 - MIN_SIDE - MIN_CENTER);
+  splitB = Math.min(Math.max(splitB, splitA + MIN_CENTER), 1 - MIN_SIDE);
+}
+
+function loadSplit() {
+  try {
+    var s = JSON.parse(localStorage.getItem(SPLIT_KEY));
+    if (s && typeof s.a === 'number' && typeof s.b === 'number') { splitA = s.a; splitB = s.b; }
+  } catch (e) { /* 저장값 없음/파손 — 기본값 유지 */ }
+}
+function saveSplit() {
+  try { localStorage.setItem(SPLIT_KEY, JSON.stringify({ a: splitA, b: splitB })); } catch (e) { /* noop */ }
+}
 
 function snapDividers() {
   var dpr = window.devicePixelRatio || 1;
-  Object.keys(DIVIDER_POS).forEach(function (k) {
-    var x = Math.round(window.innerWidth * DIVIDER_POS[k] * dpr) / dpr;
-    document
-      .querySelectorAll('.col-divider.' + k + ', .col-divider-top.' + k)
-      .forEach(function (el) { el.style.left = x + 'px'; });
+  var pos = { d1: splitA, d2: splitB };
+  Object.keys(pos).forEach(function (k) {
+    var x = Math.round(window.innerWidth * pos[k] * dpr) / dpr;
+    document.querySelectorAll('.col-divider.' + k).forEach(function (el) { el.style.left = x + 'px'; });
+  });
+}
+
+function applySplit() {
+  clampSplits();
+  var root = document.querySelector('.three-col');
+  if (root) {
+    root.style.setProperty('--split-a', (splitA * 100) + '%');
+    root.style.setProperty('--split-b', (splitB * 100) + '%');
+  }
+  snapDividers();
+}
+
+function initDrag() {
+  document.querySelectorAll('.col-divider.d1, .col-divider.d2').forEach(function (el) {
+    var key = el.classList.contains('d1') ? 'a' : 'b';
+    el.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      try { el.setPointerCapture(e.pointerId); } catch (err) { /* noop */ }
+      document.body.style.userSelect = 'none';
+      function move(ev) {
+        var frac = ev.clientX / window.innerWidth;
+        if (key === 'a') splitA = frac; else splitB = frac;
+        applySplit();
+      }
+      function up() {
+        document.body.style.userSelect = '';
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        saveSplit();
+      }
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
   });
 }
 
 export function initDividers() {
-  window.addEventListener('resize', snapDividers);
-  snapDividers();
+  loadSplit();
+  applySplit();
+  initDrag();
+  window.addEventListener('resize', snapDividers); // 폭(%)은 자동 스케일, 선 px만 재스냅
 }
