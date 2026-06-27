@@ -163,6 +163,7 @@ const defaultMosaic = fs.readFileSync(
           <table class="sontable">
             <colgroup>
               <col class="col-num" />
+              <col class="col-year" />
               <col class="col-title" />
               <col class="col-cat" />
             </colgroup>
@@ -172,6 +173,9 @@ const defaultMosaic = fs.readFileSync(
                   {/* 번호 = 연도 내림차순 고정. row-a/row-b = 호버 배경 보라/갈색
                       2색 교차 (빌드 시 행 인덱스로, .right 링크와 같은 어법). */}
                   <td class="num-cell"><span class="num-badge">{i + 1}</span></td>
+                  {/* 연도 칸 — 공간(20/60/20 정렬용)은 두되 내용은 비움.
+                      연도는 펼친 카드 본문 맨 위 .card-info로 옮겼다. */}
+                  <td class="year-cell"></td>
                   <td class="title-cell">
                     {w.published ? (
                       <a href={`#${w.slug}`} data-ko={w.title || w.slug} data-en={w.titleEn || w.title || w.slug}>
