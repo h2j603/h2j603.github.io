@@ -11,27 +11,23 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { getRequestCount } from '../src/lib/arena.js';
 import { buildWorks } from '../src/lib/works.js';
-import { buildPeople } from '../src/lib/people.js';
 import { buildLinks } from "../src/lib/links.js";
 import { buildMemos } from "../src/lib/memos.js";
 import { buildIntro } from "../src/lib/intro.js";
-import { worksFileSchema, introFileSchema, peopleFileSchema, linksFileSchema, memosFileSchema } from "../src/lib/schema.js";
-import { DATA_FILE, INTRO_FILE, PEOPLE_FILE, LINKS_FILE, MEMO_FILE } from "../src/lib/config.js";
+import { worksFileSchema, introFileSchema, linksFileSchema, memosFileSchema } from "../src/lib/schema.js";
+import { DATA_FILE, INTRO_FILE, LINKS_FILE, MEMO_FILE } from "../src/lib/config.js";
 
 const dryRun = process.argv.includes('--dry-run');
 
 async function main() {
   const start = Date.now();
-  // 인물 레지스트리 먼저 — 작품 본문 @멘션 매칭에 쓰인다.
-  const people = await buildPeople();
-  const { works, summary } = await buildWorks(people);
+  const { works, summary } = await buildWorks();
   const intro = await buildIntro();
   const links = await buildLinks();
   const memos = await buildMemos();
 
   const validated = worksFileSchema.parse(works);
   const validatedIntro = introFileSchema.parse(intro);
-  const validatedPeople = peopleFileSchema.parse(people);
   const validatedLinks = linksFileSchema.parse(links);
   const validatedMemos = memosFileSchema.parse(memos);
 
@@ -40,8 +36,6 @@ async function main() {
     await writeFile(DATA_FILE, JSON.stringify(validated, null, 2) + '\n');
     await mkdir(dirname(INTRO_FILE), { recursive: true });
     await writeFile(INTRO_FILE, JSON.stringify(validatedIntro, null, 2) + '\n');
-    await mkdir(dirname(PEOPLE_FILE), { recursive: true });
-    await writeFile(PEOPLE_FILE, JSON.stringify(validatedPeople, null, 2) + '\n');
     await mkdir(dirname(LINKS_FILE), { recursive: true });
     await writeFile(LINKS_FILE, JSON.stringify(validatedLinks, null, 2) + "\n");
     await mkdir(dirname(MEMO_FILE), { recursive: true });
@@ -58,7 +52,6 @@ async function main() {
       (summary.failed.length ? ' (' + summary.failed.join(', ') + ')' : ''),
   );
   console.log(`warnings       : ${summary.warnings.length}`);
-  console.log(`people         : ${validatedPeople.length}`);
   console.log(`links          : ${validatedLinks.length}`);
   console.log(`memos          : ${validatedMemos.length}`);
   console.log(`intro blocks   : ${intro.length}`);
@@ -69,8 +62,7 @@ async function main() {
 
   for (const w of validated) {
     console.log(
-      `  • ${w.order}\t${w.slug}\t"${w.title}"\timages:${w.images.length}\tko:${w.bodyKo.length}c en:${w.bodyEn.length}c` +
-        (w.people.length ? `\tpeople:[${w.people.join(',')}]` : ''),
+      `  • ${w.order}\t${w.slug}\t"${w.title}"\timages:${w.images.length}\tko:${w.bodyKo.length}c en:${w.bodyEn.length}c`,
     );
   }
 }
