@@ -442,6 +442,11 @@ iframe {
   position: fixed;
   inset: 0;
   z-index: 1;
+  /* 3컬럼 경계 — 좌|중 = --split-a, 중|우 = --split-b. 기본 20/60/20.
+     d1·d2 드래그로 갱신(JS가 인라인으로 덮음, localStorage 저장). 컬럼 폭·세로선이
+     이 두 값에서 파생되므로 한 곳만 바꾸면 전부 따라온다. */
+  --split-a: 20%;
+  --split-b: 80%;
 }
 .three-col .third {
   position: absolute;
@@ -471,8 +476,22 @@ iframe {
   z-index: 6;
   pointer-events: none;
 }
-.col-divider.d1 { left: 20%; }
-.col-divider.d2 { left: 80%; }
+/* 좌표는 CSS 변수가 기본값(JS가 px 스냅으로 인라인 덮음). 컬럼 폭과 한 소스 공유 */
+.col-divider.d1 { left: var(--split-a); }
+.col-divider.d2 { left: var(--split-b); }
+/* d1·d2는 드래그 핸들 — 폭 0 선 위에 넓은(10px) 투명 잡이 영역을 ::before로 둔다.
+   좌우 컬럼 크기 조절. (모바일은 .col-divider{display:none}이라 자동 비활성) */
+.col-divider.d1,
+.col-divider.d2 { pointer-events: auto; cursor: col-resize; touch-action: none; }
+.col-divider.d1::before,
+.col-divider.d2::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -0.3125rem;
+  width: 0.625rem;
+}
 
 /* 하단 영역 — 3칸 그리드(20/60/20)로 컬럼 echo: 좌 built / 중앙 웹링 / 우 now.
    셀 경계(d1 20% / d2 80%)에 border-left를 둬 세로 구분선이 푸터 바닥까지
@@ -623,7 +642,7 @@ iframe {
 
 .three-col .left {
   background-color: var(--bg);
-  width: 20%;
+  width: var(--split-a);
   left: 0;
   padding-top: 0; /* 커튼 아래 공통 여백은 리스트·표 margin-top(--top-gap) */
   /* 스크롤 가능 (.third의 auto 상속) — 커튼에 밀려 내려간 내용도 읽을 수 있게.
@@ -631,10 +650,10 @@ iframe {
 }
 .three-col .center {
   background-color: var(--bg);
-  left: 20%;
-  width: 60%;
-  /* 좌우 패딩 0 — 표가 center(20~80%)를 꽉 채워 컬럼 경계가 정확히 56%/68%에
-     오게 한다(세로 구분선 d3/d4와 정렬). 상단 여백은 표 margin-top(1.25rem)이 잡는다. */
+  left: var(--split-a);
+  width: calc(var(--split-b) - var(--split-a));
+  /* 좌우 패딩 0 — 표가 center 폭을 꽉 채워 컬럼 경계와 표 셀 경계가 일치한다.
+     상단 여백은 표 margin-top(1.25rem)이 잡는다. */
   padding: 0 0 var(--space-5);
   /* 작업영역은 기본 스크롤바 노출 */
   scrollbar-width: auto;
@@ -651,8 +670,8 @@ iframe {
 }
 .three-col .right {
   background-color: var(--bg);
-  left: 80%;
-  width: 20%;
+  left: var(--split-b);
+  width: calc(100% - var(--split-b));
   padding-top: 0; /* 커튼 아래 공통 여백은 리스트·표 margin-top(--top-gap) */
   /* 표가 길어지면 스크롤 가능하게 */
 }
