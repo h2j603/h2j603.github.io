@@ -617,10 +617,9 @@ iframe {
 @media (hover: hover) {
   .link-filter:hover { background: var(--tint-accent); }
 }
-/* 표 컬럼 기준선 — center(20~80%) 안에서 번호 20/제목 60/분류 20 경계
-   (연도 칸 폐기 → 번호 칸이 32%까지. d5(번호|연도, 26%) 삭제, d3가 번호|제목) */
-.col-divider.d3 { left: 32%; } /* 번호|제목 */
-.col-divider.d4 { left: 68%; } /* 제목|분류 */
+/* 표 컬럼 내부 세로선(번호|제목, 제목|분류)은 좌표 고정을 폐기하고 표 셀
+   border가 직접 그린다 — 칸 폭이 바뀌어도 선이 자동으로 따라온다.
+   (.title-cell/.cat-cell border-left 규칙 참조) 가장자리 d1·d2만 구역 경계로 남는다. */
 
 .three-col .left {
   background-color: var(--bg);
@@ -993,9 +992,14 @@ table tr[data-active='true'] a {
 .three-col .center > .content > .work-card { display: none; }
 /* border-collapse:separate — 행 사이 detail 삽입 시 셀 경계가 깔끔.
    구분선은 각 td border-top로 유지, table 자체 테두리는 끔 */
-/* padding:0 — table,td 공통 padding(var(--space-cell))이 표를 좌우로 들여 세로선과 어긋나게 함.
-   table 자체 padding을 0으로 해 td 경계 = 세로선(d1/d3/d4/d2)에 정확히 맞춘다. */
+/* padding:0 — table,td 공통 padding(var(--space-cell))이 표를 좌우로 들여 가장자리
+   세로선(d1/d2)과 어긋나게 함. table 자체 padding을 0으로 해 표 좌우 끝 = d1/d2에 맞춘다. */
 table.sontable { border-collapse: separate; border-spacing: 0; border-top: 0; border-bottom: var(--line-w) solid var(--ink); /* 마지막 행 아래에도 구분선 */ padding: 0; margin-top: 0; /* 라벨 아래 여백은 첫 행 padding이 가짐 — 호버 칠이 라벨 선까지 */ }
+/* 컬럼 내부 세로선 — 좌표 고정(옛 d3/d4) 대신 표 셀 border가 직접 그린다.
+   제목·분류 칸 왼쪽 선 = 번호|제목, 제목|분류 경계. 칸 폭이 바뀌면 선도 따라온다.
+   펼친 detail 행(colspan)엔 이 클래스가 없어 선이 자동으로 끊긴다(전폭 카드). */
+table.sontable tr[data-slug] td.title-cell,
+table.sontable tr[data-slug] td.cat-cell { border-left: var(--line-w) solid var(--ink); }
 /* 첫 행 — 위 가로선 제거. 상단 padding = 컴팩트 5px + 공통 여백 8px(옛 margin-top 몫).
    필터·정렬이 없어 행 순서 고정 → :first-child로 충분 */
 table.sontable tr[data-slug]:first-child td { border-top: 0; --pt: calc(0.3125rem + var(--top-gap)); } /* 13+24+11=48 */

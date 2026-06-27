@@ -98,12 +98,10 @@ const defaultMosaic = fs.readFileSync(
   </div>
   {/* data-section: 모바일 섹션 페이저 상태 — 기본 Portfolio. 데스크탑 CSS는 무시 */}
   <div class="three-col" data-section="portfolio">
-    {/* 세로 구분선 하단부 — center 구간. 표/텍스트 위, 작품 이미지/iframe 아래.
-        d1/d2: 3구역 경계, d3/d4: 표 컬럼(번호|제목|분류) 기준선 (연도 칸 폐기로 d5 삭제) */}
+    {/* 세로 구분선 — d1/d2: 3구역(메모|작품|수집) 경계, 전체 높이.
+        표 컬럼 내부선(번호|제목|분류)은 좌표 고정이 아니라 표 셀 border가 직접 그린다. */}
     <div class="col-divider d1" aria-hidden="true"></div>
     <div class="col-divider d2" aria-hidden="true"></div>
-    <div class="col-divider d3" aria-hidden="true"></div>
-    <div class="col-divider d4" aria-hidden="true"></div>
 
     {/* ──────────── 좌측: 메모 — Are.na memo 채널의 텍스트 블록 아코디언.
         접힌 라벨 클릭 → 본문 펼침 (한 번에 하나). 인물 레지스트리는
