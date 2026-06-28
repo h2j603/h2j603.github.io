@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Base from '../layouts/Base.astro';
 import SkelImage from '../components/SkelImage.astro';
-import { getWorks, resolveImage, resolveVideo, getIntro, getLinks, getMemos, groupBilingual } from "../lib/site-data.js";
+import { getWorks, resolveImage, resolveVideo, getIntro, getIntroNotes, getLinks, getMemos, groupBilingual } from "../lib/site-data.js";
 import { buildTagMixMap } from "../lib/tag-colors.js";
 
 const works = getWorks().slice().sort((a, b) => {
@@ -24,6 +24,7 @@ function orderedTagsOf(w: (typeof works)[number]): string[] {
 }
 
 const introGroups = getIntro(); // About 서랍 — footer 채널은 intro로 통폐합됨
+const introNotes = getIntroNotes(); // 2단 본문 아래 1단 주석(## note 블록)
 // 우측 컬럼 수집 링크 — Are.na links 채널의 링크 블록들 (채널 순서)
 const siteLinks = getLinks();
 // 좌측 컬럼 메모 — memo 채널 텍스트 블록 (채널 순서)
@@ -125,6 +126,11 @@ const defaultMosaic = fs.readFileSync(
               </div>
             ))
           }
+        </div>
+      )}
+      {introNotes.length > 0 && (
+        <div class="intro-notes">
+          {introNotes.map((html) => <div class="intro-note" set:html={html} />)}
         </div>
       )}
     </div>

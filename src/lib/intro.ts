@@ -19,20 +19,26 @@ export interface TextBlock {
   lang: 'ko' | 'en' | null;
   /** marked로 변환된 HTML */
   html: string;
+  /** `## note` 마커 블록 — 2단 본문이 아니라 본문 아래 1단 주석으로 렌더. */
+  note?: boolean;
 }
 
-const MARKER_RE = /^\s*##\s*(ko|en)\s*$/i;
+const MARKER_RE = /^\s*##\s*(ko|en|note)\s*$/i;
 
-export function parseMarker(markdown: string): { lang: 'ko' | 'en' | null; rest: string } {
+export function parseMarker(
+  markdown: string,
+): { lang: 'ko' | 'en' | null; note: boolean; rest: string } {
   const lines = markdown.split(/\r?\n/);
   const m = MARKER_RE.exec(lines[0] ?? '');
   if (m) {
+    const tag = m[1].toLowerCase();
     return {
-      lang: m[1].toLowerCase() as 'ko' | 'en',
+      lang: tag === 'ko' || tag === 'en' ? (tag as 'ko' | 'en') : null,
+      note: tag === 'note',
       rest: lines.slice(1).join('\n').trimStart(),
     };
   }
-  return { lang: null, rest: markdown };
+  return { lang: null, note: false, rest: markdown };
 }
 
 async function buildTextChannel(slug: string, label: string): Promise<TextBlock[]> {
@@ -46,10 +52,11 @@ async function buildTextChannel(slug: string, label: string): Promise<TextBlock[
   for (const b of blocks) {
     const c = classifyBlock(b);
     if (c.kind !== 'text') continue;
-    const { lang, rest } = parseMarker(c.content);
+    const { lang, note, rest } = parseMarker(c.content);
     if (!rest.trim()) continue;
     out.push({
       lang,
+      note,
       html: markdownToHtml(rest, `${label} block ${out.length + 1}`),
     });
   }

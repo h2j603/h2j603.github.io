@@ -394,15 +394,32 @@ iframe {
   padding: var(--space-8) var(--space-6);
   letter-spacing: 0.02em; /* 포트폴리오 본문과 동일 자간 */
 }
-/* 가운데 세로 구분선 — 한/영 2단 경계(전체 높이 연속) */
-.about-overlay .intro-body::before {
+/* 가운데 세로 구분선 — 텍스트 사이만이 아니라 About 영역 전체 높이로 화면을
+   양분(위·아래 끝까지). 본문·주석은 그 위(z-index)로 읽힌다. */
+.about-overlay::before {
   content: '';
   position: absolute;
-  top: var(--space-8);
-  bottom: var(--space-8);
+  top: 0;
+  bottom: 0;
   left: 50%;
   border-left: var(--line-w) solid var(--ink);
+  pointer-events: none;
+  z-index: 0;
 }
+.about-overlay > * { position: relative; z-index: 1; }
+/* 본문 — 한 단계 크게 (2단 한·영 본문). 주석과의 위계를 크기로 만든다. */
+.about-overlay .intro-body,
+.about-overlay .intro-body p {
+  font-size: 1.125rem;
+  line-height: 2rem;
+}
+/* 주석(## note) — 2단 본문 아래 1단(전폭), 현재 본문 크기(1rem). */
+.about-overlay .intro-notes {
+  padding: 0 var(--space-6) var(--space-8);
+  letter-spacing: 0.02em;
+}
+.about-overlay .intro-note + .intro-note { margin-top: var(--space-4); }
+.about-overlay .intro-note p { font-size: var(--fs); line-height: 1.75rem; }
 .about-overlay .intro-group { margin: 0; }
 .about-overlay .intro-group + .intro-group { margin-top: var(--space-6); }
 /* 한/영 병기 — 2단 (설정 언어 좌, 다른 언어 우). 가운데 거터에 세로선이 지난다. */

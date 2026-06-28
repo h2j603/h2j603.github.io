@@ -132,6 +132,8 @@ export type Memo = z.infer<typeof memoSchema>;
 export const introBlockSchema = z.object({
   lang: z.enum(['ko', 'en']).nullable(),
   html: z.string(),
+  /** `## note` 마커 블록 — 2단 본문 아래 1단 주석으로 렌더. */
+  note: z.boolean().default(false),
 });
 export const introFileSchema = z.array(introBlockSchema);
 export type IntroBlock = z.infer<typeof introBlockSchema>;
