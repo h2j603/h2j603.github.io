@@ -4,11 +4,19 @@
 function overlay() { return document.getElementById('aboutOverlay'); }
 function toggleBtn() { return document.querySelector('.about-toggle'); }
 
+// 닫힘 = 이름(About 열기), 열림 = 도메인(돌아가기). 두 상태가 다른 라벨.
+var CLOSED_LABEL = 'Hyuk Jang';
+var OPEN_LABEL = 'hyuk.xyz';
+
 function setOpen(open) {
   var ov = overlay(), btn = toggleBtn();
   if (!ov) return;
   ov.hidden = !open;
-  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (btn) {
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? OPEN_LABEL : CLOSED_LABEL;
+    btn.classList.toggle('is-back', open); // 상태별 스타일 훅
+  }
 }
 
 export function closeAbout() { setOpen(false); }

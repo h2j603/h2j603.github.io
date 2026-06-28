@@ -43,6 +43,8 @@ export function getWorks(): Work[] {
 export interface TextBlock {
   lang: 'ko' | 'en' | null;
   html: string;
+  /** `## note` 마커 블록 — 2단 본문이 아니라 1단 주석. */
+  note?: boolean;
 }
 export interface BilingualGroup {
   ko?: string;
@@ -88,8 +90,17 @@ function groupBilingual(blocks: TextBlock[]): BilingualGroup[] {
 let introCache: BilingualGroup[] | null = null;
 export function getIntro(): BilingualGroup[] {
   if (introCache !== null) return introCache;
-  introCache = groupBilingual(readBlocks(INTRO_PATH));
+  // 주석(## note) 블록은 2단 본문 짝짓기에서 제외 — 본문만 좌우 2단으로.
+  introCache = groupBilingual(readBlocks(INTRO_PATH).filter((b) => !b.note));
   return introCache;
+}
+
+/** About 본문 아래 1단 주석들(## note 블록의 HTML, 채널 순서). */
+let introNotesCache: string[] | null = null;
+export function getIntroNotes(): string[] {
+  if (introNotesCache !== null) return introNotesCache;
+  introNotesCache = readBlocks(INTRO_PATH).filter((b) => b.note).map((b) => b.html);
+  return introNotesCache;
 }
 
 /** 우측 컬럼 수집 링크 — links.json 스냅샷 (없으면 빈 배열). */
