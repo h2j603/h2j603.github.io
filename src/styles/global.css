@@ -421,16 +421,18 @@ iframe {
 .three-col[data-lang='en'] .about-overlay .bilingual > [lang='en'] { order: 1; }
 
 /* ── 방명록 (커튼 패널) — 라인·플랫 (디자인 규칙: 박스·그림자 없음) ── */
-/* 상단 arena-path 라벨 = 영역 표식 + 드래그 핸들 (잡고 입력창 이동) */
-.gb-path {
-  color: var(--ink); /* 다른 컬럼 라벨과 동일 — 회색으로 빠지지 않게 명시 */
-  cursor: grab;
+.guestbook .gb-title {
+  font-size: var(--fs);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  margin: 0 0 var(--space-5);
+  cursor: grab; /* 제목 바를 잡고 입력창을 옮긴다 */
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
 }
-.gb-path.grabbing { cursor: grabbing; }
-.gb-form { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); }
+.guestbook .gb-title.grabbing { cursor: grabbing; }
+.gb-form { display: flex; flex-direction: column; gap: var(--space-3); }
 .gb-name,
 .gb-message {
   font: inherit;
@@ -455,19 +457,13 @@ iframe {
   height: 0.5rem;
   cursor: ns-resize;
 }
-/* 액션 — 입력 본문 아래. 버튼은 전폭으로 본문 밑에 깔린다(상태줄은 그 위 작게). */
-.gb-actions { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-2); }
-.gb-status { font-size: 0.75rem; color: var(--muted); text-align: right; min-height: 1rem; }
-/* '남기기' — 언어 토글과 같은 pill 스킨 공유. 단 고정배치(position:fixed)는 해제해야
-   하는데 공유 스킨이 소스 뒤라 이기므로, 특이도를 올려(.gb-form .gb-submit) 확실히 덮는다. */
-.gb-form .gb-submit {
+.gb-actions { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.gb-status { font-size: 0.75rem; color: var(--muted); }
+/* '남기기' — 언어 토글과 같은 pill 스킨(위 .lang-toggle 규칙 공유). 고정배치만 해제. */
+.gb-submit {
   position: static;
   top: auto;
   right: auto;
-  width: 100%;          /* 입력 본문 아래 전폭 */
-  height: auto;
-  padding: 0.35rem 0.9rem;
-  justify-content: center;
 }
 .gb-submit[disabled] { opacity: 0.5; cursor: default; }
 /* 입력창 패널 — 기본 화면 중앙(.about-drawer flex-center), 잡고 옮기면 JS가
@@ -478,13 +474,9 @@ iframe {
   width: min(26rem, 90vw);
   max-height: none;
   height: auto;
-  overflow: hidden; /* 둥근 아래 모서리로 내용 클립 */
-  padding: 0; /* arena-path는 전폭, 본문 여백은 .gb-form이 가짐 */
-  border-radius: 0 0 1.5rem 1.5rem; /* 상단 각짐 + 하단만 둥글게 */
-  /* 정중앙에서 살짝 위로 — 시각적 안정감(margin-bottom 절반만큼 위로).
-     드래그 시작 시 JS가 margin:0으로 리셋하므로 이동과 충돌 없음. */
-  align-self: center;
-  margin-bottom: 12vh;
+  overflow: visible;
+  border-radius: 1.5rem; /* 둥근 모서리 */
+  align-self: center; /* 천 레이어(flex)에서 세로 중앙 */
   /* JS가 transform으로 이동하므로 entrance 변형 애니메이션은 끈다(충돌 방지) */
   opacity: 1;
   transform: none;
@@ -496,18 +488,17 @@ iframe {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  pointer-events: none; /* 입력창 위에 떠도 클릭·타이핑은 그대로 통과 */
-  z-index: 3; /* 입력창 패널(z2)보다 위 — 메시지가 입력창 위로 떠다닌다 */
+  pointer-events: none; /* 입력창·천 클릭을 막지 않는다 */
+  z-index: 1;
 }
 .gb-float {
   position: absolute;
   top: 100vh; /* 화면 아래에서 시작 → 위로 떠오름(JS가 left·속도·sway 랜덤) */
   max-width: 16rem;
-  font-size: 0.75rem; /* 보조 — 사이트 작은 단(중앙 입력창 --fs보다 한 단 낮춤) */
   padding: var(--space-2) var(--space-3);
   background: var(--bg);
   border: var(--line-w) solid var(--ink); /* 줄무늬 위에서 읽히게 — 플랫 노트 */
-  border-radius: 0.5rem; /* 폴백 — JS가 노트 크기에 비례해 덮어쓴다 */
+  border-radius: 1.5rem; /* 둥근 모서리 */
   animation: gb-rise linear infinite;
   will-change: transform, opacity;
 }
@@ -522,8 +513,10 @@ iframe {
 .gb-float .gb-item-name { color: var(--ink); }
 .gb-float .gb-item-msg { color: var(--ink-body); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
 @keyframes gb-rise {
-  from { transform: translateY(0) translateX(0); }
-  to   { transform: translateY(-120vh) translateX(var(--sway, 0)); }
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { transform: translateY(-120vh) translateX(var(--sway, 0)); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .gb-float { animation: none; } /* JS가 정적 위치로 배치 */
