@@ -81,7 +81,7 @@ const defaultMosaic = fs.readFileSync(
     {/* 입력창 — 한 영역처럼: 상단 arena-path 라벨(드래그 핸들) + 아래 구분선.
         기본 화면 중앙, 라벨을 잡고 커튼 안에서 옮길 수 있다. */}
     <div class="drawer-panel guestbook">
-      <div class="arena-path gb-path" title="잡고 옮기기"><span aria-hidden="true">Are.na/Hyuk Jang/Guestbook</span></div>
+      <div class="gb-path" title="잡고 옮기기" aria-hidden="true"></div>
       <form class="gb-form">
         <input class="gb-name" type="text" maxlength="40" placeholder="이름 (선택)" autocomplete="off" />
         {/* 입력칸 — 기본 리사이즈 손잡이 대신 바닥 가로선을 핸들로(커서로 늘림 표시) */}
