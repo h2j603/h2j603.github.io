@@ -21,8 +21,8 @@ export function accClose() {
   var details = document.querySelectorAll('tr.accordion-detail');
   if (!details.length) { accRow = null; accSlug = null; return; }
   // 데스크탑 단일 펼침: 닫히는 활성 행을 컬럼상 제자리에 고정(점프 보정).
-  // 모바일은 progressive로 여러 개가 열려 있을 수 있어 전부 닫는다. 모바일에선
-  // centerEl이 스크롤러가 아니라 window 스크롤은 건드리지 않는다(스크롤 보호).
+  // 안전하게 모든 detail 행을 거둔다. 모바일에선 centerEl이 스크롤러가 아니라
+  // window 스크롤은 건드리지 않는다(스크롤 보호).
   var activeTr = accSlug ? document.querySelector('tr[data-slug="' + accSlug + '"]') : null;
   var pinTop = (!isMobileView() && activeTr && centerEl) ? activeTr.getBoundingClientRect().top : null;
   details.forEach(function (d) {
@@ -68,13 +68,6 @@ function mountDetail(slug) {
   rescanWave(); // 새 카드 링크를 점멸 파동에 편입(문서 순서로 위상 재부여)
   springOpen(panel); // 파동 높이 펼침 (살짝 오버슈트 후 안착)
   return tr;
-}
-
-// 모바일 스크롤-아코디언 '다 읽음' 기준선 — 카드 바닥이 이 선 위로 올라가면
-// 다음 칸을 연다. 화면 최상단(띠 아래)까지 다 밀어 올릴 필요 없이, 화면 중간쯤
-// (≈45%)에서 본문 끝이 보이면 넘어가도록 둬 전환이 가볍게 일어난다.
-function readDoneLine() {
-  return Math.round(window.innerHeight * 0.45);
 }
 
 // 탭·hash 진입 — 단일 펼침. 열기 전 행 위치를 기억했다가 기존 칸이 닫히며 생긴
@@ -271,70 +264,6 @@ export function initAccordion() {
     clearDragStyle(drag.el);
     drag = null;
   }, { passive: true });
-
-  // ── 모바일 스크롤-아코디언 (가이드 리딩) ──────────────────────────────
-  // 규칙: ① 이미 열린 아코디언이 있을 때만 작동(첫 칸은 탭으로 연다).
-  // ② 그 본문(카드)을 끝까지 — 카드 바닥이 기준선(콘텐츠 최상단, 띠 바로 아래)
-  //    위로 올라갈 때까지 — 읽어 내려가야 ③ '다음' 행이 열린다(맨 위가 기준선에).
-  // ④ 역방향(위로 스크롤)은 무시 — 닫거나 이전으로 되돌리지 않는다.
-  // 새로 열릴 때마다 '재무장'(카드가 기준선 아래로 자란 뒤에야 트리거 가능)이라
-  // 한 번 스크롤에 여러 칸이 우르르 열리지 않는다. 데스크탑은 window 스크롤이
-  // 없어 비활성. 탭·섹션전환·About 커튼 중엔 미발동.
-  var pubRows = function () {
-    return Array.prototype.slice.call(
-      document.querySelectorAll('table.sontable tr[data-slug]:not([data-locked="true"])'),
-    );
-  };
-  var scrollTicking = false;
-  var lastDriverY = window.scrollY;
-  var armed = false;       // 카드가 기준선 아래로 자라 '읽을 거리'가 생겼나
-  var lastSeenSlug = null; // 열린 칸이 바뀌면 재무장
-
-  function onAccScroll() {
-    if (scrollTicking) return;
-    scrollTicking = true;
-    requestAnimationFrame(updateScrollAccordion);
-  }
-  function updateScrollAccordion() {
-    scrollTicking = false;
-    if (!isMobileView()) return;
-    if (!threeCol || threeCol.getAttribute('data-section') !== 'portfolio') return;
-    if (drag && (drag.axis === 'h' || drag.committing)) return; // 가로 스와이프 중
-    if (document.querySelector('.stripe-top.open')) return;     // About 커튼 열림
-    var y = window.scrollY;
-    var goingDown = y > lastDriverY + 0.5;
-    lastDriverY = y;
-    if (!accSlug || !accRow) return; // 열린 아코디언에서만 작동
-    if (accSlug !== lastSeenSlug) { lastSeenSlug = accSlug; armed = false; } // 새 칸 → 재무장
-    var line = readDoneLine();
-    // 카드(본문)의 '최종' 바닥 — 펼침 애니메이션 중에는 height가 작아 화면상
-    // bottom이 부분 높이라 '다 읽음'을 오판(미리·두 개 열림)했다. panel.scrollHeight는
-    // height가 줄어든 상태에서도 전체 콘텐츠 높이를 주므로, top + scrollHeight로
-    // 애니메이션과 무관한 최종 바닥을 쓴다.
-    var panel = accRow.querySelector('.accordion-panel');
-    var bottom = panel
-      ? panel.getBoundingClientRect().top + panel.scrollHeight
-      : accRow.getBoundingClientRect().bottom;
-    if (!armed) {
-      // 카드가 기준선 아래로 자라 읽을 내용이 생기면 무장 (그 전엔 트리거 금지)
-      if (bottom > line) armed = true;
-      return;
-    }
-    if (!goingDown) return;        // ④ 역방향 막기 — 아래로 읽어내릴 때만
-    if (bottom > line) return;     // ② 아직 본문 끝(카드 바닥)이 기준선 위로 안 옴
-    // ③ 끝까지 읽음 → 다음 게시 행 열기
-    var rows = pubRows();
-    var idx = rows.indexOf(document.querySelector('tr[data-slug="' + accSlug + '"]'));
-    var nextTr = idx >= 0 ? rows[idx + 1] : null;
-    if (!nextTr) return;           // 마지막 칸 — 다음 없음
-    // progressive 펼침 — 이전 칸을 닫지 않고, 읽는 위치 '아래'에 다음 카드를
-    // 삽입해 0→높이로 펼친다. 위쪽은 그대로라 행은 제자리(위쪽 고정)·패널만
-    // 아래로 자란다. window 스크롤을 일절 건드리지 않아 관성 스크롤이 멈추지
-    // 않고 흐른다 — 스크롤은 스크롤대로, 아코디언은 아코디언대로. 지나친 이전
-    // 칸들은 열린 채 위로 흘러가고, 탭·섹션전환·hash 진입 때 accClose가 정리한다.
-    mountDetail(nextTr.getAttribute('data-slug'));
-  }
-  window.addEventListener('scroll', onAccScroll, { passive: true });
 
   window.addEventListener('hashchange', applyHash);
   applyHash();
