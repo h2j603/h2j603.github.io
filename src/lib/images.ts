@@ -44,9 +44,27 @@ function bitmapUrl(block: any): string | null {
 
 export type BlockKind =
   | { kind: 'image'; url: string }
+  | { kind: 'video'; url: string; posterUrl: string | null }
   | { kind: 'link'; url: string; title: string; description: string; thumbnailUrl: string | null }
   | { kind: 'text'; content: string }
   | { kind: 'skip' };
+
+/** 영상 파일 확장자 (Are.na Attachment로 직접 올린 mp4 등). */
+const VIDEO_EXT = /\.(mp4|webm|mov|m4v|ogv)$/i;
+
+/**
+ * Attachment 블록이 영상 파일이면 그 URL을 돌려준다.
+ * Are.na에 직접 올린 영상은 `type: 'Attachment'` + `attachment.{url, content_type}`로
+ * 들어온다. content_type이 video/* 거나 URL 확장자가 영상이면 영상으로 본다.
+ */
+function videoAttachmentUrl(block: any): string | null {
+  const att = block?.attachment;
+  const url = att?.url;
+  if (typeof url !== 'string' || !/^https?:\/\//.test(url)) return null;
+  const ct = typeof att?.content_type === 'string' ? att.content_type : '';
+  if (/^video\//i.test(ct) || VIDEO_EXT.test(url.split('?')[0])) return url;
+  return null;
+}
 
 /**
  * Classify a work-channel block.
@@ -57,7 +75,8 @@ export type BlockKind =
  *   work with any link block is treated as a `web` work.
  * - Text → body copy (Markdown). The 1st text block is the Korean body, the
  *   2nd is the English body.
- * - Attachment / PendingBlock / Channel sub-channels / anything else → skip.
+ * - Attachment(영상) → 직접 올린 mp4 등. 영상으로 다운로드 후 <video>로 렌더.
+ * - 그 외 Attachment / PendingBlock / Channel sub-channels / anything else → skip.
  */
 export function classifyBlock(block: any): BlockKind {
   const t = blockType(block);
@@ -85,6 +104,12 @@ export function classifyBlock(block: any): BlockKind {
     return url ? { kind: 'image', url } : { kind: 'skip' };
   }
 
+  // 직접 올린 영상 (Attachment). 포스터는 Are.na가 만든 미리보기 이미지(block.image).
+  if (t === 'Attachment') {
+    const url = videoAttachmentUrl(block);
+    return url ? { kind: 'video', url, posterUrl: bitmapUrl(block) } : { kind: 'skip' };
+  }
+
   if (t === 'Text') {
     const content = readMarkdown(block?.content);
     return content.trim() ? { kind: 'text', content } : { kind: 'skip' };
@@ -95,7 +120,7 @@ export function classifyBlock(block: any): BlockKind {
 
 function extFromUrl(url: string): string {
   const clean = url.split('?')[0];
-  const m = clean.match(/\.(jpe?g|png|gif|webp|avif|tiff?)$/i);
+  const m = clean.match(/\.(jpe?g|png|gif|webp|avif|tiff?|mp4|webm|mov|m4v|ogv)$/i);
   return m ? m[1].toLowerCase().replace('jpeg', 'jpg') : 'jpg';
 }
 
@@ -112,6 +137,10 @@ export interface BlockImage {
   url: string;
   alt: string;
   caption: string;
+  /** 'video'면 영상으로 다운로드하고 포스터도 받는다. 없으면 'image'. */
+  kind?: 'image' | 'video';
+  /** video일 때 포스터 이미지 URL (Are.na 미리보기). 없으면 null. */
+  posterUrl?: string | null;
 }
 
 export interface DownloadStats {
@@ -154,8 +183,9 @@ export async function downloadFile(
 }
 
 /**
- * Download all artwork images for one work, in input order. Individual download
- * failures are logged and skipped — they never abort the build.
+ * Download all artwork media (images + videos) for one work, in input order.
+ * 영상은 파일을 받고, 포스터(첫 프레임 미리보기)가 있으면 함께 받는다. 개별
+ * 다운로드 실패는 로그만 남기고 건너뛴다 — 빌드를 멈추지 않는다.
  */
 export async function downloadImages(
   slug: string,
@@ -166,8 +196,19 @@ export async function downloadImages(
   let i = 0;
   for (const b of blocks) {
     i++;
-    const localPath = await downloadFile(slug, b.url, String(i).padStart(4, '0'), stats);
-    if (localPath) images.push({ localPath, alt: b.alt ?? '', caption: b.caption ?? '' });
+    const base = String(i).padStart(4, '0');
+    const localPath = await downloadFile(slug, b.url, base, stats);
+    if (!localPath) continue;
+    if (b.kind === 'video') {
+      let poster = '';
+      if (b.posterUrl) {
+        const p = await downloadFile(slug, b.posterUrl, `${base}-poster`, stats);
+        if (p) poster = p;
+      }
+      images.push({ localPath, alt: b.alt ?? '', caption: b.caption ?? '', kind: 'video', poster });
+    } else {
+      images.push({ localPath, alt: b.alt ?? '', caption: b.caption ?? '', kind: 'image', poster: '' });
+    }
   }
   return images;
 }

@@ -6,10 +6,17 @@
 import { z } from 'zod';
 
 export const imageSchema = z.object({
-  /** Path relative to `src/assets`, e.g. `works/british-poster/0001.jpg`. */
+  /** Path relative to `src/assets`, e.g. `works/british-poster/0001.jpg`.
+      video면 영상 파일 경로(.mp4 등). */
   localPath: z.string().min(1),
   alt: z.string().default(''),
   caption: z.string().default(''),
+  /** 'image'(기본) 또는 'video'(Are.na Attachment 영상 블록).
+      video면 페이지에서 자동재생·무한루프·음소거 <video>로 렌더 (움직이는 이미지처럼). */
+  kind: z.enum(['image', 'video']).default('image'),
+  /** video일 때 포스터(첫 프레임) 이미지의 로컬 경로 — 표 썸네일·<video poster>용.
+      Are.na가 영상 미리보기를 안 주면 ''. */
+  poster: z.string().default(''),
 });
 
 /**

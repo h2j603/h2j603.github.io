@@ -115,6 +115,17 @@ export function resolveImage(localPath: string): ImageMetadata | undefined {
   return imageModules[`/src/assets/${localPath}`]?.default;
 }
 
+// 영상은 이미지 파이프라인을 안 타므로 별도 glob — `?url`로 빌드된 정적 파일
+// URL(문자열)을 얻어 <video src>에 그대로 쓴다.
+const videoModules = import.meta.glob<string>(
+  '/src/assets/works/**/*.{mp4,webm,mov,m4v,ogv}',
+  { eager: true, query: '?url', import: 'default' },
+);
+
+export function resolveVideo(localPath: string): string | undefined {
+  return videoModules[`/src/assets/${localPath}`];
+}
+
 /** 좌측 컬럼 메모 — memos.json 스냅샷 (없으면 빈 배열). */
 let memosCache: Memo[] | null = null;
 export function getMemos(): Memo[] {

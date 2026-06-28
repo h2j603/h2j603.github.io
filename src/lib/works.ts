@@ -151,6 +151,16 @@ async function buildOne(
           '',
         caption: readMarkdown(b?.description),
       });
+    } else if (c.kind === 'video') {
+      // 영상도 이미지 시퀀스와 같은 미디어 흐름에 넣는다 — 채널 순서·레이아웃
+      // (imageLayout)에서 한 칸을 차지하고, 페이지에서 <video>로 렌더된다.
+      imageBlocks.push({
+        url: c.url,
+        alt: (typeof b?.title === 'string' && b.title) || '',
+        caption: readMarkdown(b?.description),
+        kind: 'video',
+        posterUrl: c.posterUrl,
+      });
     } else if (c.kind === 'link') {
       linkBlocks.push({
         link: { url: c.url, title: c.title, description: c.description },
@@ -183,6 +193,9 @@ async function buildOne(
 
   // Representative image for index thumbnails: `cover` metadata (1-based) →
   // else first image → else first link thumbnail.
+  // 표 썸네일은 정지 이미지여야 하므로 video면 포스터를 쓴다.
+  const coverPath = (m: (typeof images)[number]): string =>
+    m.kind === 'video' ? m.poster : m.localPath;
   let cover = '';
   if (images.length) {
     let idx = 0;
@@ -193,8 +206,12 @@ async function buildOne(
       } else {
         idx = c - 1;
       }
+    } else {
+      // 자동 선택: 영상보다 정지 이미지를 우선 (썸네일로 더 안전).
+      const firstImg = images.findIndex((m) => m.kind !== 'video');
+      if (firstImg >= 0) idx = firstImg;
     }
-    cover = images[idx].localPath;
+    cover = coverPath(images[idx]);
   } else {
     cover = links.find((l) => l.thumbnail)?.thumbnail ?? '';
   }
