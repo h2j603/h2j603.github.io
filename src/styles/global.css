@@ -422,8 +422,11 @@ iframe {
 
 /* ── 방명록 (커튼 패널) — 라인·플랫 (디자인 규칙: 박스·그림자 없음) ── */
 /* 상단 arena-path 라벨 = 영역 표식 + 드래그 핸들 (잡고 입력창 이동) */
+.gb-path,
+.gb-path span {
+  color: var(--ink); /* 다른 컬럼 라벨과 동일한 어두운 색 — span까지 명시해 흐려지지 않게 */
+}
 .gb-path {
-  color: var(--ink); /* 다른 컬럼 라벨과 동일 — 회색으로 빠지지 않게 명시 */
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
@@ -436,8 +439,13 @@ iframe {
   font: inherit;
   color: var(--ink);
   background: transparent;
+  /* iOS Safari 기본 컨트롤 스타일(둥근 모서리·안쪽 음영) 제거 — 밑줄이
+     다른 영역 구분선(1px solid --ink)과 정확히 같은 선으로 보이게. */
+  -webkit-appearance: none;
+  appearance: none;
   border: 0;
-  border-bottom: var(--line-w) solid var(--ink); /* 하단 라인만 (디자인 규칙) */
+  border-radius: 0;
+  border-bottom: var(--line-w) solid var(--ink); /* 하단 라인만 (표준 구분선과 동일) */
   padding: var(--space-2) 0;
   width: 100%;
 }
@@ -464,7 +472,8 @@ iframe {
   position: static;
   top: auto;
   right: auto;
-  width: 100%;          /* 입력 본문 아래 전폭 */
+  width: auto;            /* 전폭 X — 내용 폭으로 콤팩트하게 */
+  align-self: flex-end;   /* 본문 아래 우측 정렬 (상태줄도 우측이라 한 축) */
   height: auto;
   padding: 0.35rem 0.9rem;
   justify-content: center;
@@ -478,9 +487,9 @@ iframe {
   width: min(26rem, 90vw);
   max-height: none;
   height: auto;
-  overflow: hidden; /* 둥근 아래 모서리로 내용 클립 */
+  overflow: hidden; /* 둥근 모서리로 내용(헤더 포함) 클립 */
   padding: 0; /* arena-path는 전폭, 본문 여백은 .gb-form이 가짐 */
-  border-radius: 0 0 1.5rem 1.5rem; /* 상단 각짐 + 하단만 둥글게 */
+  border-radius: 1.5rem; /* 네 모서리 동일 — 헤더+본문이 한 박스, 구분은 헤더 border-bottom 선으로 */
   /* 정중앙에서 살짝 위로 — 시각적 안정감(margin-bottom 절반만큼 위로).
      드래그 시작 시 JS가 margin:0으로 리셋하므로 이동과 충돌 없음. */
   align-self: center;
