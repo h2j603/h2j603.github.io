@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Base from '../layouts/Base.astro';
 import SkelImage from '../components/SkelImage.astro';
-import { getWorks, resolveImage, getIntro, getLinks, getMemos, groupBilingual } from "../lib/site-data.js";
+import { getWorks, resolveImage, resolveVideo, getIntro, getLinks, getMemos, groupBilingual } from "../lib/site-data.js";
 import { buildTagMixMap } from "../lib/tag-colors.js";
 
 const works = getWorks().slice().sort((a, b) => {
@@ -78,9 +78,10 @@ const defaultMosaic = fs.readFileSync(
   <div class="about-drawer" data-lang="en">
     {/* 남겨진 메시지들 — 커튼 위를 하나씩 떠다닌다 (JS가 채움) */}
     <div class="gb-float-layer" aria-hidden="true"></div>
-    {/* 입력창 — 기본 화면 중앙, 제목 바를 잡고 커튼 안에서 옮길 수 있다 */}
+    {/* 입력창 — 한 영역처럼: 상단 arena-path 라벨(드래그 핸들) + 아래 구분선.
+        기본 화면 중앙, 라벨을 잡고 커튼 안에서 옮길 수 있다. */}
     <div class="drawer-panel guestbook">
-      <h2 class="gb-title" title="잡고 옮기기">방명록</h2>
+      <div class="arena-path gb-path" title="잡고 옮기기"><span aria-hidden="true">Are.na/Hyuk Jang/Guestbook</span></div>
       <form class="gb-form">
         <input class="gb-name" type="text" maxlength="40" placeholder="이름 (선택)" autocomplete="off" />
         {/* 입력칸 — 기본 리사이즈 손잡이 대신 바닥 가로선을 핸들로(커서로 늘림 표시) */}
@@ -274,6 +275,24 @@ const defaultMosaic = fs.readFileSync(
                           style={`grid-template-columns: repeat(${row.cols}, 1fr)`}
                         >
                           {row.imgs.map((img) => {
+                            // 영상: 자동재생·무한루프·음소거·컨트롤 없음 — 움직이는 이미지처럼.
+                            if (img.kind === 'video') {
+                              const vsrc = resolveVideo(img.localPath);
+                              const poster = img.poster ? resolveImage(img.poster) : undefined;
+                              return vsrc ? (
+                                <video
+                                  class="card-video"
+                                  src={vsrc}
+                                  poster={poster?.src}
+                                  autoplay
+                                  loop
+                                  muted
+                                  playsinline
+                                  preload="metadata"
+                                  aria-label={img.alt || w.title || w.slug}
+                                ></video>
+                              ) : null;
+                            }
                             const asset = resolveImage(img.localPath);
                             return asset ? (
                               <SkelImage
