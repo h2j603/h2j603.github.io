@@ -441,27 +441,6 @@ iframe {
 /* 상단 드래그 핸들 — 잡고 입력창 이동. 라벨 텍스트는 뺐다: 커튼 오버레이
    패널의 최상단 요소는 크롬이 텍스트를 흐리게 칠하는 페인트 버그가 있어
    (mask·opacity 없이도 ~37% 알파), 라벨 대신 핸들 바만 남긴다. */
-.gb-path {
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg);
-  border-bottom: var(--line-w) solid var(--ink); /* 표준 구분선 — 핸들↔입력 분리 */
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: none;
-}
-/* 가운데 그랩 표시 — 짧은 선 (드래그 가능 신호) */
-.gb-path::after {
-  content: "";
-  width: 2rem;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--ink);
-}
-.gb-path.grabbing { cursor: grabbing; }
 .gb-form { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); }
 .gb-name,
 .gb-message {
@@ -516,9 +495,9 @@ iframe {
   width: min(26rem, 90vw);
   max-height: none;
   height: auto;
-  overflow: hidden; /* 둥근 모서리로 내용(헤더 포함) 클립 */
-  padding: 0; /* arena-path는 전폭, 본문 여백은 .gb-form이 가짐 */
-  border-radius: 1.5rem; /* 네 모서리 동일 — 헤더+본문이 한 박스, 구분은 헤더 border-bottom 선으로 */
+  overflow: hidden; /* 둥근 모서리로 내용 클립 */
+  padding: 0; /* 본문 여백은 .gb-form이 가짐 */
+  border-radius: 1.5rem; /* 네 모서리 동일 — 콤팩트한 한 박스 */
   /* 정중앙에서 살짝 위로 — 시각적 안정감(margin-bottom 절반만큼 위로).
      드래그 시작 시 JS가 margin:0으로 리셋하므로 이동과 충돌 없음. */
   align-self: center;

@@ -79,10 +79,8 @@ const defaultMosaic = fs.readFileSync(
   <div class="about-drawer" data-lang="en">
     {/* 남겨진 메시지들 — 커튼 위를 하나씩 떠다닌다 (JS가 채움) */}
     <div class="gb-float-layer" aria-hidden="true"></div>
-    {/* 입력창 — 한 영역처럼: 상단 arena-path 라벨(드래그 핸들) + 아래 구분선.
-        기본 화면 중앙, 라벨을 잡고 커튼 안에서 옮길 수 있다. */}
+    {/* 입력창 — 커튼 안 화면 중앙에 콤팩트하게 고정. */}
     <div class="drawer-panel guestbook">
-      <div class="gb-path" title="잡고 옮기기" aria-hidden="true"></div>
       <form class="gb-form">
         <input class="gb-name" type="text" maxlength="40" placeholder="이름 (선택)" autocomplete="off" />
         {/* 입력칸 — 기본 리사이즈 손잡이 대신 바닥 가로선을 핸들로(커서로 늘림 표시) */}
