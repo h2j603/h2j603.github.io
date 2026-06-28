@@ -268,8 +268,9 @@
     width: 100%;
     z-index: 60;
   }
-  /* 모바일 About — 병기 해제, 단일 언어 1단 (좁아서 2단·세로선 부적합) */
-  .about-overlay .intro-body::before { display: none; }
+  /* 모바일 About — 병기 해제, 단일 언어 1단 (좁아서 2단·세로선 부적합).
+     세로선은 .about-overlay::before(전체높이) — 1단이라 불필요해 끈다. */
+  .about-overlay::before { display: none; }
   .about-overlay .bilingual { display: block; }
   .three-col[data-lang='ko'] .about-overlay .bilingual > [lang='en'] { display: none; }
   .three-col[data-lang='en'] .about-overlay .bilingual > [lang='ko'] { display: none; }
