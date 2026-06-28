@@ -1,7 +1,7 @@
 // 방명록 — 구글 시트(Apps Script 웹앱)가 저장소.
 //   읽기: JSONP (?callback=) — 크로스오리진 GET CORS 우회
 //   쓰기: no-cors POST (text/plain) — 프리플라이트 회피. 응답은 못 읽으니 성공 가정.
-// 연출: 입력창은 화면 중앙(제목 바를 잡고 옮길 수 있음), 남겨진 메시지들은
+// 연출: 입력창은 화면 중앙에 콤팩트하게 고정, 남겨진 메시지들은
 //   커튼 위를 하나씩 떠오른다(rise 애니메이션). 커튼 첫 열림에 1회 로드.
 
 var GB_URL = 'https://script.google.com/macros/s/AKfycbx5fDxmlQ09beEerLeqkVqUOZ2w-PNXTEsZkXrA8ZhxNa369P2wpZVX81_zwYySGxnIgw/exec';
@@ -43,8 +43,6 @@ export function initGuestbook() {
   var layer = document.querySelector('.gb-float-layer');
   var form = document.querySelector('.gb-form');
   if (!drawer || !layer || !form) return;
-  var panel = drawer.querySelector('.drawer-panel');
-  var pathEl = document.querySelector('.gb-path'); // 상단 라벨 = 드래그 핸들
   var nameI = form.querySelector('.gb-name');
   var msgI = form.querySelector('.gb-message');
   var status = form.querySelector('.gb-status');
@@ -142,34 +140,6 @@ export function initGuestbook() {
       var startY = e.clientY, startH = msgI.offsetHeight;
       function move(ev) { msgI.style.height = Math.max(48, startH + (ev.clientY - startY)) + 'px'; }
       function up() {
-        window.removeEventListener('pointermove', move);
-        window.removeEventListener('pointerup', up);
-      }
-      window.addEventListener('pointermove', move);
-      window.addEventListener('pointerup', up);
-    });
-  }
-
-  // ── 입력창 이동 — 제목 바를 잡고 커튼 안에서 자유롭게 옮긴다.
-  //    flex 중앙정렬·transform 간섭을 피해 position:fixed + left/top으로 (두 축 자유). ──
-  if (panel && pathEl) {
-    pathEl.addEventListener('pointerdown', function (e) {
-      e.preventDefault();
-      try { pathEl.setPointerCapture(e.pointerId); } catch (_) {}
-      pathEl.classList.add('grabbing');
-      var rect = panel.getBoundingClientRect();
-      // 현재 화면 위치를 그대로 고정으로 전환 (점프 없음) — 이후 left/top으로 이동
-      panel.style.position = 'fixed';
-      panel.style.margin = '0';
-      panel.style.left = rect.left + 'px';
-      panel.style.top = rect.top + 'px';
-      var sx = e.clientX, sy = e.clientY, bl = rect.left, bt = rect.top;
-      function move(ev) {
-        panel.style.left = (bl + (ev.clientX - sx)) + 'px';
-        panel.style.top = (bt + (ev.clientY - sy)) + 'px';
-      }
-      function up() {
-        pathEl.classList.remove('grabbing');
         window.removeEventListener('pointermove', move);
         window.removeEventListener('pointerup', up);
       }
