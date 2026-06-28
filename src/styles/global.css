@@ -421,16 +421,28 @@ iframe {
 .three-col[data-lang='en'] .about-overlay .bilingual > [lang='en'] { order: 1; }
 
 /* ── 방명록 (커튼 패널) — 라인·플랫 (디자인 규칙: 박스·그림자 없음) ── */
-/* 상단 arena-path 라벨 = 영역 표식 + 드래그 핸들 (잡고 입력창 이동) */
-.gb-path,
-.gb-path span {
-  color: var(--ink); /* 다른 컬럼 라벨과 동일한 어두운 색 — span까지 명시해 흐려지지 않게 */
-}
+/* 상단 드래그 핸들 — 잡고 입력창 이동. 라벨 텍스트는 뺐다: 커튼 오버레이
+   패널의 최상단 요소는 크롬이 텍스트를 흐리게 칠하는 페인트 버그가 있어
+   (mask·opacity 없이도 ~37% 알파), 라벨 대신 핸들 바만 남긴다. */
 .gb-path {
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border-bottom: var(--line-w) solid var(--ink); /* 표준 구분선 — 핸들↔입력 분리 */
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
+}
+/* 가운데 그랩 표시 — 짧은 선 (드래그 가능 신호) */
+.gb-path::after {
+  content: "";
+  width: 2rem;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--ink);
 }
 .gb-path.grabbing { cursor: grabbing; }
 .gb-form { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); }
