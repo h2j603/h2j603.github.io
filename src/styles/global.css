@@ -1545,6 +1545,9 @@ table.sontable .col-cat   { width: 20%; }
   transform: scale(0.4);   /* 다시 40%로 축소 → wrapper 영역에 fit */
   transform-origin: top left;
   margin: 0;
+  /* 라이브 페이지를 '보여주기만' — 클릭·스크롤·호버 등 상호작용 차단.
+     방문은 작품 본문의 외부 링크(.card-link)로. */
+  pointer-events: none;
 }
 
 /* 인트로 제목 "hyuk.xyz/about"에서 hyuk.xyz 부분만 홈 링크.
