@@ -44,7 +44,7 @@ export function initGuestbook() {
   var form = document.querySelector('.gb-form');
   if (!drawer || !layer || !form) return;
   var panel = drawer.querySelector('.drawer-panel');
-  var titleEl = document.querySelector('.gb-title');
+  var pathEl = document.querySelector('.gb-path'); // 상단 라벨 = 드래그 핸들
   var nameI = form.querySelector('.gb-name');
   var msgI = form.querySelector('.gb-message');
   var status = form.querySelector('.gb-status');
@@ -62,7 +62,9 @@ export function initGuestbook() {
     el.innerHTML = '<div class="gb-item-head"><span class="gb-item-name">' + esc(name) + '</span>'
       + (it.ts ? '<span>' + esc(fmt(it.ts)) + '</span>' : '') + '</div>'
       + '<div class="gb-item-msg">' + esc(it.message) + '</div>';
-    el.style.left = rnd(4, 78).toFixed(1) + '%';
+    // 좁은 화면은 노트가 넓어(64vw) 오른쪽으로 삐져나가 잘리므로 left 범위를 좁힌다
+    var maxLeft = window.innerWidth < 600 ? 34 : 78;
+    el.style.left = rnd(3, maxLeft).toFixed(1) + '%';
     if (REDUCE) {
       // 모션 최소화 — 애니메이션 없이 화면 안 임의 높이에 정적 배치
       el.style.top = rnd(8, 82) + 'vh';
@@ -74,6 +76,9 @@ export function initGuestbook() {
       el.style.setProperty('--sway', rnd(-7, 7).toFixed(1) + 'vw');
     }
     layer.appendChild(el);
+    // 모서리는 노트 크기에 비례 — 작은 쪽지는 살짝, 큰 쪽지는 더 둥글게 (고정값 X)
+    var r = Math.round(Math.min(el.offsetWidth, el.offsetHeight) * 0.22);
+    el.style.borderRadius = Math.max(6, Math.min(r, 20)) + 'px';
   }
 
   function render(items) {
@@ -83,7 +88,6 @@ export function initGuestbook() {
 
   function applyChrome() {
     var L = t();
-    if (titleEl) titleEl.textContent = L.title;
     if (nameI) nameI.placeholder = L.name;
     if (msgI) msgI.placeholder = L.message;
     if (submit && !sending) submit.textContent = L.submit;
@@ -148,11 +152,11 @@ export function initGuestbook() {
 
   // ── 입력창 이동 — 제목 바를 잡고 커튼 안에서 자유롭게 옮긴다.
   //    flex 중앙정렬·transform 간섭을 피해 position:fixed + left/top으로 (두 축 자유). ──
-  if (panel && titleEl) {
-    titleEl.addEventListener('pointerdown', function (e) {
+  if (panel && pathEl) {
+    pathEl.addEventListener('pointerdown', function (e) {
       e.preventDefault();
-      try { titleEl.setPointerCapture(e.pointerId); } catch (_) {}
-      titleEl.classList.add('grabbing');
+      try { pathEl.setPointerCapture(e.pointerId); } catch (_) {}
+      pathEl.classList.add('grabbing');
       var rect = panel.getBoundingClientRect();
       // 현재 화면 위치를 그대로 고정으로 전환 (점프 없음) — 이후 left/top으로 이동
       panel.style.position = 'fixed';
@@ -165,7 +169,7 @@ export function initGuestbook() {
         panel.style.top = (bt + (ev.clientY - sy)) + 'px';
       }
       function up() {
-        titleEl.classList.remove('grabbing');
+        pathEl.classList.remove('grabbing');
         window.removeEventListener('pointermove', move);
         window.removeEventListener('pointerup', up);
       }
