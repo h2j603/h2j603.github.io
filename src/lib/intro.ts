@@ -4,7 +4,9 @@
  *
  *   - `## ko` 로 시작 → lang: 'ko'
  *   - `## en` 로 시작 → lang: 'en'
- *   - 둘 다 아님       → lang: null (단독, 1단으로 표시)
+ *   - `## note`        → note: true (본문 아래 1단 주석)
+ *   - `## note ko` / `## note en` → 주석을 언어별로 (본문처럼 ko+en 짝지음)
+ *   - 셋 다 아님       → lang: null (단독, 1단으로 표시)
  *
  * 마커 줄은 본문 HTML에서 제거된다. 페이지 단에서 ko 다음 en이 연속되면
  * 좌우 2단으로 짝짓고, 그 외엔 1단으로 렌더.
@@ -23,7 +25,8 @@ export interface TextBlock {
   note?: boolean;
 }
 
-const MARKER_RE = /^\s*##\s*(ko|en|note)\s*$/i;
+// `## ko` | `## en` | `## note` | `## note ko` | `## note en`
+const MARKER_RE = /^\s*##\s*(?:(note)(?:\s+(ko|en))?|(ko|en))\s*$/i;
 
 export function parseMarker(
   markdown: string,
@@ -31,10 +34,11 @@ export function parseMarker(
   const lines = markdown.split(/\r?\n/);
   const m = MARKER_RE.exec(lines[0] ?? '');
   if (m) {
-    const tag = m[1].toLowerCase();
+    const note = !!m[1]; // 'note' 캡처됨
+    const langTag = (note ? m[2] : m[3])?.toLowerCase(); // note면 뒤 언어, 아니면 ko/en
     return {
-      lang: tag === 'ko' || tag === 'en' ? (tag as 'ko' | 'en') : null,
-      note: tag === 'note',
+      lang: langTag === 'ko' || langTag === 'en' ? (langTag as 'ko' | 'en') : null,
+      note,
       rest: lines.slice(1).join('\n').trimStart(),
     };
   }
