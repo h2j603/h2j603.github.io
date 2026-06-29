@@ -56,10 +56,13 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
    or manual dispatch). The runner has open internet so the Are.na fetch works
    there.
 9. **인물 — 별도 레지스트리 없음(폐기됨).** 예전엔 `people` 채널 + 빌드타임
-   @멘션 매칭이 있었으나, 본문 @멘션을 **인라인 마크다운 링크 `[이름](url)`로
-   직접 변환**(Are.na API)하고 `people` 채널을 삭제했다. 이제 인물 링크는 그냥
-   본문 하이퍼링크다 — 새 인물을 넣을 땐 본문에 `[이름](url)`로 쓰면 된다.
-   (한/영 이름 자동전환·작품 조인·`data-person`은 더 이상 없음.)
+   @멘션 매칭이 있었으나, `people` 채널을 삭제하고 인물 링크를 본문 인라인
+   하이퍼링크로 옮겼다. (한/영 이름 자동전환·작품 조인·`data-person`은 없음.)
+   **인물 링크는 일반 링크와 색으로 구분한다:** 본문에 `[@이름](url)`처럼 이름
+   앞에 `@`를 붙여 적으면 `src/scripts/text.js`가 런타임에 `@`를 떼고(화면엔
+   '이름'만) `.mention` 클래스를 붙여 **갈색 pill**로 렌더한다. `@` 없이
+   `[이름](url)`로 적으면 일반 **보라 pill**. 아이콘 구분은 없고 색만 다르다.
+   적용 범위: 메모(`.intro`)·About(`.about-overlay`)·작품 카드 본문/링크.
 10. **메모 (`memo` 채널, 혁이 직접 만든 채널 — 불변 ID `5297539`로 참조).**
     채널 이름 rename 시 Are.na slug가 바뀌어 연결이 끊기므로 slug 대신 숫자
     ID로 건다 (config의 `ARENA_MEMO_CHANNEL`). 텍스트 블록 1개 = 메모 1개 —
