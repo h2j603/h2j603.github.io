@@ -1006,10 +1006,12 @@ table tr[data-active='true'] a {
   border-bottom: var(--line-w) solid currentColor;
 }
 
-/* 인물 멘션(@) 링크 — 갈색 계열 pill (일반 링크 보라 pill과 L 통일). 화살표
-   대신 인물 아이콘. pill 배경·padding은 위 본문 링크 규칙에서 상속, 색만 갈색으로. */
+/* 인물 링크 — 갈색 계열 pill (일반 링크 보라 pill과 L 통일). pill 배경·padding은
+   위 본문 링크 규칙에서 상속, 색만 갈색으로. 아이콘 없이 색으로만 구분.
+   (저자가 본문에 [@이름](url)로 적으면 text.js가 @를 떼고 .mention을 붙인다) */
 .intro a.mention,
 .drawer-panel a.mention,
+.about-overlay a.mention,
 .work-card .card-body a.mention,
 .work-card .card-link.mention {
   background: var(--pill-person-grad);
@@ -1019,6 +1021,7 @@ table tr[data-active='true'] a {
 @media (hover: hover) {
   .intro a.mention:hover,
   .drawer-panel a.mention:hover,
+  .about-overlay a.mention:hover,
   .work-card .card-body a.mention:hover,
   .work-card .card-link.mention:hover {
     background: var(--pill-person-grad-h);
