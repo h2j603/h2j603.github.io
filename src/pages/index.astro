@@ -128,7 +128,20 @@ const defaultMosaic = fs.readFileSync(
       )}
       {introNotes.length > 0 && (
         <div class="intro-notes">
-          {introNotes.map((html) => <div class="intro-note" set:html={html} />)}
+          {introNotes.map((g) => (
+            <div class="intro-note">
+              {g.ko && g.en ? (
+                <div class="bilingual">
+                  <div lang="ko" set:html={g.ko} />
+                  <div lang="en" set:html={g.en} />
+                </div>
+              ) : g.ko ? (
+                <div lang="ko" set:html={g.ko} />
+              ) : (
+                <div lang="en" set:html={g.en} />
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

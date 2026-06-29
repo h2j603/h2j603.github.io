@@ -95,11 +95,12 @@ export function getIntro(): BilingualGroup[] {
   return introCache;
 }
 
-/** About 본문 아래 1단 주석들(## note 블록의 HTML, 채널 순서). */
-let introNotesCache: string[] | null = null;
-export function getIntroNotes(): string[] {
+/** About 본문 아래 주석들(## note 블록). 본문과 같은 한/영 짝짓기 —
+ *  `## note ko` + `## note en` → 한 그룹(2단), 언어 없는 `## note` → 단독. */
+let introNotesCache: BilingualGroup[] | null = null;
+export function getIntroNotes(): BilingualGroup[] {
   if (introNotesCache !== null) return introNotesCache;
-  introNotesCache = readBlocks(INTRO_PATH).filter((b) => b.note).map((b) => b.html);
+  introNotesCache = groupBilingual(readBlocks(INTRO_PATH).filter((b) => b.note));
   return introNotesCache;
 }
 
