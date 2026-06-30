@@ -1,4 +1,5 @@
 // 한·영 토글 — 띠 위 칩(.lang-toggle)이 .three-col[data-lang]을 바꾼다.
+import { swapButtonLabel } from './util.js';
 
 export function initLang() {
   var langToggle = document.querySelector('.lang-toggle');
@@ -23,7 +24,7 @@ export function initLang() {
     var cur = langToggle.getAttribute('data-lang') || 'ko';
     var next = cur === 'ko' ? 'en' : 'ko';
     langToggle.setAttribute('data-lang', next);
-    langToggle.textContent = next === 'ko' ? 'EN' : 'KO';
+    swapButtonLabel(langToggle, next === 'ko' ? 'EN' : 'KO');
     applyLang(next);
   });
 }

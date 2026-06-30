@@ -9,6 +9,34 @@ export function anchorY() {
   return Math.max(110, Math.round(window.innerHeight * 0.22));
 }
 
+// 토글 버튼 라벨 교체 — 텍스트는 즉시 새 값으로 바꾸되, pill '폭'을 옛 자연폭에서
+// 새 자연폭으로 트랜지션해 점프 없이 자라거나 줄어든다(FLIP). 길이가 늘 땐 새 라벨이
+// 폭에 가려 wipe로 드러나고(버튼 overflow:hidden), 끝나면 width를 auto로 되돌려
+// 폰트 로드 등 폭 변동에 다시 따라가게 한다. KO/EN처럼 폭차가 없으면 무동작.
+export function swapButtonLabel(btn, text) {
+  if (!btn || btn.textContent === text) return;
+  if (btn._lblCleanup) btn._lblCleanup(); // 진행 중 애니메이션 정리(연속 클릭)
+  var from = btn.getBoundingClientRect().width; // 옛 라벨 자연폭
+  btn.textContent = text;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; // 즉시
+  var to = btn.getBoundingClientRect().width;    // 새 라벨 자연폭
+  if (Math.abs(from - to) < 0.5) return;         // 폭 변화 없음 — 그냥 둔다
+  btn.style.transition = 'none';
+  btn.style.width = from + 'px';
+  btn.getBoundingClientRect();                   // reflow 강제 — 옛 폭 확정
+  btn.style.transition =
+    'width 0.26s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.12s ease, background 0.12s ease, transform 0.07s ease';
+  btn.style.width = to + 'px';
+  function onEnd(e) { if (e.propertyName === 'width') btn._lblCleanup(); }
+  btn._lblCleanup = function () {
+    btn.removeEventListener('transitionend', onEnd);
+    btn.style.transition = '';
+    btn.style.width = '';
+    btn._lblCleanup = null;
+  };
+  btn.addEventListener('transitionend', onEnd);
+}
+
 // 아코디언 펼침 — 높이를 0→측정값으로 감쇠 스프링(파동)으로 키운다. 느릿한
 // 박자(낮은 k)에 거의 임계감쇠(ζ≈0.99)라 바운스 없이 천천히 미끄러지듯 안착,
 // 끝나면 height auto로 되돌려 콘텐츠 변동(이미지 로드 등)에 자연스럽게 따라간다.
