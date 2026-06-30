@@ -1278,6 +1278,10 @@ table.sontable tr[data-active='true'] td { padding-bottom: 0; }
   padding: 0 0.5625rem;
   border: none;
   border-radius: 999px;
+  /* 라벨 폭 트랜지션(util.swapButtonLabel) — 길어질 때 새 라벨이 pill 밖으로
+     삐져나오지 않고 폭이 자라며 깔끔히 드러나게(wipe). 줄바꿈도 방지. */
+  white-space: nowrap;
+  overflow: hidden;
   /* 입체 — (1)둥근 표면 셰이딩: 상단 빛→중하단 음영→바닥 반사광(곡면감),
      (2)베벨: 상단 안쪽 하이라이트 + 하단 안쪽 음영(두께),
      (3)2단 드롭섀도(가깝고 진한 + 멀고 퍼진)로 떠오름. 전부 보라(accent) 파생. */

@@ -1,5 +1,6 @@
 // About — 'Hyuk Jang' 버튼이 가운데(작품 표) 위에 About 오버레이를 덮는다.
 // 다시 누르거나 ESC로 닫는다. (예전 커튼 서랍 → 가운데 오버레이로 이동)
+import { swapButtonLabel } from './util.js';
 
 function overlay() { return document.getElementById('aboutOverlay'); }
 function toggleBtn() { return document.querySelector('.about-toggle'); }
@@ -14,7 +15,7 @@ function setOpen(open) {
   ov.hidden = !open;
   if (btn) {
     btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    btn.textContent = open ? OPEN_LABEL : CLOSED_LABEL;
+    swapButtonLabel(btn, open ? OPEN_LABEL : CLOSED_LABEL);
     btn.classList.toggle('is-back', open); // 상태별 스타일 훅
   }
 }
