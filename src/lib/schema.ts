@@ -60,6 +60,12 @@ export const workSchema = z.object({
    * else the first image, else the first link thumbnail.
    */
   cover: z.string().default(''),
+  /**
+   * web 작품의 빌드타임 스크린샷 로컬 경로(`works/<slug>/screenshot.jpg`), 없으면 ''.
+   * 라이브 iframe 대신 이 정지 이미지를 미리보기로 렌더한다. 캡처 실패 시 ''이면
+   * 페이지가 라이브 iframe으로 폴백한다.
+   */
+  screenshot: z.string().default(''),
   /** Korean body — 마커 ##ko 텍스트 블록들을 join. 호환용. */
   bodyKo: z.string().default(''),
   /** English body — 마커 ##en 텍스트 블록들을 join. 호환용. */

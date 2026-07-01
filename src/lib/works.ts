@@ -21,6 +21,7 @@ import {
   type BlockImage,
   type DownloadStats,
 } from './images.js';
+import { captureScreenshot } from './screenshot.js';
 import { workSchema, TAGS, type Work, type WorkLink, type Tag } from './schema.js';
 import { ARENA_INDEX_CHANNEL } from './config.js';
 
@@ -119,6 +120,7 @@ function parseLayout(
 async function buildOne(
   channel: WorkChannelRef,
   warn: (m: string) => void,
+  captureScreens: boolean,
 ): Promise<{ work: Work | null; skipped: boolean }> {
   const meta = parseDescriptionMetadata(channel.description);
 
@@ -191,6 +193,15 @@ async function buildOne(
   const tags = parseTags(meta.tags, warn, ctx);
   if (links.length && !tags.includes('web')) tags.push('web');
 
+  // web 작품 — 첫 링크 사이트를 빌드타임에 캡처해 라이브 iframe 대신 정지 이미지로
+  // 미리보기(빠름·원격의존 0). 실패하면 '' → 페이지가 라이브 iframe으로 폴백.
+  // (dry-run은 파일을 안 남기므로 캡처 건너뜀)
+  let screenshot = '';
+  if (captureScreens && tags.includes('web') && links[0]?.url) {
+    const shot = await captureScreenshot(slug, links[0].url);
+    if (shot) screenshot = shot;
+  }
+
   // Representative image for index thumbnails: `cover` metadata (1-based) →
   // else first image → else first link thumbnail.
   // 표 썸네일은 정지 이미지여야 하므로 video면 포스터를 쓴다.
@@ -257,6 +268,7 @@ async function buildOne(
     tags,
     published,
     cover,
+    screenshot,
     bodyKo,
     bodyEn,
     bodyBlocks,
@@ -271,7 +283,10 @@ async function buildOne(
   return { work: parsed.data, skipped: false };
 }
 
-export async function buildWorks(): Promise<{ works: Work[]; summary: BuildSummary }> {
+export async function buildWorks(
+  opts: { captureScreens?: boolean } = {},
+): Promise<{ works: Work[]; summary: BuildSummary }> {
+  const captureScreens = opts.captureScreens !== false;
   const warnings: string[] = [];
   const warn = (m: string) => {
     warnings.push(m);
@@ -308,7 +323,7 @@ export async function buildWorks(): Promise<{ works: Work[]; summary: BuildSumma
       const i = cursor++;
       const ref = refs[i];
       try {
-        results[i] = await buildOne(ref, warn);
+        results[i] = await buildOne(ref, warn, captureScreens);
       } catch (err: any) {
         results[i] = { work: null, skipped: false };
         failed.push(ref.slug || String(ref.id));
