@@ -5,6 +5,7 @@
 //   right  : 비움 (새 컨텐츠 예정)
 import fs from 'node:fs';
 import path from 'node:path';
+import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import SkelImage from '../components/SkelImage.astro';
 import { getWorks, resolveImage, resolveVideo, getIntro, getIntroNotes, getLinks, getMemos, groupBilingual } from "../lib/site-data.js";
@@ -245,6 +246,8 @@ const defaultMosaic = fs.readFileSync(
             const cover = w.cover ? resolveImage(w.cover) : undefined;
             const externalUrl = w.links[0]?.url;
             const isWeb = w.tags.includes('web');
+            // web 작품 미리보기 — 빌드타임 스크린샷(정지 이미지). 없으면 라이브 iframe 폴백.
+            const shot = w.screenshot ? resolveImage(w.screenshot) : undefined;
             // 본문 맨 위 간략 정보 — 연도·재료·규격·클라이언트(있는 것만), 줄바꿈 구분. 회색 파생색.
             const infoParts = [w.year, w.medium, w.size, w.client].filter(Boolean);
             return (
@@ -261,16 +264,31 @@ const defaultMosaic = fs.readFileSync(
                 </p>
 
                 {isWeb && externalUrl ? (
-                  <div class="iframe-wrap t-skel">
-                    <iframe
-                      src={externalUrl}
-                      class="embedded-iframe"
-                      title={w.title || w.slug}
-                      loading="lazy"
-                      allowfullscreen
-                    ></iframe>
-                    <div class="t-skel-skeleton is-pulsing" aria-hidden="true"><span class="t-skel-bar"></span></div>
-                  </div>
+                  shot ? (
+                    /* 빌드타임 스크린샷 — 로컬 최적화 이미지(빠름). 상호작용 없이 미리보기. */
+                    <div class="iframe-wrap t-skel">
+                      <Image
+                        src={shot}
+                        class="embedded-shot"
+                        widths={[640, 960, 1280]}
+                        sizes="(max-width: 600px) 92vw, 40vw"
+                        alt={w.title || w.slug}
+                      />
+                      <div class="t-skel-skeleton is-pulsing" aria-hidden="true"><span class="t-skel-bar"></span></div>
+                    </div>
+                  ) : (
+                    /* 폴백 — 캡처 실패 시 종전 라이브 iframe(보여주기 전용). */
+                    <div class="iframe-wrap t-skel">
+                      <iframe
+                        src={externalUrl}
+                        class="embedded-iframe"
+                        title={w.title || w.slug}
+                        loading="lazy"
+                        allowfullscreen
+                      ></iframe>
+                      <div class="t-skel-skeleton is-pulsing" aria-hidden="true"><span class="t-skel-bar"></span></div>
+                    </div>
+                  )
                 ) : w.images.length > 0 ? (
                   <div class="card-images">
                     {(() => {
