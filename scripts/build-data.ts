@@ -11,7 +11,6 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { getRequestCount } from '../src/lib/arena.js';
 import { buildWorks } from '../src/lib/works.js';
-import { closeScreenshotBrowser } from '../src/lib/screenshot.js';
 import { buildLinks } from "../src/lib/links.js";
 import { buildMemos } from "../src/lib/memos.js";
 import { buildIntro } from "../src/lib/intro.js";
@@ -22,9 +21,7 @@ const dryRun = process.argv.includes('--dry-run');
 
 async function main() {
   const start = Date.now();
-  // dry-run은 아무것도 안 남기므로 스크린샷 캡처(파일 생성)도 건너뛴다.
-  const { works, summary } = await buildWorks({ captureScreens: !dryRun });
-  await closeScreenshotBrowser(); // 캡처 끝 — headless 브라우저 정리
+  const { works, summary } = await buildWorks();
   const intro = await buildIntro();
   const links = await buildLinks();
   const memos = await buildMemos();

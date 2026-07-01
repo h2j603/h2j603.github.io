@@ -35,14 +35,7 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
    - **text blocks** (Markdown) → body copy; **1st block = Korean, 2nd =
      English** (extra text blocks ignored with a warning),
    - **link blocks** → outbound links; the **Are.na thumbnail is downloaded
-     locally** and any work with a link is auto-tagged `web`. A `web` work's
-     first link is **screenshotted at build time** (headless Chromium via
-     Playwright, `src/lib/screenshot.ts`) into `works/<slug>/screenshot.jpg`
-     and shown as a static preview image (through Astro's image pipeline) —
-     replacing the old *live* preview-only iframe (faster, no runtime remote
-     call). Skip-cached by file existence like images; capture fails → the
-     page falls back to the live iframe. Capture runs on the deploy runner
-     (open internet); the dev sandbox's egress policy may block it.
+     locally** and any work with a link is auto-tagged `web`,
    - **channel description** → structured metadata as `key: value` lines.
 4. **Metadata is in the channel DESCRIPTION**, not Are.na "custom metadata"
    (v3 custom metadata has no UI editing box). Parsed at build time. Free-form
@@ -91,7 +84,6 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 | `src/lib/arena.ts` | Are.na v3 client (read + write helpers) + `parseDescriptionMetadata` |
 | `src/lib/body.ts` | Markdown → semantic HTML (`marked`), defensive |
 | `src/lib/images.ts` | `classifyBlock` (image/link/text), download + skip-cache |
-| `src/lib/screenshot.ts` | build-time web-work screenshots (Playwright chromium) + skip-cache |
 | `src/lib/works.ts` | orchestrate channel → validated `Work[]` (per-work error isolation) |
 | `src/lib/links.ts` | 수집 링크 채널 fetch (우측 컬럼) |
 | `src/lib/schema.ts` | `Work` zod schema (source of truth) + `TAGS` |

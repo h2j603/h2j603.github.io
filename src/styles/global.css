@@ -1551,20 +1551,6 @@ table.sontable .col-cat   { width: 20%; }
   margin: var(--space-5) 0;
 }
 
-/* web 작품 스크린샷 — iframe-wrap의 비율 박스(padding-top:65%)를 꽉 채운다.
-   스크린샷이 정확히 100:65라 object-fit로 왜곡 없이 fit. 상단 정렬(페이지 윗부분). */
-.iframe-wrap .embedded-shot {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top;
-  display: block;
-  margin: 0;
-}
-
 /* iframe 페이지를 데스크탑 사이즈로 렌더해 축소 — 페이지 전체가 한눈에. */
 .iframe-wrap {
   position: relative;
