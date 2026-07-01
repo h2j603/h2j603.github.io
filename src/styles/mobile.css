@@ -215,6 +215,8 @@
   /* 모바일은 컬럼이 없으므로 펼친 카드 세로선도 미적용 */
   .accordion-detail .accordion-panel::before,
   .accordion-detail .accordion-panel::after { display: none; }
+  /* 표 전체가 펼쳐 있어 '열림' 표시(제목 밑줄)가 모든 행에 걸려 의미 없다 — 끈다 */
+  table.sontable tr[data-active='true'] a { border-bottom: 0; }
   /* 좌우 0.625rem — 본문을 표 제목 왼쪽(셀 padding 0.625rem)에 맞추고 오른쪽도 동일하게.
      상단 0.5rem = 제목↔작품 컴팩트 간격 (데스크탑과 동일) */
   .accordion-detail .work-card {
