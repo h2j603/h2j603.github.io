@@ -3,8 +3,11 @@
 // hash 문법 (하나의 네임스페이스를 셋이 나눠 씀):
 //   #<slug>               작품 펼침 (Portfolio 섹션)
 //   #notepad #collection  모바일 섹션 (데스크탑은 data-section을 무시 — 무해)
-//   (없음)                Portfolio 기본, 아코디언 닫힘
+//   (없음)                Portfolio 기본. 데스크탑은 닫힘, 모바일은 전체 펼침.
 // → 새로고침·공유 링크에서도 모바일 섹션 상태가 유지된다.
+//
+// 데스크탑: 단일 펼침(탭 토글). 모바일: 게시된 행을 전부 펼친 상태로 유지 —
+// 탭 토글·닫기 없음. hash로 특정 작품 진입 시엔 그 행으로 스크롤만 한다.
 import { isMobileView, anchorY, glideScrollBy, springOpen, springX } from './util.js';
 import { rescanWave } from './wave.js';
 
@@ -18,6 +21,7 @@ var accSlug = null; // 현재 열린 slug
 var accRow = null;  // 현재 detail <tr>
 
 export function accClose() {
+  if (isMobileView()) return; // 모바일 — 표 전체를 펼친 상태로 유지(닫지 않음)
   var details = document.querySelectorAll('tr.accordion-detail');
   if (!details.length) { accRow = null; accSlug = null; return; }
   // 데스크탑 단일 펼침: 닫히는 활성 행을 컬럼상 제자리에 고정(점프 보정).
@@ -44,9 +48,11 @@ export function accClose() {
 }
 
 // 표 행 아래에 카드 패널을 삽입하고 파동으로 펼친다. 닫기·스크롤 보정은 안 함 —
-// 호출측이 맥락에 맞게 처리(탭=단일 펼침+핀, 스크롤 드라이버=progressive 무간섭).
-// accSlug/accRow를 방금 연 칸으로 갱신해 드라이버가 '현재 칸'을 추적하게 한다.
-function mountDetail(slug) {
+// 호출측이 맥락에 맞게 처리(탭=단일 펼침+핀). accSlug/accRow를 방금 연 칸으로 갱신.
+// opts.animate === false → 즉시 펼침(스프링 없이). opts.rescan === false → 파동
+// 재스캔 생략(전체 펼침 시 마지막에 한 번만 호출하려고).
+function mountDetail(slug, opts) {
+  opts = opts || {};
   var tr = document.querySelector('tr[data-slug="' + slug + '"]');
   var card = document.getElementById(slug);
   if (!tr || !card) return null;
@@ -65,9 +71,19 @@ function mountDetail(slug) {
   tr.setAttribute('aria-expanded', 'true');
   accSlug = slug;
   accRow = detail;
-  rescanWave(); // 새 카드 링크를 점멸 파동에 편입(문서 순서로 위상 재부여)
-  springOpen(panel); // 파동 높이 펼침 (살짝 오버슈트 후 안착)
+  if (opts.rescan !== false) rescanWave(); // 새 카드 링크를 점멸 파동에 편입
+  if (opts.animate !== false) springOpen(panel); // 파동 높이 펼침(오버슈트 후 안착)
   return tr;
+}
+
+// 모바일 — 게시된 행을 전부 즉시 펼친다(스프링 없이). 파동 재스캔은 마지막에 1회.
+function expandAllMobile() {
+  document
+    .querySelectorAll('table.sontable tr[data-slug]:not([data-locked="true"])')
+    .forEach(function (tr) {
+      mountDetail(tr.getAttribute('data-slug'), { animate: false, rescan: false });
+    });
+  rescanWave();
 }
 
 // 탭·hash 진입 — 단일 펼침. 열기 전 행 위치를 기억했다가 기존 칸이 닫히며 생긴
@@ -76,21 +92,18 @@ function mountDetail(slug) {
 function accOpen(slug) {
   var trExisting = document.querySelector('tr[data-slug="' + slug + '"]');
   if (!trExisting || !document.getElementById(slug)) return;
-  var mobile = isMobileView();
-  var preTop = mobile ? trExisting.getBoundingClientRect().top : 0;
+  if (isMobileView()) {
+    // 모바일 — 이미 전부 펼침. 해당 행으로 스크롤만 한다.
+    trExisting.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
   accClose();
   var tr = mountDetail(slug);
   if (!tr) return;
-  if (mobile) {
-    // 시점 이동 없이 — 행 상단을 원래 자리에 고정하고 패널만 아래로 자란다.
-    var postTop = tr.getBoundingClientRect().top;
-    if (Math.abs(postTop - preTop) > 0.5) window.scrollBy(0, postTop - preTop);
-  } else {
-    // 데스크탑 시점 이동 — 행을 화면 상단 ~22% 지점(anchorY)으로 글라이드.
-    // (브라우저 smooth scrollTo는 호출 시점의 스크롤 한계로 clamp돼서,
-    //  패널이 자라며 생기는 공간을 못 따라감 → 수동 글라이드 사용)
-    glideScrollBy(centerEl, tr.getBoundingClientRect().top - anchorY(), 500);
-  }
+  // 데스크탑 시점 이동 — 행을 화면 상단 ~22% 지점(anchorY)으로 글라이드.
+  // (브라우저 smooth scrollTo는 호출 시점의 스크롤 한계로 clamp돼서,
+  //  패널이 자라며 생기는 공간을 못 따라감 → 수동 글라이드 사용)
+  glideScrollBy(centerEl, tr.getBoundingClientRect().top - anchorY(), 500);
 }
 
 // 모바일 섹션 전환 — 상태는 .three-col[data-section] 하나, 표시는 mobile.css.
@@ -154,6 +167,7 @@ export function initAccordion() {
     tr.addEventListener('click', function (e) {
       var a = e.target.closest('a');
       if (a && !(a.getAttribute('href') || '').startsWith('#')) return;
+      if (isMobileView()) return; // 모바일 — 전부 펼쳐 있어 행 토글 없음
       e.preventDefault();
       var slug = tr.getAttribute('data-slug');
       if (accSlug === slug) {
@@ -265,6 +279,7 @@ export function initAccordion() {
     drag = null;
   }, { passive: true });
 
+  if (isMobileView()) expandAllMobile(); // 모바일 — 표 전체 펼침(applyHash 전에)
   window.addEventListener('hashchange', applyHash);
   applyHash();
 }
