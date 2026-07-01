@@ -261,12 +261,14 @@ const defaultMosaic = fs.readFileSync(
                 </p>
 
                 {isWeb && externalUrl ? (
+                  /* 미리보기 iframe — src는 iframe-load.js가 화면에 가까워질 때 주입
+                     (근접 지연로드 + 오리진 preconnect). 카드는 JS로만 펼쳐지므로
+                     no-JS에서 어차피 안 보인다 → data-src로 안전. */
                   <div class="iframe-wrap t-skel">
                     <iframe
-                      src={externalUrl}
+                      data-src={externalUrl}
                       class="embedded-iframe"
                       title={w.title || w.slug}
-                      loading="lazy"
                       allowfullscreen
                     ></iframe>
                     <div class="t-skel-skeleton is-pulsing" aria-hidden="true"><span class="t-skel-bar"></span></div>
