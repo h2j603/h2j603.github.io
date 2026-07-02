@@ -14,7 +14,11 @@ function buildStripe() {
   var desired = CELL_HEIGHT * CELL_RATIO;
   var N = Math.max(2, Math.round(window.innerWidth / desired));
   var pct = 100 / N;
-  var ROWS = Math.max(STRIPE_BASE_ROWS, Math.ceil(window.innerHeight / CELL_HEIGHT));
+  // 커튼이 열리면 동적 뷰포트(iOS 주소창 숨김 등)까지 높이가 커지므로, 현재
+  // innerHeight가 아니라 가능한 최대 높이(화면 높이)를 기준으로 줄을 넉넉히 만든다.
+  // 안 그러면 열렸을 때 아래쪽에 줄이 모자라 페이지가 비쳐 보인다.
+  var maxH = Math.max(window.innerHeight, (window.screen && window.screen.height) || 0);
+  var ROWS = Math.max(STRIPE_BASE_ROWS, Math.ceil(maxH / CELL_HEIGHT) + 1);
   stripe.innerHTML = '';
   for (var rowIdx = 0; rowIdx < ROWS; rowIdx++) {
     var row = document.createElement('div');
