@@ -1,0 +1,66 @@
+---
+// 작품 공유용 permalink — hyuk.xyz/works/<slug>/
+//
+// 본 사이트는 단일 페이지(#slug 해시)라 링크 공유 시 미리보기가 늘 대표값
+// 하나였다. 이 정적 페이지는 "공유용 뒷문": 크롤러(카톡·트위터·디스코드)는
+// 여기 박힌 작품별 OG 메타(커버 이미지·제목·설명)를 읽고, 사람(JS 있는
+// 브라우저)은 head의 스크립트가 즉시 /#slug 로 보내 본 사이트의 커튼·아코디언
+// 경험으로 착지한다. no-JS 방문자를 위한 최소 내용(커버+제목+링크)도 남긴다.
+import { getWorks, resolveImage } from '../../lib/site-data.js';
+
+export function getStaticPaths() {
+  return getWorks()
+    .filter((w) => w.published)
+    .map((w) => ({ params: { slug: w.slug }, props: { work: w } }));
+}
+
+const { work: w } = Astro.props;
+const site = Astro.site!.href.replace(/\/$/, ''); // https://hyuk.xyz
+
+const cover = w.cover ? resolveImage(w.cover) : undefined;
+const ogImage = cover ? site + cover.src : undefined;
+
+const title = (w.title || w.slug) + (w.titleEn && w.titleEn !== w.title ? ` / ${w.titleEn}` : '');
+const stripHtml = (h: string) => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+const meta = [w.year, w.medium, w.client].filter(Boolean).join(' · ');
+const body = stripHtml(w.bodyKo || w.bodyEn || '');
+const description = [meta, body].filter(Boolean).join(' — ').slice(0, 160) || 'Hyuk Jang (장혁) — Graphic Designer';
+const url = `${site}/works/${w.slug}/`;
+const home = `/#${w.slug}`;
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} — hyuk.xyz</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={url} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="hyuk.xyz" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={url} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+
+    {/* 사람은 본 사이트로 — head에서 즉시 replace(뒤로가기에 이 페이지 안 남음).
+        크롤러는 JS를 안 돌리므로 위 OG 메타를 그대로 수확한다. */}
+    <script is:inline define:vars={{ home }}>location.replace(home);</script>
+  </head>
+  <body>
+    {/* no-JS 폴백 — 최소한의 내용과 본 사이트 링크 */}
+    <main style="max-width: 40rem; margin: 3rem auto; padding: 0 1.25rem; font-family: sans-serif;">
+      <h1 style="font-size: 1.25rem;">{title}</h1>
+      {meta && <p style="color: #666;">{meta}</p>}
+      {cover && <img src={cover.src} alt={title} style="width: 100%; height: auto;" />}
+      <p><a href={home}>hyuk.xyz에서 보기 →</a></p>
+    </main>
+  </body>
+</html>
