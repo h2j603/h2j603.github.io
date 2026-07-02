@@ -188,9 +188,11 @@ const variants = [
   /* 13 고정폭 · 글자별 교차 — 모노스페이스, 한 글자마다 테마색 두 개(stripe-a/b) 교차.
      글자 spans은 인라인 스크립트가 만든다. 일반/인물 구분 없이 두 색을 번갈아. */
   .v13 { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-         color: #fff; text-decoration: none; }
-  /* span은 런타임 JS 생성이라 Astro 스코프 속성이 없다 → :global로 매칭 */
-  .v13 :global(span) { display: inline-block; width: 1.15em; text-align: center; }
+         color: var(--ink); text-decoration: none; }
+  /* span은 런타임 JS 생성이라 Astro 스코프 속성이 없다 → :global로 매칭.
+     line-height로 배경 블록 높이를 컴팩트하게(줄 간격은 .sample이 따로 잡음). */
+  .v13 :global(span) { display: inline-block; width: 1.15em; line-height: 1.35;
+                       text-align: center; vertical-align: middle; }
   .v13 :global(span:nth-child(odd))  { background: var(--stripe-a); }
   .v13 :global(span:nth-child(even)) { background: var(--stripe-b); }
 </style>
