@@ -10,7 +10,7 @@ const variants = [
   { n: 2,  name: '밑줄 · 기본',       desc: '오프셋 밑줄, 호버 시 굵게' },
   { n: 3,  name: '밑줄 · 슬라이드인',  desc: '평소 없음 → 호버 시 왼→오른쪽으로 그어짐' },
   { n: 4,  name: '하이라이트 라인',    desc: '베이스라인에 두꺼운 틴트 선, 호버 시 차오름' },
-  { n: 5,  name: '마커펜',           desc: '글자 뒤 틴트 배경(형광펜), 호버 시 글자색' },
+  { n: 5,  name: '마커펜',           desc: '테마색 두 개 그대로 배경 + 흰 글자, 호버 시 살짝 진하게' },
   { n: 6,  name: '점선 밑줄',         desc: '각주 어법, 호버 시 실선' },
   { n: 7,  name: '대괄호 [ ]',        desc: '이름을 대괄호로 감쌈, 호버 시 밑줄' },
   { n: 8,  name: '화살표 ↗',         desc: '색 글자 + 외부 화살표 접미' },
@@ -102,6 +102,7 @@ const variants = [
   .lab .v {
     --lc: var(--accent);
     --lt: var(--tint-accent);
+    --ls: var(--stripe-a);          /* 테마 소스색 그대로 (보라) */
     --lp-grad: var(--pill-link-grad);
     --lp-grad-h: var(--pill-link-grad-h);
     --lp-text: var(--pill-link-text);
@@ -113,6 +114,7 @@ const variants = [
   .lab .v.person {
     --lc: var(--person);
     --lt: var(--tint-brown);
+    --ls: var(--stripe-b);          /* 테마 소스색 그대로 (갈) */
     --lp-grad: var(--pill-person-grad);
     --lp-grad-h: var(--pill-person-grad-h);
     --lp-text: var(--pill-person-text);
@@ -139,10 +141,10 @@ const variants = [
         box-shadow: inset 0 -0.32em 0 var(--lt); transition: box-shadow 0.2s ease; }
   .v4:hover { box-shadow: inset 0 -0.9em 0 var(--lt); }
 
-  /* 05 마커펜 */
-  .v5 { color: var(--ink); text-decoration: none; background: var(--lt);
-        padding: 0.05em 0.22em; border-radius: 2px; transition: color 0.18s ease; }
-  .v5:hover { color: var(--lc); }
+  /* 05 마커펜 — 테마색 두 개(stripe-a/b) 그대로 배경 + 흰 글자 */
+  .v5 { color: #fff; text-decoration: none; background: var(--ls);
+        padding: 0.05em 0.22em; border-radius: 2px; transition: filter 0.18s ease; }
+  .v5:hover { filter: brightness(0.92); }
 
   /* 06 점선 밑줄 */
   .v6 { color: var(--lc); text-decoration: underline dotted; text-decoration-thickness: 1px; text-underline-offset: 3px; }
