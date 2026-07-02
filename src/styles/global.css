@@ -295,10 +295,13 @@ iframe {
   line-height: 0;
   font-size: 0;
 }
-/* 무JS·초기 폴백 — 보통은 drawer.js가 inline height로 덮어쓴다 */
+/* 열림 — top:0(기반) + bottom:0 로 동적 뷰포트를 꽉 채운다(fixed inset). 100dvh가
+   iOS에서 불안정해 아래가 안 덮이던 것을 라이트박스와 동일한 어법으로 확실히 한다.
+   (드래그·스프링 '중'엔 drawer.js가 inline height px로 구동 — 그때는 height가 이겨
+   위에서부터 자라고, 정착하면 inline을 비워 top+bottom으로 꽉 채운다.) */
 .stripe-top.open {
-  height: 100vh;
-  height: 100dvh;
+  height: auto;
+  bottom: 0;
 }
 .stripe-top.grabbing { cursor: ns-resize; }
 
