@@ -11,7 +11,8 @@
 var stripe = null;
 var drawer = null; // .about-drawer (천 레이어)
 
-var BASE = 72;     // 닫힘 높이(px) — init에서 실제 렌더 높이로 갱신
+var BASE = 72;     // 닫힘 높이(px) — measureBase()가 실제 줄 높이×2로 갱신
+var BASE_ROWS = 2; // 닫힘 = 타일 2줄 (stripe.js STRIPE_BASE_ROWS와 짝)
 var pos = 72;      // 현재 커튼 높이(px)
 var vel = 0;       // 스프링 속도(px/s) — 드래그 릴리스 속도를 이어받는다
 var target = 72;   // 스프링 목표
@@ -24,6 +25,14 @@ var raf = 0;
 var STIFFNESS = 110; // k  (낮출수록 느림)
 var DAMPING = 14;    // c  (임계감쇠 2√k≈21보다 작아 underdamped)
 
+// 닫힘 높이 = 실제 렌더된 줄 높이 × 2 (정밀값). offsetHeight는 정수로 반올림돼
+// 루트 폰트에 따라 진짜 2줄 높이(예: 71.6px)를 72로 올려버려 3번째 줄 sliver가
+// 새게 만든다 — getBoundingClientRect로 소수까지 잡아 딱 2줄에 맞춘다.
+function measureBase() {
+  var row = stripe && stripe.querySelector('.stripe-row');
+  if (row) BASE = row.getBoundingClientRect().height * BASE_ROWS;
+  else if (stripe) BASE = stripe.offsetHeight || BASE;
+}
 function hClosed() { return BASE; }
 function hOpen() { return window.innerHeight; }
 
@@ -165,8 +174,8 @@ export function initDrawer() {
   drawer = document.querySelector('.about-drawer');
   if (!stripe || !drawer) return;
 
-  // JS가 시각을 전담 — CSS 트랜지션 끄고 실제 닫힘 높이 측정.
-  BASE = stripe.offsetHeight || 72;
+  // JS가 시각을 전담 — CSS 트랜지션 끄고 실제 닫힘 높이 측정(줄 높이×2).
+  measureBase();
   pos = target = BASE;
   stripe.style.transition = 'none';
   drawer.style.transition = 'none';
@@ -189,7 +198,7 @@ export function initDrawer() {
   window.addEventListener('resize', function () {
     if (dragging) return;
     if (open) { pos = target = hOpen(); }
-    else { BASE = stripe.offsetHeight || BASE; pos = target = BASE; }
+    else { measureBase(); pos = target = BASE; }
     if (!raf) render();
   });
 }
