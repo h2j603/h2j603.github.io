@@ -70,7 +70,13 @@ function springStep(now) {
   render();
   if (Math.abs(pos - target) < 0.4 && Math.abs(vel) < 8) {
     pos = target; vel = 0; raf = 0;
-    render();
+    // 정착 — 최종 높이는 CSS가 맡는다: 닫힘 .stripe-top(4.5rem=딱 2줄, sliver 없음),
+    // 열림 .open(100dvh, iOS 주소창 등 동적 뷰포트에 자동 대응). 인라인 px 스냅샷을
+    // 지워 열던 순간의 innerHeight에 고정되지 않게 한다(아래가 안 덮이던 버그 해소).
+    stripe.style.height = '';
+    if (open && !dragging) setEntered(true);
+    drawer.style.visibility = entered ? 'visible' : 'hidden';
+    drawer.style.pointerEvents = (entered && !dragging) ? 'auto' : 'none';
     return;
   }
   raf = requestAnimationFrame(springStep);
@@ -107,6 +113,8 @@ function onDown(e) {
   setEntered(false); // 드래그 동안엔 커튼만 움직이고 패널은 숨김
   if (raf) { cancelAnimationFrame(raf); raf = 0; }
   vel = 0;
+  // 정착 상태에선 CSS가 높이를 구동 중이므로 실제 렌더 높이로 pos 동기화(드래그 점프 방지)
+  pos = stripe.getBoundingClientRect().height;
   startY = lastY = e.clientY;
   startPos = pos;
   startOpen = open;
@@ -180,7 +188,11 @@ export function initDrawer() {
   stripe.style.transition = 'none';
   drawer.style.transition = 'none';
   drawer.style.opacity = '1'; // 레이어는 불투명 고정 — 패널이 자체 등장으로 드러남
-  render();
+  // 정착 높이는 CSS가 맡는다(닫힘 4.5rem / 열림 100dvh). 인라인 px는 드래그·스프링
+  // '중'에만 쓰고 쉴 땐 비워 둔다 → 동적 뷰포트(iOS)에도 커튼이 항상 꽉 덮인다.
+  stripe.style.height = '';
+  drawer.style.visibility = 'hidden';
+  drawer.style.pointerEvents = 'none';
 
   // 닫힘=띠, 열림=천 에서 드래그 시작 (move/up은 onDown이 드래그 동안만 부착)
   stripe.addEventListener('pointerdown', onDown);
@@ -199,6 +211,7 @@ export function initDrawer() {
     if (dragging) return;
     if (open) { pos = target = hOpen(); }
     else { measureBase(); pos = target = BASE; }
-    if (!raf) render();
+    // 정착(raf=0) 상태면 인라인 높이를 안 건드린다 — CSS(4.5rem/100dvh)가 최종 높이라
+    // iOS 주소창 등 동적 뷰포트에 자동 대응. 애니메이션 중이면 스프링이 새 target으로 이어감.
   });
 }
