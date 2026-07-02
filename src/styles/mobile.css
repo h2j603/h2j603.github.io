@@ -229,6 +229,9 @@
   .accordion-detail .iframe-wrap {
     margin-top: 0;
   }
+  /* 모바일 — layout(imageLayout) 무시하고 한 줄에 한 장. 인라인 grid-template-columns를
+     이겨야 하므로 !important. (3단/2단 배치는 좁은 화면에서 안 읽힘) */
+  .card-images .image-row { grid-template-columns: 1fr !important; }
   /* 행과 중복되는 제목·메타는 아코디언 안에선 숨김 (미디어+본문만) */
   .accordion-detail .card-title,
   .accordion-detail .card-meta { display: none; }
