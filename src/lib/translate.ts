@@ -98,7 +98,9 @@ export async function translateTo(target: TargetLang, texts: string[]): Promise<
     console.warn(`  ⚠ translate→${target}: ANTHROPIC_API_KEY 없음 — ${missing.length}개 번역 생략(원문 폴백)`);
     return out;
   }
-  const client = new Anthropic({ apiKey, timeout: 60_000, maxRetries: 2 });
+  // 타임아웃 5분 — max_tokens를 16000으로 올린 뒤 긴 메모의 한국어 출력
+  // 생성이 60초를 넘겨 반복 타임아웃했다 (빌드 로그 2회 연속 동일 메모 실패).
+  const client = new Anthropic({ apiKey, timeout: 300_000, maxRetries: 2 });
 
   let added = 0;
   let failed = 0;
