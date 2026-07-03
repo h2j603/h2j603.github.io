@@ -15,6 +15,7 @@ import {
 } from './arena.js';
 import { classifyBlock } from './images.js';
 import { firstSentence } from './links.js';
+import { translateKoToEn } from './translate.js';
 import { memoSchema, type Memo } from './schema.js';
 import { ARENA_MEMO_CHANNEL } from './config.js';
 
@@ -57,5 +58,15 @@ export async function buildMemos(): Promise<Memo[]> {
     }
     out.push(parsed.data);
   }
+
+  // 영어 번역 (DeepL, 빌드타임) — 내용해시 캐시라 새 메모만 API를 탄다.
+  // 키 없음/실패 → ''(EN 모드에서도 한국어 폴백), 빌드는 계속.
+  const translations = await translateKoToEn(out.map((m) => m.text));
+  translations.forEach((en, i) => {
+    if (!en) return;
+    out[i].textEn = en;
+    out[i].titleEn = memoLabel(en);
+  });
+
   return out;
 }

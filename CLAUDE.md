@@ -71,6 +71,11 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
     `src/data/memos.json`. ⚠️ `.env`의 `ARENA_MEMO_CHANNEL`은 반드시 ID `5297539`
     (옛 슬러그 `notepad-...`는 rename으로 죽음). 배포는 secret 없이 config 기본
     ID를 써서 정상. (links 채널은 아직 slug 참조 — 필요 시 ID로 전환: #5297302.)
+    **메모 영어 번역 (DeepL, 빌드타임)**: `src/lib/translate.ts`가 메모 본문을
+    한→영 번역해 `textEn`/`titleEn`으로 굽는다. 내용 sha256 캐시
+    (`src/data/translations.json`, gitignore + CI actions/cache)라 같은 메모는
+    평생 1회만 번역. EN 토글 시 메모가 영어로 표시되고 날짜줄에 `· MT` 표기.
+    `DEEPL_API_KEY` secret 없거나 실패 → 한국어 폴백, 빌드는 정상.
 11. **수집 링크 (`links` 채널, 실제 슬러그 `collection-gxx8lqhxixg` / #5297302,
     private).** 링크 블록 1개 = 사이트 1개, title = 표시 이름. 우측 컬럼에
     채널 순서대로 본문 pill 스타일 스택으로 렌더 (모바일은 숨김). 스냅샷
@@ -84,6 +89,7 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 | `src/lib/arena.ts` | Are.na v3 client (read + write helpers) + `parseDescriptionMetadata` |
 | `src/lib/body.ts` | Markdown → semantic HTML (`marked`), defensive |
 | `src/lib/images.ts` | `classifyBlock` (image/link/text), download + skip-cache |
+| `src/lib/translate.ts` | 메모 한→영 DeepL 빌드타임 번역 + 내용해시 캐시 |
 | `src/lib/works.ts` | orchestrate channel → validated `Work[]` (per-work error isolation) |
 | `src/lib/links.ts` | 수집 링크 채널 fetch (우측 컬럼) |
 | `src/lib/schema.ts` | `Work` zod schema (source of truth) + `TAGS` |
@@ -114,6 +120,8 @@ npm run build:nofetch         # astro build only, against existing works.json
   enough for `build`. Get it: Are.na → Settings → Developers → new application →
   personal access token (write).
 - `ARENA_INDEX_CHANNEL` — index channel slug (default `works`).
+- `DEEPL_API_KEY` — DeepL API 키 (선택). 메모 한→영 빌드타임 번역용. 없으면
+  번역만 생략(EN 모드에서 메모가 한국어로 표시), 빌드는 정상.
 - `.env` is gitignored; mirror these as **repo secrets** for the deploy workflow.
 
 ## Status (2026-06-12 기준)
