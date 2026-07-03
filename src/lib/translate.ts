@@ -48,8 +48,13 @@ export function isKoreanText(text: string): boolean {
 
 type Cache = Record<string, string>;
 
+/** 캐시 키 세대 — 번역 품질에 영향 주는 파라미터가 바뀌면 올려서 전체 무효화.
+ *  v2: max_tokens 2000→16000 + 잘림(stop_reason) 검사 도입. 이전 세대 캐시엔
+ *  max_tokens에 잘린 번역이 저장됐을 수 있어 전부 1회 재번역한다. */
+const CACHE_GEN = 'v2';
+
 function keyOf(target: TargetLang, text: string): string {
-  return createHash('sha256').update(TRANSLATE_MODEL + ' ' + target + ' ' + text).digest('hex');
+  return createHash('sha256').update(CACHE_GEN + ' ' + TRANSLATE_MODEL + ' ' + target + ' ' + text).digest('hex');
 }
 
 function loadCache(): Cache {
@@ -101,10 +106,19 @@ export async function translateTo(target: TargetLang, texts: string[]): Promise<
     try {
       const msg = await client.messages.create({
         model: TRANSLATE_MODEL,
-        max_tokens: 2000,
+        // 넉넉하게 — 한국어 출력은 토큰 소모가 커서 2000이면 긴 메모가 중간에
+        // 잘렸다 (Haiku 4.5 출력 한도는 64K, 비스트리밍 안전선 안쪽).
+        max_tokens: 16000,
         system: SYSTEM[target],
         messages: [{ role: 'user', content: m.t }],
       });
+      // 출력 한도에 걸려 잘린 번역은 버린다 — 캐시에 넣으면 영구히 잘린 채
+      // 남으므로 실패 취급(원문 폴백)하고 경고만 남긴다.
+      if (msg.stop_reason === 'max_tokens') {
+        failed++;
+        console.warn(`  ⚠ translate→${target}: "${m.t.slice(0, 20)}…" 번역이 max_tokens에 잘림 — 원문 폴백`);
+        return;
+      }
       const en = msg.content
         .filter((b: any) => b.type === 'text')
         .map((b: any) => b.text)
