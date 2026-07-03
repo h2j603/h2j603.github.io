@@ -933,6 +933,18 @@ iframe {
   text-align: center;
 }
 
+/* 자동번역 표기 — 날짜줄 안 회색 pill. 본문 링크 pill과 같은 기하(패딩·라운드),
+   색만 잉크 회색: 기계 번역임을 조용히 알리는 뱃지지 링크가 아니다. */
+.mt-mark {
+  background: color-mix(in oklab, var(--ink) 8%, transparent);
+  color: color-mix(in oklab, var(--ink) 55%, transparent);
+  padding: 0.0625rem var(--space-pill);
+  border-radius: 0.75rem;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  white-space: nowrap;
+}
+
 /* 메모 아코디언 — 라벨(접힘) 클릭 → 본문 펼침. JS가 .open 토글 */
 .memo { cursor: pointer; }
 .memo-head {
@@ -953,10 +965,12 @@ iframe {
 .memo-list:has(.memo.open) .memo:not(.open) .memo-head { color: color-mix(in oklab, var(--ink) 32%, transparent); }
 .memo-list:has(.memo.open) .memo:not(.open) .block-date { color: color-mix(in oklab, var(--ink) 20%, transparent); }
 .memo-list:has(.memo.open) .memo:not(.open) .tag-chip { opacity: 0.45; }
+.memo-list:has(.memo.open) .memo:not(.open) .mt-mark { opacity: 0.45; }
 @media (hover: hover) {
   .memo-list:has(.memo.open) .memo:not(.open):hover .memo-head { color: var(--ink); }
   .memo-list:has(.memo.open) .memo:not(.open):hover .block-date { color: color-mix(in oklab, var(--ink) 45%, transparent); }
   .memo-list:has(.memo.open) .memo:not(.open):hover .tag-chip { opacity: 1; }
+  .memo-list:has(.memo.open) .memo:not(.open):hover .mt-mark { opacity: 1; }
 }
 .memo-body {
   display: none;
