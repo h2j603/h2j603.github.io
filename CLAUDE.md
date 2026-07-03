@@ -74,7 +74,7 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
     **메모 영어 번역 (Claude Haiku, 빌드타임)**: `src/lib/translate.ts`가 메모
     본문을 한→영 번역해 `textEn`/`titleEn`으로 굽는다. (모델+내용) sha256 캐시
     (`src/data/translations.json`, gitignore + CI actions/cache)라 같은 메모는
-    평생 1회만 번역. EN 토글 시 메모가 영어로 표시되고 날짜줄에 `· MT` 표기.
+    평생 1회만 번역. EN 토글 시 메모가 영어로 표시되고 날짜줄에 `· auto-translated` 표기.
     `ANTHROPIC_API_KEY` secret 없거나 실패 → 한국어 폴백, 빌드는 정상.
     모델 교체: repo Variables `TRANSLATE_MODEL` (기본 claude-haiku-4-5).
 11. **수집 링크 (`links` 채널, 실제 슬러그 `collection-gxx8lqhxixg` / #5297302,
