@@ -73,9 +73,11 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
     ID를 써서 정상. (links 채널은 아직 slug 참조 — 필요 시 ID로 전환: #5297302.)
     **메모 양방향 번역 (Claude Haiku, 빌드타임)**: `src/lib/translate.ts`가
     언어를 감지(한글 비중 10%)해 한국어 메모→영어(`textEn`), 영어 메모→한국어
-    (`textKo`)로 번역해 굽는다. (세대+모델+타깃+내용) sha256 캐시
+    (`textKo`)로 번역해 굽는다. (세대+모델+타깃+프롬프트+내용) sha256 캐시
     (`src/data/translations.json`, gitignore + CI actions/cache)라 같은 메모는
-    평생 1회만 번역 — 번역 파라미터가 바뀌면 `CACHE_GEN`을 올려 전체 무효화.
+    평생 1회만 번역 — SYSTEM 프롬프트가 키에 포함돼 프롬프트 수정만으로 해당
+    방향 전체가 자동 재번역되고, 키 밖 파라미터 변경은 `CACHE_GEN` bump.
+    영→한 프롬프트에 디자인 외래어 규칙 내장 (research→리서치, 연구 X).
     max_tokens 16000 + `stop_reason: max_tokens`(잘림) 검사: 잘린 번역은 캐시
     안 하고 원문 폴백. 각 모드에서 번역된 쪽에만 날짜줄 표기(회색 pill) —
     EN 모드 `auto-translated`, KO 모드 `자동 번역`. `ANTHROPIC_API_KEY` secret
