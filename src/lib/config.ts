@@ -63,11 +63,17 @@ export const ARENA_MEMO_CHANNEL =
 /** 메모 스냅샷 파일. */
 export const MEMO_FILE = 'src/data/memos.json';
 
-/** DeepL API key — 메모 빌드타임 번역용. 없으면 번역 생략(한국어 폴백), 빌드는 정상. */
-export function getDeepLKey(): string | undefined {
-  return process.env.DEEPL_API_KEY || undefined;
+/** Anthropic API key — 메모 빌드타임 번역용(Claude). 없으면 번역 생략(한국어
+    폴백), 빌드는 정상. repo secret ANTHROPIC_API_KEY로 공급. */
+export function getAnthropicKey(): string | undefined {
+  return process.env.ANTHROPIC_API_KEY || undefined;
 }
 
-/** 메모 번역 캐시 파일 (내용 sha256 → 영어). 메모 하나는 평생 1회만 번역 —
+/** 번역 모델 — 기본 Haiku. 말맛이 아쉬우면 repo variable TRANSLATE_MODEL로
+    상위 모델(claude-sonnet-5 등) 교체 가능 — 캐시 키에 모델이 들어가므로
+    바꾸면 새 메모부터(캐시 미스분부터) 새 모델로 번역된다. */
+export const TRANSLATE_MODEL = process.env.TRANSLATE_MODEL || 'claude-haiku-4-5';
+
+/** 메모 번역 캐시 파일 (모델+내용 sha256 → 영어). 메모 하나는 평생 1회만 번역 —
     CI에선 actions/cache로 보존(이미지 캐시와 같은 어법). gitignore 대상. */
 export const TRANSLATIONS_FILE = 'src/data/translations.json';

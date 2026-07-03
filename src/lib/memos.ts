@@ -59,7 +59,7 @@ export async function buildMemos(): Promise<Memo[]> {
     out.push(parsed.data);
   }
 
-  // 영어 번역 (DeepL, 빌드타임) — 내용해시 캐시라 새 메모만 API를 탄다.
+  // 영어 번역 (Claude Haiku, 빌드타임) — (모델+내용)해시 캐시라 새 메모만 API를 탄다.
   // 키 없음/실패 → ''(EN 모드에서도 한국어 폴백), 빌드는 계속.
   const translations = await translateKoToEn(out.map((m) => m.text));
   translations.forEach((en, i) => {

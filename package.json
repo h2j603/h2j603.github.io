@@ -17,6 +17,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0",
     "astro": "^5.6.1",
     "marked": "^15.0.7",
     "zod": "^3.24.2"

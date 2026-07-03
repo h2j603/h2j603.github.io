@@ -119,7 +119,7 @@ export const memoSchema = z.object({
   text: z.string().default(""),
   /** 영어 라벨 — textEn의 첫 문장. 번역 없으면 ''(한국어 폴백). */
   titleEn: z.string().default(""),
-  /** 영어 본문 — 빌드타임 DeepL 번역. 없으면 ''(EN 모드에서도 한국어 표시). */
+  /** 영어 본문 — 빌드타임 Claude Haiku 번역. 없으면 ''(EN 모드에서도 한국어 표시). */
   textEn: z.string().default(""),
   /** 수집 시각 (ISO). */
   addedAt: z.string().default(""),
