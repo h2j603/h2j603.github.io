@@ -172,7 +172,7 @@ const defaultMosaic = fs.readFileSync(
                     <span class="block-date">
                       {fmtDateTime(m.addedAt)}{m.addedBy && ` · ${m.addedBy}`}{m.tags.map((t) => (
                         <>{' · '}<span class="tag-chip" style={`--mix:${tagMixMap.get(t)}%`}>#{t}</span></>
-                      ))}{m.textEn && <span class="mt-mark" lang="en">{' · '}MT</span>}
+                      ))}{m.textEn && <span class="mt-mark" lang="en">{' · '}auto-translated</span>}
                     </span>
                   )}
                   {/* 서식 없이 원문 그대로 (줄바꿈 유지). 맨 아래 = 원 블록으로 가는 출처 링크 */}
