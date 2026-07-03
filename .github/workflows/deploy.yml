@@ -40,12 +40,20 @@ jobs:
           path: src/assets/works
           key: arena-images-${{ github.run_id }}
           restore-keys: arena-images-
+      # 메모 번역 캐시 — 내용해시→영어. 복원해 두면 새로 쓴 메모만 DeepL을 탄다.
+      - name: Cache memo translations
+        uses: actions/cache@v4
+        with:
+          path: src/data/translations.json
+          key: memo-translations-${{ github.run_id }}
+          restore-keys: memo-translations-
       - name: Build (fetch Are.na, then astro build)
         run: npm run build
         env:
           ARENA_TOKEN: ${{ secrets.ARENA_TOKEN }}
           ARENA_INDEX_CHANNEL: ${{ secrets.ARENA_INDEX_CHANNEL }}
           ARENA_INTRO_CHANNEL: ${{ secrets.ARENA_INTRO_CHANNEL }}
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
