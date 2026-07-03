@@ -41,14 +41,12 @@ jobs:
           key: arena-images-${{ github.run_id }}
           restore-keys: arena-images-
       # 메모 번역 캐시 — (모델+내용)해시→영어. 복원해 두면 새로 쓴 메모만 API를 탄다.
-      # ⚠ 진단용 일시 비활성화 (2026-07-03): syncing_files 배포 실패가 번역 포함
-      # 아티팩트 때문인지 가르는 통제 실험. 실험 후 원복할 것.
-      # - name: Cache memo translations
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: src/data/translations.json
-      #     key: memo-translations-${{ github.run_id }}
-      #     restore-keys: memo-translations-
+      - name: Cache memo translations
+        uses: actions/cache@v4
+        with:
+          path: src/data/translations.json
+          key: memo-translations-${{ github.run_id }}
+          restore-keys: memo-translations-
       - name: Build (fetch Are.na, then astro build)
         run: npm run build
         env:
@@ -56,8 +54,7 @@ jobs:
           ARENA_INDEX_CHANNEL: ${{ secrets.ARENA_INDEX_CHANNEL }}
           ARENA_INTRO_CHANNEL: ${{ secrets.ARENA_INTRO_CHANNEL }}
           # 메모 한→영 번역 (Claude Haiku). 키 없으면 번역만 생략, 빌드 정상.
-          # ⚠ 진단용 일시 비활성화 (2026-07-03) — 위 캐시 주석과 함께 원복할 것.
-          # ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           # 번역 모델 교체용 (선택, repo Variables) — 미설정 시 claude-haiku-4-5
           TRANSLATE_MODEL: ${{ vars.TRANSLATE_MODEL }}
       - uses: actions/upload-pages-artifact@v3
