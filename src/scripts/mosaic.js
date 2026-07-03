@@ -72,9 +72,33 @@ export function replayMosaic() {
   triggerMosaicFall(mosaicOpts());
 }
 
-// 모자이크 인트로 — 진입 즉시 낙하 (클릭 트리거는 잘 안 먹어서 폐기,
-// 마우스 근접 낙하도 폐기 — 매 로드마다 한 번 떨어지고 끝).
+// 모자이크 인트로 — 표지처럼 정지 상태로 머물다가 방문자의 첫 입력
+// (스크롤·휠·클릭·터치·키)에 낙하. 입력이 없으면 3초 후 자동 낙하.
+// (진입 즉시 낙하는 이미지를 보기도 전에 무너져서 폐기 — 순수 클릭 트리거와
+// 마우스 근접 낙하도 예전에 폐기. 지금은 첫 입력 + 자동 폴백 하이브리드.)
 export function initMosaic() {
   defaultEl = document.getElementById('__default');
-  replayMosaic();
+  if (!defaultEl) return;
+  // 모션 줄이기 — 인트로 생략, 콘텐츠 바로 노출 (replayMosaic와 같은 어법)
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    defaultEl.hidden = true;
+    return;
+  }
+  defaultEl.hidden = false; // 마크업 기본이 hidden — 정지 상태로 노출부터
+  var armed = true;
+  var timer = 0;
+  // mousemove는 제외 — 진입만 해도 움직여서 '즉시 낙하'와 다를 게 없어진다.
+  var EVENTS = ['pointerdown', 'wheel', 'touchstart', 'keydown', 'scroll'];
+  function fire() {
+    if (!armed) return;
+    armed = false;
+    clearTimeout(timer);
+    EVENTS.forEach(function (t) { window.removeEventListener(t, fire, true); });
+    triggerMosaicFall(mosaicOpts());
+  }
+  // capture — 내부 요소가 이벤트를 먹어도 낙하는 반드시 발화
+  EVENTS.forEach(function (t) {
+    window.addEventListener(t, fire, { capture: true, passive: true });
+  });
+  timer = setTimeout(fire, 3000);
 }
