@@ -71,12 +71,14 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
     `src/data/memos.json`. ⚠️ `.env`의 `ARENA_MEMO_CHANNEL`은 반드시 ID `5297539`
     (옛 슬러그 `notepad-...`는 rename으로 죽음). 배포는 secret 없이 config 기본
     ID를 써서 정상. (links 채널은 아직 slug 참조 — 필요 시 ID로 전환: #5297302.)
-    **메모 영어 번역 (Claude Haiku, 빌드타임)**: `src/lib/translate.ts`가 메모
-    본문을 한→영 번역해 `textEn`/`titleEn`으로 굽는다. (모델+내용) sha256 캐시
+    **메모 양방향 번역 (Claude Haiku, 빌드타임)**: `src/lib/translate.ts`가
+    언어를 감지(한글 비중 10%)해 한국어 메모→영어(`textEn`), 영어 메모→한국어
+    (`textKo`)로 번역해 굽는다. (모델+타깃+내용) sha256 캐시
     (`src/data/translations.json`, gitignore + CI actions/cache)라 같은 메모는
-    평생 1회만 번역. EN 토글 시 메모가 영어로 표시되고 날짜줄에 `· auto-translated` 표기.
-    `ANTHROPIC_API_KEY` secret 없거나 실패 → 한국어 폴백, 빌드는 정상.
-    모델 교체: repo Variables `TRANSLATE_MODEL` (기본 claude-haiku-4-5).
+    평생 1회만 번역. 각 모드에서 번역된 쪽에만 날짜줄 표기 — EN 모드
+    `· auto-translated`, KO 모드 `· 자동 번역`. `ANTHROPIC_API_KEY` secret
+    없거나 실패 → 원문 폴백, 빌드는 정상. 모델 교체: repo Variables
+    `TRANSLATE_MODEL` (기본 claude-haiku-4-5).
 11. **수집 링크 (`links` 채널, 실제 슬러그 `collection-gxx8lqhxixg` / #5297302,
     private).** 링크 블록 1개 = 사이트 1개, title = 표시 이름. 우측 컬럼에
     채널 순서대로 본문 pill 스타일 스택으로 렌더 (모바일은 숨김). 스냅샷
