@@ -31,6 +31,7 @@ Translate the given memo from Korean to English.
 
 Translate the given memo from English to Korean.
 - Use natural written Korean in plain declarative style (문어체, '~다' 서술) — these memos are mostly plain/formal notes.
+- The author is a graphic designer: render field terms the way Korean designers actually say them — use the established loanword (외래어 표기), NOT a Sino-Korean translation. e.g. research → 리서치 (not 연구), reference → 레퍼런스 (not 참고 자료), branding → 브랜딩, identity → 아이덴티티, typography → 타이포그래피, layout → 레이아웃, mockup → 목업, concept → 컨셉. When unsure whether a design/creative term is used as a loanword in the field, prefer the loanword.
 - Preserve line breaks exactly. Keep URLs, code, markdown syntax, and proper nouns/technical terms that are conventionally kept in English as-is.
 - If part of the memo is already Korean, keep it unchanged.
 - Output ONLY the translation. No quotes around it, no notes, no commentary.`,
@@ -48,13 +49,15 @@ export function isKoreanText(text: string): boolean {
 
 type Cache = Record<string, string>;
 
-/** 캐시 키 세대 — 번역 품질에 영향 주는 파라미터가 바뀌면 올려서 전체 무효화.
- *  v2: max_tokens 2000→16000 + 잘림(stop_reason) 검사 도입. 이전 세대 캐시엔
- *  max_tokens에 잘린 번역이 저장됐을 수 있어 전부 1회 재번역한다. */
+/** 캐시 키 세대 — 키에 안 들어가는 파라미터(max_tokens 등)가 바뀌면 올려서
+ *  전체 무효화. 프롬프트(SYSTEM)는 키에 직접 포함되므로 프롬프트 수정은
+ *  세대 bump 없이 자동으로 해당 방향 전체를 재번역시킨다. */
 const CACHE_GEN = 'v2';
 
 function keyOf(target: TargetLang, text: string): string {
-  return createHash('sha256').update(CACHE_GEN + ' ' + TRANSLATE_MODEL + ' ' + target + ' ' + text).digest('hex');
+  return createHash('sha256')
+    .update(CACHE_GEN + ' ' + TRANSLATE_MODEL + ' ' + target + ' ' + SYSTEM[target] + ' ' + text)
+    .digest('hex');
 }
 
 function loadCache(): Cache {
