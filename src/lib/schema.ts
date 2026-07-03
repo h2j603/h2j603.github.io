@@ -117,10 +117,14 @@ export const memoSchema = z.object({
   title: z.string().min(1),
   /** 본문 원문 — 서식 없이 그대로 (줄바꿈 유지 렌더). */
   text: z.string().default(""),
-  /** 영어 라벨 — textEn의 첫 문장. 번역 없으면 ''(한국어 폴백). */
+  /** 영어 라벨 — textEn의 첫 문장. (한국어 원문 메모에만 채워짐) */
   titleEn: z.string().default(""),
-  /** 영어 본문 — 빌드타임 Claude Haiku 번역. 없으면 ''(EN 모드에서도 한국어 표시). */
+  /** 영어 본문 — 한국어 원문 메모의 빌드타임 번역. 없으면 ''(원문 폴백). */
   textEn: z.string().default(""),
+  /** 한국어 라벨 — textKo의 첫 문장. (영어 원문 메모에만 채워짐) */
+  titleKo: z.string().default(""),
+  /** 한국어 본문 — 영어 원문 메모의 빌드타임 번역. 없으면 ''(원문 폴백). */
+  textKo: z.string().default(""),
   /** 수집 시각 (ISO). */
   addedAt: z.string().default(""),
   /** 만든 사람 (block.user). */

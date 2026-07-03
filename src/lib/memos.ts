@@ -15,7 +15,7 @@ import {
 } from './arena.js';
 import { classifyBlock } from './images.js';
 import { firstSentence } from './links.js';
-import { translateKoToEn } from './translate.js';
+import { translateTo, isKoreanText } from './translate.js';
 import { memoSchema, type Memo } from './schema.js';
 import { ARENA_MEMO_CHANNEL } from './config.js';
 
@@ -59,13 +59,22 @@ export async function buildMemos(): Promise<Memo[]> {
     out.push(parsed.data);
   }
 
-  // 영어 번역 (Claude Haiku, 빌드타임) — (모델+내용)해시 캐시라 새 메모만 API를 탄다.
-  // 키 없음/실패 → ''(EN 모드에서도 한국어 폴백), 빌드는 계속.
-  const translations = await translateKoToEn(out.map((m) => m.text));
-  translations.forEach((en, i) => {
+  // 양방향 번역 (Claude Haiku, 빌드타임) — 한국어 메모→영어(textEn), 영어
+  // 메모→한국어(textKo). (모델+타깃+내용)해시 캐시라 새 메모만 API를 탄다.
+  // 키 없음/실패 → ''(반대 모드에서도 원문 폴백), 빌드는 계속.
+  const koMemos = out.map((m, i) => ({ m, i })).filter(({ m }) => isKoreanText(m.text));
+  const enMemos = out.map((m, i) => ({ m, i })).filter(({ m }) => !isKoreanText(m.text));
+  const toEn = await translateTo('en', koMemos.map(({ m }) => m.text));
+  toEn.forEach((en, j) => {
     if (!en) return;
-    out[i].textEn = en;
-    out[i].titleEn = memoLabel(en);
+    out[koMemos[j].i].textEn = en;
+    out[koMemos[j].i].titleEn = memoLabel(en);
+  });
+  const toKo = await translateTo('ko', enMemos.map(({ m }) => m.text));
+  toKo.forEach((ko, j) => {
+    if (!ko) return;
+    out[enMemos[j].i].textKo = ko;
+    out[enMemos[j].i].titleKo = memoLabel(ko);
   });
 
   return out;
