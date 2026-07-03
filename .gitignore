@@ -10,6 +10,7 @@ src/data/works.json
 src/data/intro.json
 src/data/links.json
 src/data/memos.json
+src/data/translations.json
 
 # downloaded images (re-fetched at build time; skip-cached locally)
 src/assets/works/*/

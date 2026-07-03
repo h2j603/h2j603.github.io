@@ -165,16 +165,18 @@ const defaultMosaic = fs.readFileSync(
                 {/* 블록 전체가 토글 단위 — 라벨/날짜/본문 어디를 눌러도 접고 펼침.
                     row-a/row-b = 호버 배경 보라/갈색 2색 교차 (.right 링크와 같은 어법) */}
                 <div class={`memo ${i % 2 === 0 ? 'row-a' : 'row-b'}`} role="button" tabindex="0">
-                  <span class="memo-head">{m.title}</span>
+                  {/* 한/영 — 번역(textEn)이 있으면 lang 스팬 쌍으로, CSS가 토글 언어만 표시.
+                      번역 없으면 한국어 원문 그대로(양쪽 모드 공통). */}
+                  <span class="memo-head">{m.titleEn ? <><span lang="ko">{m.title}</span><span lang="en">{m.titleEn}</span></> : m.title}</span>
                   {(m.addedAt || m.tags.length > 0) && (
                     <span class="block-date">
                       {fmtDateTime(m.addedAt)}{m.addedBy && ` · ${m.addedBy}`}{m.tags.map((t) => (
                         <>{' · '}<span class="tag-chip" style={`--mix:${tagMixMap.get(t)}%`}>#{t}</span></>
-                      ))}
+                      ))}{m.textEn && <span class="mt-mark" lang="en">{' · '}MT</span>}
                     </span>
                   )}
                   {/* 서식 없이 원문 그대로 (줄바꿈 유지). 맨 아래 = 원 블록으로 가는 출처 링크 */}
-                  <div class="memo-body">{m.text}{m.id && (
+                  <div class="memo-body">{m.textEn ? <><span lang="ko">{m.text}</span><span lang="en">{m.textEn}</span></> : m.text}{m.id && (
                     <a class="memo-source" href={`https://www.are.na/block/${m.id}`} target="_blank" rel="noopener">↗ are.na/block/{m.id}</a>
                   )}</div>
                 </div>

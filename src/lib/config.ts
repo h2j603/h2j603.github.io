@@ -62,3 +62,12 @@ export const ARENA_MEMO_CHANNEL =
 
 /** 메모 스냅샷 파일. */
 export const MEMO_FILE = 'src/data/memos.json';
+
+/** DeepL API key — 메모 빌드타임 번역용. 없으면 번역 생략(한국어 폴백), 빌드는 정상. */
+export function getDeepLKey(): string | undefined {
+  return process.env.DEEPL_API_KEY || undefined;
+}
+
+/** 메모 번역 캐시 파일 (내용 sha256 → 영어). 메모 하나는 평생 1회만 번역 —
+    CI에선 actions/cache로 보존(이미지 캐시와 같은 어법). gitignore 대상. */
+export const TRANSLATIONS_FILE = 'src/data/translations.json';

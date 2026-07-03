@@ -1479,6 +1479,10 @@ table.sontable .col-cat   { width: 20%; }
    현재 언어만 1단 표시. (모바일은 mobile.css에서 ko/en 둘 다 stack으로 복원) */
 .three-col[data-lang='ko'] .bilingual > [lang='en'] { display: none; }
 .three-col[data-lang='en'] .bilingual > [lang='ko'] { display: none; }
+/* 메모 한/영 — 번역 있는 메모는 라벨·본문·MT표기를 lang 스팬으로 나눠 두고
+   토글 언어만 표시. (data-lang 미부여=no-JS 상태에선 한국어만 — en 숨김) */
+.three-col:not([data-lang='en']) .memo [lang='en'] { display: none; }
+.three-col[data-lang='en'] .memo [lang='ko'] { display: none; }
 .bilingual > div > p:first-child { padding-top: 0; }
 
 /* 좌측 인트로 h2 — 크기는 전역 h2(--fs)와 동일, 본문과 여백만 */
