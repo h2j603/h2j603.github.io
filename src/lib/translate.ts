@@ -1,13 +1,13 @@
 /**
- * Build-time 한→영 번역 (Claude Haiku) + 디스크 캐시.
+ * Build-time 메모 번역 (Claude Haiku) + 디스크 캐시 — 양방향.
  *
- * 메모를 빌드 때 번역해 스냅샷에 굽는다 — 런타임 API 호출 없음. 캐시는
- * (모델+내용) sha256 → 번역문 매핑이라 같은 메모는 평생 1회만 번역된다
- * (30분 cron 재빌드에도 재과금 없음). 키가 없거나 API가 실패하면 ''(빈
- * 문자열)로 두고 페이지가 한국어 원문으로 폴백 — 빌드는 절대 안 죽는다.
+ * 한국어 메모는 영어로, 영어 메모는 한국어로 번역해 스냅샷에 굽는다 —
+ * 런타임 API 호출 없음. 캐시는 (모델+타깃+내용) sha256 → 번역문 매핑이라
+ * 같은 메모는 평생 1회만 번역된다(30분 cron 재빌드에도 재과금 없음).
+ * 키가 없거나 API가 실패하면 ''(빈 문자열)로 두고 페이지가 원문으로 폴백 —
+ * 빌드는 절대 안 죽는다.
  *
- * 모델은 TRANSLATE_MODEL(기본 claude-haiku-4-5)로 교체 가능. LLM이라
- * 시스템 프롬프트로 "메모의 문체 유지·번역문만 출력"을 지시한다.
+ * 모델은 TRANSLATE_MODEL(기본 claude-haiku-4-5)로 교체 가능.
  */
 import Anthropic from '@anthropic-ai/sdk';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -17,18 +17,39 @@ import { TRANSLATIONS_FILE, TRANSLATE_MODEL, getAnthropicKey } from './config.js
 
 const POOL = 4; // 동시 요청 수 — works.ts의 fetch 풀과 같은 어법
 
-const SYSTEM = `You are translating personal notepad memos by a Korean graphic designer for the English version of his portfolio site (hyuk.xyz).
+export type TargetLang = 'en' | 'ko';
+
+const SYSTEM: Record<TargetLang, string> = {
+  en: `You are translating personal notepad memos by a Korean graphic designer for the English version of his portfolio site (hyuk.xyz).
 
 Translate the given memo from Korean to English.
 - Keep the original register — these memos are mostly plain/formal notes; do not make them chattier or stiffer than the source.
 - Preserve line breaks exactly. Keep URLs, code, and markdown syntax as-is.
 - If part of the memo is already English, keep it unchanged.
-- Output ONLY the translation. No quotes around it, no notes, no commentary.`;
+- Output ONLY the translation. No quotes around it, no notes, no commentary.`,
+  ko: `You are translating personal notepad memos by a Korean graphic designer for the Korean version of his portfolio site (hyuk.xyz).
+
+Translate the given memo from English to Korean.
+- Use natural written Korean in plain declarative style (문어체, '~다' 서술) — these memos are mostly plain/formal notes.
+- Preserve line breaks exactly. Keep URLs, code, markdown syntax, and proper nouns/technical terms that are conventionally kept in English as-is.
+- If part of the memo is already Korean, keep it unchanged.
+- Output ONLY the translation. No quotes around it, no notes, no commentary.`,
+};
+
+/** 메모가 한국어 위주인가 — 한글이 (한글+라틴)의 10% 이상이면 한국어로 본다.
+ *  한국어 메모는 영문 용어가 많아도 조사·서술어로 한글 비중이 이보다 높고,
+ *  진짜 영어 메모는 한글이 ~0%(인용 한두 단어 수준)라 10%에서 안전하게 갈린다. */
+export function isKoreanText(text: string): boolean {
+  const hangul = (text.match(/[가-힣ㄱ-ㆎ]/g) || []).length;
+  const latin = (text.match(/[A-Za-z]/g) || []).length;
+  if (hangul + latin === 0) return true; // 글자 없으면 번역 무의미 — 한국어 취급
+  return hangul / (hangul + latin) >= 0.1;
+}
 
 type Cache = Record<string, string>;
 
-function keyOf(text: string): string {
-  return createHash('sha256').update(TRANSLATE_MODEL + ' en ' + text).digest('hex');
+function keyOf(target: TargetLang, text: string): string {
+  return createHash('sha256').update(TRANSLATE_MODEL + ' ' + target + ' ' + text).digest('hex');
 }
 
 function loadCache(): Cache {
@@ -50,23 +71,23 @@ function saveCache(cache: Cache): void {
 }
 
 /**
- * texts를 영어로 번역해 같은 순서의 배열로 돌려준다. 실패한 항목은 ''.
+ * texts를 target 언어로 번역해 같은 순서의 배열로 돌려준다. 실패한 항목은 ''.
  * 캐시 히트는 API를 안 부른다. 키 없으면 전부 '' (경고 1회).
  */
-export async function translateKoToEn(texts: string[]): Promise<string[]> {
+export async function translateTo(target: TargetLang, texts: string[]): Promise<string[]> {
   const cache = loadCache();
-  const out = texts.map((t) => (t.trim() ? cache[keyOf(t)] ?? '' : ''));
+  const out = texts.map((t) => (t.trim() ? cache[keyOf(target, t)] ?? '' : ''));
   const missing = texts
     .map((t, i) => ({ t, i }))
     .filter(({ t, i }) => t.trim() && !out[i]);
   if (!missing.length) {
-    if (texts.some((t) => t.trim())) console.log(`  translate: ${out.filter(Boolean).length} cached, 0 new`);
+    if (texts.length) console.log(`  translate→${target}: ${out.filter(Boolean).length} cached, 0 new`);
     return out;
   }
 
   const apiKey = getAnthropicKey();
   if (!apiKey) {
-    console.warn(`  ⚠ translate: ANTHROPIC_API_KEY 없음 — ${missing.length}개 번역 생략(한국어 폴백)`);
+    console.warn(`  ⚠ translate→${target}: ANTHROPIC_API_KEY 없음 — ${missing.length}개 번역 생략(원문 폴백)`);
     return out;
   }
   const client = new Anthropic({ apiKey, timeout: 60_000, maxRetries: 2 });
@@ -81,7 +102,7 @@ export async function translateKoToEn(texts: string[]): Promise<string[]> {
       const msg = await client.messages.create({
         model: TRANSLATE_MODEL,
         max_tokens: 2000,
-        system: SYSTEM,
+        system: SYSTEM[target],
         messages: [{ role: 'user', content: m.t }],
       });
       const en = msg.content
@@ -91,7 +112,7 @@ export async function translateKoToEn(texts: string[]): Promise<string[]> {
         .trim();
       if (en) {
         out[m.i] = en;
-        cache[keyOf(m.t)] = en;
+        cache[keyOf(target, m.t)] = en;
         added++;
       } else {
         failed++;
@@ -100,9 +121,9 @@ export async function translateKoToEn(texts: string[]): Promise<string[]> {
       failed++;
       if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) {
         dead = true; // 키가 죽었으면 나머지도 실패 확정 — 조용히 폴백
-        console.warn(`  ⚠ translate: API 키 인증 실패 — 남은 번역 생략(한국어 폴백)`);
+        console.warn(`  ⚠ translate→${target}: API 키 인증 실패 — 남은 번역 생략(원문 폴백)`);
       } else {
-        console.warn(`  ⚠ translate: "${m.t.slice(0, 20)}…" 실패 (${err.message}) — 한국어 폴백`);
+        console.warn(`  ⚠ translate→${target}: "${m.t.slice(0, 20)}…" 실패 (${err.message}) — 원문 폴백`);
       }
     }
   }
@@ -115,6 +136,6 @@ export async function translateKoToEn(texts: string[]): Promise<string[]> {
   await Promise.all(Array.from({ length: Math.min(POOL, missing.length) }, worker));
 
   if (added) saveCache(cache);
-  console.log(`  translate(${TRANSLATE_MODEL}): +${added} new, ${out.filter(Boolean).length - added} cached, ${failed} failed`);
+  console.log(`  translate→${target}(${TRANSLATE_MODEL}): +${added} new, ${out.filter(Boolean).length - added} cached, ${failed} failed`);
   return out;
 }
