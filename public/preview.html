@@ -63,6 +63,65 @@
     border: 1px solid #000;
     padding: 4px 8px;
   }
+  /* ── 타이포 패널 ─────────────────────────────────────────────── */
+  #typopanel {
+    border-bottom: 1px solid #000;
+    background: #fff;
+    padding: 8px;
+    font-size: 12px;
+  }
+  #typopanel[hidden] { display: none; }
+  #typopanel .trow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  #typopanel .trow + .trow, #tgrid { margin-top: 8px; }
+  #typopanel button,
+  #typopanel select,
+  #typopanel input[type='text'] {
+    font: inherit;
+    background: #fff;
+    color: #000;
+    border: 1px solid #000;
+    padding: 3px 8px;
+    cursor: pointer;
+  }
+  #typopanel input[type='text'] { cursor: text; }
+  #typopanel button.active { background: #000; color: #fff; }
+  #target { width: 110px; }
+  #chips button { border-color: #999; color: #444; padding: 3px 6px; }
+  #tgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+    gap: 8px 12px;
+  }
+  #tgrid .tc { display: block; }
+  #tgrid .tl {
+    display: flex;
+    justify-content: space-between;
+    gap: 4px;
+    color: #444;
+    margin-bottom: 2px;
+  }
+  #tgrid .tl b {
+    font-weight: 400;
+    color: #000;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  #tgrid .tl b.untouched { color: #999; }
+  #tgrid input[type='range'] {
+    width: 100%;
+    margin: 0;
+    accent-color: #000;
+  }
+  #tgrid select, #tgrid input[type='text'] {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  #typoinfo { color: #444; margin-left: auto; }
   #stage {
     box-sizing: border-box;
     border: 1px solid #000;
@@ -88,11 +147,30 @@
     </span>
     <button id="zoom" title="화면에 맞춤 ↔ 실제 크기">100%</button>
     <button id="hover" title="터치 기기에서 (hover:hover) 미디어 게이트를 해제해 탭=호버로 미리보기">hover</button>
+    <button id="typobtn" title="타이포 속성 라이브 조정 + CSS 복사">타이포</button>
     <button id="reload">새로고침</button>
     <span id="info"></span>
     <input id="path" type="text" value="/" spellcheck="false"
            autocomplete="off" autocapitalize="off" aria-label="경로">
   </div>
+
+  <div id="typopanel" hidden>
+    <div class="trow">
+      <button id="pick" title="켠 뒤 화면에서 요소를 탭하면 대상으로 선택">⌖ 선택</button>
+      <input id="target" type="text" value="body" spellcheck="false"
+             autocomplete="off" autocapitalize="off" aria-label="대상 셀렉터">
+      <span id="chips"></span>
+    </div>
+    <div id="tgrid"></div>
+    <div class="trow">
+      <button id="copycss">CSS 복사</button>
+      <button id="sendcss" title="텔레그램 공유로 열기 — 봇 채팅에 보내면 소스에 반영">텔레그램 →</button>
+      <button id="resetone">초기화</button>
+      <button id="resetall">전체 초기화</button>
+      <span id="typoinfo"></span>
+    </div>
+  </div>
+
   <div id="stage">
     <iframe id="frame" title="site preview"></iframe>
   </div>
@@ -132,6 +210,12 @@
   var deviceSel = document.getElementById('device');
   var cwInput = document.getElementById('cw');
   var chInput = document.getElementById('ch');
+  var typoBtn = document.getElementById('typobtn');
+  var typoPanel = document.getElementById('typopanel');
+  var typoGrid = document.getElementById('tgrid');
+  var typoInfo = document.getElementById('typoinfo');
+  var targetInput = document.getElementById('target');
+  var pickBtn = document.getElementById('pick');
 
   // 셀렉트 채우기 (optgroup 단위)
   DEVICES.forEach(function (g) {
@@ -146,7 +230,7 @@
     deviceSel.appendChild(og);
   });
 
-  // ── 상태: URL 쿼리로 복원 (?d=iphone-15pro&rot=1&w=900&h=600&path=/...&hover=1) ──
+  // ── 상태: URL 쿼리로 복원 (?d=iphone-15pro&rot=1&w=900&h=600&path=/...&hover=1&typo=1) ──
   var params = new URLSearchParams(location.search);
   var deviceId = params.get('d') || legacyWidthToDevice(parseInt(params.get('w'), 10)) || 'desktop-1440';
   var rotated = params.get('rot') === '1';
@@ -156,6 +240,7 @@
   // 터치 기기(hover 불가)에서 데스크탑 폭을 고르면 자동으로 호버 게이트 해제
   var touchEnv = window.matchMedia('(hover: none)').matches;
   var hoverForce = params.has('hover') ? params.get('hover') === '1' : null; // null = 자동
+  var typoOpen = params.get('typo') === '1';
   var initialPath = params.get('path');
   if (!initialPath || initialPath[0] !== '/') initialPath = '/';
 
@@ -214,6 +299,7 @@
     if (rotated) q.set('rot', '1');
     if (deviceId === 'custom') { q.set('w', customW); q.set('h', customH); }
     if (hoverForce !== null) q.set('hover', hoverForce ? '1' : '0');
+    if (typoOpen) q.set('typo', '1');
     var p = framePath();
     if (p !== '/') q.set('path', p);
     var s = q.toString();
@@ -223,7 +309,8 @@
   function apply() {
     var s = size();
     var availW = document.documentElement.clientWidth - 2;
-    var availH = window.innerHeight - toolbar.offsetHeight - 1;
+    var chrome = toolbar.offsetHeight + (typoOpen ? typoPanel.offsetHeight : 0);
+    var availH = window.innerHeight - chrome - 1;
     frame.style.width = s.w + 'px';
     var d = currentDevice();
     var label = (d.id === 'custom' ? '커스텀' : d.name) + (rotated ? ' ⟳' : '');
@@ -293,6 +380,15 @@
       apply();
       return;
     }
+    if (btn.id === 'typobtn') {
+      typoOpen = !typoOpen;
+      typoPanel.hidden = !typoOpen;
+      typoBtn.classList.toggle('active', typoOpen);
+      if (typoOpen) refreshTypo();
+      apply();
+      syncQuery();
+      return;
+    }
     if (btn.id === 'hover') {
       hoverForce = !hoverActive();
       if (hoverForce) {
@@ -315,15 +411,288 @@
     pathInput.blur();
   });
 
+  // ══ 타이포 패널 ═══════════════════════════════════════════════════
+  // 「웹 타이포그래피를 위한 문서」의 속성 체계를 그대로 컨트롤로 옮김.
+  // 값은 상대 단위(rem/em/단위 없는 행간)로만 다루고, 건드린 속성만
+  // 대상 셀렉터별로 누적해 CSS로 복사할 수 있다. 같은 출처에서만 동작.
+  var TYPO_PROPS = [
+    { p: 'font-family',   label: '글꼴',        type: 'text' },
+    { p: 'font-size',     label: '크기',        unit: 'rem', min: 0.5,   max: 4,   step: 0.0625, dec: 4 },
+    { p: 'font-weight',   label: '굵기',        type: 'select', opts: ['100','200','300','400','500','600','700','800','900'] },
+    { p: 'line-height',   label: '행간',        unit: '',    min: 1,     max: 2.4, step: 0.05,   dec: 2 },
+    { p: 'letter-spacing',label: '자간',        unit: 'em',  min: -0.1,  max: 0.2, step: 0.005,  dec: 3 },
+    { p: 'word-spacing',  label: '어간',        unit: 'em',  min: -0.05, max: 0.3, step: 0.005,  dec: 3 },
+    { p: 'max-width',     label: '행길이',      unit: 'em',  min: 16,    max: 60,  step: 1,      dec: 0 },
+    { p: 'text-align',    label: '정렬',        type: 'select', opts: ['left','center','right','justify'] },
+    { p: 'word-break',    label: '줄바꿈',      type: 'select', opts: ['keep-all','normal'] },
+    { p: 'text-wrap',     label: 'text-wrap',   type: 'select', opts: ['auto','balance','pretty'] },
+    { p: 'text-underline-offset',      label: '밑줄 간격', unit: 'em', min: 0, max: 0.4, step: 0.01, dec: 2 },
+    { p: 'text-decoration-thickness',  label: '밑줄 두께', type: 'select', opts: ['from-font','auto','1px','2px'] },
+  ];
+  var CHIP_TARGETS = ['body', 'p', 'h1', 'a'];
+  var typoRules = {};   // { 셀렉터: { 속성: 값(숫자 또는 문자열) } } — 건드린 것만
+  var typoBase = {};    // 현재 대상의 계산값 (컨트롤 초기 표시용)
+  var typoTarget = 'body';
+  var pickMode = false;
+  var controls = {};    // 속성 → { input, valEl, tp }
+
+  function fmt(n, dec) {
+    return parseFloat(Number(n).toFixed(dec != null ? dec : 4)).toString();
+  }
+  function typoDoc() {
+    try { return frame.contentDocument; } catch (err) { return null; }
+  }
+  function curRule() {
+    return typoRules[typoTarget] || (typoRules[typoTarget] = {});
+  }
+
+  // 대상 요소의 계산값 → 문서의 단위 체계(rem/em/비율)로 환산
+  function readBaseline() {
+    var doc = typoDoc();
+    if (!doc || !doc.documentElement) {
+      typoInfo.textContent = '교차 출처 — 같은 사이트에서만 동작';
+      return false;
+    }
+    var el;
+    try { el = doc.querySelector(typoTarget); } catch (err) { el = null; }
+    if (!el) {
+      typoInfo.textContent = '대상 없음: ' + typoTarget;
+      return false;
+    }
+    var win = doc.defaultView;
+    var cs = win.getComputedStyle(el);
+    var rootPx = parseFloat(win.getComputedStyle(doc.documentElement).fontSize) || 16;
+    var fpx = parseFloat(cs.fontSize) || 16;
+    function em(v, dec) {
+      var n = parseFloat(v);
+      return isNaN(n) ? 0 : parseFloat((n / fpx).toFixed(dec));
+    }
+    typoBase = {
+      'font-family': (cs.fontFamily || '').split(',')[0].replace(/["']/g, '').trim(),
+      'font-size': parseFloat((fpx / rootPx).toFixed(4)),
+      'font-weight': String(cs.fontWeight),
+      'line-height': cs.lineHeight === 'normal' ? 1.2 : em(cs.lineHeight, 2),
+      'letter-spacing': cs.letterSpacing === 'normal' ? 0 : em(cs.letterSpacing, 3),
+      'word-spacing': em(cs.wordSpacing || 0, 3),
+      'max-width': cs.maxWidth === 'none' ? null : em(cs.maxWidth, 0),
+      'text-align': cs.textAlign === 'start' ? 'left' : cs.textAlign,
+      'word-break': cs.wordBreak === 'keep-all' ? 'keep-all' : 'normal',
+      'text-wrap': (cs.textWrap === 'balance' || cs.textWrap === 'pretty') ? cs.textWrap : 'auto',
+      'text-underline-offset': cs.textUnderlineOffset === 'auto' ? 0.15 : em(cs.textUnderlineOffset, 2),
+      'text-decoration-thickness': ['from-font', '1px', '2px'].indexOf(cs.textDecorationThickness) >= 0
+        ? cs.textDecorationThickness : 'auto',
+    };
+    typoInfo.textContent = '';
+    return true;
+  }
+
+  // 컨트롤 생성 (1회)
+  function buildControls() {
+    TYPO_PROPS.forEach(function (tp) {
+      var wrap = document.createElement('label');
+      wrap.className = 'tc';
+      var head = document.createElement('span');
+      head.className = 'tl';
+      head.innerHTML = tp.label + ' <b></b>';
+      wrap.appendChild(head);
+      var input;
+      if (tp.type === 'select') {
+        input = document.createElement('select');
+        tp.opts.forEach(function (o) {
+          var opt = document.createElement('option');
+          opt.value = o; opt.textContent = o;
+          input.appendChild(opt);
+        });
+        input.addEventListener('change', function () { setVal(tp, input.value); });
+      } else if (tp.type === 'text') {
+        input = document.createElement('input');
+        input.type = 'text';
+        input.spellcheck = false;
+        input.addEventListener('change', function () {
+          if (input.value.trim()) setVal(tp, input.value.trim());
+        });
+      } else {
+        input = document.createElement('input');
+        input.type = 'range';
+        input.min = tp.min; input.max = tp.max; input.step = tp.step;
+        input.addEventListener('input', function () { setVal(tp, parseFloat(input.value)); });
+      }
+      wrap.appendChild(input);
+      typoGrid.appendChild(wrap);
+      controls[tp.p] = { input: input, valEl: head.querySelector('b'), tp: tp };
+    });
+    var chips = document.getElementById('chips');
+    CHIP_TARGETS.forEach(function (t) {
+      var b = document.createElement('button');
+      b.textContent = t;
+      b.addEventListener('click', function () { setTarget(t); });
+      chips.appendChild(b);
+    });
+  }
+
+  function setVal(tp, v) {
+    curRule()[tp.p] = v;
+    updateValLabel(tp.p);
+    applyTypo();
+  }
+
+  function updateValLabel(p) {
+    var c = controls[p];
+    var tp = c.tp;
+    var rule = typoRules[typoTarget] || {};
+    var touched = p in rule;
+    var v = touched ? rule[p] : typoBase[p];
+    var text;
+    if (v == null) text = '—';
+    else if (tp.type === 'select' || tp.type === 'text') text = String(v);
+    else text = fmt(v, tp.dec) + tp.unit;
+    if (text.length > 14) text = text.slice(0, 13) + '…';
+    c.valEl.textContent = text;
+    c.valEl.classList.toggle('untouched', !touched);
+  }
+
+  // 현재 대상 기준으로 컨트롤 값·라벨 갱신
+  function refreshTypo() {
+    if (!readBaseline()) return;
+    var rule = typoRules[typoTarget] || {};
+    TYPO_PROPS.forEach(function (tp) {
+      var c = controls[tp.p];
+      var v = (tp.p in rule) ? rule[tp.p] : typoBase[tp.p];
+      if (tp.type === 'select') c.input.value = (v == null ? tp.opts[0] : String(v));
+      else if (tp.type === 'text') {
+        c.input.value = (tp.p in rule) ? rule[tp.p] : '';
+        c.input.placeholder = typoBase[tp.p] || '';
+      }
+      else c.input.value = (v == null ? (tp.min + tp.max) / 2 : v);
+      updateValLabel(tp.p);
+    });
+  }
+
+  // 건드린 속성만 CSS로 — keep-all엔 overflow-wrap 짝 자동 포함
+  function buildCSS(important) {
+    var imp = important ? ' !important' : '';
+    var blocks = [];
+    Object.keys(typoRules).forEach(function (sel) {
+      var rule = typoRules[sel];
+      var lines = [];
+      TYPO_PROPS.forEach(function (tp) {
+        if (!(tp.p in rule)) return;
+        var v = rule[tp.p];
+        var cssv = (tp.unit !== undefined) ? fmt(v, tp.dec) + tp.unit : v;
+        lines.push('  ' + tp.p + ': ' + cssv + imp + ';');
+        if (tp.p === 'word-break' && v === 'keep-all') {
+          lines.push('  overflow-wrap: break-word' + imp + ';');
+        }
+      });
+      if (lines.length) blocks.push(sel + ' {\n' + lines.join('\n') + '\n}');
+    });
+    return blocks.join('\n\n');
+  }
+
+  function applyTypo() {
+    var doc = typoDoc();
+    if (!doc || !doc.head) return;
+    var st = doc.getElementById('__typo');
+    var css = buildCSS(true);
+    if (!css) { if (st) st.remove(); return; }
+    if (!st) {
+      st = doc.createElement('style');
+      st.id = '__typo';
+      doc.head.appendChild(st);
+    }
+    st.textContent = css;
+  }
+
+  function setTarget(t) {
+    typoTarget = t;
+    targetInput.value = t;
+    refreshTypo();
+  }
+
+  targetInput.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    setTarget(targetInput.value.trim() || 'body');
+    targetInput.blur();
+  });
+
+  pickBtn.addEventListener('click', function () {
+    pickMode = !pickMode;
+    pickBtn.classList.toggle('active', pickMode);
+    typoInfo.textContent = pickMode ? '화면에서 요소를 탭하세요' : '';
+  });
+
+  // iframe 문서에 탭 선택 리스너 부착 (로드마다, 같은 출처만)
+  function armPick() {
+    var doc = typoDoc();
+    if (!doc) return;
+    doc.addEventListener('click', function (e) {
+      if (!pickMode) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var el = e.target;
+      var sel;
+      if (el.id) sel = '#' + el.id;
+      else {
+        sel = el.tagName.toLowerCase();
+        if (el.classList.length) sel += '.' + el.classList[0];
+      }
+      pickMode = false;
+      pickBtn.classList.remove('active');
+      setTarget(sel);
+    }, true);
+  }
+
+  document.getElementById('copycss').addEventListener('click', function () {
+    var css = buildCSS(false);
+    if (!css) { typoInfo.textContent = '복사할 변경값 없음'; return; }
+    function done() {
+      typoInfo.textContent = '복사됨 ✓';
+      setTimeout(function () { typoInfo.textContent = ''; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(css).then(done, function () { window.prompt('복사:', css); });
+    } else {
+      window.prompt('복사:', css);
+    }
+  });
+
+  // 조정 결과를 텔레그램 공유 시트로 — 봇 채팅에 보내면 에이전트가 소스 CSS에 반영
+  document.getElementById('sendcss').addEventListener('click', function () {
+    var css = buildCSS(false);
+    if (!css) { typoInfo.textContent = '보낼 변경값 없음'; return; }
+    var text = '타이포 조정 적용 요청:\n\n' + css;
+    window.open('https://t.me/share/url?url=' + encodeURIComponent(location.href)
+      + '&text=' + encodeURIComponent(text));
+  });
+
+  document.getElementById('resetone').addEventListener('click', function () {
+    delete typoRules[typoTarget];
+    applyTypo();
+    refreshTypo();
+  });
+  document.getElementById('resetall').addEventListener('click', function () {
+    typoRules = {};
+    applyTypo();
+    refreshTypo();
+  });
+
   frame.addEventListener('load', function () {
     if (document.activeElement !== pathInput) pathInput.value = framePath();
     if (hoverActive()) unlockHoverGates();
+    applyTypo();   // 이동·새로고침에도 조정값 유지
+    armPick();
+    if (typoOpen) refreshTypo();
     syncQuery();
   });
 
   window.addEventListener('resize', apply);
   window.addEventListener('orientationchange', apply);
 
+  buildControls();
+  if (typoOpen) {
+    typoPanel.hidden = false;
+    typoBtn.classList.add('active');
+  }
   pathInput.value = initialPath;
   frame.src = initialPath;
   apply();
