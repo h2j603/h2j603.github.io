@@ -17,9 +17,17 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 
 > **Current phase: 라이브 운영 중 (hyuk.xyz).** 스타일링 완료 — 3컬럼 레이아웃
 > (좌: Are.na memo 채널 아코디언 / 중: 작품 표 + 커튼 인터랙션 / 우: 수집 링크),
-> 행별 보라/갈색 교차 호버, Pretendard Variable(dynamic subset), 라이트 단일
-> 테마. 콘텐츠는 Are.na에서만 관리하면 빌드가 반영한다. 기존 인터랙션 문법
-> (커튼·블록 단위 호버·마키 라벨)을 깨지 말 것.
+> 행별 보라/갈색 교차 호버, 라이트 단일 테마. 콘텐츠는 Are.na에서만 관리하면
+> 빌드가 반영한다. 기존 인터랙션 문법(커튼·블록 단위 호버·마키 라벨)을 깨지 말 것.
+>
+> **타이포 — 단일 폰트·단일 크기.** 서체는 self-hosted `Heitz Regular`
+> (`public/fonts/Heitz-Regular.woff2`, `Base.astro`에서 preload) 하나로 한글·라틴·
+> 숫자를 전부 그린다. 웨이트도 400 하나 — `b, strong { font-weight: inherit }`.
+> 크기는 `--fs: 1rem` 하나(비례 스케일 폐기, `h2`도 본문 크기·굵기). 실제 쓰는
+> 값은 본문/UI `1rem`+`line-height 1.25rem`, 보조 `0.75rem`+`1rem`, 읽는 글
+> `line-height 1.75rem` 셋뿐. 위계는 크기가 아니라 **자간**이 만든다(본문 0.02em ·
+> 제목 0.05em · 카드 메타 0.06em). 줄높이는 정수 px로 잠가 4px 세로 격자에
+> 정렬한다. 새 크기·새 서체·새 웨이트를 추가하지 말 것.
 
 ## Architecture (the decisions we made, in order)
 
