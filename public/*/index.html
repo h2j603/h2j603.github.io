@@ -33,7 +33,10 @@ h1 .up{font-style:normal}
 .note{position:absolute;width:14em;max-width:78vw;font-family:'Cafe24ProUp','Suit',sans-serif;font-size:19px;line-height:1.5;border:1px solid var(--ink);padding:8px 10px;box-shadow:2px 2px 0 var(--ink);opacity:1;background:var(--paper);cursor:pointer;animation:drift var(--dur,12s) ease-in-out infinite alternate;user-select:none;-webkit-user-select:none;z-index:2}
 .note.front{z-index:20;animation-play-state:paused;box-shadow:4px 4px 0 var(--ink);width:17em;max-width:90vw}
 #hide{position:fixed;left:auto;right:14px;bottom:14px;width:auto;margin:0;z-index:40;font-family:'Cafe24ProUp','Suit',sans-serif;font-size:28px;line-height:1;background:none;border:0;padding:6px;color:var(--ink);cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+#text{position:fixed;left:auto;right:58px;bottom:14px;width:auto;margin:0;z-index:40;font-family:'Cafe24ProUp','Suit',sans-serif;font-size:28px;line-height:1;background:none;border:0;padding:6px;color:var(--ink);cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
 body.hide .note{display:none}
+body.notext h1,body.notext .sep,body.notext .txt,body.notext .fn,body.notext .p{visibility:hidden}
+body.notext .p .note{visibility:visible}
 .note .who{font-size:14px;color:var(--mut);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .note .who b{color:var(--ink)}
 .note .who a{color:var(--ink);text-decoration:underline;text-underline-offset:.15em;margin-left:.5em}
@@ -78,6 +81,7 @@ input:focus,textarea:focus{outline:none;border-color:var(--ink)}
 <li id="fn4">더 큰 규모의 사례로 해시태그가 있다. 2007년 사용자 Chris Messina가 트윗으로 제안한 관습을 트위터가 2009년에야 링크 기능으로 흡수했다. RT 역시 사용자들이 먼저 쓰던 표기다.<a class="back" href="#r4">본문</a></li>
 </ol>
 </main>
+<button id="text" type="button" aria-label="본문 숨기기">♥</button>
 <button id="hide" type="button" aria-label="리플 숨기기">★</button>
 <script>
 const P = [
@@ -173,6 +177,7 @@ fetchAll();
 // 제목 세 줄을 각각 가로폭에 맞춤
 function fitTitle(){const h=document.getElementById("title");const w=h.clientWidth;const ls=[...h.querySelectorAll(".ln")];ls.forEach(l=>l.style.fontSize="100px");ls.forEach(l=>l.style.fontSize=Math.max(12,88*w/l.scrollWidth)+"px")}
 fitTitle();addEventListener("resize",fitTitle);if(document.fonts)document.fonts.ready.then(fitTitle);
+const tb=document.getElementById("text");tb.onclick=()=>{const h=document.body.classList.toggle("notext");tb.textContent=h?"♡":"♥";tb.setAttribute("aria-label",h?"본문 보이기":"본문 숨기기")};
 const hb=document.getElementById("hide");hb.onclick=()=>{const h=document.body.classList.toggle("hide");hb.textContent=h?"☆":"★";hb.setAttribute("aria-label",h?"리플 보이기":"리플 숨기기")};
 </script>
 </body>
