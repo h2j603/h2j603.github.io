@@ -165,7 +165,7 @@ function openCompose(sec,cx,cy,note){
   const x=Math.max(0,Math.min(60,(cx-b.left)/b.width*100)),y=Math.max(0,Math.min(90,(cy-b.top)/b.height*100));
   const to=note?note.querySelector(".who b").textContent:"";
   const f=document.createElement("form");f.className="compose";f.style.left=x+"%";f.style.top=y+"%";
-  f.innerHTML=`${to?`<div class="to">${esc(to)}에게</div>`:""}<input name="who" placeholder="이름" maxlength="40" required><input name="farm" placeholder="링크 (선택)" inputmode="url"><textarea name="body" placeholder="텍스트만 받습니다. 특수문자로 꾸며도 됩니다." maxlength="2000" required></textarea><input name="pin" placeholder="비번 4자리 (지울 때 씁니다)" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required><div class="btns"><button class="send" type="submit">남기기</button><button type="button" class="x">취소</button></div><div class="hint">남긴 리플은 모두에게 보입니다. 비번을 알면 지울 수 있습니다.</div>`;
+  f.innerHTML=`${to?`<div class="to">${esc(to)}에게</div>`:""}<input name="who" placeholder="이름" maxlength="40" required><input name="farm" placeholder="링크 (선택)" inputmode="url"><textarea name="body" placeholder="내용을 입력해 주세요. 본문과 전혀 상관없는 말이라도 괜찮습니다!" maxlength="2000" required></textarea><input name="pin" placeholder="비번 4자리 (지울 때 씁니다)" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required><div class="btns"><button class="send" type="submit">남기기</button><button type="button" class="x">취소</button></div><div class="hint">남긴 리플은 모두에게 보입니다. 비번을 알면 지울 수 있습니다.</div>`;
   sec.appendChild(f);clampX(f);f.who.focus();
   f.querySelector(".x").onclick=()=>f.remove();
   f.onsubmit=async ev=>{ev.preventDefault();const b=f.querySelector(".send");b.disabled=true;b.textContent="남기는 중…";
