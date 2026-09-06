@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>웹을 본래와 다른 목적으로 점유하기</title>
+<style>
+@font-face{font-family:'Suit';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Thin.woff2') format('woff2');font-weight:100;font-display:swap}
+@font-face{font-family:'Suit';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-ExtraLight.woff2') format('woff2');font-weight:200;font-display:swap}
+@font-face{font-family:'Suit';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Light.woff2') format('woff2');font-weight:300;font-display:swap}
+@font-face{font-family:'Suit';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Suit';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Medium.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Suit';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:'Suit';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Bold.woff2') format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:'Suit';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-ExtraBold.woff2') format('woff2');font-weight:800;font-display:swap}
+@font-face{font-family:'Suit';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Heavy.woff2') format('woff2');font-weight:900;font-display:swap}
+@font-face{font-family:'Cafe24ProUp';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2507-1@1.0/Cafe24PROUP.woff2') format('woff2');font-weight:normal;font-display:swap}
+:root{--ink:#111;--mut:rgba(0,0,0,.55);--rule:rgba(0,0,0,.35);--link:var(--ink);--bg:#dce62e;--paper:var(--bg)}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+html,body{overflow-x:clip}
+body{margin:0;color:var(--ink);font-family:"Suit","Pretendard","Apple SD Gothic Neo",sans-serif;font-size:16px;font-weight:600;line-height:1.95;word-break:keep-all;-webkit-touch-callout:none}
+main{max-width:38em;margin:0 auto;padding:40px 18px 140px}
+header{margin-bottom:56px}
+h1{font-family:'Cafe24ProUp','Suit',sans-serif;font-weight:normal;margin:0;line-height:1;word-break:keep-all;text-align:center}
+h1 .ln{display:block;white-space:nowrap;font-size:40px;line-height:1.2;letter-spacing:-.01em}
+.meta{color:var(--mut);font-size:12px}
+.p{position:relative;padding:18px 16px;margin:0;border:1px solid var(--ink)}
+.sep{font-family:'Cafe24ProUp','Suit',sans-serif;font-size:26px;line-height:1;text-align:center;padding:14px 0 10px;letter-spacing:.1em;user-select:none}
+.p .txt{margin:0;white-space:pre-wrap;user-select:none;-webkit-user-select:none}
+.p.pressing .txt{color:var(--mut)}
+.note{position:absolute;width:14em;max-width:78vw;font-family:'Cafe24ProUp','Suit',sans-serif;font-size:19px;line-height:1.5;border:1px solid var(--ink);padding:8px 10px;box-shadow:2px 2px 0 var(--ink);opacity:1;background:var(--paper);cursor:pointer;animation:drift var(--dur,12s) ease-in-out infinite alternate;user-select:none;-webkit-user-select:none;z-index:2}
+.note.front{z-index:20;animation-play-state:paused;box-shadow:4px 4px 0 var(--ink);width:17em;max-width:90vw}
+.note .who{font-size:14px;color:var(--mut);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note .who b{color:var(--ink)}
+.note .who a{color:var(--ink);text-decoration:underline;text-underline-offset:.15em;margin-left:.5em}
+.note .body{white-space:pre-wrap;overflow-wrap:anywhere;max-height:6.2em;overflow:hidden}
+.note.front .body{max-height:none}
+.note .src{font-size:13px;color:var(--mut);margin-top:3px;display:none}
+.note.front .src{display:block}
+.note .to{font-size:13px;color:var(--mut)}
+.note .del{display:none;gap:4px;margin-top:6px;font-size:13px}
+.note.front .del{display:flex}
+.note .del input{width:5em;padding:3px 6px}
+.note .del button{width:auto;padding:3px 8px;cursor:pointer;text-decoration:underline;text-underline-offset:.15em}
+@keyframes drift{from{transform:translate(0,0) rotate(var(--rot,0deg))}to{transform:translate(var(--dx,6px),var(--dy,-8px)) rotate(var(--rot,0deg))}}
+.compose{position:absolute;z-index:30;width:19em;max-width:86vw;background:var(--paper);border:1px solid var(--ink);padding:8px;display:flex;flex-direction:column;gap:6px;font-size:12px;box-shadow:0 4px 18px rgba(0,0,0,.16)}
+.compose .to{color:var(--mut);font-size:11px}
+input,textarea,button{font:inherit;color:inherit;border:1px solid var(--ink);background:transparent;padding:5px 7px;border-radius:0;width:100%}
+textarea{min-height:6em;resize:vertical;white-space:pre-wrap;line-height:1.6}
+input:focus,textarea:focus{outline:none;border-color:var(--ink)}
+::placeholder{color:var(--ink);opacity:1}
+.btns{display:flex;gap:6px}
+.btns button{cursor:pointer;width:auto;padding:5px 12px}
+.btns .send{text-decoration:underline;text-underline-offset:.15em}
+.hint{font-size:11px;color:var(--mut)}
+.fnref{font-family:'Cafe24ProUp','Suit',sans-serif;font-weight:normal;color:inherit;text-decoration:none;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><g stroke='%23111' stroke-width='1.7' stroke-linecap='round'><line x1='5' y1='0.8' x2='5' y2='9.2'/><line x1='1.4' y1='2.9' x2='8.6' y2='7.1'/><line x1='1.4' y1='7.1' x2='8.6' y2='2.9'/></g></svg>") repeat-x 0 100%;background-size:9px 8px;padding-bottom:7px}
+.fn{margin:72px 0 0;padding:16px 0 0 1.6em;border-top:1px solid var(--rule);font-size:12.5px;line-height:1.7;color:var(--ink);word-break:keep-all}
+.fn li{margin:0 0 10px;padding-left:.2em}
+.fn a.back{margin-left:.4em}
+.fn a{color:var(--ink);text-decoration:underline;text-underline-offset:.15em}
+footer{margin-top:40px;font-size:12px;color:var(--mut);border-top:1px solid var(--rule);padding-top:10px}
+@media (max-width:480px){body{font-size:16px}main{padding-top:28px}.p{padding:16px 14px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1 id="title"><span class="ln">웹을</span><span class="ln">*본래와 다른 목적으로*</span><span class="ln">점유하기</span></h1>
+</header>
+<div id="essay"></div>
+<ol class="fn" id="fn">
+<li id="fn1">Olia Lialina, “Turing Complete User” (2012). “General Purpose Users can write an article in their e-mail client, layout their business card in Excel and shave in front of a web cam.” / “what I mean are users who have the ability to achieve their goals regardless of the primary purpose of an application or device.” <a href="http://contemporary-home-computing.org/turing-complete-user/" target="_blank" rel="noopener">contemporary-home-computing.org</a><a class="back" href="#r1">본문</a></li>
+<li id="fn2">민법 제192조는 물건을 사실상 지배하는 자에게 점유권을 인정한다. 소유와 점유의 구분이 웹에서는 플랫폼과 사용자 사이에 그대로 놓인다.<a class="back" href="#r2">본문</a></li>
+<li id="fn3">Michel de Certeau, The Practice of Everyday Life (1984, tr. Steven Rendall), ch. XII “Reading as Poaching”: “Readers are travellers; they move across lands belonging to someone else, like nomads poaching their way across fields they did not write.” 같은 책에서 그는 제도가 자기 자리를 갖고 세우는 것을 ‘전략’, 자리 없는 사용자가 그 위에서 만들어내는 것을 ‘전술’이라 불렀다. “The space of a tactic is the space of the other.”<a class="back" href="#r3">본문</a></li>
+<li id="fn4">더 큰 규모의 사례로 해시태그가 있다. 2007년 사용자 Chris Messina가 트윗으로 제안한 관습을 트위터가 2009년에야 링크 기능으로 흡수했다. RT 역시 사용자들이 먼저 쓰던 표기다.<a class="back" href="#r4">본문</a></li>
+</ol>
+<footer>길게 누르면 리플.</footer>
+</main>
+<script>
+const P = [
+`웹은 개방적이다. 만든 사람이 용도를 정해둘 수는 있지만, 정해둔 대로만 쓰이는 법이 없다. 나는 그 틈이 웹의 매력이라고 생각한다.`,
+`바야흐로 장혁이 초등학생일 즈음, 쥬니버네이버의 웹 게임 {{‘동물농장’|https://ko.wikipedia.org/wiki/%EB%8F%99%EB%AC%BC%EB%86%8D%EC%9E%A5_(%EC%9B%B9_%EA%B2%8C%EC%9E%84)}}을 접한다. 각자의 농장에서 동물을 키워 평민에서 공작까지 신분상승(?)하는, 지금 생각하면 앞뒤가 잘 맞지 않는 게임이었다. 그런데 동물농장에는 게임보다 재미있는 것이 있었다. 농장을 미니홈피처럼 꾸밀 수 있었고, 남의 농장에 방명록처럼 댓글을 남길 수 있었다. 좋은 글귀를 바탕으로 유니코드 특수문자를 한 자 한 자 쌓아 모양을 꾸민 댓글, 우리는 그것을 ‘리플’이라 불렀다. 그 댓글칸에서 리플은 하나의 문화가 됐다.`,
+`나 역시 동물을 키우는 것보다 리플에 관심이 쏠린 유저였다. 재료는 자음에 한자 키를 눌러 나오는 특수문자였다. ㅂ에서 나오는 ─ │ ┌ ┐ 같은 선으로 틀을 짜고, ㅁ에서 나오는 ★ ● ■ ◆ 같은 굵직한 기호로 안을 채웠다. 남의 농장에 가면 같은 칸, 같은 기호로 만든 전혀 다른 모양이 있었다. 누가 새 틀을 만들면 며칠 안에 여기저기서 비슷한 틀이 보였고, 나도 베끼고 조금 바꿔서 답례했다. 리플을 받으면 상대 농장에 가서 내 리플을 남기는 것이 놀이였다. 돌이켜보면 그때 처음 웹이 좋아졌다.`,
+`이건 타이포그래피라고 할 수 있겠다. 이미지를 올릴 수도, 폰트를 고를 수도 없는 텍스트 칸에서 글자만으로 형태를 만든 것이다. 기능이 빈약했기 때문에 오히려 글자가 유일한 표현 수단이 됐다. Olia Lialina는 “이메일 클라이언트로 글을 쓰고, 엑셀로 명함을 조판하는” 사람들을 두고, 도구의 본래 목적과 무관하게 자기 목표를 이루는 사용자라는 뜻에서 ‘[[1:튜링 완전 사용자(Turing Complete User)]]’라 불렀다. 우리는 댓글칸을 조판 도구로 썼다. 운영진은 그런 것을 설계한 적이 없다.`,
+`나는 이런 일을 ‘점유’라고 부르고 싶다. ‘동물농장’의 소유권은 쥬니버네이버에 있었지만, [[2:그 칸을 실제로 쥐고 쓴 것은 우리였다]]. Michel de Certeau는 읽는 사람을 “[[3:남의 땅을 가로지르는 여행자, 자기가 쓰지 않은 들판을 밀렵하며 지나가는 유목민]]”에 비유했다. 다만 리플은 밀렵보다 거주에 가까웠다. 잠깐 훔쳐 쓰고 빠져나온 것이 아니라 거기서 살았다.`,
+`리플이 가능했던 조건은 셋이었다. 칸이 텍스트만 받았고, 모두에게 보였고, 답례할 수 있었다. 첫째가 형태를 만들었고, 둘째가 그걸 남에게 보이게 했고, 셋째가 그걸 놀이로 만들었다. 그래서 동물농장은 어느새 농장 게임이 아니라 리플을 주고받는 놀이터가 됐다. [[4:사용자가 만든 용도가 본래 용도보다 흥하면 그 공간의 성격이 바뀐다]].`,
+`지금의 웹은 이런 틈을 닫아가고 있다. 콘텐츠는 앱 안에 갇히고, 화면은 피드가 채우고, 댓글칸은 닫히거나 관리된다. 틈이 없으면 점유도 없다. 그래서 나는 웹을 만들 때 틈을 남겨두려 한다. 내가 정한 용도가 뒤집히는 것을 보고 싶고, 누가 와서 칸을 무엇으로 채우는지 구경하고 싶다.`,
+`이 웹에서도 ‘리플 달기’ 기능을 숨겨 놓았다. 문단마다 리플을 달 수 있고, 텍스트만 받고, 유니코드는 깨지지 않는다.`
+];
+const SEED={};
+const SB={url:"https://zrpwdzfhtljptkcmjavc.supabase.co",key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpycHdkemZodGxqcHRrY21qYXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNDE5NzAsImV4cCI6MjEwMzkxNzk3MH0.fwt2xR6usefPWY03EgDewXCxzk0WLHbTxw_Ee2sbxW0"};
+const H={apikey:SB.key,Authorization:"Bearer "+SB.key,"Content-Type":"application/json"};
+let USER=[];
+async function fetchAll(){
+  try{const r=await fetch(SB.url+"/rest/v1/replies?select=id,p,x,y,who,farm,body,reply_to,created_at&order=created_at",{headers:H});
+    USER=(await r.json()).map(w=>({id:"u"+w.id,p:w.p,x:w.x,y:w.y,to:w.reply_to||"",who:w.who,farm:w.farm||"",body:w.body,src:w.created_at.slice(0,10)}));
+  }catch(e){USER=[]}
+  render();
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm=u=>{u=String(u||"").trim();if(!u)return "";if(!/^[a-z][a-z0-9+.-]*:/i.test(u))u="https://"+u;try{const x=new URL(u);return /^https?:$/.test(x.protocol)?x.href:""}catch(e){return ""}};
+const host=u=>{try{return new URL(u).host.replace(/^www\./,"")}catch(e){return u}};
+const hash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0)/4294967295};
+// 시드 리플(각주)에 고정 위치 부여: 좌우 번갈아, 문단 높이 안에서 흩어짐
+const ALL=[];
+Object.entries(SEED).forEach(([p,arr])=>arr.forEach((r,k)=>{const h=hash(r.who+k);ALL.push({...r,id:"s"+p+k,p:+p,x:(k%2?40:2)+h*22,y:4+((k*41+h*60)%70)})}));
+const notes=()=>[...ALL,...USER];
+function noteEl(r){
+  const h=hash(r.id);
+  const fu=norm(r.farm);const farm=fu?`<a href="${esc(fu)}" target="_blank" rel="noopener">${esc(r.farmLabel||host(fu))}</a>`:"";
+  const to=r.to?`<div class="to">${esc(r.to)}에게</div>`:"";
+  const src=r.src?`<div class="src">${esc(r.src)}</div>`:"";
+  const del=r.id[0]==="u"?`<form class="del"><input name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="비번" required><button type="submit">지우기</button></form>`:"";
+  return `<div class="note" data-id="${r.id}" data-x="${r.x}" style="left:${r.x}%;top:${r.y}%;--dur:${9+h*9}s;--dx:${(h-.5)*28}px;--dy:${-6-h*16}px;--rot:${(hash(r.id+"r")-.5)*5}deg">${to}<div class="who"><b>${esc(r.who)}</b>${farm}</div><div class="body">${esc(r.body)}</div>${src}${del}</div>`;
+}
+function render(){
+  const all=notes();
+  document.getElementById("essay").innerHTML=P.map((t,i)=>`${i?'<div class="sep">***</div>':""}<section class="p" data-i="${i}"><p class="txt">${esc(t).replace(/\[\[(\d):([^\]]+)\]\]/g,'<a class="fnref" href="#fn$1" id="r$1">$2</a>').replace(/\{\{([^|]+)\|([^}]+)\}\}/g,'<a class="fnref" href="$2" target="_blank" rel="noopener">$1</a>')}</p>${all.filter(r=>r.p===i).map(noteEl).join("")}</section>`).join("");
+  document.querySelectorAll(".note").forEach(clampX);
+}
+// 문단 오른쪽 밖으로 나가지 않게 (리플 카드·작성칸 공통)
+function clampX(el){const sw=el.parentElement.clientWidth,w=el.offsetWidth;if(el.offsetLeft+w>sw-4)el.style.left=Math.max(0,sw-w-4)+"px"}
+addEventListener("resize",()=>document.querySelectorAll(".note,.compose").forEach(clampX));
+// 탭: 리플 앞으로 / 뒤로
+document.addEventListener("click",e=>{
+  if(e.target.closest(".compose")||e.target.closest(".del"))return;
+  const n=e.target.closest(".note");
+  document.querySelectorAll(".note.front").forEach(x=>{if(x!==n)x.classList.remove("front")});
+  if(n&&!e.target.closest("a")){n.classList.toggle("front");n.style.left=n.dataset.x+"%";clampX(n)}
+});
+document.addEventListener("contextmenu",e=>{if(e.target.closest(".p"))e.preventDefault()});
+// 리플 지우기: 남길 때 정한 4자리 비번
+document.addEventListener("submit",async e=>{
+  const f=e.target.closest(".del");if(!f)return;e.preventDefault();
+  const id=+f.closest(".note").dataset.id.slice(1),b=f.querySelector("button");b.disabled=true;
+  try{const r=await fetch(SB.url+"/rest/v1/rpc/delete_reply",{method:"POST",headers:H,body:JSON.stringify({rid:id,pin:f.pin.value})});
+    if(!r.ok)throw new Error(r.status);
+    if(await r.json()===true)await fetchAll();else{b.disabled=false;f.pin.value="";f.pin.placeholder="틀림";f.pin.focus()}}
+  catch(err){b.disabled=false;alert("지우기 실패 — 잠시 후 다시 시도해줘")}
+});
+// 길게 누르기 → 그 자리에 작성칸
+let timer=null,sx=0,sy=0;
+document.addEventListener("pointerdown",e=>{
+  const sec=e.target.closest(".p");if(!sec||e.target.closest(".compose")||e.target.closest(".del"))return;
+  sx=e.clientX;sy=e.clientY;sec.classList.add("pressing");
+  const note=e.target.closest(".note");
+  timer=setTimeout(()=>{sec.classList.remove("pressing");openCompose(sec,e.clientX,e.clientY,note)},520);
+});
+const cancel=()=>{clearTimeout(timer);timer=null;document.querySelectorAll(".p.pressing").forEach(x=>x.classList.remove("pressing"))};
+document.addEventListener("pointerup",cancel);document.addEventListener("pointercancel",cancel);
+document.addEventListener("pointermove",e=>{if(timer&&Math.hypot(e.clientX-sx,e.clientY-sy)>8)cancel()});
+function openCompose(sec,cx,cy,note){
+  document.querySelectorAll(".compose").forEach(x=>x.remove());
+  try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}
+  const b=sec.getBoundingClientRect();
+  const x=Math.max(0,Math.min(60,(cx-b.left)/b.width*100)),y=Math.max(0,Math.min(90,(cy-b.top)/b.height*100));
+  const to=note?note.querySelector(".who b").textContent:"";
+  const f=document.createElement("form");f.className="compose";f.style.left=x+"%";f.style.top=y+"%";
+  f.innerHTML=`${to?`<div class="to">${esc(to)}에게</div>`:""}<input name="who" placeholder="이름" maxlength="40" required><input name="farm" placeholder="링크 (선택)" inputmode="url"><textarea name="body" placeholder="텍스트만 받습니다. 특수문자로 꾸며도 됩니다." maxlength="2000" required></textarea><input name="pin" placeholder="비번 4자리 (지울 때 씁니다)" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required><div class="btns"><button class="send" type="submit">남기기</button><button type="button" class="x">취소</button></div><div class="hint">남긴 리플은 모두에게 보입니다. 비번을 알면 지울 수 있습니다.</div>`;
+  sec.appendChild(f);clampX(f);f.who.focus();
+  f.querySelector(".x").onclick=()=>f.remove();
+  f.onsubmit=async ev=>{ev.preventDefault();const b=f.querySelector(".send");b.disabled=true;b.textContent="남기는 중…";
+    const row={p:+sec.dataset.i,x:+x.toFixed(2),y:+y.toFixed(2),who:f.who.value.trim(),farm:norm(f.farm.value)||null,body:f.body.value.replace(/\s+$/,""),reply_to:to||null,pin:f.pin.value};
+    try{const r=await fetch(SB.url+"/rest/v1/rpc/add_reply",{method:"POST",headers:H,body:JSON.stringify(row)});
+      if(!r.ok)throw new Error(r.status);await fetchAll();}
+    catch(e){b.disabled=false;b.textContent="남기기";alert("저장 실패 — 잠시 후 다시 시도해줘")}};
+}
+render();
+fetchAll();
+// 제목 세 줄을 각각 가로폭에 맞춤
+function fitTitle(){const h=document.getElementById("title");const w=h.clientWidth;const ls=[...h.querySelectorAll(".ln")];ls.forEach(l=>l.style.fontSize="100px");ls.forEach(l=>l.style.fontSize=Math.max(12,88*w/l.scrollWidth)+"px")}
+fitTitle();addEventListener("resize",fitTitle);if(document.fonts)document.fonts.ready.then(fitTitle);
+</script>
+</body>
+</html>
