@@ -19,6 +19,7 @@
 *{box-sizing:border-box}
 html{background:var(--bg)}
 html,body{overflow-x:clip}
+body.loading{opacity:0}
 body{margin:0;color:var(--ink);font-family:"Suit","Pretendard","Apple SD Gothic Neo",sans-serif;font-size:16px;font-weight:600;line-height:1.95;word-break:keep-all;-webkit-touch-callout:none}
 main{max-width:38em;margin:0 auto;padding:40px 18px 140px}
 header{margin-bottom:56px}
@@ -68,7 +69,7 @@ input:focus,textarea:focus{outline:none;border-color:var(--ink)}
 @media (max-width:480px){body{font-size:16px}main{padding-top:28px}.p{padding:16px 14px}}
 </style>
 </head>
-<body>
+<body class="loading">
 <main>
 <header>
   <h1 id="title"><span class="ln">웹을</span><span class="ln up">*본래와 다른 목적으로*</span><span class="ln">점유하기</span></h1>
@@ -126,8 +127,9 @@ function render(){
   document.querySelectorAll(".note").forEach(clampX);
 }
 // 문단 오른쪽 밖으로 나가지 않게 (리플 카드·작성칸 공통)
-function clampX(el){const sw=el.parentElement.clientWidth,w=el.offsetWidth;if(el.offsetLeft+w>sw-4)el.style.left=Math.max(0,sw-w-4)+"px"}
-addEventListener("resize",()=>document.querySelectorAll(".note,.compose").forEach(clampX));
+function clampX(el){if(el.dataset.x)el.style.left=el.dataset.x+"%";const sw=el.parentElement.clientWidth,w=el.offsetWidth;if(el.offsetLeft+w>sw-4)el.style.left=Math.max(0,sw-w-4)+"px"}
+const reclamp=()=>document.querySelectorAll(".note,.compose").forEach(clampX);
+addEventListener("resize",reclamp);
 // 탭: 리플 앞으로 / 뒤로
 document.addEventListener("click",e=>{
   if(e.target.closest(".compose")||e.target.closest(".del"))return;
@@ -176,7 +178,9 @@ render();
 fetchAll();
 // 제목 세 줄을 각각 가로폭에 맞춤
 function fitTitle(){const h=document.getElementById("title");const w=h.clientWidth;const ls=[...h.querySelectorAll(".ln")];ls.forEach(l=>l.style.fontSize="100px");ls.forEach(l=>l.style.fontSize=Math.max(12,88*w/l.scrollWidth)+"px")}
-fitTitle();addEventListener("resize",fitTitle);if(document.fonts)document.fonts.ready.then(fitTitle);
+fitTitle();addEventListener("resize",fitTitle);
+const show=()=>{fitTitle();reclamp();document.body.classList.remove("loading")};
+if(document.fonts)document.fonts.ready.then(show);setTimeout(show,2500);
 const tb=document.getElementById("text");tb.onclick=()=>{const h=document.body.classList.toggle("notext");tb.textContent=h?"♡":"♥";tb.setAttribute("aria-label",h?"본문 보이기":"본문 숨기기")};
 const hb=document.getElementById("hide");hb.onclick=()=>{const h=document.body.classList.toggle("hide");hb.textContent=h?"☆":"★";hb.setAttribute("aria-label",h?"리플 보이기":"리플 숨기기")};
 </script>
