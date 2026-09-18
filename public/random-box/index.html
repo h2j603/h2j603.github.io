@@ -48,6 +48,15 @@ body { margin: 0; padding: 1rem; }
 }
 #title span { display: inline-block; }   /* 글자 폭 측정용 */
 
+/* 제목의 빈칸 = 입력칸. 비어 있으면 밑줄(______)을 보여주고, 단어가 있으면 밑줄 장식으로 "채운 빈칸"임을 알린다 */
+#blank { outline: none; caret-color: #000; }
+#blank:empty::before { content: "______"; }
+#blank:focus:empty::before { color: #bbb; }
+#blank:not(:empty) { text-decoration: underline; text-decoration-thickness: 0.04em; text-underline-offset: 0.06em; }
+#blank.on { color: var(--c); }              /* 모양이 켜지면 단어를 테마 색으로 */
+#blank.busy { animation: pulse 0.7s ease-in-out infinite alternate; }   /* 서버에 묻는 동안 */
+@keyframes pulse { from { opacity: 1; } to { opacity: 0.3; } }
+
 /* 네비: 모드별 버튼. 화면 위에 고정(sticky) */
 #modes {
   /* 가로 스크롤 상자는 세로도 잘라내므로, 글로우가 잘리지 않게 위아래로 --glow만큼 투명 여백을 두고 마진으로 상쇄한다 */
@@ -65,7 +74,9 @@ body { margin: 0; padding: 1rem; }
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  pointer-events: none;      /* 투명한 글로우 여백이 제목(입력칸)을 덮으므로, 탭은 버튼만 받는다 */
 }
+#modes button { pointer-events: auto; }
 #modes::-webkit-scrollbar { display: none; }
 #modes::after { content: ""; flex: 0 0 0.5rem; }   /* 끝 여백 */
 @media (min-width: 720px) { #modes { justify-content: center; } }
@@ -97,7 +108,7 @@ body { margin: 0; padding: 1rem; }
 </style>
 </head>
 <body>
-<h1 id="title"><span>Lorem Ipsum with</span></h1>
+<h1 id="title"><span>Lorem Ipsum with <span id="blank" contenteditable="true" enterkeyhint="go" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false" role="textbox" aria-label="a word"></span></span></h1>
 <nav id="modes" aria-label="ipsum modes"></nav>
 <div id="text"></div>
 
@@ -193,7 +204,11 @@ function classify(img) {
   const rank = [];
   order.forEach((k, r) => rank[k] = count[k] / pts.length < MIN_CLUSTER ? 1 : r + 1);
   for (let i = 0; i < n; i++) if (data[i * 4 + 3] >= 128) cls[i] = rank[nearest(centers, i * 4)];
-  return cls;
+  // 테마 색 = 가장 넓은 색 무리의 평균색. 흰색에 가까우면(🎲의 몸통 등) 다음 무리로, 다 밝으면 검정
+  const lum = c => (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255;
+  const main = order.map(k => centers[k]).find(c => lum(c) < 0.9);
+  const color = main ? `rgb(${main.map(Math.round).join(' ')})` : '#000';
+  return { cls, color };
 }
 
 const container = document.getElementById('text');
@@ -282,7 +297,7 @@ function renderShape(t) {
   const H = Math.ceil(W / aspect);
   const size = Math.round(Math.min(SHAPE_FONT.max, Math.max(SHAPE_FONT.min, Math.min(W, H) * SHAPE_FONT.per)));
   const lh = Math.round(size * 1.35);
-  const cls = classify(rasterize(t, W, H));
+  const { cls } = classify(rasterize(t, W, H));
   const left = (width - W) / 2;
   const srcs = [preparedFor(size, false), preparedFor(size, true)];
   container.className = 'shape';
@@ -436,22 +451,106 @@ async function switchTo(renderFn) {
 
 const render = () => on ? renderShape(theme) : renderLorem();
 
-// 네비: 테마마다 버튼 하나. 켜진 버튼을 다시 누르면 로렘으로 돌아간다
+// 테마를 켜거나(t) 끈다(null). 제목 빈칸·버튼 상태·모양을 한 번에 맞춘다
+const title = document.getElementById('title');
+const blank = document.getElementById('blank');
+let seq = 0;   // 진행 중인 단어 판정의 순번. 늦게 끝난 옛 판정은 버린다
+function apply(t) {
+  seq++;
+  on = !!t;
+  theme = t;
+  for (const x of nav.children) x.setAttribute('aria-pressed', String(on && x.textContent === t.name));
+  blank.textContent = t ? t.name : '';
+  blank.classList.toggle('on', on);
+  blank.classList.remove('busy');
+  title.style.setProperty('--c', t ? t.color : '#000');
+  fitTitle();
+  switchTo(render);
+}
+
+// 네비: 프리셋 버튼. 누르면 빈칸에 그 이름이 들어가고, 켜진 버튼을 다시 누르면 로렘으로 돌아간다
 for (const t of THEMES) {
   const b = document.createElement('button');
   b.type = 'button';
   b.textContent = t.name;
   b.style.setProperty('--c', t.color);
   b.setAttribute('aria-pressed', 'false');
-  b.addEventListener('click', () => {
-    const off = on && theme === t;
-    on = !off;
-    theme = off ? null : t;
-    for (const x of nav.children) x.setAttribute('aria-pressed', String(x === b && on));
-    switchTo(render);
-  });
+  b.addEventListener('click', () => apply(on && theme === t ? null : t));
   nav.appendChild(b);
 }
+
+// ───────── 제목 빈칸: 단어 → 이모지 ─────────
+// 1단계(브라우저): emojilib 키워드 사전에서 후보를 고른다. 이름이 정확히 같거나 정확 일치 후보가 하나뿐이면 그걸로 끝.
+// 2단계(서버): 애매하면 후보 10개를 프록시에 보내 Jev가 고른다. 어울리는 게 없으면 🎲.
+const PROXY = 'https://62-238-51-59.sslip.io/emoji';
+const PROXY_TIMEOUT = 8000;
+const FALLBACK = '🎲';
+let emojilib = null;
+
+function candidates(word) {
+  const key = word.replace(/ /g, '_');
+  const out = [];
+  for (const [emoji, kws] of Object.entries(emojilib)) {
+    let s = 0;
+    for (const k of kws) {
+      if (k === key) { s = Math.max(s, k === kws[0] ? 4 : 3); if (s === 4) break; }   // 4 이름 일치, 3 키워드 일치
+      else if (k.split('_').includes(key)) s = Math.max(s, 2);                       // 2 이름 속 낱말 일치 (cat_face)
+      else if (key.length >= 3 && (k.includes(key) || (k.length >= 3 && key.includes(k)))) s = Math.max(s, 1);
+    }
+    if (s) out.push({ emoji, name: kws[0].replace(/_/g, ' '), s });
+  }
+  return out.sort((a, b) => b.s - a.s).slice(0, 10);
+}
+
+async function askProxy(word, cands) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), PROXY_TIMEOUT);
+  try {
+    const r = await fetch(PROXY, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctl.signal,
+      body: JSON.stringify({ word, candidates: cands.map(({ emoji, name }) => ({ emoji, name })) }),
+    });
+    return r.ok ? (await r.json()).emoji : null;
+  } catch { return null; }
+  finally { clearTimeout(timer); }
+}
+
+async function emojiFor(word) {
+  emojilib ??= await (await fetch('./lib/emojilib.json')).json();
+  const cands = candidates(word);
+  if (!cands.length) return FALLBACK;
+  const sure = cands[0].s === 4 || (cands[0].s === 3 && !(cands[1]?.s === 3));
+  if (sure) return cands[0].emoji;
+  return (await askProxy(word, cands)) || FALLBACK;
+}
+
+function makeTheme(word, emoji) {
+  const t = { name: word, emoji };
+  t.color = classify(rasterize(t, 96, 96)).color;
+  return t;
+}
+
+async function submit(raw) {
+  const word = raw.trim().toLowerCase().replace(/\s+/g, ' ');
+  if (!word) { if (on) apply(null); else fitTitle(); return; }
+  if (on && word === theme.name) return;
+  const preset = THEMES.find(t => t.name === word);
+  if (preset) { apply(preset); return; }
+  const my = ++seq;
+  blank.classList.add('busy');
+  let emoji = FALLBACK;
+  try { emoji = await emojiFor(word); } catch { /* 사전·서버 실패 → 🎲 */ }
+  if (my !== seq) return;   // 그사이 다른 입력이 있었다
+  apply(makeTheme(word, emoji));
+}
+
+blank.addEventListener('input', fitTitle);
+blank.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); blank.blur(); } });
+blank.addEventListener('blur', () => submit(blank.textContent));
+blank.addEventListener('paste', e => {
+  e.preventDefault();
+  document.execCommand('insertText', false, (e.clipboardData.getData('text/plain') || '').replace(/\s+/g, ' '));
+});
 
 // ───────── 본문: are.na ⁋ Notepad 채널에서 접속할 때마다 무작위로 한 블록 ─────────
 const NOTEPAD = 'https://api.are.na/v3/channels/notepad-0o3p7vvmg7i/contents?per=100';
@@ -472,7 +571,6 @@ async function loadNote() {
 
 // ───────── 제목: 화면 폭에 딱 맞게 ─────────
 // 100px로 놓고 글자 폭을 잰 뒤, 컨테이너 폭과의 비율만큼 키운다 (letter-spacing이 em 단위라 비율이 정확히 맞는다)
-const title = document.getElementById('title');
 const TITLE_FONT = '100px "Suisse Intl Condensed"';
 function fitTitle() {
   title.style.fontSize = '100px';
