@@ -50,13 +50,17 @@ body { margin: 0; padding: 1rem; }
   letter-spacing: -0.01em;
 }
 
-/* 네비: 모드별 버튼 */
+/* 네비: 모드별 버튼. 화면 위에 고정(sticky) */
 #modes {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   flex-wrap: nowrap;
-  gap: 0.5rem;
+  gap: 0.4rem;
   margin: 0 -1rem 2rem;      /* body 여백을 상쇄해 가장자리까지 스크롤 */
-  padding: 0 1rem;
+  padding: 0.6rem 1rem;
+  background: #fff;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -65,30 +69,30 @@ body { margin: 0; padding: 1rem; }
 #modes::after { content: ""; flex: 0 0 0.5rem; }   /* 끝 여백 */
 @media (min-width: 720px) { #modes { justify-content: center; } }
 #modes button {
+  --c: lawngreen;            /* 테마 색, JS가 버튼마다 덮어쓴다 */
+  flex: 0 0 auto;
   font: inherit;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 400;
   text-transform: uppercase;
   color: #000;
-  background: #d4d4d4;
+  background: #e2e2e2;
   border: 0;
-  border-radius: 6px;
-  flex: 0 0 auto;
-  padding: 0.6em 1.4em;
+  border-radius: 12px;
+  padding: 0.3em 0.8em;
   margin: 0;
   cursor: pointer;
-  box-shadow: 0 0 0 0 rgba(124, 252, 0, 0);
+  box-shadow: 0 0 0 0 transparent;
   transition: box-shadow 0.35s ease, transform 0.12s ease, background 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 }
 #modes button:hover {
   transform: scale(1.06);
-  box-shadow: 0 0 24px 6px rgba(124, 252, 0, 0.75), 0 0 64px 20px rgba(124, 252, 0, 0.35);
+  box-shadow: 0 0 20px 5px color-mix(in oklch, var(--c) 75%, transparent), 0 0 56px 16px color-mix(in oklch, var(--c) 35%, transparent);
 }
 #modes button:active { transform: scale(0.95); }
 #modes button:focus-visible { outline: 2px solid #000; outline-offset: 3px; }
-/* 켜짐 = lawngreen 바탕 (이전의 기본 상태) */
-#modes button[aria-pressed="true"] { background: lawngreen; }
+#modes button[aria-pressed="true"] { background: var(--c); }
 </style>
 </head>
 <body>
@@ -116,11 +120,11 @@ const LOREM = [
 
 // ───────── 테마: 입숨 텍스트 + 실루엣 ─────────
 // draw(ctx, W, H): 캔버스에 실루엣을 그린다.
-//   빨강(#f00) = 본문, 초록(#0f0) = 줄 단위 볼드(색 g), 파랑(#00f) = 글자 단위 색(색 b)
-// aspect = W/H, body = 본문 글자색
+//   빨강(#f00) = 본문, 초록(#0f0) = 줄 단위 볼드(색 g), 파랑(#00f) = 글자 단위 색(테마 color)
+// color = 테마 색(oklch): 켜진 버튼·글로우·강조 글자에 쓴다. aspect = W/H, body = 본문 글자색
 const THEMES = [
   {
-    name: 'pizza', aspect: 1, body: '#000', g: '#000', b: 'lawngreen',
+    name: 'pizza', color: 'oklch(0.8 0.2 45)', aspect: 1, body: '#000', g: '#000',
     text: 'Pizza ipsum dolor amet. Pepperoni mozzarella marinara, thin crust hand-tossed and wood-fired. Extra cheese, garlic parmesan, ranch on the side. Meatball buffalo chicken, bacon ricotta, pineapple ham (yes, pineapple). Deep dish stuffed crust, sausage and onions, roasted red peppers, black olives, banana peppers. Fresh basil, burrata, San Marzano tomatoes, olive oil drizzle. Slice by the slice, whole pie, family size, large with everything. Pesto white pie, spinach mushroom, four cheese, buffalo mozzarella. Crispy edges, bubbly cheese, chewy crust, charred bottom. NY style fold, Detroit square, Neapolitan blister, Sicilian thick. Delivery in thirty minutes, dine in, carry out, late night slice. Anchovies for the brave, jalapenos for the bold, extra sauce for the wise. ',
     draw(ctx, W, H) {
       // 60° 조각: 꼭짓점이 아래, 둥근 크러스트가 위
@@ -138,7 +142,7 @@ const THEMES = [
     },
   },
   {
-    name: 'bacon', aspect: 1.45, body: '#000', g: '#000', b: 'lawngreen',
+    name: 'bacon', color: 'oklch(0.72 0.2 20)', aspect: 1.45, body: '#000', g: '#000',
     text: 'Bacon ipsum dolor amet pork belly short ribs brisket, pancetta jowl tenderloin ham hock. Chuck ribeye flank, sausage strip steak cupim leberkas. Andouille bresaola kielbasa, pork loin turducken shoulder pastrami. Frankfurter t-bone salami, capicola meatloaf beef ribs. Prosciutto shankle drumstick, ball tip landjaeger sirloin picanha. Smoked, cured, crispy, thick cut, maple glazed, applewood, streaky, back bacon. Fatback pig corned beef, tri-tip hamburger porchetta rump. Spare ribs chislic meatball, buffalo doner biltong venison. Alcatra boudin pork chop, ground round burgdoggen ham. Sizzle in the pan, wrap it around anything, bacon makes it better. ',
     draw(ctx, W, H) {
       // 물결치는 띠 + 지방 줄 두 개(볼드)
@@ -155,7 +159,7 @@ const THEMES = [
     },
   },
   {
-    name: 'cupcake', aspect: 0.85, body: '#000', g: '#000', b: 'lawngreen',
+    name: 'cupcake', color: 'oklch(0.82 0.18 350)', aspect: 0.85, body: '#000', g: '#000',
     text: 'Cupcake ipsum dolor sit amet chocolate bar halvah carrot cake donut. Caramels sweet roll gummies powder wafer. Jelly beans croissant pastry, sugar plum cotton candy marzipan liquorice. Toffee macaroon cheesecake, dragee tiramisu bonbon lollipop. Muffin brownie oat cake, gingerbread topping jelly-o pudding. Sprinkles on top, frosting swirl, buttercream, cream cheese, vanilla bean, red velvet. Apple pie danish icing, chupa chups pie fruitcake. Souffle biscuit tart, candy canes sesame snaps cookie. Lemon drops tootsie roll marshmallow, ice cream cake shortbread. Bake at 350, cool on the rack, pipe it high, cherry on top. ',
     draw(ctx, W, H) {
       // 컵(볼드, 사다리꼴) + 프로스팅(원 더미) + 체리
@@ -168,7 +172,7 @@ const THEMES = [
     },
   },
   {
-    name: 'cat', aspect: 1, body: '#000', g: '#000', b: 'lawngreen',
+    name: 'cat', color: 'oklch(0.9 0.18 100)', aspect: 1, body: '#000', g: '#000',
     text: 'Cat ipsum dolor sit amet, sleep on keyboard then knock the mug off the table. Purr when being pet, hiss at the vacuum, stare at the wall for no reason. Chase the red dot, attack the feet under the blanket, sit in the box no matter how small. Meow at 5am for breakfast, ignore the expensive bed, nap in the sunbeam. Scratch the couch, groom for hours, leave a hairball on the rug. Bring a dead mouse as a gift, hide under the bed when guests arrive, judge you silently. Knead the pillow, chirp at birds through the window, zoomies at midnight. Demand attention then walk away, lick the paw, curl into a loaf. ',
     draw(ctx, W, H) {
       // 머리(원) + 귀(삼각형) + 눈(파랑 채널)
@@ -182,7 +186,7 @@ const THEMES = [
     },
   },
   {
-    name: 'coffee', aspect: 1, body: '#000', g: '#000', b: 'lawngreen',
+    name: 'coffee', color: 'oklch(0.72 0.12 65)', aspect: 1, body: '#000', g: '#000',
     text: 'Coffee ipsum dolor sit amet, single origin pour over, medium roast, half and half. Espresso ristretto lungo, flat white cortado macchiato. Cold brew nitro, oat milk latte, extra shot, no foam. French press aromatic, fair trade beans, grinder set to coarse. Cappuccino frothed, mocha syrup, whipped cream on top. Affogato gelato, americano black, decaf after dinner. Drip filter, siphon brewer, crema thick and golden. Morning ritual, refill please, to go cup with a sleeve. Caramel drizzle, cinnamon dust, barista art in the foam. Robusta arabica blend, roasted dark, brewed strong, sipped slow. ',
     draw(ctx, W, H) {
       // 머그(둥근 아래) + 손잡이(고리) + 김 세 줄(파랑 채널)
@@ -203,7 +207,7 @@ const THEMES = [
     },
   },
   {
-    name: 'space', aspect: 0.62, body: '#000', g: '#000', b: 'lawngreen',
+    name: 'space', color: 'oklch(0.78 0.16 250)', aspect: 0.62, body: '#000', g: '#000',
     text: 'Space ipsum dolor sit amet, liftoff at T-minus zero, main engine cut-off, orbit insertion nominal. Apogee perigee, delta-v budget, gravity assist around Jupiter. Solar wind, cosmic rays, radiation belt, magnetosphere. Lunar module, command capsule, heat shield, parachute deploy. Houston we have a signal, telemetry green across the board. Red planet rover, ice giant flyby, asteroid belt transit. Docking ring, airlock cycle, EVA suit pressurized. Light years, parsecs, event horizon, dark matter halo. Countdown, ignition, max-q, stage separation, fairing jettison. Small step, giant leap, the sky is not the limit. ',
     draw(ctx, W, H) {
       // 로켓: 뾰족한 머리 + 몸통 + 지느러미(볼드 빨강) + 둥근 창(파랑)
@@ -305,7 +309,7 @@ function renderShape(t) {
   const src = preparedFor(t, size, false), srcBold = preparedFor(t, size, true);
   container.className = 'shape';
   container.textContent = '';
-  container.style.cssText = `height:${H}px;font-size:${size}px;color:${t.body};--g:${t.g};--b:${t.b}`;
+  container.style.cssText = `height:${H}px;font-size:${size}px;color:${t.body};--g:${t.g};--b:${t.color}`;
   let cursor = { segmentIndex: 0, graphemeIndex: 0 };
   const placed = [];
   for (let y = 0; y + lh <= H; y += lh) {
@@ -384,6 +388,7 @@ for (const t of THEMES) {
   const b = document.createElement('button');
   b.type = 'button';
   b.textContent = t.name;
+  b.style.setProperty('--c', t.color);
   b.setAttribute('aria-pressed', 'false');
   b.addEventListener('click', () => {
     const off = on && theme === t;
