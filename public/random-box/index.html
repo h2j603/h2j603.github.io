@@ -6,20 +6,20 @@
 <title>random box</title>
 <style>
 @font-face {
-  font-family: "Suisse Intl Condensed";
-  src: url("fonts/SuisseIntlCond-Regular.woff2") format("woff2");
+  font-family: "Suisse Intl";
+  src: url("fonts/SuisseIntl-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "Suisse Intl Condensed";
-  src: url("fonts/SuisseIntlCond-Bold.woff2") format("woff2");
+  font-family: "Suisse Intl";
+  src: url("fonts/SuisseIntl-Bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
-html { font-family: "Suisse Intl Condensed", sans-serif; -webkit-text-size-adjust: 100%; }
+html { font-family: "Suisse Intl", sans-serif; -webkit-text-size-adjust: 100%; }
 body { margin: 0; padding: 1rem; }
 #text { font-size: 16px; position: relative; }
 #text .line { white-space: pre; }
@@ -85,8 +85,8 @@ import { prepareWithSegments, layoutWithLines, layoutNextLine } from './lib/pret
 
 const FONT_SIZE = 16;
 const LINE_HEIGHT = 22;
-const FONT = `${FONT_SIZE}px "Suisse Intl Condensed"`;
-const FONT_BOLD = `bold ${FONT_SIZE}px "Suisse Intl Condensed"`;
+const FONT = `${FONT_SIZE}px "Suisse Intl"`;
+const FONT_BOLD = `bold ${FONT_SIZE}px "Suisse Intl"`;
 const BUTTON_ZONE = 120;   // 모양 높이를 정할 때 버튼 자리로 비워둘 높이(px)
 const MIN_RUN = 2;         // 이보다 좁은 구간(글자 폭 배수)엔 글자를 넣지 않는다
 const SHAPE_FONT = { min: 10, max: 16, per: 1 / 34 };  // 글자 크기 = 짧은 변/34, 10~16px 사이
@@ -269,7 +269,7 @@ function runsInBand(img, y0, y1) {
 const preparedCache = new Map();
 function preparedFor(t, size, bold) {
   const key = t.name + size + (bold ? 'b' : '');
-  if (!preparedCache.has(key)) preparedCache.set(key, prepareWithSegments(t.text.repeat(2), `${bold ? 'bold ' : ''}${size}px "Suisse Intl Condensed"`));
+  if (!preparedCache.has(key)) preparedCache.set(key, prepareWithSegments(t.text.repeat(2), `${bold ? 'bold ' : ''}${size}px "Suisse Intl"`));
   return preparedCache.get(key);
 }
 
