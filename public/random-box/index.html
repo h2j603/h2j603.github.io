@@ -25,25 +25,9 @@ body { margin: 0; padding: 1rem; }
 #text .line { white-space: pre; }
 #text .c { display: inline-block; will-change: transform, opacity; }
 
-/* 상자: 버튼 위 중앙에 숨어 있다가 fun mode에서 튀어나온다 */
-#box {
-  position: fixed;
-  left: 50%;
-  bottom: 5rem;
-  translate: -50% 0;
-  width: min(60vw, 320px);
-  z-index: 90;
-  pointer-events: none;
-  opacity: 0;
-  transform: translateY(40px) scale(0.6);
-  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-#box.on { opacity: 1; transform: none; }
-#box.on.eating { animation: wobble 0.5s ease-in-out infinite; }
-@keyframes wobble {
-  0%, 100% { transform: rotate(-1.5deg) scale(1); }
-  50%      { transform: rotate(1.5deg) scale(1.03); }
-}
+/* 피자 모드: 줄마다 원의 폭에 맞춰 잘라 가운데 정렬, 글자를 양끝으로 고르게 벌린다 */
+#text.pizza .line { display: flex; justify-content: space-between; margin: 0 auto; }
+#text.pizza .line.narrow { justify-content: center; }
 
 /* 버튼: 화면 중앙 하단 고정 */
 #fun {
@@ -88,116 +72,130 @@ body { margin: 0; padding: 1rem; }
 </head>
 <body>
 <div id="text"></div>
-<img id="box" src="img/box.png" alt="">
 <button id="fun" type="button" aria-pressed="false">fun mode!</button>
 
 <script type="module">
-import { prepareWithSegments, layoutWithLines } from './lib/pretext.js';
+import { prepareWithSegments, layoutWithLines, layoutNextLine } from './lib/pretext.js';
 
 const FONT_SIZE = 16;
 const LINE_HEIGHT = 22;
 const FONT = `${FONT_SIZE}px "Suisse Intl Condensed"`;
+const BUTTON_ZONE = 120;   // 피자 지름을 정할 때 버튼 자리로 비워둘 높이(px)
+const MIN_CHORD = 100;     // 이보다 좁은 줄은 비운다(원 맨 위·아래)
+const SWAP = { out: 350, grow: 700 };  // 전환 애니메이션(ms)
 
-// 상자 입구 위치 (이미지 폭·높이에 대한 비율)
-const MOUTH = { x: 0.33, y: 0.18 };
-// 빨려드는 애니메이션
-const SUCK = { duration: 900, maxDelay: 1400, jitter: 300 };
-
-const PARAS = [
+const LOREM = [
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
   'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.',
   'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.',
 ];
 
+const PIZZA = 'Pizza ipsum dolor amet. Pepperoni mozzarella marinara, thin crust hand-tossed and wood-fired. Extra cheese, garlic parmesan, ranch on the side. Meatball buffalo chicken, bacon ricotta, pineapple ham (yes, pineapple). Deep dish stuffed crust, sausage and onions, roasted red peppers, black olives, banana peppers. Fresh basil, burrata, San Marzano tomatoes, olive oil drizzle. Slice by the slice, whole pie, family size, large with everything. Pesto white pie, spinach mushroom, four cheese, buffalo mozzarella. Crispy edges, bubbly cheese, chewy crust, charred bottom. NY style fold, Detroit square, Neapolitan blister, Sicilian thick. Delivery in thirty minutes, dine in, carry out, late night slice. Anchovies for the brave, jalapenos for the bold, extra sauce for the wise. ';
+
 const container = document.getElementById('text');
-const box = document.getElementById('box');
 const fun = document.getElementById('fun');
-let prepared = [];
+let lorem = [];
+let pizza = null;
 let on = false;
 
-function render() {
+function lineEl(text) {
+  const el = document.createElement('div');
+  el.className = 'line';
+  el.style.height = LINE_HEIGHT + 'px';
+  el.style.lineHeight = LINE_HEIGHT + 'px';
+  for (const ch of text) {
+    const s = document.createElement('span');
+    s.className = 'c';
+    s.textContent = ch;
+    el.appendChild(s);
+  }
+  return el;
+}
+
+// 로렘 입숨: 왼끝맞춤 문단
+function renderLorem() {
   const width = container.clientWidth;
+  container.className = '';
   container.textContent = '';
-  prepared.forEach((p, i) => {
+  lorem.forEach((p, i) => {
     const { lines } = layoutWithLines(p, width, LINE_HEIGHT);
-    for (const line of lines) {
-      const el = document.createElement('div');
-      el.className = 'line';
-      el.style.height = LINE_HEIGHT + 'px';
-      el.style.lineHeight = LINE_HEIGHT + 'px';
-      // 글자마다 span — 빨려드는 애니메이션의 단위
-      for (const ch of line.text) {
-        const s = document.createElement('span');
-        s.className = 'c';
-        s.textContent = ch;
-        el.appendChild(s);
-      }
-      container.appendChild(el);
-    }
-    if (i < prepared.length - 1) {
-      const gap = document.createElement('div');
-      gap.style.height = LINE_HEIGHT + 'px';
-      container.appendChild(gap);
-    }
+    for (const line of lines) container.appendChild(lineEl(line.text));
+    if (i < lorem.length - 1) container.appendChild(lineEl(''));
   });
-  if (on) hideAll();
+}
+
+// 피자 입숨: 원 안을 줄 단위로 채운다. 줄의 폭 = 그 높이에서 원의 현(chord) 길이
+function renderPizza() {
+  const width = container.clientWidth;
+  const D = Math.min(width, innerHeight - BUTTON_ZONE);
+  const R = D / 2;
+  container.className = 'pizza';
+  container.textContent = '';
+  const n = Math.floor(D / LINE_HEIGHT);
+  const top = (D - n * LINE_HEIGHT) / 2;
+  let cursor = { segmentIndex: 0, graphemeIndex: 0 };
+  for (let i = 0; i < n; i++) {
+    // 줄의 위·아래 가장자리 중 원 중심에서 먼 쪽 기준으로 현을 재야 글자가 원 밖으로 안 나간다
+    const edge = Math.abs(top + i * LINE_HEIGHT + LINE_HEIGHT / 2 - R) + LINE_HEIGHT / 2;
+    const chord = edge >= R ? 0 : 2 * Math.sqrt(R * R - edge * edge);
+    if (chord < MIN_CHORD) { container.appendChild(lineEl('')); continue; }
+    let line = layoutNextLine(pizza, cursor, chord);
+    if (!line) { cursor = { segmentIndex: 0, graphemeIndex: 0 }; line = layoutNextLine(pizza, cursor, chord); }
+    cursor = line.end;
+    const el = lineEl(line.text.trim());
+    el.style.width = chord + 'px';
+    if (el.childElementCount < 3) el.classList.add('narrow');
+    container.appendChild(el);
+  }
 }
 
 function chars() { return [...container.querySelectorAll('.c')]; }
 
-function hideAll() {
-  for (const c of chars()) { c.style.transition = 'none'; c.style.opacity = '0'; }
-}
-
-function suckIn() {
-  const b = box.getBoundingClientRect();
-  const mx = b.left + b.width * MOUTH.x;
-  const my = b.top + b.height * MOUTH.y;
-  const cs = chars();
-  let maxDist = 1;
-  const moves = cs.map(c => {
-    const r = c.getBoundingClientRect();
-    const dx = mx - (r.left + r.width / 2);
-    const dy = my - (r.top + r.height / 2);
-    const dist = Math.hypot(dx, dy);
-    if (dist > maxDist) maxDist = dist;
-    return { c, dx, dy, dist };
-  });
-  let last = 0;
-  for (const { c, dx, dy, dist } of moves) {
-    // 상자에 가까운 글자부터, 약간의 무작위를 섞어 순서대로 빨려든다
-    const delay = (dist / maxDist) * SUCK.maxDelay + Math.random() * SUCK.jitter;
-    const spin = (Math.random() * 2 - 1) * 720;
-    last = Math.max(last, delay + SUCK.duration);
-    c.style.transition = `transform ${SUCK.duration}ms cubic-bezier(0.5, 0, 1, 0.4) ${delay}ms, opacity ${SUCK.duration * 0.3}ms ease-in ${delay + SUCK.duration * 0.7}ms`;
-    c.style.transform = `translate(${dx}px, ${dy}px) rotate(${spin}deg) scale(0.05)`;
+// 현재 글자들을 흩어지듯 지우고, 끝나면 next()를 실행
+function fadeOut(next) {
+  for (const c of chars()) {
+    const delay = Math.random() * (SWAP.out - 150);
+    c.style.transition = `transform 150ms ease-in ${delay}ms, opacity 150ms ease-in ${delay}ms`;
+    c.style.transform = 'scale(0)';
     c.style.opacity = '0';
   }
-  box.classList.add('eating');
-  setTimeout(() => box.classList.remove('eating'), last);
+  setTimeout(next, SWAP.out);
 }
 
-function spitOut() {
-  for (const c of chars()) {
-    const delay = Math.random() * 400;
-    c.style.transition = `transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms, opacity 200ms ease-out ${delay}ms`;
-    c.style.transform = 'none';
-    c.style.opacity = '1';
-  }
+// 새 글자들을 화면 중심에서 바깥 순서로 튀어나오게
+function growIn() {
+  const cs = chars();
+  const cx = innerWidth / 2, cy = innerHeight / 2;
+  let maxDist = 1;
+  const d = cs.map(c => {
+    const r = c.getBoundingClientRect();
+    const dist = Math.hypot(r.left + r.width / 2 - cx, r.top + r.height / 2 - cy);
+    if (dist > maxDist) maxDist = dist;
+    return dist;
+  });
+  cs.forEach(c => { c.style.transition = 'none'; c.style.transform = 'scale(0)'; c.style.opacity = '0'; });
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    cs.forEach((c, i) => {
+      const delay = (d[i] / maxDist) * SWAP.grow;
+      c.style.transition = `transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms, opacity 150ms ease-out ${delay}ms`;
+      c.style.transform = 'none';
+      c.style.opacity = '1';
+    });
+  }));
 }
 
 fun.addEventListener('click', () => {
   on = !on;
   fun.setAttribute('aria-pressed', String(on));
-  box.classList.toggle('on', on);
-  if (on) suckIn(); else spitOut();
+  fadeOut(() => { (on ? renderPizza : renderLorem)(); growIn(); });
 });
 
 await document.fonts.load(FONT);
-prepared = PARAS.map(t => prepareWithSegments(t, FONT));
-render();
+lorem = LOREM.map(t => prepareWithSegments(t, FONT));
+pizza = prepareWithSegments(PIZZA.repeat(8), FONT);
+renderLorem();
 let t;
-addEventListener('resize', () => { clearTimeout(t); t = setTimeout(render, 100); });
+addEventListener('resize', () => { clearTimeout(t); t = setTimeout(on ? renderPizza : renderLorem, 100); });
 </script>
 </body>
 </html>
