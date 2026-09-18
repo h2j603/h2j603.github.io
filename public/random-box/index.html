@@ -20,9 +20,9 @@
   font-display: swap;
 }
 @font-face {
-  font-family: "Suisse Intl";
-  src: url("fonts/SuisseIntl-Bold.woff2") format("woff2");
-  font-weight: 700;
+  font-family: "Suisse Intl Condensed";
+  src: url("fonts/SuisseIntlCond-Medium.woff2") format("woff2");
+  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
@@ -46,8 +46,8 @@ body { margin: 0; padding: 1rem; }
 
 /* 제목 */
 #title {
-  font-family: "Suisse Intl", sans-serif;
-  font-weight: 700;
+  font-family: "Suisse Intl Condensed", "Suisse Intl", sans-serif;
+  font-weight: 500;
   font-size: 9vw;            /* JS가 화면 폭에 딱 맞게 덮어쓴다 (fitTitle) */
   line-height: 1;
   text-align: left;          /* 크기 모핑 중 왼끝이 고정되게. 다 자라면 어차피 폭을 꽉 채운다 */
@@ -59,6 +59,7 @@ body { margin: 0; padding: 1rem; }
   visibility: hidden;        /* 폰트가 오기 전엔 안 보인다. 인트로가 켠다 */
 }
 #title span { display: inline-block; }   /* 글자 폭 측정용 */
+#title > span { transform-origin: left bottom; will-change: transform; }   /* 크기 모핑은 글자 재배치 대신 transform으로 (아이폰에서 안 떨린다) */
 
 /* 제목의 빈칸 = 입력칸. 실선 하나가 빈칸이고, 단어가 들어와도 실선은 남는다.
    높이를 줄 상자(1em)와 같게 맞춰 비었을 때와 찼을 때 선 위치가 같다 */
@@ -597,18 +598,21 @@ async function loadNote() {
 
 // ───────── 제목: 화면 폭에 딱 맞게 ─────────
 // 100px로 놓고 글자 폭을 잰 뒤, 컨테이너 폭과의 비율만큼 키운다 (letter-spacing이 em 단위라 비율이 정확히 맞는다)
-const TITLE_FONT = 'bold 100px "Suisse Intl"';
-// 크기가 바뀔 때(모드 전환·인트로)는 지금 크기에서 새 크기로 모핑한다. 타자 중엔 즉시
+const TITLE_FONT = '500 100px "Suisse Intl Condensed"';
+// 크기가 바뀔 때(모드 전환·인트로)는 지금 크기에서 새 크기로 모핑한다. 타자 중엔 즉시.
+// 글꼴 크기는 즉시 새 값으로 두고, 겉보기 크기만 transform scale로 옛 크기→1 로 움직인다 (글자 재배치 없음)
 const EASE = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
-let titleAnim = null;
+const inner = title.firstElementChild;
+let titleAnim = null, titleSize = 0;   // 현재 글꼴 크기(px)
 function fitTitle(animate = false, opts = { duration: 600, easing: EASE }) {
-  const from = getComputedStyle(title).fontSize;
+  const scaleNow = titleAnim ? new DOMMatrix(getComputedStyle(inner).transform).a : 1;   // 진행 중이면 그 시점 배율에서 이어간다
   titleAnim?.cancel();
+  const fromPx = titleSize * scaleNow;
   title.style.fontSize = '100px';
-  const textW = title.firstElementChild.getBoundingClientRect().width;
-  const to = (100 * title.clientWidth / textW).toFixed(2) + 'px';
-  title.style.fontSize = to;
-  if (animate && from !== to) titleAnim = title.animate([{ fontSize: from }, { fontSize: to }], opts);
+  const textW = inner.getBoundingClientRect().width;
+  titleSize = 100 * title.clientWidth / textW;
+  title.style.fontSize = titleSize.toFixed(2) + 'px';
+  if (animate && fromPx) titleAnim = inner.animate([{ transform: `scale(${fromPx / titleSize})` }, { transform: 'none' }], opts);
 }
 
 const noteReady = loadNote();
