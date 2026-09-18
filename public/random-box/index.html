@@ -19,6 +19,13 @@
   font-style: normal;
   font-display: swap;
 }
+@font-face {
+  font-family: "Suisse Intl Mono";
+  src: url("fonts/SuisseIntlMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 html { font-family: "Suisse Intl", sans-serif; -webkit-text-size-adjust: 100%; }
 body { margin: 0; padding: 1rem; }
 #text { font-size: 16px; position: relative; }
@@ -32,53 +39,55 @@ body { margin: 0; padding: 1rem; }
 #text.shape .line.g { font-weight: 700; color: var(--g); }   /* 초록 채널: 줄 단위 볼드(검정) */
 #text.shape .c.b { color: var(--b); font-weight: 700; }      /* 파랑 채널: 글자 단위 lawngreen */
 
-/* 버튼: 화면 중앙 하단 고정 */
-#fun {
-  position: fixed;
-  left: 50%;
-  bottom: 1rem;
-  translate: -50% 0;
-  z-index: 100;
+/* 제목 */
+#title {
+  font-family: "Suisse Intl Mono", monospace;
+  font-weight: 400;
+  font-size: clamp(40px, 9vw, 112px);
+  line-height: 1;
+  text-align: center;
+  margin: 1.5rem 0 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+/* 네비: 모드별 버튼 */
+#modes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0 0 2rem;
+}
+#modes button {
   font: inherit;
   font-size: 16px;
   font-weight: 700;
   text-transform: uppercase;
   color: #000;
-  background: lawngreen;
+  background: #d4d4d4;
   border: 0;
   border-radius: 999px;
   padding: 0.6em 1.4em;
   margin: 0;
   cursor: pointer;
   box-shadow: 0 0 0 0 rgba(124, 252, 0, 0);
-  transition: box-shadow 0.35s ease, transform 0.12s ease, filter 0.2s ease;
+  transition: box-shadow 0.35s ease, transform 0.12s ease, background 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 }
-#fun:hover {
+#modes button:hover {
   transform: scale(1.06);
   box-shadow: 0 0 24px 6px rgba(124, 252, 0, 0.75), 0 0 64px 20px rgba(124, 252, 0, 0.35);
 }
-#fun:active {
-  transform: scale(0.95);
-  filter: brightness(0.9);
-  box-shadow: 0 0 12px 2px rgba(124, 252, 0, 0.6);
-}
-#fun:focus-visible {
-  outline: 2px solid #000;
-  outline-offset: 3px;
-}
-/* 켜짐: 글로우가 더 넓고 진하게 퍼진다 */
-#fun[aria-pressed="true"] {
-  box-shadow: 0 0 32px 12px rgba(124, 252, 0, 0.85), 0 0 110px 44px rgba(124, 252, 0, 0.45);
-}
-#fun[aria-pressed="true"]:hover {
-  box-shadow: 0 0 40px 16px rgba(124, 252, 0, 0.9), 0 0 160px 64px rgba(124, 252, 0, 0.5);
-}
+#modes button:active { transform: scale(0.95); }
+#modes button:focus-visible { outline: 2px solid #000; outline-offset: 3px; }
+/* 켜짐 = lawngreen 바탕 (이전의 기본 상태) */
+#modes button[aria-pressed="true"] { background: lawngreen; }
 </style>
 </head>
 <body>
+<h1 id="title">Lorem Ipsum with</h1>
+<nav id="modes" aria-label="ipsum modes"></nav>
 <div id="text"></div>
-<button id="fun" type="button" aria-pressed="false">fun mode!</button>
 
 <script type="module">
 import { prepareWithSegments, layoutWithLines, layoutNextLine } from './lib/pretext.js';
@@ -87,7 +96,7 @@ const FONT_SIZE = 16;
 const LINE_HEIGHT = 22;
 const FONT = `${FONT_SIZE}px "Suisse Intl"`;
 const FONT_BOLD = `bold ${FONT_SIZE}px "Suisse Intl"`;
-const BUTTON_ZONE = 120;   // 모양 높이를 정할 때 버튼 자리로 비워둘 높이(px)
+const BOTTOM_GAP = 24;     // 모양 아래로 비워둘 높이(px)
 const MIN_RUN = 2;         // 이보다 좁은 구간(글자 폭 배수)엔 글자를 넣지 않는다
 const SHAPE_FONT = { min: 10, max: 16, per: 1 / 34 };  // 글자 크기 = 짧은 변/34, 10~16px 사이
 const SWAP = { out: 350, grow: 700 };  // 전환 애니메이션(ms)
@@ -209,7 +218,7 @@ const THEMES = [
 function circle(ctx, x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
 
 const container = document.getElementById('text');
-const fun = document.getElementById('fun');
+const nav = document.getElementById('modes');
 let lorem = [];
 let on = false;
 let theme = null;
@@ -275,7 +284,8 @@ function preparedFor(t, size, bold) {
 
 function renderShape(t) {
   const width = container.clientWidth;
-  const W = Math.ceil(Math.min(width, (innerHeight - BUTTON_ZONE) * t.aspect));
+  const avail = Math.max(240, innerHeight - container.getBoundingClientRect().top - BOTTOM_GAP);
+  const W = Math.ceil(Math.min(width, avail * t.aspect));
   const H = Math.ceil(W / t.aspect);
   const size = Math.round(Math.min(SHAPE_FONT.max, Math.max(SHAPE_FONT.min, Math.min(W, H) * SHAPE_FONT.per)));
   const lh = Math.round(size * 1.35);
@@ -360,22 +370,23 @@ function growIn() {
   }));
 }
 
-// 직전과 다른 테마를 무작위로 고른다
-function pickTheme() {
-  const forced = THEMES.find(t => t.name === new URLSearchParams(location.search).get('theme'));
-  if (forced) return forced;   // ?theme=cat 처럼 URL로 고정 (확인용)
-  const pool = THEMES.filter(t => t !== theme);
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
 const render = () => on ? renderShape(theme) : renderLorem();
 
-fun.addEventListener('click', () => {
-  on = !on;
-  if (on) theme = pickTheme();
-  fun.setAttribute('aria-pressed', String(on));
-  fadeOut(() => { render(); growIn(); });
-});
+// 네비: 테마마다 버튼 하나. 켜진 버튼을 다시 누르면 로렘으로 돌아간다
+for (const t of THEMES) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = t.name;
+  b.setAttribute('aria-pressed', 'false');
+  b.addEventListener('click', () => {
+    const off = on && theme === t;
+    on = !off;
+    theme = off ? null : t;
+    for (const x of nav.children) x.setAttribute('aria-pressed', String(x === b && on));
+    fadeOut(() => { render(); growIn(); });
+  });
+  nav.appendChild(b);
+}
 
 await Promise.all([document.fonts.load(FONT), document.fonts.load(FONT_BOLD)]);
 lorem = LOREM.map(t => prepareWithSegments(t, FONT));
