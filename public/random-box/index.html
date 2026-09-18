@@ -36,13 +36,15 @@ body { margin: 0; padding: 1rem; }
 #title {
   font-family: "Suisse Intl Condensed", "Suisse Intl", sans-serif;
   font-weight: 400;
-  font-size: clamp(40px, 9vw, 112px);
+  font-size: 9vw;            /* JS가 화면 폭에 딱 맞게 덮어쓴다 (fitTitle) */
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
+  white-space: nowrap;
   margin: 1.5rem 0 1.25rem;
   letter-spacing: -0.01em;
 }
+#title span { display: inline-block; }   /* 글자 폭 측정용 */
 
 /* 네비: 모드별 버튼. 화면 위에 고정(sticky) */
 #modes {
@@ -93,7 +95,7 @@ body { margin: 0; padding: 1rem; }
 </style>
 </head>
 <body>
-<h1 id="title">Lorem Ipsum with</h1>
+<h1 id="title"><span>Lorem Ipsum with</span></h1>
 <nav id="modes" aria-label="ipsum modes"></nav>
 <div id="text"></div>
 
@@ -465,15 +467,26 @@ async function loadNote() {
   finally { clearTimeout(timer); }
 }
 
-const [PARAS] = await Promise.all([loadNote(), document.fonts.load(FONT)]);
+// ───────── 제목: 화면 폭에 딱 맞게 ─────────
+// 100px로 놓고 글자 폭을 잰 뒤, 컨테이너 폭과의 비율만큼 키운다 (letter-spacing이 em 단위라 비율이 정확히 맞는다)
+const title = document.getElementById('title');
+const TITLE_FONT = '100px "Suisse Intl Condensed"';
+function fitTitle() {
+  title.style.fontSize = '100px';
+  const textW = title.firstElementChild.getBoundingClientRect().width;
+  title.style.fontSize = (100 * title.clientWidth / textW).toFixed(2) + 'px';
+}
+
+const [PARAS] = await Promise.all([loadNote(), document.fonts.load(FONT), document.fonts.load(TITLE_FONT)]);
 BODY = PARAS.join(' ') + ' ';
 lorem = PARAS.map(t => prepareWithSegments(t, FONT, { wordBreak: 'keep-all' }));
+fitTitle();     // 제목 높이가 본문 시작 위치를 정하므로 렌더보다 먼저
 renderLorem();
 let t, lastW = innerWidth;
 addEventListener('resize', () => {
   if (innerWidth === lastW) return;   // iOS 주소창 접힘(세로만 변함)은 무시
   lastW = innerWidth;
-  clearTimeout(t); t = setTimeout(render, 150);
+  clearTimeout(t); t = setTimeout(() => { fitTitle(); render(); }, 150);
 });
 </script>
 </body>
