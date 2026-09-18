@@ -46,15 +46,18 @@ body { margin: 0; padding: 1rem; }
 
 /* 네비: 모드별 버튼. 화면 위에 고정(sticky) */
 #modes {
+  /* 가로 스크롤 상자는 세로도 잘라내므로, 글로우가 잘리지 않게 위아래로 --glow만큼 투명 여백을 두고 마진으로 상쇄한다 */
+  --glow: 80px;
+  --row: calc(32px + 0.8rem);   /* 버튼 높이 + 안쪽 여백 */
   position: sticky;
-  top: 0;
+  top: calc(-1 * var(--glow));
   z-index: 10;
   display: flex;
   flex-wrap: nowrap;
   gap: 0.4rem;
-  margin: 0 -1rem 2rem;      /* body 여백을 상쇄해 가장자리까지 스크롤 */
-  padding: 0.6rem 1rem;
-  background: #fff;
+  margin: calc(-1 * var(--glow)) -1rem calc(2rem - var(--glow));   /* 좌우: body 여백 상쇄 */
+  padding: calc(var(--glow) + 0.4rem) 1rem calc(var(--glow) + 0.4rem);
+  background: linear-gradient(#fff, #fff) 0 var(--glow) / 100% var(--row) no-repeat;   /* 흰 띠는 버튼 줄에만 */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
