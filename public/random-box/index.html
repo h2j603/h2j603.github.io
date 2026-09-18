@@ -20,9 +20,9 @@
   font-display: swap;
 }
 @font-face {
-  font-family: "Suisse Intl Condensed";
-  src: url("fonts/SuisseIntlCond-Medium.woff2") format("woff2");
-  font-weight: 500;
+  font-family: "Suisse Intl";
+  src: url("fonts/SuisseIntl-Bold.woff2") format("woff2");
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -46,11 +46,12 @@ body { margin: 0; padding: 1rem; }
 
 /* 제목 */
 #title {
-  font-family: "Suisse Intl Condensed", "Suisse Intl", sans-serif;
-  font-weight: 500;
+  font-family: "Suisse Intl", sans-serif;
+  font-weight: 700;
   font-size: 9vw;            /* JS가 화면 폭에 딱 맞게 덮어쓴다 (fitTitle) */
   line-height: 1;
-  text-align: center;
+  text-align: left;          /* 크기 모핑 중 왼끝이 고정되게. 다 자라면 어차피 폭을 꽉 채운다 */
+  display: flex; align-items: flex-end;   /* 높이는 JS가 고정(인트로 끝 크기). 크기가 바뀌어도 아래 내용이 안 밀린다 */
   text-transform: uppercase;
   white-space: nowrap;
   margin: 1.5rem 0 1.25rem;
@@ -111,7 +112,7 @@ body { margin: 0; padding: 1rem; }
 }
 #modes button:hover {
   transform: scale(1.06);
-  box-shadow: 0 0 20px 5px color-mix(in oklch, var(--c) 75%, transparent), 0 0 56px 16px color-mix(in oklch, var(--c) 35%, transparent);
+  box-shadow: 0 0 12px 2px color-mix(in oklch, var(--c) 40%, transparent), 0 0 28px 6px color-mix(in oklch, var(--c) 15%, transparent);   /* 은은하게 */
 }
 #modes button:active { transform: scale(0.95); }
 #modes button:focus-visible { outline: 2px solid #000; outline-offset: 3px; }
@@ -596,7 +597,7 @@ async function loadNote() {
 
 // ───────── 제목: 화면 폭에 딱 맞게 ─────────
 // 100px로 놓고 글자 폭을 잰 뒤, 컨테이너 폭과의 비율만큼 키운다 (letter-spacing이 em 단위라 비율이 정확히 맞는다)
-const TITLE_FONT = '500 100px "Suisse Intl Condensed"';
+const TITLE_FONT = 'bold 100px "Suisse Intl"';
 // 크기가 바뀔 때(모드 전환·인트로)는 지금 크기에서 새 크기로 모핑한다. 타자 중엔 즉시
 const EASE = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
 let titleAnim = null;
@@ -619,6 +620,7 @@ title.style.visibility = 'visible';
 blank.style.width = '';
 const INTRO = { duration: 700, delay: 450, easing: EASE, fill: 'backwards' };
 fitTitle(true, INTRO);
+title.style.height = title.style.fontSize;   // 제목 높이 고정 = 빈칸 상태의 크기. 이후 크기 모핑은 이 상자 안에서만 일어난다
 blank.animate([{ width: '0em' }, { width: '2.4em' }], INTRO);
 const PARAS = await noteReady;
 BODY = PARAS.join(' ') + ' ';
@@ -628,7 +630,7 @@ let t, lastW = innerWidth;
 addEventListener('resize', () => {
   if (innerWidth === lastW) return;   // iOS 주소창 접힘(세로만 변함)은 무시
   lastW = innerWidth;
-  clearTimeout(t); t = setTimeout(() => { fitTitle(); render(); }, 150);
+  clearTimeout(t); t = setTimeout(() => { fitTitle(); if (!on && !blank.textContent) title.style.height = title.style.fontSize; render(); }, 150);
 });
 </script>
 </body>
