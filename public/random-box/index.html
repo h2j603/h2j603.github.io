@@ -23,7 +23,8 @@ html { font-family: "Suisse Intl Condensed", sans-serif; -webkit-text-size-adjus
 body { margin: 0; padding: 1rem; }
 #text { font-size: 16px; position: relative; }
 #text .line { white-space: pre; }
-#text .c { display: inline-block; will-change: transform, opacity; }
+#text .c { display: inline-block; }
+#text .line { transform-origin: center; }
 
 /* 모양 모드: 줄 조각(run)을 실루엣 안의 정확한 위치·폭에 절대배치, 글자를 양끝으로 고르게 벌린다 */
 #text.shape .line { position: absolute; display: flex; justify-content: space-between; }
@@ -317,11 +318,12 @@ function renderShape(t) {
   }
 }
 
-function chars() { return [...container.querySelectorAll('.c')]; }
+// 애니메이션은 줄 단위로 건다 — 글자 단위(2천 개)는 폰에서 렉이 걸린다
+function lines() { return [...container.querySelectorAll('.line')]; }
 
-// 현재 글자들을 흩어지듯 지우고, 끝나면 next()를 실행
+// 현재 줄들을 흩어지듯 지우고, 끝나면 next()를 실행
 function fadeOut(next) {
-  for (const c of chars()) {
+  for (const c of lines()) {
     const delay = Math.random() * (SWAP.out - 150);
     c.style.transition = `transform 150ms ease-in ${delay}ms, opacity 150ms ease-in ${delay}ms`;
     c.style.transform = 'scale(0)';
@@ -330,9 +332,9 @@ function fadeOut(next) {
   setTimeout(next, SWAP.out);
 }
 
-// 새 글자들을 화면 중심에서 바깥 순서로 튀어나오게
+// 새 줄들을 화면 중심에서 바깥 순서로 튀어나오게
 function growIn() {
-  const cs = chars();
+  const cs = lines();
   const cx = innerWidth / 2, cy = innerHeight / 2;
   let maxDist = 1;
   const d = cs.map(c => {
@@ -372,8 +374,12 @@ fun.addEventListener('click', () => {
 await Promise.all([document.fonts.load(FONT), document.fonts.load(FONT_BOLD)]);
 lorem = LOREM.map(t => prepareWithSegments(t, FONT));
 renderLorem();
-let t;
-addEventListener('resize', () => { clearTimeout(t); t = setTimeout(render, 100); });
+let t, lastW = innerWidth;
+addEventListener('resize', () => {
+  if (innerWidth === lastW) return;   // iOS 주소창 접힘(세로만 변함)은 무시
+  lastW = innerWidth;
+  clearTimeout(t); t = setTimeout(render, 150);
+});
 </script>
 </body>
 </html>
