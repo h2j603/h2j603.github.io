@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>random box</title>
+<style>
+@font-face {
+  font-family: "Suisse Intl Condensed";
+  src: url("fonts/SuisseIntlCond-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Suisse Intl Condensed";
+  src: url("fonts/SuisseIntlCond-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+html { font-family: "Suisse Intl Condensed", sans-serif; -webkit-text-size-adjust: 100%; }
+body { margin: 0; padding: 1rem; }
+#text { font-size: 16px; }
+#text .line { white-space: pre; }
+#text .c { display: inline-block; will-change: transform, opacity; }
+
+/* 상자: 버튼 위 중앙에 숨어 있다가 fun mode에서 튀어나온다 */
+#box {
+  position: fixed;
+  left: 50%;
+  bottom: 5rem;
+  translate: -50% 0;
+  width: min(60vw, 320px);
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(40px) scale(0.6);
+  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#box.on { opacity: 1; transform: none; }
+#box.on.eating { animation: wobble 0.5s ease-in-out infinite; }
+@keyframes wobble {
+  0%, 100% { transform: rotate(-1.5deg) scale(1); }
+  50%      { transform: rotate(1.5deg) scale(1.03); }
+}
+
+/* 버튼: 화면 중앙 하단 고정 */
+#fun {
+  position: fixed;
+  left: 50%;
+  bottom: 1rem;
+  translate: -50% 0;
+  z-index: 100;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #000;
+  background: lawngreen;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.6em 1.4em;
+  margin: 0;
+  cursor: pointer;
+  box-shadow: 0 0 0 0 rgba(124, 252, 0, 0);
+  transition: box-shadow 0.35s ease, transform 0.12s ease, filter 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+#fun:hover {
+  box-shadow: 0 0 24px 6px rgba(124, 252, 0, 0.75), 0 0 64px 20px rgba(124, 252, 0, 0.35);
+}
+#fun:active {
+  transform: scale(0.95);
+  filter: brightness(0.9);
+  box-shadow: 0 0 12px 2px rgba(124, 252, 0, 0.6);
+}
+#fun:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: 3px;
+}
+#fun[aria-pressed="true"] {
+  background: #000;
+  color: lawngreen;
+  box-shadow: 0 0 24px 6px rgba(124, 252, 0, 0.75);
+}
+</style>
+</head>
+<body>
+<div id="text"></div>
+<img id="box" src="img/box.png" alt="">
+<button id="fun" type="button" aria-pressed="false">fun mode!</button>
+
+<script type="module">
+import { prepareWithSegments, layoutWithLines } from './lib/pretext.js';
+
+const FONT_SIZE = 16;
+const LINE_HEIGHT = 22;
+const FONT = `${FONT_SIZE}px "Suisse Intl Condensed"`;
+
+// 상자 입구 위치 (이미지 폭·높이에 대한 비율)
+const MOUTH = { x: 0.33, y: 0.18 };
+// 빨려드는 애니메이션
+const SUCK = { duration: 900, maxDelay: 1400, jitter: 300 };
+
+const PARAS = [
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+  'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.',
+  'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.',
+];
+
+const container = document.getElementById('text');
+const box = document.getElementById('box');
+const fun = document.getElementById('fun');
+let prepared = [];
+let on = false;
+
+function render() {
+  const width = container.clientWidth;
+  container.textContent = '';
+  prepared.forEach((p, i) => {
+    const { lines } = layoutWithLines(p, width, LINE_HEIGHT);
+    for (const line of lines) {
+      const el = document.createElement('div');
+      el.className = 'line';
+      el.style.height = LINE_HEIGHT + 'px';
+      el.style.lineHeight = LINE_HEIGHT + 'px';
+      // 글자마다 span — 빨려드는 애니메이션의 단위
+      for (const ch of line.text) {
+        const s = document.createElement('span');
+        s.className = 'c';
+        s.textContent = ch;
+        el.appendChild(s);
+      }
+      container.appendChild(el);
+    }
+    if (i < prepared.length - 1) {
+      const gap = document.createElement('div');
+      gap.style.height = LINE_HEIGHT + 'px';
+      container.appendChild(gap);
+    }
+  });
+  if (on) hideAll();
+}
+
+function chars() { return [...container.querySelectorAll('.c')]; }
+
+function hideAll() {
+  for (const c of chars()) { c.style.transition = 'none'; c.style.opacity = '0'; }
+}
+
+function suckIn() {
+  const b = box.getBoundingClientRect();
+  const mx = b.left + b.width * MOUTH.x;
+  const my = b.top + b.height * MOUTH.y;
+  const cs = chars();
+  let maxDist = 1;
+  const moves = cs.map(c => {
+    const r = c.getBoundingClientRect();
+    const dx = mx - (r.left + r.width / 2);
+    const dy = my - (r.top + r.height / 2);
+    const dist = Math.hypot(dx, dy);
+    if (dist > maxDist) maxDist = dist;
+    return { c, dx, dy, dist };
+  });
+  let last = 0;
+  for (const { c, dx, dy, dist } of moves) {
+    // 상자에 가까운 글자부터, 약간의 무작위를 섞어 순서대로 빨려든다
+    const delay = (dist / maxDist) * SUCK.maxDelay + Math.random() * SUCK.jitter;
+    const spin = (Math.random() * 2 - 1) * 720;
+    last = Math.max(last, delay + SUCK.duration);
+    c.style.transition = `transform ${SUCK.duration}ms cubic-bezier(0.5, 0, 1, 0.4) ${delay}ms, opacity ${SUCK.duration * 0.3}ms ease-in ${delay + SUCK.duration * 0.7}ms`;
+    c.style.transform = `translate(${dx}px, ${dy}px) rotate(${spin}deg) scale(0.05)`;
+    c.style.opacity = '0';
+  }
+  box.classList.add('eating');
+  setTimeout(() => box.classList.remove('eating'), last);
+}
+
+function spitOut() {
+  for (const c of chars()) {
+    const delay = Math.random() * 400;
+    c.style.transition = `transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms, opacity 200ms ease-out ${delay}ms`;
+    c.style.transform = 'none';
+    c.style.opacity = '1';
+  }
+}
+
+fun.addEventListener('click', () => {
+  on = !on;
+  fun.setAttribute('aria-pressed', String(on));
+  box.classList.toggle('on', on);
+  if (on) suckIn(); else spitOut();
+});
+
+await document.fonts.load(FONT);
+prepared = PARAS.map(t => prepareWithSegments(t, FONT));
+render();
+let t;
+addEventListener('resize', () => { clearTimeout(t); t = setTimeout(render, 100); });
+</script>
+</body>
+</html>
