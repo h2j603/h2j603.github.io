@@ -29,8 +29,8 @@ body { margin: 0; padding: 1rem; }
 /* 모양 모드: 줄 조각(run)을 실루엣 안의 정확한 위치·폭에 절대배치, 글자를 양끝으로 고르게 벌린다 */
 #text.shape .line { position: absolute; display: flex; justify-content: space-between; }
 #text.shape .line.narrow { justify-content: center; }
-#text.shape .line.g { font-weight: 700; color: var(--g); }   /* 초록 채널: 줄 단위 볼드 */
-#text.shape .c.b { color: var(--b); font-weight: 700; }      /* 파랑 채널: 글자 단위 색 */
+#text.shape .line.g { font-weight: 700; color: var(--g); }   /* 초록 채널: 줄 단위 볼드(검정) */
+#text.shape .c.b { color: var(--b); font-weight: 700; }      /* 파랑 채널: 글자 단위 lawngreen */
 
 /* 버튼: 화면 중앙 하단 고정 */
 #fun {
@@ -55,6 +55,7 @@ body { margin: 0; padding: 1rem; }
   -webkit-tap-highlight-color: transparent;
 }
 #fun:hover {
+  transform: scale(1.06);
   box-shadow: 0 0 24px 6px rgba(124, 252, 0, 0.75), 0 0 64px 20px rgba(124, 252, 0, 0.35);
 }
 #fun:active {
@@ -67,9 +68,10 @@ body { margin: 0; padding: 1rem; }
   outline-offset: 3px;
 }
 #fun[aria-pressed="true"] {
-  background: #000;
-  color: lawngreen;
-  box-shadow: 0 0 24px 6px rgba(124, 252, 0, 0.75);
+  box-shadow: 0 0 0 3px #000, 0 0 24px 9px rgba(124, 252, 0, 0.75);
+}
+#fun[aria-pressed="true"]:hover {
+  box-shadow: 0 0 0 3px #000, 0 0 24px 9px rgba(124, 252, 0, 0.75), 0 0 64px 24px rgba(124, 252, 0, 0.35);
 }
 </style>
 </head>
@@ -101,7 +103,7 @@ const LOREM = [
 // aspect = W/H, body = 본문 글자색
 const THEMES = [
   {
-    name: 'pizza', aspect: 1, body: '#000', g: '#b5702c', b: '#d2331f',
+    name: 'pizza', aspect: 1, body: '#000', g: '#000', b: 'lawngreen',
     text: 'Pizza ipsum dolor amet. Pepperoni mozzarella marinara, thin crust hand-tossed and wood-fired. Extra cheese, garlic parmesan, ranch on the side. Meatball buffalo chicken, bacon ricotta, pineapple ham (yes, pineapple). Deep dish stuffed crust, sausage and onions, roasted red peppers, black olives, banana peppers. Fresh basil, burrata, San Marzano tomatoes, olive oil drizzle. Slice by the slice, whole pie, family size, large with everything. Pesto white pie, spinach mushroom, four cheese, buffalo mozzarella. Crispy edges, bubbly cheese, chewy crust, charred bottom. NY style fold, Detroit square, Neapolitan blister, Sicilian thick. Delivery in thirty minutes, dine in, carry out, late night slice. Anchovies for the brave, jalapenos for the bold, extra sauce for the wise. ',
     draw(ctx, W, H) {
       // 60° 조각: 꼭짓점이 아래, 둥근 크러스트가 위
@@ -119,7 +121,7 @@ const THEMES = [
     },
   },
   {
-    name: 'bacon', aspect: 1.45, body: '#a8352e', g: '#d9a066', b: '#a8352e',
+    name: 'bacon', aspect: 1.45, body: '#000', g: '#000', b: 'lawngreen',
     text: 'Bacon ipsum dolor amet pork belly short ribs brisket, pancetta jowl tenderloin ham hock. Chuck ribeye flank, sausage strip steak cupim leberkas. Andouille bresaola kielbasa, pork loin turducken shoulder pastrami. Frankfurter t-bone salami, capicola meatloaf beef ribs. Prosciutto shankle drumstick, ball tip landjaeger sirloin picanha. Smoked, cured, crispy, thick cut, maple glazed, applewood, streaky, back bacon. Fatback pig corned beef, tri-tip hamburger porchetta rump. Spare ribs chislic meatball, buffalo doner biltong venison. Alcatra boudin pork chop, ground round burgdoggen ham. Sizzle in the pan, wrap it around anything, bacon makes it better. ',
     draw(ctx, W, H) {
       // 물결치는 띠 + 지방 줄 두 개(볼드)
@@ -136,7 +138,7 @@ const THEMES = [
     },
   },
   {
-    name: 'cupcake', aspect: 0.85, body: '#e05a8a', g: '#8b5a2b', b: '#c8102e',
+    name: 'cupcake', aspect: 0.85, body: '#000', g: '#000', b: 'lawngreen',
     text: 'Cupcake ipsum dolor sit amet chocolate bar halvah carrot cake donut. Caramels sweet roll gummies powder wafer. Jelly beans croissant pastry, sugar plum cotton candy marzipan liquorice. Toffee macaroon cheesecake, dragee tiramisu bonbon lollipop. Muffin brownie oat cake, gingerbread topping jelly-o pudding. Sprinkles on top, frosting swirl, buttercream, cream cheese, vanilla bean, red velvet. Apple pie danish icing, chupa chups pie fruitcake. Souffle biscuit tart, candy canes sesame snaps cookie. Lemon drops tootsie roll marshmallow, ice cream cake shortbread. Bake at 350, cool on the rack, pipe it high, cherry on top. ',
     draw(ctx, W, H) {
       // 컵(볼드, 사다리꼴) + 프로스팅(원 더미) + 체리
@@ -149,7 +151,7 @@ const THEMES = [
     },
   },
   {
-    name: 'cat', aspect: 1, body: '#222', g: '#222', b: '#3a9d23',
+    name: 'cat', aspect: 1, body: '#000', g: '#000', b: 'lawngreen',
     text: 'Cat ipsum dolor sit amet, sleep on keyboard then knock the mug off the table. Purr when being pet, hiss at the vacuum, stare at the wall for no reason. Chase the red dot, attack the feet under the blanket, sit in the box no matter how small. Meow at 5am for breakfast, ignore the expensive bed, nap in the sunbeam. Scratch the couch, groom for hours, leave a hairball on the rug. Bring a dead mouse as a gift, hide under the bed when guests arrive, judge you silently. Knead the pillow, chirp at birds through the window, zoomies at midnight. Demand attention then walk away, lick the paw, curl into a loaf. ',
     draw(ctx, W, H) {
       // 머리(원) + 귀(삼각형) + 눈(파랑 채널)
@@ -163,7 +165,7 @@ const THEMES = [
     },
   },
   {
-    name: 'coffee', aspect: 1, body: '#3b2314', g: '#3b2314', b: '#9a9a9a',
+    name: 'coffee', aspect: 1, body: '#000', g: '#000', b: 'lawngreen',
     text: 'Coffee ipsum dolor sit amet, single origin pour over, medium roast, half and half. Espresso ristretto lungo, flat white cortado macchiato. Cold brew nitro, oat milk latte, extra shot, no foam. French press aromatic, fair trade beans, grinder set to coarse. Cappuccino frothed, mocha syrup, whipped cream on top. Affogato gelato, americano black, decaf after dinner. Drip filter, siphon brewer, crema thick and golden. Morning ritual, refill please, to go cup with a sleeve. Caramel drizzle, cinnamon dust, barista art in the foam. Robusta arabica blend, roasted dark, brewed strong, sipped slow. ',
     draw(ctx, W, H) {
       // 머그(둥근 아래) + 손잡이(고리) + 김 세 줄(파랑 채널)
@@ -184,7 +186,7 @@ const THEMES = [
     },
   },
   {
-    name: 'space', aspect: 0.62, body: '#1c2a4a', g: '#c8102e', b: '#3fa9f5',
+    name: 'space', aspect: 0.62, body: '#000', g: '#000', b: 'lawngreen',
     text: 'Space ipsum dolor sit amet, liftoff at T-minus zero, main engine cut-off, orbit insertion nominal. Apogee perigee, delta-v budget, gravity assist around Jupiter. Solar wind, cosmic rays, radiation belt, magnetosphere. Lunar module, command capsule, heat shield, parachute deploy. Houston we have a signal, telemetry green across the board. Red planet rover, ice giant flyby, asteroid belt transit. Docking ring, airlock cycle, EVA suit pressurized. Light years, parsecs, event horizon, dark matter halo. Countdown, ignition, max-q, stage separation, fairing jettison. Small step, giant leap, the sky is not the limit. ',
     draw(ctx, W, H) {
       // 로켓: 뾰족한 머리 + 몸통 + 지느러미(볼드 빨강) + 둥근 창(파랑)
