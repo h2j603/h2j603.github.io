@@ -21,13 +21,15 @@
 }
 html { font-family: "Suisse Intl Condensed", sans-serif; -webkit-text-size-adjust: 100%; }
 body { margin: 0; padding: 1rem; }
-#text { font-size: 16px; }
+#text { font-size: 16px; position: relative; }
 #text .line { white-space: pre; }
 #text .c { display: inline-block; will-change: transform, opacity; }
 
-/* 피자 모드: 줄마다 원의 폭에 맞춰 잘라 가운데 정렬, 글자를 양끝으로 고르게 벌린다 */
-#text.pizza .line { display: flex; justify-content: space-between; margin: 0 auto; }
+/* 피자 모드: 줄 조각(run)을 모양 안의 정확한 위치·폭에 절대배치, 글자를 양끝으로 고르게 벌린다 */
+#text.pizza .line { position: absolute; display: flex; justify-content: space-between; }
 #text.pizza .line.narrow { justify-content: center; }
+#text.pizza .line.crust { font-weight: 700; color: #b5702c; }
+#text.pizza .c.pep { color: #d2331f; font-weight: 700; }
 
 /* 버튼: 화면 중앙 하단 고정 */
 #fun {
@@ -80,9 +82,20 @@ import { prepareWithSegments, layoutWithLines, layoutNextLine } from './lib/pret
 const FONT_SIZE = 16;
 const LINE_HEIGHT = 22;
 const FONT = `${FONT_SIZE}px "Suisse Intl Condensed"`;
-const BUTTON_ZONE = 120;   // 피자 지름을 정할 때 버튼 자리로 비워둘 높이(px)
-const MIN_CHORD = 100;     // 이보다 좁은 줄은 비운다(원 맨 위·아래)
+const FONT_BOLD = `bold ${FONT_SIZE}px "Suisse Intl Condensed"`;
+const BUTTON_ZONE = 120;   // 조각 높이를 정할 때 버튼 자리로 비워둘 높이(px)
+const MIN_RUN = 2;         // 이보다 좁은 구간(글자 폭 배수)엔 글자를 넣지 않는다
+const PIZZA_FONT = { min: 10, max: 16, perR: 1 / 34 };  // 글자 크기 = R/34, 10~16px 사이
 const SWAP = { out: 350, grow: 700 };  // 전환 애니메이션(ms)
+
+// 조각 모양 (모두 반지름 R에 대한 비율)
+const SLICE = {
+  angle: Math.PI / 3,      // 60° — 피자 1/6 조각
+  crust: 0.11,             // 크러스트 띠 두께 (볼드 텍스트로 채움)
+  pepperoni: 0.075,        // 페퍼로니 반지름 (그 자리 글자가 빨갛게 된다)
+  // 페퍼로니 위치: 꼭짓점에서의 거리 r(0~1), 중심축 기준 각도(°, 좌−/우+)
+  toppings: [ [0.30, 4], [0.48, -13], [0.52, 13], [0.68, 0], [0.80, -15], [0.81, 16] ],
+};
 
 const LOREM = [
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -95,14 +108,13 @@ const PIZZA = 'Pizza ipsum dolor amet. Pepperoni mozzarella marinara, thin crust
 const container = document.getElementById('text');
 const fun = document.getElementById('fun');
 let lorem = [];
-let pizza = null;
 let on = false;
 
-function lineEl(text) {
+function lineEl(text, lh = LINE_HEIGHT) {
   const el = document.createElement('div');
   el.className = 'line';
-  el.style.height = LINE_HEIGHT + 'px';
-  el.style.lineHeight = LINE_HEIGHT + 'px';
+  el.style.height = lh + 'px';
+  el.style.lineHeight = lh + 'px';
   for (const ch of text) {
     const s = document.createElement('span');
     s.className = 'c';
@@ -117,6 +129,8 @@ function renderLorem() {
   const width = container.clientWidth;
   container.className = '';
   container.textContent = '';
+  container.style.height = '';
+  container.style.fontSize = '';
   lorem.forEach((p, i) => {
     const { lines } = layoutWithLines(p, width, LINE_HEIGHT);
     for (const line of lines) container.appendChild(lineEl(line.text));
@@ -124,28 +138,99 @@ function renderLorem() {
   });
 }
 
-// 피자 입숨: 원 안을 줄 단위로 채운다. 줄의 폭 = 그 높이에서 원의 현(chord) 길이
+// 조각 실루엣을 캔버스에 그린다. 빨강 채널 = 속(body), 초록 채널 = 크러스트, 파랑 채널 = 페퍼로니.
+function drawSlice(W, H, R) {
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  const tipX = W / 2, tipY = H;
+  const a0 = -Math.PI / 2 - SLICE.angle / 2, a1 = -Math.PI / 2 + SLICE.angle / 2;
+  // 속: 꼭짓점에서 크러스트 안쪽 호까지의 부채꼴
+  ctx.fillStyle = '#f00';
+  ctx.beginPath(); ctx.moveTo(tipX, tipY); ctx.arc(tipX, tipY, R * (1 - SLICE.crust), a0, a1); ctx.closePath(); ctx.fill();
+  // 크러스트: 바깥 호와 안쪽 호 사이의 띠
+  ctx.fillStyle = '#0f0';
+  ctx.beginPath(); ctx.arc(tipX, tipY, R, a0, a1); ctx.arc(tipX, tipY, R * (1 - SLICE.crust), a1, a0, true); ctx.closePath(); ctx.fill();
+  // 페퍼로니: 파랑 채널 (속 위에 덮어 그린다)
+  ctx.fillStyle = '#00f';
+  for (const [r, deg] of SLICE.toppings) {
+    const a = -Math.PI / 2 + deg * Math.PI / 180;
+    ctx.beginPath(); ctx.arc(tipX + Math.cos(a) * r * R, tipY + Math.sin(a) * r * R, SLICE.pepperoni * R, 0, Math.PI * 2); ctx.fill();
+  }
+  return ctx.getImageData(0, 0, W, H);
+}
+
+// 한 줄 높이의 띠(y0~y1) 안에서, 모든 행에 걸쳐 채워진 x 구간들을 찾는다
+function runsInBand(img, y0, y1) {
+  const { width: W, data } = img;
+  const rows = [];
+  for (let y = y0 + 1; y < y1 - 1; y += 2) rows.push(y);
+  const runs = [];
+  let start = -1, crust = 0;
+  for (let x = 0; x <= W; x++) {
+    let filled = x < W, isCrust = false;
+    if (filled) {
+      for (const y of rows) {
+        const i = (y * W + x) * 4;
+        if (data[i + 3] < 128) { filled = false; break; }
+        if (data[i + 1] > 128) isCrust = true;
+      }
+    }
+    if (filled) { if (start < 0) { start = x; crust = 0; } if (isCrust) crust++; }
+    else if (start >= 0) { runs.push({ x: start, w: x - start, crust: crust > (x - start) / 2 }); start = -1; }
+  }
+  return runs;
+}
+
+// 피자 입숨: 실루엣 픽셀을 훑어 줄마다 정확한 구간에 텍스트를 채운다
+const preparedCache = new Map();
+function preparedFor(size, bold) {
+  const key = size + (bold ? 'b' : '');
+  if (!preparedCache.has(key)) preparedCache.set(key, prepareWithSegments(PIZZA.repeat(12), `${bold ? 'bold ' : ''}${size}px "Suisse Intl Condensed"`));
+  return preparedCache.get(key);
+}
+
 function renderPizza() {
   const width = container.clientWidth;
-  const D = Math.min(width, innerHeight - BUTTON_ZONE);
-  const R = D / 2;
+  const R = Math.min(width / (2 * Math.sin(SLICE.angle / 2)), innerHeight - BUTTON_ZONE);
+  const size = Math.round(Math.min(PIZZA_FONT.max, Math.max(PIZZA_FONT.min, R * PIZZA_FONT.perR)));
+  const lh = Math.round(size * 1.35);
+  const W = Math.ceil(2 * R * Math.sin(SLICE.angle / 2)), H = Math.ceil(R);
+  const img = drawSlice(W, H, R);
+  const left = (width - W) / 2;
+  const src = preparedFor(size, false), srcBold = preparedFor(size, true);
   container.className = 'pizza';
   container.textContent = '';
-  const n = Math.floor(D / LINE_HEIGHT);
-  const top = (D - n * LINE_HEIGHT) / 2;
+  container.style.height = H + 'px';
+  container.style.fontSize = size + 'px';
   let cursor = { segmentIndex: 0, graphemeIndex: 0 };
-  for (let i = 0; i < n; i++) {
-    // 줄의 위·아래 가장자리 중 원 중심에서 먼 쪽 기준으로 현을 재야 글자가 원 밖으로 안 나간다
-    const edge = Math.abs(top + i * LINE_HEIGHT + LINE_HEIGHT / 2 - R) + LINE_HEIGHT / 2;
-    const chord = edge >= R ? 0 : 2 * Math.sqrt(R * R - edge * edge);
-    if (chord < MIN_CHORD) { container.appendChild(lineEl('')); continue; }
-    let line = layoutNextLine(pizza, cursor, chord);
-    if (!line) { cursor = { segmentIndex: 0, graphemeIndex: 0 }; line = layoutNextLine(pizza, cursor, chord); }
-    cursor = line.end;
-    const el = lineEl(line.text.trim());
-    el.style.width = chord + 'px';
-    if (el.childElementCount < 3) el.classList.add('narrow');
-    container.appendChild(el);
+  const placed = [];
+  for (let y = 0; y + lh <= H; y += lh) {
+    for (const run of runsInBand(img, y, y + lh)) {
+      if (run.w < MIN_RUN * size) continue;
+      const p = run.crust ? srcBold : src;
+      let line = layoutNextLine(p, cursor, run.w);
+      if (!line) { cursor = { segmentIndex: 0, graphemeIndex: 0 }; line = layoutNextLine(p, cursor, run.w); }
+      cursor = line.end;
+      const text = line.text.trim();
+      if (!text) continue;
+      const el = lineEl(text, lh);
+      el.style.left = (left + run.x) + 'px';
+      el.style.top = y + 'px';
+      el.style.width = run.w + 'px';
+      if (run.crust) el.classList.add('crust');
+      if (el.childElementCount < 6) el.classList.add('narrow');
+      container.appendChild(el);
+      placed.push({ el, x: run.x, y: y + lh / 2 });
+    }
+  }
+  // 페퍼로니: 글자 중심이 파랑 영역에 놓이면 빨갛게
+  for (const { el, x, y } of placed) {
+    for (const c of el.children) {
+      const px = Math.round(x + c.offsetLeft + c.offsetWidth / 2), py = Math.round(y);
+      if (px < 0 || px >= W) continue;
+      if (img.data[(py * W + px) * 4 + 2] > 128) c.classList.add('pep');
+    }
   }
 }
 
@@ -190,9 +275,8 @@ fun.addEventListener('click', () => {
   fadeOut(() => { (on ? renderPizza : renderLorem)(); growIn(); });
 });
 
-await document.fonts.load(FONT);
+await Promise.all([document.fonts.load(FONT), document.fonts.load(FONT_BOLD)]);
 lorem = LOREM.map(t => prepareWithSegments(t, FONT));
-pizza = prepareWithSegments(PIZZA.repeat(8), FONT);
 renderLorem();
 let t;
 addEventListener('resize', () => { clearTimeout(t); t = setTimeout(on ? renderPizza : renderLorem, 100); });
