@@ -374,8 +374,23 @@ function baselineOf(y, h, size) {
 
 const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
+// 글자 하나의 t 시점 상태(문서 좌표). 전환 중 다른 버튼을 누르면 이 값이 다음 모핑의 출발점이 된다
+function at(it, t) {
+  const p = ease(Math.min(1, Math.max(0, (t - it.delay) / (1 - MORPH.stagger))));
+  return {
+    ch: it.ch, p,
+    x: it.a.x + (it.b.x - it.a.x) * p,
+    y: it.a.y + (it.b.y - it.a.y) * p,
+    h: it.a.h + (it.b.h - it.a.h) * p,
+    size: it.a.size + (it.b.size - it.a.size) * p,
+    color: p < 0.5 ? it.a.color : it.b.color,
+  };
+}
+
+let cur = null;   // 진행 중인 모핑 { items, t0, raf, resolve }
 function morph(from, to) {
   return new Promise(resolve => {
+    if (cur) { cancelAnimationFrame(cur.raf); cur.resolve(); }   // 이전 모핑 중단
     const n = Math.max(from.length, to.length);
     const items = [];
     for (let i = 0; i < n; i++) {
@@ -391,43 +406,42 @@ function morph(from, to) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.textBaseline = 'alphabetic';
     document.body.appendChild(morphCanvas);
-    const t0 = performance.now();
+    const me = cur = { items, t0: performance.now(), raf: 0, resolve };
     const frame = now => {
-      const t = Math.min(1, (now - t0) / MORPH.duration);
+      const t = Math.min(1, (now - me.t0) / MORPH.duration);
       ctx.clearRect(0, 0, innerWidth, innerHeight);
       const sy = scrollY, sx = scrollX;
       let lastFont = '';
       for (const it of items) {
-        const p = ease(Math.min(1, Math.max(0, (t - it.delay) / (1 - MORPH.stagger))));
-        const size = it.a.size + (it.b.size - it.a.size) * p;
-        if (size < 0.5) continue;
-        const x = it.a.x + (it.b.x - it.a.x) * p - sx;
-        const y = it.a.y + (it.b.y - it.a.y) * p - sy;
-        const h = it.a.h + (it.b.h - it.a.h) * p;
-        if (y > innerHeight || y + h < 0) continue;
-        const font = `${size.toFixed(2)}px ${STACK}`;
+        const s = at(it, t);
+        if (s.size < 0.5) continue;
+        const x = s.x - sx, y = s.y - sy;
+        if (y > innerHeight || y + s.h < 0) continue;
+        const font = `${s.size.toFixed(2)}px ${STACK}`;
         if (font !== lastFont) { ctx.font = font; lastFont = font; }
-        ctx.fillStyle = p < 0.5 ? it.a.color : it.b.color;
-        ctx.fillText(it.ch, x, baselineOf(y, h, size));
+        ctx.fillStyle = s.color;
+        ctx.fillText(s.ch, x, baselineOf(y, s.h, s.size));
       }
-      if (t < 1) requestAnimationFrame(frame);
-      else { morphCanvas.remove(); resolve(); }
+      if (t < 1) me.raf = requestAnimationFrame(frame);
+      else { cur = null; morphCanvas.remove(); resolve(); }
     };
-    requestAnimationFrame(frame);
+    me.raf = requestAnimationFrame(frame);
   });
 }
 
-let animating = false;
+// 진행 중인 모핑의 지금 이 순간 글자 상태 (snapshot과 같은 형식)
+function snapshotMorph() {
+  const t = Math.min(1, (performance.now() - cur.t0) / MORPH.duration);
+  return cur.items.map(it => at(it, t));
+}
+
 async function switchTo(renderFn) {
-  if (animating) return;
-  animating = true;
-  const from = snapshot();
+  const from = cur ? snapshotMorph() : snapshot();
   renderFn();
   const to = snapshot();
   container.style.visibility = 'hidden';
   await morph(from, to);
-  container.style.visibility = '';
-  animating = false;
+  if (!cur) container.style.visibility = '';   // 중단된 쪽이 아니라 마지막 모핑이 끝났을 때만 보인다
 }
 
 const render = () => on ? renderShape(theme) : renderLorem();
@@ -440,7 +454,6 @@ for (const t of THEMES) {
   b.style.setProperty('--c', t.color);
   b.setAttribute('aria-pressed', 'false');
   b.addEventListener('click', () => {
-    if (animating) return;
     const off = on && theme === t;
     on = !off;
     theme = off ? null : t;
