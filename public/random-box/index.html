@@ -24,7 +24,7 @@ body { margin: 0; padding: 1rem; }
 #text { font-size: 16px; position: relative; }
 #text .line { white-space: pre; }
 #text .c { display: inline-block; }
-#morph { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
+#morph { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }   /* 표시 크기는 화면 크기, 픽셀 크기는 배율만큼 */
 
 /* 모양 모드: 줄 조각(run)을 실루엣 안의 정확한 위치·폭에 절대배치, 글자를 양끝으로 고르게 벌린다 */
 #text.shape .line { position: absolute; display: flex; justify-content: space-between; }
@@ -383,6 +383,7 @@ function morph(from, to) {
     }
     const dpr = devicePixelRatio || 1;
     morphCanvas.width = innerWidth * dpr; morphCanvas.height = innerHeight * dpr;
+    morphCanvas.style.width = innerWidth + 'px'; morphCanvas.style.height = innerHeight + 'px';
     const ctx = morphCanvas.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.textBaseline = 'alphabetic';
