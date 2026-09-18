@@ -24,7 +24,7 @@ body { margin: 0; padding: 1rem; }
 #text { font-size: 16px; position: relative; }
 #text .line { white-space: pre; }
 #text .c { display: inline-block; }
-#text .line { transform-origin: center; }
+#morph { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
 
 /* 모양 모드: 줄 조각(run)을 실루엣 안의 정확한 위치·폭에 절대배치, 글자를 양끝으로 고르게 벌린다 */
 #text.shape .line { position: absolute; display: flex; justify-content: space-between; }
@@ -106,7 +106,7 @@ const FONT = `${FONT_SIZE}px "Suisse Intl"`;
 const BOTTOM_GAP = 24;     // 모양 아래로 비워둘 높이(px)
 const MIN_RUN = 2;         // 이보다 좁은 구간(글자 폭 배수)엔 글자를 넣지 않는다
 const SHAPE_FONT = { min: 10, max: 16, per: 1 / 34 };  // 글자 크기 = 짧은 변/34, 10~16px 사이
-const SWAP = { out: 350, grow: 700 };  // 전환 애니메이션(ms)
+const MORPH = { duration: 1100, stagger: 0.25 };  // 모핑 시간(ms), 글자별 시차 비율
 
 const LOREM = [
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -335,40 +335,95 @@ function renderShape(t) {
   for (const c of marks) c.classList.add('b');
 }
 
-// 애니메이션은 줄 단위로 건다 — 글자 단위(2천 개)는 폰에서 렉이 걸린다
-function lines() { return [...container.querySelectorAll('.line')]; }
+// ───────── 모핑: 글자가 옛 자리에서 새 자리로 움직인다 ─────────
+// DOM 글자 2천 개에 애니메이션을 걸면 레이어가 폭발해 렉이 걸린다.
+// 대신 전환 중에만 화면 위에 캔버스를 덮고, 그 위에서 글자를 직접 그려 옮긴다. 끝나면 새 DOM을 보여준다.
+const morphCanvas = document.createElement('canvas');
+morphCanvas.id = 'morph';
 
-// 현재 줄들을 흩어지듯 지우고, 끝나면 next()를 실행
-function fadeOut(next) {
-  for (const c of lines()) {
-    const delay = Math.random() * (SWAP.out - 150);
-    c.style.transition = `transform 150ms ease-in ${delay}ms, opacity 150ms ease-in ${delay}ms`;
-    c.style.transform = 'scale(0)';
-    c.style.opacity = '0';
+// 현재 DOM 글자들의 위치·크기·색을 기록 (공백은 제외)
+function snapshot() {
+  const size = parseFloat(getComputedStyle(container).fontSize);
+  const accent = container.style.getPropertyValue('--b') || '#000';
+  const sx = scrollX, sy = scrollY;
+  const out = [];
+  for (const c of container.querySelectorAll('.c')) {
+    const ch = c.textContent;
+    if (!ch.trim()) continue;
+    const r = c.getBoundingClientRect();
+    out.push({ ch, x: r.left + sx, y: r.top + sy, h: r.height, size, color: c.classList.contains('b') ? accent : '#000' });
   }
-  setTimeout(next, SWAP.out);
+  return out;
 }
 
-// 새 줄들을 화면 중심에서 바깥 순서로 튀어나오게
-function growIn() {
-  const cs = lines();
-  const cx = innerWidth / 2, cy = innerHeight / 2;
-  let maxDist = 1;
-  const d = cs.map(c => {
-    const r = c.getBoundingClientRect();
-    const dist = Math.hypot(r.left + r.width / 2 - cx, r.top + r.height / 2 - cy);
-    if (dist > maxDist) maxDist = dist;
-    return dist;
+// 글자 기준선 위치: 줄 상자 안에서 (줄높이 − 글꼴 높이)/2 + 어센트
+let fontMetrics = null;
+function baselineOf(y, h, size) {
+  if (!fontMetrics) {
+    const ctx = morphCanvas.getContext('2d');
+    ctx.font = '100px "Suisse Intl"';
+    const m = ctx.measureText('Hg');
+    fontMetrics = { asc: (m.fontBoundingBoxAscent || 95) / 100, desc: (m.fontBoundingBoxDescent || 25) / 100 };
+  }
+  const asc = fontMetrics.asc * size, desc = fontMetrics.desc * size;
+  return y + (h - asc - desc) / 2 + asc;
+}
+
+const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+function morph(from, to) {
+  return new Promise(resolve => {
+    const n = Math.max(from.length, to.length);
+    const items = [];
+    for (let i = 0; i < n; i++) {
+      const a = from[i], b = to[i];
+      if (a && b) items.push({ ch: b.ch, a, b, delay: (i / n) * MORPH.stagger });
+      else if (a) items.push({ ch: a.ch, a, b: { ...a, size: 0 }, delay: 0 });          // 갈 곳 없는 글자: 제자리에서 사라짐
+      else items.push({ ch: b.ch, a: { ...b, size: 0 }, b, delay: MORPH.stagger });    // 새로 생기는 글자: 제자리에서 커짐
+    }
+    const dpr = devicePixelRatio || 1;
+    morphCanvas.width = innerWidth * dpr; morphCanvas.height = innerHeight * dpr;
+    const ctx = morphCanvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.textBaseline = 'alphabetic';
+    document.body.appendChild(morphCanvas);
+    const t0 = performance.now();
+    const frame = now => {
+      const t = Math.min(1, (now - t0) / MORPH.duration);
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      const sy = scrollY, sx = scrollX;
+      let lastFont = '';
+      for (const it of items) {
+        const p = ease(Math.min(1, Math.max(0, (t - it.delay) / (1 - MORPH.stagger))));
+        const size = it.a.size + (it.b.size - it.a.size) * p;
+        if (size < 0.5) continue;
+        const x = it.a.x + (it.b.x - it.a.x) * p - sx;
+        const y = it.a.y + (it.b.y - it.a.y) * p - sy;
+        const h = it.a.h + (it.b.h - it.a.h) * p;
+        if (y > innerHeight || y + h < 0) continue;
+        const font = `${size.toFixed(2)}px "Suisse Intl"`;
+        if (font !== lastFont) { ctx.font = font; lastFont = font; }
+        ctx.fillStyle = p < 0.5 ? it.a.color : it.b.color;
+        ctx.fillText(it.ch, x, baselineOf(y, h, size));
+      }
+      if (t < 1) requestAnimationFrame(frame);
+      else { morphCanvas.remove(); resolve(); }
+    };
+    requestAnimationFrame(frame);
   });
-  cs.forEach(c => { c.style.transition = 'none'; c.style.transform = 'scale(0)'; c.style.opacity = '0'; });
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    cs.forEach((c, i) => {
-      const delay = (d[i] / maxDist) * SWAP.grow;
-      c.style.transition = `transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms, opacity 150ms ease-out ${delay}ms`;
-      c.style.transform = 'none';
-      c.style.opacity = '1';
-    });
-  }));
+}
+
+let animating = false;
+async function switchTo(renderFn) {
+  if (animating) return;
+  animating = true;
+  const from = snapshot();
+  renderFn();
+  const to = snapshot();
+  container.style.visibility = 'hidden';
+  await morph(from, to);
+  container.style.visibility = '';
+  animating = false;
 }
 
 const render = () => on ? renderShape(theme) : renderLorem();
@@ -381,11 +436,12 @@ for (const t of THEMES) {
   b.style.setProperty('--c', t.color);
   b.setAttribute('aria-pressed', 'false');
   b.addEventListener('click', () => {
+    if (animating) return;
     const off = on && theme === t;
     on = !off;
     theme = off ? null : t;
     for (const x of nav.children) x.setAttribute('aria-pressed', String(x === b && on));
-    fadeOut(() => { render(); growIn(); });
+    switchTo(render);
   });
   nav.appendChild(b);
 }
