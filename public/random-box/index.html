@@ -25,11 +25,11 @@ body { margin: 0; padding: 1rem; }
 #text .line { white-space: pre; }
 #text .c { display: inline-block; will-change: transform, opacity; }
 
-/* 피자 모드: 줄 조각(run)을 모양 안의 정확한 위치·폭에 절대배치, 글자를 양끝으로 고르게 벌린다 */
-#text.pizza .line { position: absolute; display: flex; justify-content: space-between; }
-#text.pizza .line.narrow { justify-content: center; }
-#text.pizza .line.crust { font-weight: 700; color: #b5702c; }
-#text.pizza .c.pep { color: #d2331f; font-weight: 700; }
+/* 모양 모드: 줄 조각(run)을 실루엣 안의 정확한 위치·폭에 절대배치, 글자를 양끝으로 고르게 벌린다 */
+#text.shape .line { position: absolute; display: flex; justify-content: space-between; }
+#text.shape .line.narrow { justify-content: center; }
+#text.shape .line.g { font-weight: 700; color: var(--g); }   /* 초록 채널: 줄 단위 볼드 */
+#text.shape .c.b { color: var(--b); font-weight: 700; }      /* 파랑 채널: 글자 단위 색 */
 
 /* 버튼: 화면 중앙 하단 고정 */
 #fun {
@@ -83,19 +83,10 @@ const FONT_SIZE = 16;
 const LINE_HEIGHT = 22;
 const FONT = `${FONT_SIZE}px "Suisse Intl Condensed"`;
 const FONT_BOLD = `bold ${FONT_SIZE}px "Suisse Intl Condensed"`;
-const BUTTON_ZONE = 120;   // 조각 높이를 정할 때 버튼 자리로 비워둘 높이(px)
+const BUTTON_ZONE = 120;   // 모양 높이를 정할 때 버튼 자리로 비워둘 높이(px)
 const MIN_RUN = 2;         // 이보다 좁은 구간(글자 폭 배수)엔 글자를 넣지 않는다
-const PIZZA_FONT = { min: 10, max: 16, perR: 1 / 34 };  // 글자 크기 = R/34, 10~16px 사이
+const SHAPE_FONT = { min: 10, max: 16, per: 1 / 34 };  // 글자 크기 = 짧은 변/34, 10~16px 사이
 const SWAP = { out: 350, grow: 700 };  // 전환 애니메이션(ms)
-
-// 조각 모양 (모두 반지름 R에 대한 비율)
-const SLICE = {
-  angle: Math.PI / 3,      // 60° — 피자 1/6 조각
-  crust: 0.11,             // 크러스트 띠 두께 (볼드 텍스트로 채움)
-  pepperoni: 0.075,        // 페퍼로니 반지름 (그 자리 글자가 빨갛게 된다)
-  // 페퍼로니 위치: 꼭짓점에서의 거리 r(0~1), 중심축 기준 각도(°, 좌−/우+)
-  toppings: [ [0.30, 4], [0.48, -13], [0.52, 13], [0.68, 0], [0.80, -15], [0.81, 16] ],
-};
 
 const LOREM = [
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -103,12 +94,121 @@ const LOREM = [
   'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.',
 ];
 
-const PIZZA = 'Pizza ipsum dolor amet. Pepperoni mozzarella marinara, thin crust hand-tossed and wood-fired. Extra cheese, garlic parmesan, ranch on the side. Meatball buffalo chicken, bacon ricotta, pineapple ham (yes, pineapple). Deep dish stuffed crust, sausage and onions, roasted red peppers, black olives, banana peppers. Fresh basil, burrata, San Marzano tomatoes, olive oil drizzle. Slice by the slice, whole pie, family size, large with everything. Pesto white pie, spinach mushroom, four cheese, buffalo mozzarella. Crispy edges, bubbly cheese, chewy crust, charred bottom. NY style fold, Detroit square, Neapolitan blister, Sicilian thick. Delivery in thirty minutes, dine in, carry out, late night slice. Anchovies for the brave, jalapenos for the bold, extra sauce for the wise. ';
+// ───────── 테마: 입숨 텍스트 + 실루엣 ─────────
+// draw(ctx, W, H): 캔버스에 실루엣을 그린다.
+//   빨강(#f00) = 본문, 초록(#0f0) = 줄 단위 볼드(색 g), 파랑(#00f) = 글자 단위 색(색 b)
+// aspect = W/H, body = 본문 글자색
+const THEMES = [
+  {
+    name: 'pizza', aspect: 1, body: '#000', g: '#b5702c', b: '#d2331f',
+    text: 'Pizza ipsum dolor amet. Pepperoni mozzarella marinara, thin crust hand-tossed and wood-fired. Extra cheese, garlic parmesan, ranch on the side. Meatball buffalo chicken, bacon ricotta, pineapple ham (yes, pineapple). Deep dish stuffed crust, sausage and onions, roasted red peppers, black olives, banana peppers. Fresh basil, burrata, San Marzano tomatoes, olive oil drizzle. Slice by the slice, whole pie, family size, large with everything. Pesto white pie, spinach mushroom, four cheese, buffalo mozzarella. Crispy edges, bubbly cheese, chewy crust, charred bottom. NY style fold, Detroit square, Neapolitan blister, Sicilian thick. Delivery in thirty minutes, dine in, carry out, late night slice. Anchovies for the brave, jalapenos for the bold, extra sauce for the wise. ',
+    draw(ctx, W, H) {
+      // 60° 조각: 꼭짓점이 아래, 둥근 크러스트가 위
+      const R = H, tipX = W / 2, tipY = H, ang = Math.PI / 3;
+      const a0 = -Math.PI / 2 - ang / 2, a1 = -Math.PI / 2 + ang / 2;
+      ctx.fillStyle = '#f00';
+      ctx.beginPath(); ctx.moveTo(tipX, tipY); ctx.arc(tipX, tipY, R * 0.89, a0, a1); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#0f0';
+      ctx.beginPath(); ctx.arc(tipX, tipY, R, a0, a1); ctx.arc(tipX, tipY, R * 0.89, a1, a0, true); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#00f';
+      for (const [r, deg] of [[0.30, 4], [0.48, -13], [0.52, 13], [0.68, 0], [0.80, -15], [0.81, 16]]) {
+        const a = -Math.PI / 2 + deg * Math.PI / 180;
+        circle(ctx, tipX + Math.cos(a) * r * R, tipY + Math.sin(a) * r * R, 0.075 * R);
+      }
+    },
+  },
+  {
+    name: 'bacon', aspect: 1.45, body: '#a8352e', g: '#d9a066', b: '#a8352e',
+    text: 'Bacon ipsum dolor amet pork belly short ribs brisket, pancetta jowl tenderloin ham hock. Chuck ribeye flank, sausage strip steak cupim leberkas. Andouille bresaola kielbasa, pork loin turducken shoulder pastrami. Frankfurter t-bone salami, capicola meatloaf beef ribs. Prosciutto shankle drumstick, ball tip landjaeger sirloin picanha. Smoked, cured, crispy, thick cut, maple glazed, applewood, streaky, back bacon. Fatback pig corned beef, tri-tip hamburger porchetta rump. Spare ribs chislic meatball, buffalo doner biltong venison. Alcatra boudin pork chop, ground round burgdoggen ham. Sizzle in the pan, wrap it around anything, bacon makes it better. ',
+    draw(ctx, W, H) {
+      // 물결치는 띠 + 지방 줄 두 개(볼드)
+      const top = x => 0.16 * H + 0.09 * H * Math.sin(x / W * Math.PI * 3);
+      const band = (y0, y1, color) => {
+        ctx.fillStyle = color; ctx.beginPath();
+        for (let x = 0; x <= W; x += 4) ctx.lineTo(x, top(x) + y0);
+        for (let x = W; x >= 0; x -= 4) ctx.lineTo(x, top(x) + y1);
+        ctx.closePath(); ctx.fill();
+      };
+      band(0, 0.68 * H, '#f00');
+      band(0.13 * H, 0.24 * H, '#0f0');
+      band(0.42 * H, 0.53 * H, '#0f0');
+    },
+  },
+  {
+    name: 'cupcake', aspect: 0.85, body: '#e05a8a', g: '#8b5a2b', b: '#c8102e',
+    text: 'Cupcake ipsum dolor sit amet chocolate bar halvah carrot cake donut. Caramels sweet roll gummies powder wafer. Jelly beans croissant pastry, sugar plum cotton candy marzipan liquorice. Toffee macaroon cheesecake, dragee tiramisu bonbon lollipop. Muffin brownie oat cake, gingerbread topping jelly-o pudding. Sprinkles on top, frosting swirl, buttercream, cream cheese, vanilla bean, red velvet. Apple pie danish icing, chupa chups pie fruitcake. Souffle biscuit tart, candy canes sesame snaps cookie. Lemon drops tootsie roll marshmallow, ice cream cake shortbread. Bake at 350, cool on the rack, pipe it high, cherry on top. ',
+    draw(ctx, W, H) {
+      // 컵(볼드, 사다리꼴) + 프로스팅(원 더미) + 체리
+      ctx.fillStyle = '#0f0';
+      ctx.beginPath(); ctx.moveTo(0.18 * W, 0.58 * H); ctx.lineTo(0.82 * W, 0.58 * H); ctx.lineTo(0.72 * W, H); ctx.lineTo(0.28 * W, H); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#f00';
+      for (const [x, y, r] of [[0.28, 0.5, 0.17], [0.5, 0.5, 0.18], [0.72, 0.5, 0.17], [0.38, 0.36, 0.15], [0.62, 0.36, 0.15], [0.5, 0.24, 0.14]]) circle(ctx, x * W, y * H, r * W);
+      ctx.fillStyle = '#00f';
+      circle(ctx, 0.5 * W, 0.1 * H, 0.065 * W);
+    },
+  },
+  {
+    name: 'cat', aspect: 1, body: '#222', g: '#222', b: '#3a9d23',
+    text: 'Cat ipsum dolor sit amet, sleep on keyboard then knock the mug off the table. Purr when being pet, hiss at the vacuum, stare at the wall for no reason. Chase the red dot, attack the feet under the blanket, sit in the box no matter how small. Meow at 5am for breakfast, ignore the expensive bed, nap in the sunbeam. Scratch the couch, groom for hours, leave a hairball on the rug. Bring a dead mouse as a gift, hide under the bed when guests arrive, judge you silently. Knead the pillow, chirp at birds through the window, zoomies at midnight. Demand attention then walk away, lick the paw, curl into a loaf. ',
+    draw(ctx, W, H) {
+      // 머리(원) + 귀(삼각형) + 눈(파랑 채널)
+      ctx.fillStyle = '#f00';
+      circle(ctx, 0.5 * W, 0.58 * H, 0.4 * W);
+      ctx.beginPath(); ctx.moveTo(0.14 * W, 0.42 * H); ctx.lineTo(0.2 * W, 0.04 * H); ctx.lineTo(0.5 * W, 0.28 * H); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(0.86 * W, 0.42 * H); ctx.lineTo(0.8 * W, 0.04 * H); ctx.lineTo(0.5 * W, 0.28 * H); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#00f';
+      circle(ctx, 0.36 * W, 0.53 * H, 0.065 * W);
+      circle(ctx, 0.64 * W, 0.53 * H, 0.065 * W);
+    },
+  },
+  {
+    name: 'coffee', aspect: 1, body: '#3b2314', g: '#3b2314', b: '#9a9a9a',
+    text: 'Coffee ipsum dolor sit amet, single origin pour over, medium roast, half and half. Espresso ristretto lungo, flat white cortado macchiato. Cold brew nitro, oat milk latte, extra shot, no foam. French press aromatic, fair trade beans, grinder set to coarse. Cappuccino frothed, mocha syrup, whipped cream on top. Affogato gelato, americano black, decaf after dinner. Drip filter, siphon brewer, crema thick and golden. Morning ritual, refill please, to go cup with a sleeve. Caramel drizzle, cinnamon dust, barista art in the foam. Robusta arabica blend, roasted dark, brewed strong, sipped slow. ',
+    draw(ctx, W, H) {
+      // 머그(둥근 아래) + 손잡이(고리) + 김 세 줄(파랑 채널)
+      ctx.fillStyle = '#f00';
+      ctx.beginPath(); ctx.roundRect(0.08 * W, 0.4 * H, 0.6 * W, 0.56 * H, [0, 0, 0.12 * W, 0.12 * W]); ctx.fill();
+      // 손잡이: 컵과 살짝 띄운 고리(볼드)
+      ctx.fillStyle = '#0f0';
+      ctx.beginPath(); ctx.arc(0.71 * W, 0.66 * H, 0.21 * W, -Math.PI / 2, Math.PI / 2); ctx.arc(0.71 * W, 0.66 * H, 0.1 * W, Math.PI / 2, -Math.PI / 2, true); ctx.closePath(); ctx.fill();
+      ctx.clearRect(0, 0.4 * H, 0.71 * W, 0.56 * H); ctx.fillStyle = '#f00';
+      ctx.beginPath(); ctx.roundRect(0.08 * W, 0.4 * H, 0.6 * W, 0.56 * H, [0, 0, 0.12 * W, 0.12 * W]); ctx.fill();
+      // 김: 굵은 물결 두 줄(회색 글자)
+      ctx.strokeStyle = '#00f'; ctx.lineWidth = 0.15 * W; ctx.lineCap = 'round';
+      for (const x of [0.27, 0.5]) {
+        ctx.beginPath();
+        for (let y = 0.3 * H; y >= 0.08 * H; y -= 2) ctx.lineTo(x * W + 0.05 * W * Math.sin(y / H * Math.PI * 3), y);
+        ctx.stroke();
+      }
+    },
+  },
+  {
+    name: 'space', aspect: 0.62, body: '#1c2a4a', g: '#c8102e', b: '#3fa9f5',
+    text: 'Space ipsum dolor sit amet, liftoff at T-minus zero, main engine cut-off, orbit insertion nominal. Apogee perigee, delta-v budget, gravity assist around Jupiter. Solar wind, cosmic rays, radiation belt, magnetosphere. Lunar module, command capsule, heat shield, parachute deploy. Houston we have a signal, telemetry green across the board. Red planet rover, ice giant flyby, asteroid belt transit. Docking ring, airlock cycle, EVA suit pressurized. Light years, parsecs, event horizon, dark matter halo. Countdown, ignition, max-q, stage separation, fairing jettison. Small step, giant leap, the sky is not the limit. ',
+    draw(ctx, W, H) {
+      // 로켓: 뾰족한 머리 + 몸통 + 지느러미(볼드 빨강) + 둥근 창(파랑)
+      ctx.fillStyle = '#0f0';
+      ctx.beginPath(); ctx.moveTo(0.25 * W, 0.62 * H); ctx.lineTo(0.02 * W, 0.9 * H); ctx.lineTo(0.25 * W, 0.86 * H); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(0.75 * W, 0.62 * H); ctx.lineTo(0.98 * W, 0.9 * H); ctx.lineTo(0.75 * W, 0.86 * H); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#f00';
+      ctx.beginPath(); ctx.moveTo(0.5 * W, 0); ctx.bezierCurveTo(0.72 * W, 0.12 * H, 0.72 * W, 0.22 * H, 0.72 * W, 0.3 * H);
+      ctx.lineTo(0.72 * W, 0.86 * H); ctx.lineTo(0.28 * W, 0.86 * H); ctx.lineTo(0.28 * W, 0.3 * H);
+      ctx.bezierCurveTo(0.28 * W, 0.22 * H, 0.28 * W, 0.12 * H, 0.5 * W, 0); ctx.closePath(); ctx.fill();
+      // 불꽃(볼드 빨강)
+      ctx.fillStyle = '#0f0';
+      ctx.beginPath(); ctx.moveTo(0.36 * W, 0.88 * H); ctx.lineTo(0.64 * W, 0.88 * H); ctx.lineTo(0.5 * W, H); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#00f';
+      circle(ctx, 0.5 * W, 0.34 * H, 0.11 * W);
+    },
+  },
+];
+function circle(ctx, x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
 
 const container = document.getElementById('text');
 const fun = document.getElementById('fun');
 let lorem = [];
 let on = false;
+let theme = null;
 
 function lineEl(text, lh = LINE_HEIGHT) {
   const el = document.createElement('div');
@@ -129,8 +229,7 @@ function renderLorem() {
   const width = container.clientWidth;
   container.className = '';
   container.textContent = '';
-  container.style.height = '';
-  container.style.fontSize = '';
+  container.style.cssText = '';
   lorem.forEach((p, i) => {
     const { lines } = layoutWithLines(p, width, LINE_HEIGHT);
     for (const line of lines) container.appendChild(lineEl(line.text));
@@ -138,77 +237,60 @@ function renderLorem() {
   });
 }
 
-// 조각 실루엣을 캔버스에 그린다. 빨강 채널 = 속(body), 초록 채널 = 크러스트, 파랑 채널 = 페퍼로니.
-function drawSlice(W, H, R) {
-  const cv = document.createElement('canvas');
-  cv.width = W; cv.height = H;
-  const ctx = cv.getContext('2d', { willReadFrequently: true });
-  const tipX = W / 2, tipY = H;
-  const a0 = -Math.PI / 2 - SLICE.angle / 2, a1 = -Math.PI / 2 + SLICE.angle / 2;
-  // 속: 꼭짓점에서 크러스트 안쪽 호까지의 부채꼴
-  ctx.fillStyle = '#f00';
-  ctx.beginPath(); ctx.moveTo(tipX, tipY); ctx.arc(tipX, tipY, R * (1 - SLICE.crust), a0, a1); ctx.closePath(); ctx.fill();
-  // 크러스트: 바깥 호와 안쪽 호 사이의 띠
-  ctx.fillStyle = '#0f0';
-  ctx.beginPath(); ctx.arc(tipX, tipY, R, a0, a1); ctx.arc(tipX, tipY, R * (1 - SLICE.crust), a1, a0, true); ctx.closePath(); ctx.fill();
-  // 페퍼로니: 파랑 채널 (속 위에 덮어 그린다)
-  ctx.fillStyle = '#00f';
-  for (const [r, deg] of SLICE.toppings) {
-    const a = -Math.PI / 2 + deg * Math.PI / 180;
-    ctx.beginPath(); ctx.arc(tipX + Math.cos(a) * r * R, tipY + Math.sin(a) * r * R, SLICE.pepperoni * R, 0, Math.PI * 2); ctx.fill();
-  }
-  return ctx.getImageData(0, 0, W, H);
-}
-
-// 한 줄 높이의 띠(y0~y1) 안에서, 모든 행에 걸쳐 채워진 x 구간들을 찾는다
+// 한 줄 높이의 띠(y0~y1)에서 채워진 x 구간들을 찾는다.
+// 글자의 몸통이 놓이는 띠 가운데 40% 행만 본다 — 비스듬한 가장자리에서 줄이 조각나지 않게
 function runsInBand(img, y0, y1) {
   const { width: W, data } = img;
   const rows = [];
-  for (let y = y0 + 1; y < y1 - 1; y += 2) rows.push(y);
+  const lh = y1 - y0;
+  for (let y = Math.round(y0 + lh * 0.3); y <= y0 + lh * 0.7; y += 2) rows.push(y);
   const runs = [];
-  let start = -1, crust = 0;
+  let start = -1, g = 0;
   for (let x = 0; x <= W; x++) {
-    let filled = x < W, isCrust = false;
+    let filled = x < W, isG = false;
     if (filled) {
       for (const y of rows) {
         const i = (y * W + x) * 4;
         if (data[i + 3] < 128) { filled = false; break; }
-        if (data[i + 1] > 128) isCrust = true;
+        if (data[i + 1] > 128) isG = true;
       }
     }
-    if (filled) { if (start < 0) { start = x; crust = 0; } if (isCrust) crust++; }
-    else if (start >= 0) { runs.push({ x: start, w: x - start, crust: crust > (x - start) / 2 }); start = -1; }
+    if (filled) { if (start < 0) { start = x; g = 0; } if (isG) g++; }
+    else if (start >= 0) { runs.push({ x: start, w: x - start, g: g > (x - start) / 2 }); start = -1; }
   }
   return runs;
 }
 
-// 피자 입숨: 실루엣 픽셀을 훑어 줄마다 정확한 구간에 텍스트를 채운다
+// 모양 입숨: 실루엣 픽셀을 훑어 줄마다 정확한 구간에 텍스트를 채운다
 const preparedCache = new Map();
-function preparedFor(size, bold) {
-  const key = size + (bold ? 'b' : '');
-  if (!preparedCache.has(key)) preparedCache.set(key, prepareWithSegments(PIZZA.repeat(12), `${bold ? 'bold ' : ''}${size}px "Suisse Intl Condensed"`));
+function preparedFor(t, size, bold) {
+  const key = t.name + size + (bold ? 'b' : '');
+  if (!preparedCache.has(key)) preparedCache.set(key, prepareWithSegments(t.text.repeat(12), `${bold ? 'bold ' : ''}${size}px "Suisse Intl Condensed"`));
   return preparedCache.get(key);
 }
 
-function renderPizza() {
+function renderShape(t) {
   const width = container.clientWidth;
-  const R = Math.min(width / (2 * Math.sin(SLICE.angle / 2)), innerHeight - BUTTON_ZONE);
-  const size = Math.round(Math.min(PIZZA_FONT.max, Math.max(PIZZA_FONT.min, R * PIZZA_FONT.perR)));
+  const W = Math.ceil(Math.min(width, (innerHeight - BUTTON_ZONE) * t.aspect));
+  const H = Math.ceil(W / t.aspect);
+  const size = Math.round(Math.min(SHAPE_FONT.max, Math.max(SHAPE_FONT.min, Math.min(W, H) * SHAPE_FONT.per)));
   const lh = Math.round(size * 1.35);
-  const W = Math.ceil(2 * R * Math.sin(SLICE.angle / 2)), H = Math.ceil(R);
-  const img = drawSlice(W, H, R);
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  t.draw(ctx, W, H);
+  const img = ctx.getImageData(0, 0, W, H);
   const left = (width - W) / 2;
-  const src = preparedFor(size, false), srcBold = preparedFor(size, true);
-  container.className = 'pizza';
+  const src = preparedFor(t, size, false), srcBold = preparedFor(t, size, true);
+  container.className = 'shape';
   container.textContent = '';
-  container.style.height = H + 'px';
-  container.style.fontSize = size + 'px';
+  container.style.cssText = `height:${H}px;font-size:${size}px;color:${t.body};--g:${t.g};--b:${t.b}`;
   let cursor = { segmentIndex: 0, graphemeIndex: 0 };
   const placed = [];
   for (let y = 0; y + lh <= H; y += lh) {
     for (const run of runsInBand(img, y, y + lh)) {
       if (run.w < MIN_RUN * size) continue;
-      const p = run.crust ? srcBold : src;
+      const p = run.g ? srcBold : src;
       let line = layoutNextLine(p, cursor, run.w);
       if (!line) { cursor = { segmentIndex: 0, graphemeIndex: 0 }; line = layoutNextLine(p, cursor, run.w); }
       cursor = line.end;
@@ -218,18 +300,19 @@ function renderPizza() {
       el.style.left = (left + run.x) + 'px';
       el.style.top = y + 'px';
       el.style.width = run.w + 'px';
-      if (run.crust) el.classList.add('crust');
+      if (run.g) el.classList.add('g');
       if (el.childElementCount < 6) el.classList.add('narrow');
       container.appendChild(el);
       placed.push({ el, x: run.x, y: y + lh / 2 });
     }
   }
-  // 페퍼로니: 글자 중심이 파랑 영역에 놓이면 빨갛게
+  // 파랑 채널: 글자 중심이 파랑 영역에 놓이면 색을 바꾼다
   for (const { el, x, y } of placed) {
     for (const c of el.children) {
       const px = Math.round(x + c.offsetLeft + c.offsetWidth / 2), py = Math.round(y);
       if (px < 0 || px >= W) continue;
-      if (img.data[(py * W + px) * 4 + 2] > 128) c.classList.add('pep');
+      const i = (py * W + px) * 4;
+      if (img.data[i + 2] > 128 && img.data[i + 1] < 128) c.classList.add('b');
     }
   }
 }
@@ -269,17 +352,28 @@ function growIn() {
   }));
 }
 
+// 직전과 다른 테마를 무작위로 고른다
+function pickTheme() {
+  const forced = THEMES.find(t => t.name === new URLSearchParams(location.search).get('theme'));
+  if (forced) return forced;   // ?theme=cat 처럼 URL로 고정 (확인용)
+  const pool = THEMES.filter(t => t !== theme);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+const render = () => on ? renderShape(theme) : renderLorem();
+
 fun.addEventListener('click', () => {
   on = !on;
+  if (on) theme = pickTheme();
   fun.setAttribute('aria-pressed', String(on));
-  fadeOut(() => { (on ? renderPizza : renderLorem)(); growIn(); });
+  fadeOut(() => { render(); growIn(); });
 });
 
 await Promise.all([document.fonts.load(FONT), document.fonts.load(FONT_BOLD)]);
 lorem = LOREM.map(t => prepareWithSegments(t, FONT));
 renderLorem();
 let t;
-addEventListener('resize', () => { clearTimeout(t); t = setTimeout(on ? renderPizza : renderLorem, 100); });
+addEventListener('resize', () => { clearTimeout(t); t = setTimeout(render, 100); });
 </script>
 </body>
 </html>
