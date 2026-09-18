@@ -24,13 +24,15 @@ body { margin: 0; padding: 1rem; }
 #text { font-size: 16px; position: relative; }
 #text .line { white-space: pre; }
 #text .c { display: inline-block; }
+#text .w { display: inline-block; }   /* 단어: 글자 묶음, 양끝맞춤은 단어 사이만 벌린다 */
 #morph { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }   /* 표시 크기는 화면 크기, 픽셀 크기는 배율만큼 */
 
 /* 모양 모드: 줄 조각(run)을 실루엣 안의 정확한 위치·폭에 절대배치, 글자를 양끝으로 고르게 벌린다 */
 #text.shape .line { position: absolute; display: flex; justify-content: space-between; }
+#text.shape .line > .c { display: none; }                    /* 단어 사이 공백은 flex 간격이 대신한다 */
 #text.shape .line.narrow { justify-content: center; }
-#text.shape .line.g { color: var(--g); }                      /* 초록 채널: 줄 단위 색(현재 검정, 굵기 차이 없음) */
-#text.shape .c.b { color: var(--b); }                        /* 파랑 채널: 글자 단위 테마 색 */
+#text.shape .line.g { font-family: "Suisse Intl Condensed", "Suisse Intl", sans-serif; }   /* 2번 색: 줄 단위 컨덴스드 */
+#text.shape .c.b { color: var(--b); }                        /* 3번 색: 글자 단위 테마 색 */
 
 /* 제목 */
 #title {
@@ -117,109 +119,82 @@ const LOREM = [
   'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.',
 ];
 
-// ───────── 테마: 실루엣 (채우는 글은 언제나 로렘 입숨 본문) ─────────
-// draw(ctx, W, H): 캔버스에 실루엣을 그린다.
-//   빨강(#f00) = 본문, 초록(#0f0) = 줄 단위 볼드(색 g), 파랑(#00f) = 글자 단위 색(테마 color)
-// color = 테마 색(oklch): 켜진 버튼·글로우·강조 글자에 쓴다. aspect = W/H, body = 본문 글자색
+// ───────── 테마: 이모지 실루엣 ─────────
+// 이모지를 캔버스에 크게 찍고 픽셀을 읽는다. 모양은 OS 이모지 글꼴을 따른다 (아이폰·안드로이드·맥이 다르게 보이는 건 의도).
+// 색은 자동 분류: 가장 넓은 색 = 본문, 다음 = 컨덴스드 줄, 가장 좁은 색 = 강조 글자(테마 색)
+// color = 테마 색(oklch): 켜진 버튼·글로우·강조 글자에 쓴다
 const THEMES = [
-  {
-    name: 'pizza', color: 'oklch(0.8 0.2 45)', aspect: 1, body: '#000', g: '#000',
-    draw(ctx, W, H) {
-      // 60° 조각: 꼭짓점이 아래, 둥근 크러스트가 위
-      const R = H, tipX = W / 2, tipY = H, ang = Math.PI / 3;
-      const a0 = -Math.PI / 2 - ang / 2, a1 = -Math.PI / 2 + ang / 2;
-      ctx.fillStyle = '#f00';
-      ctx.beginPath(); ctx.moveTo(tipX, tipY); ctx.arc(tipX, tipY, R * 0.89, a0, a1); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#0f0';
-      ctx.beginPath(); ctx.arc(tipX, tipY, R, a0, a1); ctx.arc(tipX, tipY, R * 0.89, a1, a0, true); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#00f';
-      for (const [r, deg] of [[0.30, 4], [0.48, -13], [0.52, 13], [0.68, 0], [0.80, -15], [0.81, 16]]) {
-        const a = -Math.PI / 2 + deg * Math.PI / 180;
-        circle(ctx, tipX + Math.cos(a) * r * R, tipY + Math.sin(a) * r * R, 0.075 * R);
-      }
-    },
-  },
-  {
-    name: 'bacon', color: 'oklch(0.72 0.2 20)', aspect: 1.45, body: '#000', g: '#000',
-    draw(ctx, W, H) {
-      // 물결치는 띠 + 지방 줄 두 개(볼드)
-      const top = x => 0.16 * H + 0.09 * H * Math.sin(x / W * Math.PI * 3);
-      const band = (y0, y1, color) => {
-        ctx.fillStyle = color; ctx.beginPath();
-        for (let x = 0; x <= W; x += 4) ctx.lineTo(x, top(x) + y0);
-        for (let x = W; x >= 0; x -= 4) ctx.lineTo(x, top(x) + y1);
-        ctx.closePath(); ctx.fill();
-      };
-      band(0, 0.68 * H, '#f00');
-      band(0.13 * H, 0.24 * H, '#0f0');
-      band(0.42 * H, 0.53 * H, '#0f0');
-    },
-  },
-  {
-    name: 'cupcake', color: 'oklch(0.82 0.18 350)', aspect: 0.85, body: '#000', g: '#000',
-    draw(ctx, W, H) {
-      // 컵(볼드, 사다리꼴) + 프로스팅(원 더미) + 체리
-      ctx.fillStyle = '#0f0';
-      ctx.beginPath(); ctx.moveTo(0.18 * W, 0.58 * H); ctx.lineTo(0.82 * W, 0.58 * H); ctx.lineTo(0.72 * W, H); ctx.lineTo(0.28 * W, H); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#f00';
-      for (const [x, y, r] of [[0.28, 0.5, 0.17], [0.5, 0.5, 0.18], [0.72, 0.5, 0.17], [0.38, 0.36, 0.15], [0.62, 0.36, 0.15], [0.5, 0.24, 0.14]]) circle(ctx, x * W, y * H, r * W);
-      ctx.fillStyle = '#00f';
-      circle(ctx, 0.5 * W, 0.1 * H, 0.065 * W);
-    },
-  },
-  {
-    name: 'cat', color: 'oklch(0.9 0.18 100)', aspect: 1, body: '#000', g: '#000',
-    draw(ctx, W, H) {
-      // 머리(원) + 귀(삼각형) + 눈(파랑 채널)
-      ctx.fillStyle = '#f00';
-      circle(ctx, 0.5 * W, 0.58 * H, 0.4 * W);
-      ctx.beginPath(); ctx.moveTo(0.14 * W, 0.42 * H); ctx.lineTo(0.2 * W, 0.04 * H); ctx.lineTo(0.5 * W, 0.28 * H); ctx.closePath(); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(0.86 * W, 0.42 * H); ctx.lineTo(0.8 * W, 0.04 * H); ctx.lineTo(0.5 * W, 0.28 * H); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#00f';
-      circle(ctx, 0.36 * W, 0.53 * H, 0.065 * W);
-      circle(ctx, 0.64 * W, 0.53 * H, 0.065 * W);
-    },
-  },
-  {
-    name: 'coffee', color: 'oklch(0.72 0.12 65)', aspect: 1, body: '#000', g: '#000',
-    draw(ctx, W, H) {
-      // 머그(둥근 아래) + 손잡이(고리) + 김 세 줄(파랑 채널)
-      ctx.fillStyle = '#f00';
-      ctx.beginPath(); ctx.roundRect(0.08 * W, 0.4 * H, 0.6 * W, 0.56 * H, [0, 0, 0.12 * W, 0.12 * W]); ctx.fill();
-      // 손잡이: 컵과 살짝 띄운 고리(볼드)
-      ctx.fillStyle = '#0f0';
-      ctx.beginPath(); ctx.arc(0.71 * W, 0.66 * H, 0.21 * W, -Math.PI / 2, Math.PI / 2); ctx.arc(0.71 * W, 0.66 * H, 0.1 * W, Math.PI / 2, -Math.PI / 2, true); ctx.closePath(); ctx.fill();
-      ctx.clearRect(0, 0.4 * H, 0.71 * W, 0.56 * H); ctx.fillStyle = '#f00';
-      ctx.beginPath(); ctx.roundRect(0.08 * W, 0.4 * H, 0.6 * W, 0.56 * H, [0, 0, 0.12 * W, 0.12 * W]); ctx.fill();
-      // 김: 굵은 물결 두 줄(회색 글자)
-      ctx.strokeStyle = '#00f'; ctx.lineWidth = 0.15 * W; ctx.lineCap = 'round';
-      for (const x of [0.27, 0.5]) {
-        ctx.beginPath();
-        for (let y = 0.3 * H; y >= 0.08 * H; y -= 2) ctx.lineTo(x * W + 0.05 * W * Math.sin(y / H * Math.PI * 3), y);
-        ctx.stroke();
-      }
-    },
-  },
-  {
-    name: 'space', color: 'oklch(0.78 0.16 250)', aspect: 0.62, body: '#000', g: '#000',
-    draw(ctx, W, H) {
-      // 로켓: 뾰족한 머리 + 몸통 + 지느러미(볼드 빨강) + 둥근 창(파랑)
-      ctx.fillStyle = '#0f0';
-      ctx.beginPath(); ctx.moveTo(0.25 * W, 0.62 * H); ctx.lineTo(0.02 * W, 0.9 * H); ctx.lineTo(0.25 * W, 0.86 * H); ctx.closePath(); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(0.75 * W, 0.62 * H); ctx.lineTo(0.98 * W, 0.9 * H); ctx.lineTo(0.75 * W, 0.86 * H); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#f00';
-      ctx.beginPath(); ctx.moveTo(0.5 * W, 0); ctx.bezierCurveTo(0.72 * W, 0.12 * H, 0.72 * W, 0.22 * H, 0.72 * W, 0.3 * H);
-      ctx.lineTo(0.72 * W, 0.86 * H); ctx.lineTo(0.28 * W, 0.86 * H); ctx.lineTo(0.28 * W, 0.3 * H);
-      ctx.bezierCurveTo(0.28 * W, 0.22 * H, 0.28 * W, 0.12 * H, 0.5 * W, 0); ctx.closePath(); ctx.fill();
-      // 불꽃(볼드 빨강)
-      ctx.fillStyle = '#0f0';
-      ctx.beginPath(); ctx.moveTo(0.36 * W, 0.88 * H); ctx.lineTo(0.64 * W, 0.88 * H); ctx.lineTo(0.5 * W, H); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#00f';
-      circle(ctx, 0.5 * W, 0.34 * H, 0.11 * W);
-    },
-  },
+  { name: 'pizza',   emoji: '🍕', color: 'oklch(0.8 0.2 45)' },
+  { name: 'bacon',   emoji: '🥓', color: 'oklch(0.72 0.2 20)' },
+  { name: 'cupcake', emoji: '🧁', color: 'oklch(0.82 0.18 350)' },
+  { name: 'cat',     emoji: '🐱', color: 'oklch(0.9 0.18 100)' },
+  { name: 'coffee',  emoji: '☕', color: 'oklch(0.72 0.12 65)' },
+  { name: 'space',   emoji: '🚀', color: 'oklch(0.78 0.16 250)' },
 ];
-function circle(ctx, x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+const EMOJI_FONT = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+const PROBE = 200;   // 이모지 외곽 상자를 재는 기준 크기(px)
+
+// 이모지의 불투명 픽셀 외곽 상자 (PROBE 크기 기준). 테마마다 한 번만 잰다
+function emojiBox(t) {
+  if (t.box) return t.box;
+  const S = PROBE * 1.5;
+  const cv = document.createElement('canvas'); cv.width = cv.height = S;
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  ctx.font = `${PROBE}px ${EMOJI_FONT}`; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+  ctx.fillText(t.emoji, S / 2, S / 2);
+  const d = ctx.getImageData(0, 0, S, S).data;
+  let x0 = S, y0 = S, x1 = 0, y1 = 0;
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    if (d[(y * S + x) * 4 + 3] < 128) continue;
+    if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+  }
+  return t.box = { x: x0 - S / 2, y: y0 - S / 2, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+}
+
+// 이모지를 W×H에 꽉 차게 그리고 픽셀을 돌려준다
+function rasterize(t, W, H) {
+  const box = emojiBox(t);
+  const k = Math.min(W / box.w, H / box.h);
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  ctx.font = `${PROBE * k}px ${EMOJI_FONT}`; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+  ctx.fillText(t.emoji, (W - box.w * k) / 2 - box.x * k, (H - box.h * k) / 2 - box.y * k);
+  return ctx.getImageData(0, 0, W, H);
+}
+
+// 픽셀마다 분류값: 0 빈칸, 1 본문, 2 컨덴스드, 3 강조. 색을 세 무리로 나눈다(k-means)
+const MIN_CLUSTER = 0.015;   // 전체의 이 비율보다 작은 색 무리는 본문에 합친다
+function classify(img) {
+  const { width: W, height: H, data } = img;
+  const n = W * H, cls = new Uint8Array(n);
+  const pts = [];
+  for (let i = 0; i < n; i += 2) if (data[i * 4 + 3] >= 200) pts.push(i * 4);
+  if (!pts.length) return cls;
+  const d2 = (c, i) => (c[0] - data[i]) ** 2 + (c[1] - data[i + 1]) ** 2 + (c[2] - data[i + 2]) ** 2;
+  const nearest = (cs, i) => { let b = 0, bd = Infinity; for (let k = 0; k < cs.length; k++) { const v = d2(cs[k], i); if (v < bd) { bd = v; b = k; } } return b; };
+  // 초기 중심: 색 히스토그램에서 많이 나온 순으로, 서로 충분히 다른 색 3개
+  const bins = new Map();
+  for (const i of pts) { const key = (data[i] >> 4) << 8 | (data[i + 1] >> 4) << 4 | (data[i + 2] >> 4); bins.set(key, (bins.get(key) || 0) + 1); }
+  let centers = [];
+  for (const [key] of [...bins.entries()].sort((a, b) => b[1] - a[1])) {
+    const c = [((key >> 8) & 15) * 17, ((key >> 4) & 15) * 17, (key & 15) * 17];
+    if (centers.every(o => (o[0] - c[0]) ** 2 + (o[1] - c[1]) ** 2 + (o[2] - c[2]) ** 2 > 70 * 70)) centers.push(c);
+    if (centers.length === 3) break;
+  }
+  let count = [];
+  for (let it = 0; it < 8; it++) {
+    const sum = centers.map(() => [0, 0, 0, 0]);
+    for (const i of pts) { const s = sum[nearest(centers, i)]; s[0] += data[i]; s[1] += data[i + 1]; s[2] += data[i + 2]; s[3]++; }
+    centers = sum.map((s, k) => s[3] ? [s[0] / s[3], s[1] / s[3], s[2] / s[3]] : centers[k]);
+    count = sum.map(s => s[3]);
+  }
+  // 넓이순 등급: 1 본문, 2 컨덴스드, 3 강조. 너무 작은 무리는 본문(1)
+  const order = centers.map((_, k) => k).sort((a, b) => count[b] - count[a]);
+  const rank = [];
+  order.forEach((k, r) => rank[k] = count[k] / pts.length < MIN_CLUSTER ? 1 : r + 1);
+  for (let i = 0; i < n; i++) if (data[i * 4 + 3] >= 128) cls[i] = rank[nearest(centers, i * 4)];
+  return cls;
+}
 
 const container = document.getElementById('text');
 const nav = document.getElementById('modes');
@@ -227,17 +202,27 @@ let lorem = [];
 let on = false;
 let theme = null;
 
+// 줄 요소: 단어(.w) 안에 글자(.c), 단어 사이엔 공백 글자(.c). 모양 모드에선 공백을 숨기고 단어 사이만 벌린다
 function lineEl(text, lh = LINE_HEIGHT) {
   const el = document.createElement('div');
   el.className = 'line';
   el.style.height = lh + 'px';
   el.style.lineHeight = lh + 'px';
-  for (const ch of text) {
-    const s = document.createElement('span');
-    s.className = 'c';
-    s.textContent = ch;
-    el.appendChild(s);
-  }
+  const words = text.split(' ');
+  words.forEach((word, i) => {
+    if (i) { const sp = document.createElement('span'); sp.className = 'c'; sp.textContent = ' '; el.appendChild(sp); }
+    if (!word) return;
+    const w = document.createElement('span');
+    w.className = 'w';
+    for (const ch of word) {
+      const s = document.createElement('span');
+      s.className = 'c';
+      s.textContent = ch;
+      w.appendChild(s);
+    }
+    el.appendChild(w);
+  });
+  el.dataset.words = words.filter(Boolean).length;
   return el;
 }
 
@@ -256,8 +241,7 @@ function renderLorem() {
 
 // 한 줄 높이의 띠(y0~y1)에서 채워진 x 구간들을 찾는다.
 // 글자의 몸통이 놓이는 띠 가운데 40% 행만 본다 — 비스듬한 가장자리에서 줄이 조각나지 않게
-function runsInBand(img, y0, y1) {
-  const { width: W, data } = img;
+function runsInBand(cls, W, y0, y1) {
   const rows = [];
   const lh = y1 - y0;
   for (let y = Math.round(y0 + lh * 0.3); y <= y0 + lh * 0.7; y += 2) rows.push(y);
@@ -267,9 +251,9 @@ function runsInBand(img, y0, y1) {
     let filled = x < W, isG = false;
     if (filled) {
       for (const y of rows) {
-        const i = (y * W + x) * 4;
-        if (data[i + 3] < 128) { filled = false; break; }
-        if (data[i + 1] > 128) isG = true;
+        const v = cls[y * W + x];
+        if (!v) { filled = false; break; }
+        if (v === 2) isG = true;
       }
     }
     if (filled) { if (start < 0) { start = x; g = 0; } if (isG) g++; }
@@ -282,33 +266,34 @@ function runsInBand(img, y0, y1) {
 const preparedCache = new Map();
 // 모양을 채우는 글 = 본문 그대로 (끝에 닿으면 처음부터 다시)
 let BODY = '';
-function preparedFor(size) {
-  if (!preparedCache.has(size)) preparedCache.set(size, prepareWithSegments(BODY, `${size}px ${STACK}`, { wordBreak: 'keep-all' }));
-  return preparedCache.get(size);
+const COND_STACK = `"Suisse Intl Condensed", ${STACK}`;
+function preparedFor(size, cond) {
+  const key = size + (cond ? 'c' : '');
+  if (!preparedCache.has(key)) preparedCache.set(key, prepareWithSegments(BODY, `${size}px ${cond ? COND_STACK : STACK}`, { wordBreak: 'keep-all' }));
+  return preparedCache.get(key);
 }
+const JUSTIFY_MIN = 0.6;   // 글이 구간 폭의 이 비율보다 짧으면 벌리지 않고 가운데 놓는다
 
 function renderShape(t) {
   const width = container.clientWidth;
   const avail = Math.max(240, innerHeight - container.getBoundingClientRect().top - BOTTOM_GAP);
-  const W = Math.ceil(Math.min(width, avail * t.aspect));
-  const H = Math.ceil(W / t.aspect);
+  const box = emojiBox(t), aspect = box.w / box.h;
+  const W = Math.ceil(Math.min(width, avail * aspect));
+  const H = Math.ceil(W / aspect);
   const size = Math.round(Math.min(SHAPE_FONT.max, Math.max(SHAPE_FONT.min, Math.min(W, H) * SHAPE_FONT.per)));
   const lh = Math.round(size * 1.35);
-  const cv = document.createElement('canvas');
-  cv.width = W; cv.height = H;
-  const ctx = cv.getContext('2d', { willReadFrequently: true });
-  t.draw(ctx, W, H);
-  const img = ctx.getImageData(0, 0, W, H);
+  const cls = classify(rasterize(t, W, H));
   const left = (width - W) / 2;
-  const src = preparedFor(size);
+  const srcs = [preparedFor(size, false), preparedFor(size, true)];
   container.className = 'shape';
   container.textContent = '';
-  container.style.cssText = `height:${H}px;font-size:${size}px;color:${t.body};--g:${t.g};--b:${t.color}`;
+  container.style.cssText = `height:${H}px;font-size:${size}px;--b:${t.color}`;
   let cursor = { segmentIndex: 0, graphemeIndex: 0 };
   const placed = [];
   for (let y = 0; y + lh <= H; y += lh) {
-    for (const run of runsInBand(img, y, y + lh)) {
+    for (const run of runsInBand(cls, W, y, y + lh)) {
       if (run.w < MIN_RUN * size) continue;
+      const src = srcs[run.g ? 1 : 0];
       let line = layoutNextLine(src, cursor, run.w);
       if (!line) { cursor = { segmentIndex: 0, graphemeIndex: 0 }; line = layoutNextLine(src, cursor, run.w); }
       cursor = line.end;
@@ -319,20 +304,19 @@ function renderShape(t) {
       el.style.top = y + 'px';
       el.style.width = run.w + 'px';
       if (run.g) el.classList.add('g');
-      if (el.childElementCount < 6) el.classList.add('narrow');
+      if (el.dataset.words < 2 || line.width < run.w * JUSTIFY_MIN) el.classList.add('narrow');
       container.appendChild(el);
       placed.push({ el, x: run.x, y: y + lh / 2 });
     }
   }
-  // 파랑 채널: 글자 중심이 파랑 영역에 놓이면 색을 바꾼다.
+  // 강조(3번 색): 글자 중심이 그 영역에 놓이면 색을 바꾼다.
   // 위치 읽기(offsetLeft)와 클래스 쓰기를 섞으면 글자마다 레이아웃을 다시 계산하므로, 읽기를 다 마친 뒤 한 번에 쓴다
   const marks = [];
   for (const { el, x, y } of placed) {
-    for (const c of el.children) {
+    for (const c of el.querySelectorAll('.w .c')) {
       const px = Math.round(x + c.offsetLeft + c.offsetWidth / 2), py = Math.round(y);
       if (px < 0 || px >= W) continue;
-      const i = (py * W + px) * 4;
-      if (img.data[i + 2] > 128 && img.data[i + 1] < 128) marks.push(c);
+      if (cls[py * W + px] === 3) marks.push(c);
     }
   }
   for (const c of marks) c.classList.add('b');
@@ -350,25 +334,30 @@ function snapshot() {
   const accent = container.style.getPropertyValue('--b') || '#000';
   const sx = scrollX, sy = scrollY;
   const out = [];
-  for (const c of container.querySelectorAll('.c')) {
-    const ch = c.textContent;
-    if (!ch.trim()) continue;
-    const r = c.getBoundingClientRect();
-    out.push({ ch, x: r.left + sx, y: r.top + sy, h: r.height, size, color: c.classList.contains('b') ? accent : '#000' });
+  for (const line of container.children) {
+    const stack = line.classList.contains('g') ? COND_STACK : STACK;
+    for (const c of line.querySelectorAll('.c')) {
+      const ch = c.textContent;
+      if (!ch.trim()) continue;
+      const r = c.getBoundingClientRect();
+      out.push({ ch, x: r.left + sx, y: r.top + sy, h: r.height, size, stack, color: c.classList.contains('b') ? accent : '#000' });
+    }
   }
   return out;
 }
 
-// 글자 기준선 위치: 줄 상자 안에서 (줄높이 − 글꼴 높이)/2 + 어센트
-let fontMetrics = null;
-function baselineOf(y, h, size) {
-  if (!fontMetrics) {
+// 글자 기준선 위치: 줄 상자 안에서 (줄높이 − 글꼴 높이)/2 + 어센트. 글꼴 스택마다 한 번 잰다
+const metricsCache = new Map();
+function baselineOf(y, h, size, stack) {
+  let m = metricsCache.get(stack);
+  if (!m) {
     const ctx = morphCanvas.getContext('2d');
-    ctx.font = `100px ${STACK}`;
-    const m = ctx.measureText('Hg');
-    fontMetrics = { asc: (m.fontBoundingBoxAscent || 95) / 100, desc: (m.fontBoundingBoxDescent || 25) / 100 };
+    ctx.font = `100px ${stack}`;
+    const t = ctx.measureText('Hg');
+    m = { asc: (t.fontBoundingBoxAscent || 95) / 100, desc: (t.fontBoundingBoxDescent || 25) / 100 };
+    metricsCache.set(stack, m);
   }
-  const asc = fontMetrics.asc * size, desc = fontMetrics.desc * size;
+  const asc = m.asc * size, desc = m.desc * size;
   return y + (h - asc - desc) / 2 + asc;
 }
 
@@ -384,6 +373,7 @@ function at(it, t) {
     h: it.a.h + (it.b.h - it.a.h) * p,
     size: it.a.size + (it.b.size - it.a.size) * p,
     color: p < 0.5 ? it.a.color : it.b.color,
+    stack: p < 0.5 ? it.a.stack : it.b.stack,
   };
 }
 
@@ -417,10 +407,10 @@ function morph(from, to) {
         if (s.size < 0.5) continue;
         const x = s.x - sx, y = s.y - sy;
         if (y > innerHeight || y + s.h < 0) continue;
-        const font = `${s.size.toFixed(2)}px ${STACK}`;
+        const font = `${s.size.toFixed(2)}px ${s.stack}`;
         if (font !== lastFont) { ctx.font = font; lastFont = font; }
         ctx.fillStyle = s.color;
-        ctx.fillText(s.ch, x, baselineOf(y, s.h, s.size));
+        ctx.fillText(s.ch, x, baselineOf(y, s.h, s.size, s.stack));
       }
       if (t < 1) me.raf = requestAnimationFrame(frame);
       else { cur = null; morphCanvas.remove(); resolve(); }
