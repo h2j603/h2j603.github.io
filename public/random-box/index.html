@@ -266,7 +266,7 @@ function runsInBand(img, y0, y1) {
 const preparedCache = new Map();
 function preparedFor(t, size, bold) {
   const key = t.name + size + (bold ? 'b' : '');
-  if (!preparedCache.has(key)) preparedCache.set(key, prepareWithSegments(t.text.repeat(12), `${bold ? 'bold ' : ''}${size}px "Suisse Intl Condensed"`));
+  if (!preparedCache.has(key)) preparedCache.set(key, prepareWithSegments(t.text.repeat(2), `${bold ? 'bold ' : ''}${size}px "Suisse Intl Condensed"`));
   return preparedCache.get(key);
 }
 
@@ -307,15 +307,18 @@ function renderShape(t) {
       placed.push({ el, x: run.x, y: y + lh / 2 });
     }
   }
-  // 파랑 채널: 글자 중심이 파랑 영역에 놓이면 색을 바꾼다
+  // 파랑 채널: 글자 중심이 파랑 영역에 놓이면 색을 바꾼다.
+  // 위치 읽기(offsetLeft)와 클래스 쓰기를 섞으면 글자마다 레이아웃을 다시 계산하므로, 읽기를 다 마친 뒤 한 번에 쓴다
+  const marks = [];
   for (const { el, x, y } of placed) {
     for (const c of el.children) {
       const px = Math.round(x + c.offsetLeft + c.offsetWidth / 2), py = Math.round(y);
       if (px < 0 || px >= W) continue;
       const i = (py * W + px) * 4;
-      if (img.data[i + 2] > 128 && img.data[i + 1] < 128) c.classList.add('b');
+      if (img.data[i + 2] > 128 && img.data[i + 1] < 128) marks.push(c);
     }
   }
+  for (const c of marks) c.classList.add('b');
 }
 
 // 애니메이션은 줄 단위로 건다 — 글자 단위(2천 개)는 폰에서 렉이 걸린다
