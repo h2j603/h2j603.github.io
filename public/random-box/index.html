@@ -26,9 +26,12 @@
   font-style: normal;
   font-display: swap;
 }
-html { font-family: "Suisse Intl", sans-serif; -webkit-text-size-adjust: 100%; }
+/* 모양이 켜지면 화면 전체가 테마 색이 된다. --fg는 글 색(테마 색이 어두우면 흰색). JS(apply)가 둘 다 바꾼다 */
+:root { --bg: #fff; --fg: #000; }
+html { font-family: "Suisse Intl", sans-serif; -webkit-text-size-adjust: 100%; background: var(--bg); color: var(--fg); transition: background-color 0.6s ease; }
 body { margin: 0; padding: 1rem; }
 #text { font-size: 16px; position: relative; }
+#text, #origin { max-width: 36rem; margin-left: auto; margin-right: auto; }   /* 넓은 화면: 본문은 읽기 폭(영문 약 75자·한글 약 36자)으로, 제목만 화면 폭을 채운다 */
 #text .line { white-space: pre; }
 #text .c { display: inline-block; }
 #text .w { display: inline-block; }   /* 단어: 글자 묶음, 양끝맞춤은 단어 사이만 벌린다 */
@@ -40,9 +43,9 @@ body { margin: 0; padding: 1rem; }
 /* 모양 모드: 줄 조각(run)을 실루엣 안의 정확한 위치·폭에 절대배치, 글자를 양끝으로 고르게 벌린다 */
 #text.shape .line { position: absolute; display: flex; justify-content: space-between; }
 #text.shape .line > .c { display: none; }                    /* 단어 사이 공백은 flex 간격이 대신한다 */
-#text.shape .line.narrow { justify-content: center; }
+#text.shape .line.narrow { justify-content: center; gap: 0.28em; }   /* 벌리지 않는 줄은 단어 사이를 공백 폭만큼 띄운다 (공백 글자를 숨기므로) */
 #text.shape .line.g { font-family: "Suisse Intl Condensed", "Suisse Intl", sans-serif; }   /* 2번 색: 줄 단위 컨덴스드 */
-#text.shape .c.b { color: var(--b); }                        /* 3번 색: 글자 단위 테마 색 */
+#text.shape .c.b { color: var(--b); }                        /* 3번 색: 글자 단위 강조. 바탕이 테마 색이므로 흰색(어두운 바탕이면 반투명 흰색) */
 
 /* 제목 */
 #title {
@@ -64,10 +67,9 @@ body { margin: 0; padding: 1rem; }
 
 /* 제목의 빈칸 = 입력칸. 실선 하나가 빈칸이고, 단어가 들어와도 실선은 남는다.
    높이를 줄 상자(1em)와 같게 맞춰 비었을 때와 찼을 때 선 위치가 같다 */
-#blank { position: relative; height: 1em; vertical-align: top; outline: none; caret-color: #000; }
+#blank { position: relative; height: 1em; vertical-align: top; outline: none; caret-color: var(--fg); }
 #blank:empty { width: 2.4em; }
 #blank::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.06em; height: 0.06em; background: currentColor; }
-#blank.on { color: var(--c); }              /* 모양이 켜지면 단어와 선을 테마 색으로 */
 #blank.busy { animation: pulse 0.7s ease-in-out infinite alternate; }   /* 서버에 묻는 동안 */
 @keyframes pulse { from { opacity: 1; } to { opacity: 0.3; } }
 
@@ -84,7 +86,7 @@ body { margin: 0; padding: 1rem; }
   gap: 0.4rem;
   margin: calc(-1 * var(--glow)) -1rem calc(2rem - var(--glow));   /* 좌우: body 여백 상쇄 */
   padding: calc(var(--glow) + 0.4rem) 1rem calc(var(--glow) + 0.4rem);
-  background: linear-gradient(#fff, #fff) 0 var(--glow) / 100% var(--row) no-repeat;   /* 흰 띠는 버튼 줄에만 */
+  background: linear-gradient(var(--bg), var(--bg)) 0 var(--glow) / 100% var(--row) no-repeat;   /* 바탕색 띠는 버튼 줄에만 */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -99,8 +101,8 @@ body { margin: 0; padding: 1rem; }
   font-size: 14px;
   font-weight: 400;
   text-transform: uppercase;
-  color: #000;
-  background: #e2e2e2;
+  color: var(--fg);
+  background: color-mix(in srgb, var(--fg) 11%, transparent);   /* 흰 바탕에선 #e2e2e2, 테마 바탕에선 그 색의 어두운 톤 */
   border: 0;
   border-radius: 12px;
   padding: 0.3em 0.8em;
@@ -110,13 +112,15 @@ body { margin: 0; padding: 1rem; }
   transition: box-shadow 0.35s ease, transform 0.12s ease, background 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 }
-#modes button:hover {
-  transform: scale(1.06);
-  box-shadow: 0 0 12px 2px color-mix(in oklch, var(--c) 40%, transparent), 0 0 28px 6px color-mix(in oklch, var(--c) 15%, transparent);   /* 은은하게 */
+@media (hover: hover) {   /* 터치 기기는 탭한 뒤 hover가 남아 글로우가 안 꺼지므로 마우스에서만 */
+  #modes button:hover {
+    transform: scale(1.06);
+    box-shadow: 0 0 12px 2px color-mix(in oklch, var(--c) 40%, transparent), 0 0 28px 6px color-mix(in oklch, var(--c) 15%, transparent);   /* 은은하게 */
+  }
 }
 #modes button:active { transform: scale(0.95); }
-#modes button:focus-visible { outline: 2px solid #000; outline-offset: 3px; }
-#modes button[aria-pressed="true"] { background: var(--c); }
+#modes button:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+#modes button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }   /* 바탕이 테마 색이므로 켜진 버튼은 반전 */
 </style>
 </head>
 <body>
@@ -225,6 +229,18 @@ function classify(img) {
   return { cls, color };
 }
 
+// 색이 어두운가 (밝기 0.45 미만). oklch 문자열도 캔버스에 찍어 읽는다. 어두운 테마 색 위에선 글을 흰색으로
+const darkCache = new Map();
+function isDark(color) {
+  if (!darkCache.has(color)) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 1;
+    const ctx = cv.getContext('2d'); ctx.fillStyle = color; ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+    darkCache.set(color, (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.45);
+  }
+  return darkCache.get(color);
+}
+
 const container = document.getElementById('text');
 const origin = document.getElementById('origin');
 document.documentElement.style.setProperty('--origin-h', ORIGIN_H + 'px');
@@ -326,7 +342,7 @@ function renderShape(t) {
   const srcs = [preparedFor(size, false), preparedFor(size, true)];
   container.className = 'shape';
   container.textContent = '';
-  container.style.cssText = `height:${avail}px;font-size:${size}px;--b:${t.color}`;   // 영역 높이는 모양과 무관하게 고정 → 아래 원본 이모지 자리도 고정
+  container.style.cssText = `height:${avail}px;font-size:${size}px;--b:${isDark(t.color) ? 'rgba(255,255,255,0.5)' : '#fff'}`;   // 영역 높이는 모양과 무관하게 고정 → 아래 원본 이모지 자리도 고정
   origin.textContent = t.emoji;
   origin.className = 'show';
   let cursor = { segmentIndex: 0, graphemeIndex: 0 };
@@ -371,8 +387,9 @@ morphCanvas.id = 'morph';
 
 // 현재 DOM 글자들의 위치·크기·색을 기록 (공백은 제외)
 function snapshot() {
-  const size = parseFloat(getComputedStyle(container).fontSize);
-  const accent = container.style.getPropertyValue('--b') || '#000';
+  const cs = getComputedStyle(container);
+  const size = parseFloat(cs.fontSize), fg = cs.color;
+  const accent = container.style.getPropertyValue('--b') || fg;
   const sx = scrollX, sy = scrollY;
   const out = [];
   for (const line of container.children) {
@@ -381,7 +398,7 @@ function snapshot() {
       const ch = c.textContent;
       if (!ch.trim()) continue;
       const r = c.getBoundingClientRect();
-      out.push({ ch, x: r.left + sx, y: r.top + sy, h: r.height, size, stack, color: c.classList.contains('b') ? accent : '#000' });
+      out.push({ ch, x: r.left + sx, y: r.top + sy, h: r.height, size, stack, color: c.classList.contains('b') ? accent : fg });
     }
   }
   return out;
@@ -487,13 +504,14 @@ function apply(t) {
   theme = t;
   for (const x of nav.children) x.setAttribute('aria-pressed', String(on && x.textContent === t.name));
   blank.classList.remove('busy');
+  // 화면 전체를 테마 색으로. 글 색은 바로 바꾼다(모핑 캔버스가 이 색으로 그린다), 바탕은 CSS가 0.6초에 걸쳐 바꾼다
+  document.documentElement.style.setProperty('--bg', t ? t.color : '#fff');
+  document.documentElement.style.setProperty('--fg', t && isDark(t.color) ? '#fff' : '#000');
   // 제목은 크기를 움직이지 않는다(아이폰에서 떨린다). 짧게 사라졌다가 새 단어·새 크기로 나타난다
   titleFade?.cancel();
   titleFade = inner.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, easing: 'ease-in' });
   titleFade.onfinish = () => {
     blank.textContent = t ? t.name : '';
-    blank.classList.toggle('on', on);
-    title.style.setProperty('--c', t ? t.color : '#000');
     fitTitle();
     titleFade = inner.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease-out' });
   };
@@ -586,7 +604,7 @@ blank.addEventListener('paste', e => {
 
 // ───────── 본문: are.na ⁋ Notepad 채널에서 접속할 때마다 무작위로 한 블록 ─────────
 const NOTEPAD = 'https://api.are.na/v3/channels/notepad-0o3p7vvmg7i/contents?per=100';
-const MIN_NOTE = 150;     // 이보다 짧은 메모는 제외(글자 수)
+const MIN_NOTE = 400;     // 이보다 짧은 메모는 제외(글자 수). 실측 2026-09-19: 35개 중 18개 통과, 폰에서 약 18줄
 const FETCH_TIMEOUT = 4000;
 async function loadNote() {
   const ctl = new AbortController();
@@ -614,8 +632,10 @@ function fitTitle(animate = false, opts = { duration: 600, easing: EASE }) {
   const fromPx = titleSize * scaleNow;
   title.style.fontSize = '100px';
   const textW = inner.getBoundingClientRect().width;
+  const emptyW = textW - blank.getBoundingClientRect().width + 240;   // 빈칸이 비었을 때의 폭 (100px 기준 빈칸 2.4em = 240px). 100px인 지금 잰다
   titleSize = 100 * title.clientWidth / textW;
   title.style.fontSize = titleSize.toFixed(2) + 'px';
+  title.style.height = (100 * title.clientWidth / emptyW).toFixed(2) + 'px';   // 제목 높이 = 빈칸이 비었을 때의 크기로 늘 고정. 단어가 있어도, 폭이 바뀌어도 같다
   if (animate && fromPx) titleAnim = inner.animate([{ transform: `scale(${fromPx / titleSize})` }, { transform: 'none' }], opts);
 }
 
@@ -628,7 +648,6 @@ title.style.visibility = 'visible';
 blank.style.width = '';
 const INTRO = { duration: 700, delay: 450, easing: EASE, fill: 'backwards' };
 fitTitle(true, INTRO);
-title.style.height = title.style.fontSize;   // 제목 높이 고정 = 빈칸 상태의 크기. 이후 크기 모핑은 이 상자 안에서만 일어난다
 blank.animate([{ width: '0em' }, { width: '2.4em' }], INTRO);
 const PARAS = await noteReady;
 BODY = PARAS.join(' ') + ' ';
@@ -638,7 +657,7 @@ let t, lastW = innerWidth;
 addEventListener('resize', () => {
   if (innerWidth === lastW) return;   // iOS 주소창 접힘(세로만 변함)은 무시
   lastW = innerWidth;
-  clearTimeout(t); t = setTimeout(() => { fitTitle(); if (!on && !blank.textContent) title.style.height = title.style.fontSize; render(); }, 150);
+  clearTimeout(t); t = setTimeout(() => { fitTitle(); render(); }, 150);
 });
 </script>
 </body>
