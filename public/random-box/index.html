@@ -57,6 +57,7 @@ body { margin: 0; padding: 1rem; }
   margin: 1.5rem 0 1.25rem;
   letter-spacing: -0.01em;
   visibility: hidden;        /* 폰트가 오기 전엔 안 보인다. 인트로가 켠다 */
+  position: relative; z-index: 11;   /* 네비의 투명 글로우 여백이 제목을 덮으므로 제목을 위 층에. 네비에 pointer-events:none을 주면 iOS 가로 스크롤이 죽는다 */
 }
 #title span { display: inline-block; }   /* 글자 폭 측정용 */
 #title > span { transform-origin: left bottom; will-change: transform; }   /* 크기 모핑은 글자 재배치 대신 transform으로 (아이폰에서 안 떨린다) */
@@ -87,9 +88,7 @@ body { margin: 0; padding: 1rem; }
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  pointer-events: none;      /* 투명한 글로우 여백이 제목(입력칸)을 덮으므로, 탭은 버튼만 받는다 */
 }
-#modes button { pointer-events: auto; }
 #modes::-webkit-scrollbar { display: none; }
 #modes::after { content: ""; flex: 0 0 0.5rem; }   /* 끝 여백 */
 @media (min-width: 720px) { #modes { justify-content: center; } }
