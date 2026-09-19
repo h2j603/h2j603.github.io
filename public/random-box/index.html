@@ -47,29 +47,47 @@ body { margin: 0; padding: 1rem; }
 #text.shape .line.g { font-family: "Suisse Intl Condensed", "Suisse Intl", sans-serif; }   /* 2번 색: 줄 단위 컨덴스드 */
 #text.shape .c.b { color: var(--b); }                        /* 3번 색: 글자 단위 강조. 바탕이 테마 색이므로 흰색(어두운 바탕이면 반투명 흰색) */
 
-/* 제목 */
-#title {
+/* 바탕 하단: 직전 테마 색이 그라데이션으로 살짝 남는다. --prev는 apply()가 바꾼다.
+   바꾸는 순간 --prev = 방금까지의 바탕색이라 이음새가 안 보인다 (gradient는 transition이 안 되지만 필요 없다) */
+:root { --prev: #fff; }
+body::before { content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 50vh; z-index: -1; pointer-events: none;
+  background: linear-gradient(transparent, var(--prev)); opacity: 0.55; }
+
+/* 머리: 작은 "LOREM IPSUM WITH" 무한 순환 띠 + 그 아래 통 입력칸 */
+#head { visibility: hidden; margin: 0.75rem 0 1.25rem; position: relative; z-index: 11; }   /* 폰트가 오기 전엔 안 보인다. 네비의 투명 글로우 여백이 덮으므로 위 층에 (네비 pointer-events:none은 iOS 가로 스크롤을 죽인다) */
+#marquee {
   font-family: "Suisse Intl Condensed", "Suisse Intl", sans-serif;
   font-weight: 500;
-  font-size: 9vw;            /* JS가 화면 폭에 딱 맞게 덮어쓴다 (fitTitle) */
-  line-height: 1;
-  text-align: left;          /* 크기 모핑 중 왼끝이 고정되게. 다 자라면 어차피 폭을 꽉 채운다 */
-  display: flex; align-items: flex-end;   /* 높이는 JS가 고정(인트로 끝 크기). 크기가 바뀌어도 아래 내용이 안 밀린다 */
+  font-size: 12px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  line-height: 1;
   white-space: nowrap;
-  margin: 1.5rem 0 1.25rem;
-  letter-spacing: -0.01em;
-  visibility: hidden;        /* 폰트가 오기 전엔 안 보인다. 인트로가 켠다 */
-  position: relative; z-index: 11;   /* 네비의 투명 글로우 여백이 제목을 덮으므로 제목을 위 층에. 네비에 pointer-events:none을 주면 iOS 가로 스크롤이 죽는다 */
+  overflow: hidden;
+  margin: 0 -1rem;           /* 화면 끝에서 끝까지 */
 }
-#title span { display: inline-block; }   /* 글자 폭 측정용 */
-#title > span { transform-origin: left bottom; will-change: transform; }   /* 크기 모핑은 글자 재배치 대신 transform으로 (아이폰에서 안 떨린다) */
+#marquee > span { display: inline-block; white-space: pre; animation: marquee var(--dur, 40s) linear infinite; }   /* 같은 글 두 벌. 각각 제 폭만큼 왼쪽으로 → 뒤 벌이 앞 벌 자리에 오며 이어진다 */
+@keyframes marquee { to { transform: translate3d(-100%, 0, 0); } }
 
-/* 제목의 빈칸 = 입력칸. 실선 하나가 빈칸이고, 단어가 들어와도 실선은 남는다.
-   높이를 줄 상자(1em)와 같게 맞춰 비었을 때와 찼을 때 선 위치가 같다 */
-#blank { position: relative; height: 1em; vertical-align: top; outline: none; caret-color: var(--fg); }
-#blank:empty { width: 2.4em; }
-#blank::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.06em; height: 0.06em; background: currentColor; }
+#title {
+  --word: min(22vw, 140px);  /* 단어 글자 크기. 폭을 넘치면 JS(fitWord)가 그 단어만 줄인다 */
+  font-family: "Suisse Intl Condensed", "Suisse Intl", sans-serif;
+  font-weight: 500;
+  font-size: var(--word);
+  line-height: 1;
+  text-transform: uppercase;
+  margin: 0.5rem 0 0;
+  height: calc(var(--word) * 1.12);   /* 높이 고정: 단어가 줄어도 아래가 안 밀린다 */
+  display: flex; align-items: flex-end;
+}
+/* 통 입력칸. 밑줄 하나가 빈칸이고, 단어가 들어와도 밑줄은 남는다 */
+#blank {
+  display: block; width: 100%;
+  white-space: nowrap; overflow: hidden;
+  padding-bottom: calc(var(--word) * 0.04);
+  border-bottom: calc(var(--word) * 0.06) solid currentColor;
+  outline: none; caret-color: var(--fg);
+}
 #blank.busy { animation: pulse 0.7s ease-in-out infinite alternate; }   /* 서버에 묻는 동안 */
 @keyframes pulse { from { opacity: 1; } to { opacity: 0.3; } }
 
@@ -129,7 +147,10 @@ body { margin: 0; padding: 1rem; }
 </style>
 </head>
 <body>
-<h1 id="title"><span>Lorem Ipsum with <span id="blank" contenteditable="true" enterkeyhint="go" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false" role="textbox" aria-label="a word"></span></span></h1>
+<header id="head">
+  <div id="marquee" aria-hidden="true"><span></span><span></span></div>
+  <h1 id="title"><span id="blank" contenteditable="true" enterkeyhint="go" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false" role="textbox" aria-label="lorem ipsum with a word"></span></h1>
+</header>
 <nav id="modes" aria-label="ipsum modes"></nav>
 <div id="text"></div>
 <div id="origin" aria-hidden="true"></div>
@@ -509,16 +530,19 @@ function apply(t) {
   theme = t;
   for (const x of nav.children) x.setAttribute('aria-pressed', String(on && x.textContent === t.name));
   blank.classList.remove('busy');
-  // 화면 전체를 테마 색으로. 글 색은 바로 바꾼다(모핑 캔버스가 이 색으로 그린다), 바탕은 CSS가 0.6초에 걸쳐 바꾼다
-  document.documentElement.style.setProperty('--bg', t ? t.color : '#fff');
-  document.documentElement.style.setProperty('--fg', t && isDark(t.color) ? '#fff' : '#000');
-  // 제목은 크기를 움직이지 않는다(아이폰에서 떨린다). 짧게 사라졌다가 새 단어·새 크기로 나타난다
-  titleFade?.cancel();
-  titleFade = inner.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, easing: 'ease-in' });
-  titleFade.onfinish = () => {
+  // 화면 전체를 테마 색으로. 글 색은 바로 바꾼다(모핑 캔버스가 이 색으로 그린다), 바탕은 CSS가 0.6초에 걸쳐 바꾼다.
+  // 직전 바탕색은 --prev로 남겨 화면 아래에 그라데이션으로 살짝 남는다
+  const root = document.documentElement.style;
+  root.setProperty('--prev', root.getPropertyValue('--bg') || '#fff');
+  root.setProperty('--bg', t ? t.color : '#fff');
+  root.setProperty('--fg', t && isDark(t.color) ? '#fff' : '#000');
+  // 단어는 짧게 사라졌다가 새 단어로 나타난다
+  wordFade?.cancel();
+  wordFade = blank.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, easing: 'ease-in' });
+  wordFade.onfinish = () => {
     blank.textContent = t ? t.name : '';
-    fitTitle();
-    titleFade = inner.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease-out' });
+    fitWord();
+    wordFade = blank.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease-out' });
   };
   switchTo(render);
 }
@@ -587,7 +611,7 @@ function makeTheme(word, emoji) {
 
 async function submit(raw) {
   const word = raw.trim().toLowerCase().replace(/\s+/g, ' ');
-  if (!word) { if (on) apply(null); else fitTitle(); return; }
+  if (!word) { if (on) apply(null); else { blank.textContent = ''; fitWord(); } return; }
   if (on && word === theme.name) return;
   const preset = THEMES.find(t => t.name === word);
   if (preset) { apply(preset); return; }
@@ -599,7 +623,7 @@ async function submit(raw) {
   apply(makeTheme(word, emoji));
 }
 
-blank.addEventListener('input', fitTitle);
+blank.addEventListener('input', fitWord);
 blank.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); blank.blur(); } });
 blank.addEventListener('blur', () => submit(blank.textContent));
 blank.addEventListener('paste', e => {
@@ -624,36 +648,34 @@ async function loadNote() {
   finally { clearTimeout(timer); }
 }
 
-// ───────── 제목: 화면 폭에 딱 맞게 ─────────
-// 100px로 놓고 글자 폭을 잰 뒤, 컨테이너 폭과의 비율만큼 키운다 (letter-spacing이 em 단위라 비율이 정확히 맞는다)
+// ───────── 머리: 순환 띠 + 단어 크기 ─────────
 const TITLE_FONT = '500 100px "Suisse Intl Condensed"';
-// 인트로만 크기를 움직인다: 글꼴 크기는 즉시 새 값으로 두고, 겉보기 크기만 transform scale로 옛 크기→1. 모드 전환은 apply()의 페이드
-const EASE = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
-const inner = title.firstElementChild;
-let titleAnim = null, titleFade = null, titleSize = 0;   // 현재 글꼴 크기(px)
-function fitTitle(animate = false, opts = { duration: 600, easing: EASE }) {
-  const scaleNow = titleAnim ? new DOMMatrix(getComputedStyle(inner).transform).a : 1;   // 진행 중이면 그 시점 배율에서 이어간다
-  titleAnim?.cancel();
-  const fromPx = titleSize * scaleNow;
-  title.style.fontSize = '100px';
-  const textW = inner.getBoundingClientRect().width;
-  const emptyW = textW - blank.getBoundingClientRect().width + 240;   // 빈칸이 비었을 때의 폭 (100px 기준 빈칸 2.4em = 240px). 100px인 지금 잰다
-  titleSize = 100 * title.clientWidth / textW;
-  title.style.fontSize = titleSize.toFixed(2) + 'px';
-  title.style.height = (100 * title.clientWidth / emptyW).toFixed(2) + 'px';   // 제목 높이 = 빈칸이 비었을 때의 크기로 늘 고정. 단어가 있어도, 폭이 바뀌어도 같다
-  if (animate && fromPx) titleAnim = inner.animate([{ transform: `scale(${fromPx / titleSize})` }, { transform: 'none' }], opts);
+const MARQUEE_UNIT = 'LOREM IPSUM WITH ';
+const MARQUEE_SPEED = 36;   // px/s
+const marquee = document.getElementById('marquee');
+let wordFade = null;
+// 띠: 한 벌이 화면 폭보다 넓도록 반복하고, 속도가 폭과 무관하게 같도록 시간을 폭에서 계산한다
+function fillMarquee() {
+  const [a, b] = marquee.children;
+  a.textContent = MARQUEE_UNIT;
+  const n = Math.ceil(innerWidth / a.getBoundingClientRect().width) + 1;
+  a.textContent = b.textContent = MARQUEE_UNIT.repeat(n);
+  marquee.style.setProperty('--dur', (a.getBoundingClientRect().width / MARQUEE_SPEED).toFixed(1) + 's');
+}
+// 단어가 입력칸 폭을 넘치면 그 단어만 줄인다. 칸 높이는 CSS가 고정
+const measure = document.createElement('canvas').getContext('2d');
+function fitWord() {
+  const base = parseFloat(getComputedStyle(title).fontSize);
+  measure.font = `500 ${base}px "Suisse Intl Condensed"`;
+  const w = measure.measureText(blank.textContent.toUpperCase()).width;
+  blank.style.fontSize = w > blank.clientWidth ? (base * blank.clientWidth / w * 0.98).toFixed(2) + 'px' : '';   // 0.98: 반올림으로 1px 넘치는 것 방지
 }
 
 const noteReady = loadNote();
 await Promise.all([document.fonts.load(FONT), document.fonts.load(TITLE_FONT)]);
-// 인트로: 선 없이 "LOREM IPSUM WITH"가 화면 폭을 꽉 채웠다가, 줄어들면서 그 자리에 선이 생긴다. 본문은 기다리지 않는다
-blank.style.width = '0';
-fitTitle();
-title.style.visibility = 'visible';
-blank.style.width = '';
-const INTRO = { duration: 700, delay: 450, easing: EASE, fill: 'backwards' };
-fitTitle(true, INTRO);
-blank.animate([{ width: '0em' }, { width: '2.4em' }], INTRO);
+fillMarquee();
+fitWord();
+document.getElementById('head').style.visibility = 'visible';
 const PARAS = await noteReady;
 BODY = PARAS.join(' ') + ' ';
 lorem = PARAS.map(t => prepareWithSegments(t, FONT, { wordBreak: 'keep-all' }));
@@ -662,7 +684,7 @@ let t, lastW = innerWidth;
 addEventListener('resize', () => {
   if (innerWidth === lastW) return;   // iOS 주소창 접힘(세로만 변함)은 무시
   lastW = innerWidth;
-  clearTimeout(t); t = setTimeout(() => { fitTitle(); render(); }, 150);
+  clearTimeout(t); t = setTimeout(() => { fillMarquee(); fitWord(); render(); }, 150);
 });
 </script>
 </body>
