@@ -26,58 +26,54 @@
   font-style: normal;
   font-display: swap;
 }
-/* 모양이 켜지면 화면 전체가 테마 색이 된다. --fg는 글 색(테마 색이 어두우면 흰색). JS(apply)가 둘 다 바꾼다 */
+
 :root { --bg: #fff; --fg: #000; }
 html { font-family: "Suisse Intl", sans-serif; -webkit-text-size-adjust: 100%; background: var(--bg); color: var(--fg); transition: background-color 0.6s ease; }
 body { margin: 0; padding: 1rem; }
 #text { font-size: 16px; position: relative; }
-#text, #origin { max-width: 36rem; margin-left: auto; margin-right: auto; }   /* 넓은 화면: 본문은 읽기 폭(영문 약 75자·한글 약 36자)으로, 제목만 화면 폭을 채운다 */
+#text, #origin { max-width: 36rem; margin-left: auto; margin-right: auto; }
 #text .line { white-space: pre; }
 #text .c { display: inline-block; }
-#text .w { display: inline-block; }   /* 단어: 글자 묶음, 양끝맞춤은 단어 사이만 벌린다 */
-/* 모양 아래 작은 원본 이모지. 로렘 모드에선 자리도 차지하지 않는다 */
+#text .w { display: inline-block; }
+
 #origin { height: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; opacity: 0; font-size: 28px; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
 #origin.show { height: var(--origin-h); opacity: 1; transition: opacity 0.4s ease 1.1s; }
-#morph { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }   /* 표시 크기는 화면 크기, 픽셀 크기는 배율만큼 */
+#morph { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
 
-/* 모양 모드: 줄 조각(run)을 실루엣 안의 정확한 위치·폭에 절대배치, 글자를 양끝으로 고르게 벌린다 */
 #text.shape .line { position: absolute; display: flex; justify-content: space-between; }
-#text.shape .line > .c { display: none; }                    /* 단어 사이 공백은 flex 간격이 대신한다 */
-#text.shape .line.narrow { justify-content: center; gap: 0.28em; }   /* 벌리지 않는 줄은 단어 사이를 공백 폭만큼 띄운다 (공백 글자를 숨기므로) */
-#text.shape .line.g { font-family: "Suisse Intl Condensed", "Suisse Intl", sans-serif; }   /* 2번 색: 줄 단위 컨덴스드 */
-#text.shape .c.b { color: var(--b); }                        /* 3번 색: 글자 단위 강조. 바탕이 테마 색이므로 흰색(어두운 바탕이면 반투명 흰색) */
+#text.shape .line > .c { display: none; } /* 공백은 flex 간격이 대신 */
+#text.shape .line.narrow { justify-content: center; gap: 0.28em; }
+#text.shape .line.g { font-family: "Suisse Intl Condensed", "Suisse Intl", sans-serif; }
+#text.shape .c.b { color: var(--b); }
 
-/* 제목 */
 #title {
   font-family: "Suisse Intl Condensed", "Suisse Intl", sans-serif;
   font-weight: 500;
-  font-size: 9vw;            /* JS가 화면 폭에 딱 맞게 덮어쓴다 (fitTitle) */
+  font-size: 9vw;
   line-height: 1;
-  text-align: left;          /* 크기 모핑 중 왼끝이 고정되게. 다 자라면 어차피 폭을 꽉 채운다 */
-  display: flex; align-items: flex-end;   /* 높이는 JS가 고정(인트로 끝 크기). 크기가 바뀌어도 아래 내용이 안 밀린다 */
+  text-align: left;
+  display: flex; align-items: flex-end;
   text-transform: uppercase;
   white-space: nowrap;
   margin: 1.5rem 0 1.25rem;
   letter-spacing: -0.01em;
-  visibility: hidden;        /* 폰트가 오기 전엔 안 보인다. 인트로가 켠다 */
-  position: relative; z-index: 11;   /* 네비의 투명 글로우 여백이 제목을 덮으므로 제목을 위 층에. 네비에 pointer-events:none을 주면 iOS 가로 스크롤이 죽는다 */
+  visibility: hidden;
+  position: relative; z-index: 11; /* 네비 글로우 여백이 제목을 덮는다. 네비에 pointer-events:none을 주면 iOS 가로 스크롤이 죽음 */
 }
-#title span { display: inline-block; }   /* 글자 폭 측정용 */
-#title > span { transform-origin: left bottom; will-change: transform; }   /* 크기 모핑은 글자 재배치 대신 transform으로 (아이폰에서 안 떨린다) */
+#title span { display: inline-block; }
+#title > span { transform-origin: left bottom; will-change: transform; }
 
-/* 제목의 빈칸 = 입력칸. 실선 하나가 빈칸이고, 단어가 들어와도 실선은 남는다.
-   높이를 줄 상자(1em)와 같게 맞춰 비었을 때와 찼을 때 선 위치가 같다 */
 #blank { position: relative; height: 1em; vertical-align: top; outline: none; caret-color: var(--fg); }
 #blank:empty { width: 2.4em; }
 #blank::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.06em; height: 0.06em; background: currentColor; }
-#blank.busy { animation: pulse 0.7s ease-in-out infinite alternate; }   /* 서버에 묻는 동안 */
+#blank.busy { animation: pulse 0.7s ease-in-out infinite alternate; }
 @keyframes pulse { from { opacity: 1; } to { opacity: 0.3; } }
 
-/* 네비: 모드별 버튼. 화면 위에 고정(sticky) */
+/* 글로우가 overflow에 잘리지 않게 위아래 --glow만큼 여백을 두고 마진으로 상쇄.
+   띠는 content-box에만 칠한다. gradient로 칠하면 색 전환이 안 됨 */
 #modes {
-  /* 가로 스크롤 상자는 세로도 잘라내므로, 글로우가 잘리지 않게 위아래로 --glow만큼 투명 여백을 두고 마진으로 상쇄한다 */
   --glow: 80px;
-  --row: calc(32px + 0.8rem);   /* 버튼 높이 + 안쪽 여백 */
+  --row: calc(32px + 0.8rem);
   position: sticky;
   top: calc(-1 * var(--glow));
   z-index: 10;
@@ -85,29 +81,29 @@ body { margin: 0; padding: 1rem; }
   flex-wrap: nowrap;
   align-items: center;
   gap: 0.4rem;
-  height: var(--row);           /* 내용 상자 = 버튼 줄. 띠는 이 상자에만 칠한다(background-clip) */
-  margin: calc(-1 * var(--glow)) -1rem calc(2rem - var(--glow));   /* 좌우: body 여백 상쇄 */
+  height: var(--row);
+  margin: calc(-1 * var(--glow)) -1rem calc(2rem - var(--glow));
   padding: var(--glow) 0;
   background: var(--bg);
   background-clip: content-box;
-  transition: background-color 0.6s ease;   /* 바탕(html)과 같은 속도로. gradient로 칠하면 전환이 안 돼 띠만 먼저 바뀐다 */
+  transition: background-color 0.6s ease;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
 #modes::-webkit-scrollbar { display: none; }
-#modes::before { content: ""; flex: 0 0 0.6rem; }   /* + gap 0.4rem = 1rem: 첫 버튼 왼끝이 본문과 맞는다 */   /* 좌우 여백은 안쪽 칸으로 (padding이면 띠 밖이라 투명해진다) */
+#modes::before { content: ""; flex: 0 0 0.6rem; } /* 좌우 여백. padding이면 띠 밖이라 투명 */
 #modes::after { content: ""; flex: 0 0 1.5rem; }
 @media (min-width: 720px) { #modes { justify-content: center; } }
 #modes button {
-  --c: lawngreen;            /* 테마 색, JS가 버튼마다 덮어쓴다 */
+  --c: lawngreen; /* 테마 색, JS가 버튼마다 덮어쓴다 */
   flex: 0 0 auto;
   font: inherit;
   font-size: 14px;
   font-weight: 400;
   text-transform: uppercase;
   color: var(--fg);
-  background: color-mix(in srgb, var(--fg) 11%, transparent);   /* 흰 바탕에선 #e2e2e2, 테마 바탕에선 그 색의 어두운 톤 */
+  background: color-mix(in srgb, var(--fg) 11%, transparent);
   border: 0;
   border-radius: 12px;
   padding: 0.3em 0.8em;
@@ -117,15 +113,15 @@ body { margin: 0; padding: 1rem; }
   transition: box-shadow 0.35s ease, transform 0.12s ease, background 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 }
-@media (hover: hover) {   /* 터치 기기는 탭한 뒤 hover가 남아 글로우가 안 꺼지므로 마우스에서만 */
+@media (hover: hover) { /* 터치는 탭 뒤에 hover가 남는다 */
   #modes button:hover {
     transform: scale(1.06);
-    box-shadow: 0 0 12px 2px color-mix(in oklch, var(--c) 40%, transparent), 0 0 28px 6px color-mix(in oklch, var(--c) 15%, transparent);   /* 은은하게 */
+    box-shadow: 0 0 12px 2px color-mix(in oklch, var(--c) 40%, transparent), 0 0 28px 6px color-mix(in oklch, var(--c) 15%, transparent);
   }
 }
 #modes button:active { transform: scale(0.95); }
 #modes button:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
-#modes button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }   /* 바탕이 테마 색이므로 켜진 버튼은 반전 */
+#modes button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 </style>
 </head>
 <body>
@@ -139,13 +135,13 @@ import { prepareWithSegments, layoutWithLines, layoutNextLine } from './lib/pret
 
 const FONT_SIZE = 16;
 const LINE_HEIGHT = 22;
-const STACK = '"Suisse Intl", sans-serif';   // DOM과 캔버스가 같은 글꼴 스택을 써야 측정이 맞는다 (한글은 대체 글꼴)
+const STACK = '"Suisse Intl", sans-serif';
 const FONT = `${FONT_SIZE}px ${STACK}`;
-const BOTTOM_GAP = 24;     // 모양 아래로 비워둘 높이(px)
-const ORIGIN_H = 56;       // 모양 영역 아래 원본 이모지 줄의 높이(px). 영역 높이가 고정이라 이모지 자리도 고정
-const MIN_RUN = 2;         // 이보다 좁은 구간(글자 폭 배수)엔 글자를 넣지 않는다
-const SHAPE_FONT = { min: 10, max: 16, per: 1 / 34 };  // 글자 크기 = 짧은 변/34, 10~16px 사이
-const MORPH = { duration: 1100, stagger: 0.25 };  // 모핑 시간(ms), 글자별 시차 비율
+const BOTTOM_GAP = 24;
+const ORIGIN_H = 56;
+const MIN_RUN = 2;
+const SHAPE_FONT = { min: 10, max: 16, per: 1 / 34 };
+const MORPH = { duration: 1100, stagger: 0.25 };
 
 const LOREM = [
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -153,10 +149,7 @@ const LOREM = [
   'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.',
 ];
 
-// ───────── 테마: 이모지 실루엣 ─────────
-// 이모지를 캔버스에 크게 찍고 픽셀을 읽는다. 모양은 OS 이모지 글꼴을 따른다 (아이폰·안드로이드·맥이 다르게 보이는 건 의도).
-// 색은 자동 분류: 가장 넓은 색 = 본문, 다음 = 컨덴스드 줄, 가장 좁은 색 = 강조 글자(테마 색)
-// color = 테마 색(oklch): 켜진 버튼·글로우·강조 글자에 쓴다
+// 모양은 OS 이모지 글꼴을 따른다. 기기마다 다르게 보이는 건 의도
 const THEMES = [
   { name: 'pizza',   emoji: '🍕', color: 'oklch(0.8 0.2 45)' },
   { name: 'bacon',   emoji: '🥓', color: 'oklch(0.72 0.2 20)' },
@@ -168,12 +161,11 @@ const THEMES = [
   { name: 'whale',   emoji: '🐳', color: 'oklch(0.7 0.14 235)' },
   { name: 'moon',    emoji: '🌕', color: 'oklch(0.88 0.14 85)' },
   { name: 'robot',   emoji: '🤖', color: 'oklch(0.76 0.03 250)' },
-  { name: 'hat',     emoji: '🎩', color: 'oklch(0.32 0.02 250)' },   // 어두운 테마: 글이 흰색이 되는 경우. ⚓는 팔이 가늘어 글이 성겨서 버림
+  { name: 'hat',     emoji: '🎩', color: 'oklch(0.32 0.02 250)' },
 ];
 const EMOJI_FONT = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
-const PROBE = 200;   // 이모지 외곽 상자를 재는 기준 크기(px)
+const PROBE = 200;
 
-// 이모지의 불투명 픽셀 외곽 상자 (PROBE 크기 기준). 테마마다 한 번만 잰다
 function emojiBox(t) {
   if (t.box) return t.box;
   const S = PROBE * 1.5;
@@ -190,7 +182,6 @@ function emojiBox(t) {
   return t.box = { x: x0 - S / 2, y: y0 - S / 2, w: x1 - x0 + 1, h: y1 - y0 + 1 };
 }
 
-// 이모지를 W×H에 꽉 차게 그리고 픽셀을 돌려준다
 function rasterize(t, W, H) {
   const box = emojiBox(t);
   const k = Math.min(W / box.w, H / box.h);
@@ -201,8 +192,8 @@ function rasterize(t, W, H) {
   return ctx.getImageData(0, 0, W, H);
 }
 
-// 픽셀마다 분류값: 0 빈칸, 1 본문, 2 컨덴스드, 3 강조. 색을 세 무리로 나눈다(k-means)
-const MIN_CLUSTER = 0.015;   // 전체의 이 비율보다 작은 색 무리는 본문에 합친다
+const MIN_CLUSTER = 0.015;
+// k-means 3색. 넓은 순서로 1 본문, 2 컨덴스드, 3 강조. 테마 색은 가장 넓은 무리의 평균
 function classify(img) {
   const { width: W, height: H, data } = img;
   const n = W * H, cls = new Uint8Array(n);
@@ -211,7 +202,6 @@ function classify(img) {
   if (!pts.length) return cls;
   const d2 = (c, i) => (c[0] - data[i]) ** 2 + (c[1] - data[i + 1]) ** 2 + (c[2] - data[i + 2]) ** 2;
   const nearest = (cs, i) => { let b = 0, bd = Infinity; for (let k = 0; k < cs.length; k++) { const v = d2(cs[k], i); if (v < bd) { bd = v; b = k; } } return b; };
-  // 초기 중심: 색 히스토그램에서 많이 나온 순으로, 서로 충분히 다른 색 3개
   const bins = new Map();
   for (const i of pts) { const key = (data[i] >> 4) << 8 | (data[i + 1] >> 4) << 4 | (data[i + 2] >> 4); bins.set(key, (bins.get(key) || 0) + 1); }
   let centers = [];
@@ -227,19 +217,16 @@ function classify(img) {
     centers = sum.map((s, k) => s[3] ? [s[0] / s[3], s[1] / s[3], s[2] / s[3]] : centers[k]);
     count = sum.map(s => s[3]);
   }
-  // 넓이순 등급: 1 본문, 2 컨덴스드, 3 강조. 너무 작은 무리는 본문(1)
   const order = centers.map((_, k) => k).sort((a, b) => count[b] - count[a]);
   const rank = [];
   order.forEach((k, r) => rank[k] = count[k] / pts.length < MIN_CLUSTER ? 1 : r + 1);
   for (let i = 0; i < n; i++) if (data[i * 4 + 3] >= 128) cls[i] = rank[nearest(centers, i * 4)];
-  // 테마 색 = 가장 넓은 색 무리의 평균색. 흰색에 가까우면(🎲의 몸통 등) 다음 무리로, 다 밝으면 검정
   const lum = c => (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255;
   const main = order.map(k => centers[k]).find(c => lum(c) < 0.9);
   const color = main ? `rgb(${main.map(Math.round).join(' ')})` : '#000';
   return { cls, color };
 }
 
-// 색이 어두운가 (밝기 0.45 미만). oklch 문자열도 캔버스에 찍어 읽는다. 어두운 테마 색 위에선 글을 흰색으로
 const darkCache = new Map();
 function isDark(color) {
   if (!darkCache.has(color)) {
@@ -259,7 +246,6 @@ let lorem = [];
 let on = false;
 let theme = null;
 
-// 줄 요소: 단어(.w) 안에 글자(.c), 단어 사이엔 공백 글자(.c). 모양 모드에선 공백을 숨기고 단어 사이만 벌린다
 function lineEl(text, lh = LINE_HEIGHT) {
   const el = document.createElement('div');
   el.className = 'line';
@@ -283,7 +269,6 @@ function lineEl(text, lh = LINE_HEIGHT) {
   return el;
 }
 
-// 로렘 입숨: 왼끝맞춤 문단
 function renderLorem() {
   const width = container.clientWidth;
   container.className = '';
@@ -297,8 +282,7 @@ function renderLorem() {
   });
 }
 
-// 한 줄 높이의 띠(y0~y1)에서 채워진 x 구간들을 찾는다.
-// 글자의 몸통이 놓이는 띠 가운데 40% 행만 본다 — 비스듬한 가장자리에서 줄이 조각나지 않게
+// 줄 띠의 가운데 40% 행만 본다. 비스듬한 가장자리에서 줄이 조각나지 않게
 function runsInBand(cls, W, y0, y1) {
   const rows = [];
   const lh = y1 - y0;
@@ -320,9 +304,8 @@ function runsInBand(cls, W, y0, y1) {
   return runs;
 }
 
-// 모양 입숨: 실루엣 픽셀을 훑어 줄마다 정확한 구간에 텍스트를 채운다
 const preparedCache = new Map();
-// 모양을 채우는 글 = 본문 그대로 (끝에 닿으면 처음부터 다시)
+
 let BODY = '';
 const COND_STACK = `"Suisse Intl Condensed", ${STACK}`;
 function preparedFor(size, cond) {
@@ -330,19 +313,18 @@ function preparedFor(size, cond) {
   if (!preparedCache.has(key)) preparedCache.set(key, prepareWithSegments(BODY, `${size}px ${cond ? COND_STACK : STACK}`, { wordBreak: 'keep-all' }));
   return preparedCache.get(key);
 }
-const JUSTIFY_MIN = 0.6;   // 글이 구간 폭의 이 비율보다 짧으면 벌리지 않고 가운데 놓는다
+const JUSTIFY_MIN = 0.6;
 
 function renderShape(t) {
   const width = container.clientWidth;
-  const avail = Math.max(240, innerHeight - container.getBoundingClientRect().top - ORIGIN_H - BOTTOM_GAP);   // 모양이 놓일 영역의 높이
+  const avail = Math.max(240, innerHeight - container.getBoundingClientRect().top - ORIGIN_H - BOTTOM_GAP);
   const box = emojiBox(t), aspect = box.w / box.h;
   let W = Math.ceil(Math.min(width, avail * aspect));
   let H = Math.ceil(W / aspect);
   let { cls } = classify(rasterize(t, W, H));
-  // 무게중심 배치: 외곽 상자의 가운데가 아니라 채워진 픽셀의 가로 무게중심을 화면 가운데에 놓는다.
-  // 화면 폭을 꽉 채워 옮길 여지가 없으면, 무게중심이 가운데 오는 데 필요한 만큼만 모양을 줄인다
   const centroidX = () => { let sx = 0, n = 0; for (let i = 0; i < W * H; i++) if (cls[i]) { sx += i % W; n++; } return sx / n / W; };
   let r = centroidX();
+  // 채워진 픽셀의 무게중심을 화면 가운데에. 옮길 여지가 없으면 그만큼 줄인다
   const fitW = Math.floor(width / (2 * Math.max(r, 1 - r)));
   if (fitW < W) { W = fitW; H = Math.ceil(W / aspect); ({ cls } = classify(rasterize(t, W, H))); r = centroidX(); }
   const size = Math.round(Math.min(SHAPE_FONT.max, Math.max(SHAPE_FONT.min, Math.min(W, H) * SHAPE_FONT.per)));
@@ -352,7 +334,7 @@ function renderShape(t) {
   const srcs = [preparedFor(size, false), preparedFor(size, true)];
   container.className = 'shape';
   container.textContent = '';
-  container.style.cssText = `height:${avail}px;font-size:${size}px;--b:${isDark(t.color) ? 'rgba(255,255,255,0.5)' : '#fff'}`;   // 영역 높이는 모양과 무관하게 고정 → 아래 원본 이모지 자리도 고정
+  container.style.cssText = `height:${avail}px;font-size:${size}px;--b:${isDark(t.color) ? 'rgba(255,255,255,0.5)' : '#fff'}`;
   origin.textContent = t.emoji;
   origin.className = 'show';
   let cursor = { segmentIndex: 0, graphemeIndex: 0 };
@@ -376,8 +358,7 @@ function renderShape(t) {
       placed.push({ el, x: run.x, y: y + lh / 2 });
     }
   }
-  // 강조(3번 색): 글자 중심이 그 영역에 놓이면 색을 바꾼다.
-  // 위치 읽기(offsetLeft)와 클래스 쓰기를 섞으면 글자마다 레이아웃을 다시 계산하므로, 읽기를 다 마친 뒤 한 번에 쓴다
+  // offsetLeft 읽기와 클래스 쓰기를 섞으면 글자마다 레이아웃이 돈다. 읽기를 다 끝내고 쓴다
   const marks = [];
   for (const { el, x, y } of placed) {
     for (const c of el.querySelectorAll('.w .c')) {
@@ -389,13 +370,9 @@ function renderShape(t) {
   for (const c of marks) c.classList.add('b');
 }
 
-// ───────── 모핑: 글자가 옛 자리에서 새 자리로 움직인다 ─────────
-// DOM 글자 2천 개에 애니메이션을 걸면 레이어가 폭발해 렉이 걸린다.
-// 대신 전환 중에만 화면 위에 캔버스를 덮고, 그 위에서 글자를 직접 그려 옮긴다. 끝나면 새 DOM을 보여준다.
 const morphCanvas = document.createElement('canvas');
 morphCanvas.id = 'morph';
 
-// 현재 DOM 글자들의 위치·크기·색을 기록 (공백은 제외)
 function snapshot() {
   const cs = getComputedStyle(container);
   const size = parseFloat(cs.fontSize), fg = cs.color;
@@ -414,7 +391,6 @@ function snapshot() {
   return out;
 }
 
-// 글자 기준선 위치: 줄 상자 안에서 (줄높이 − 글꼴 높이)/2 + 어센트. 글꼴 스택마다 한 번 잰다
 const metricsCache = new Map();
 function baselineOf(y, h, size, stack) {
   let m = metricsCache.get(stack);
@@ -431,7 +407,6 @@ function baselineOf(y, h, size, stack) {
 
 const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-// 글자 하나의 t 시점 상태(문서 좌표). 전환 중 다른 버튼을 누르면 이 값이 다음 모핑의 출발점이 된다
 function at(it, t) {
   const p = ease(Math.min(1, Math.max(0, (t - it.delay) / (1 - MORPH.stagger))));
   return {
@@ -445,17 +420,18 @@ function at(it, t) {
   };
 }
 
-let cur = null;   // 진행 중인 모핑 { items, t0, raf, resolve }
+// DOM 글자 수천 개에 애니메이션을 걸면 렉. 전환 중에만 캔버스를 덮고 거기서 그린다
+let cur = null;
 function morph(from, to) {
   return new Promise(resolve => {
-    if (cur) { cancelAnimationFrame(cur.raf); cur.resolve(); }   // 이전 모핑 중단
+    if (cur) { cancelAnimationFrame(cur.raf); cur.resolve(); }
     const n = Math.max(from.length, to.length);
     const items = [];
     for (let i = 0; i < n; i++) {
       const a = from[i], b = to[i];
       if (a && b) items.push({ ch: b.ch, a, b, delay: (i / n) * MORPH.stagger });
-      else if (a) items.push({ ch: a.ch, a, b: { ...a, size: 0 }, delay: 0 });          // 갈 곳 없는 글자: 제자리에서 사라짐
-      else items.push({ ch: b.ch, a: { ...b, size: 0 }, b, delay: MORPH.stagger });    // 새로 생기는 글자: 제자리에서 커짐
+      else if (a) items.push({ ch: a.ch, a, b: { ...a, size: 0 }, delay: 0 });
+      else items.push({ ch: b.ch, a: { ...b, size: 0 }, b, delay: MORPH.stagger });
     }
     const dpr = devicePixelRatio || 1;
     morphCanvas.width = innerWidth * dpr; morphCanvas.height = innerHeight * dpr;
@@ -487,7 +463,6 @@ function morph(from, to) {
   });
 }
 
-// 진행 중인 모핑의 지금 이 순간 글자 상태 (snapshot과 같은 형식)
 function snapshotMorph() {
   const t = Math.min(1, (performance.now() - cur.t0) / MORPH.duration);
   return cur.items.map(it => at(it, t));
@@ -499,25 +474,22 @@ async function switchTo(renderFn) {
   const to = snapshot();
   container.style.visibility = 'hidden';
   await morph(from, to);
-  if (!cur) container.style.visibility = '';   // 중단된 쪽이 아니라 마지막 모핑이 끝났을 때만 보인다
+  if (!cur) container.style.visibility = '';
 }
 
 const render = () => on ? renderShape(theme) : renderLorem();
 
-// 테마를 켜거나(t) 끈다(null). 제목 빈칸·버튼 상태·모양을 한 번에 맞춘다
 const title = document.getElementById('title');
 const blank = document.getElementById('blank');
-let seq = 0;   // 진행 중인 단어 판정의 순번. 늦게 끝난 옛 판정은 버린다
+let seq = 0; // 늦게 끝난 옛 판정은 버린다
 function apply(t) {
   seq++;
   on = !!t;
   theme = t;
   for (const x of nav.children) x.setAttribute('aria-pressed', String(on && x.textContent === t.name));
   blank.classList.remove('busy');
-  // 화면 전체를 테마 색으로. 글 색은 바로 바꾼다(모핑 캔버스가 이 색으로 그린다), 바탕은 CSS가 0.6초에 걸쳐 바꾼다
   document.documentElement.style.setProperty('--bg', t ? t.color : '#fff');
   document.documentElement.style.setProperty('--fg', t && isDark(t.color) ? '#fff' : '#000');
-  // 제목은 크기를 움직이지 않는다(아이폰에서 떨린다). 짧게 사라졌다가 새 단어·새 크기로 나타난다
   titleFade?.cancel();
   titleFade = inner.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, easing: 'ease-in' });
   titleFade.onfinish = () => {
@@ -528,7 +500,6 @@ function apply(t) {
   switchTo(render);
 }
 
-// 네비: 프리셋 버튼. 누르면 빈칸에 그 이름이 들어가고, 켜진 버튼을 다시 누르면 로렘으로 돌아간다
 for (const t of THEMES) {
   const b = document.createElement('button');
   b.type = 'button';
@@ -539,22 +510,20 @@ for (const t of THEMES) {
   nav.appendChild(b);
 }
 
-// ───────── 제목 빈칸: 단어 → 이모지 ─────────
-// 1단계(브라우저): emojilib 키워드 사전에서 후보를 고른다. 이름이 정확히 같거나 정확 일치 후보가 하나뿐이면 그걸로 끝.
-// 2단계(서버): 애매하면 후보 10개를 프록시에 보내 Jev가 고른다. 어울리는 게 없으면 🎲.
 const PROXY = 'https://62-238-51-59.sslip.io/emoji';
 const PROXY_TIMEOUT = 8000;
 const FALLBACK = '🎲';
 let emojilib = null;
 
+// 점수: 4 이름 일치, 3 키워드 일치, 2 이름 속 낱말, 1 부분 일치
 function candidates(word) {
   const key = word.replace(/ /g, '_');
   const out = [];
   for (const [emoji, kws] of Object.entries(emojilib)) {
     let s = 0;
     for (const k of kws) {
-      if (k === key) { s = Math.max(s, k === kws[0] ? 4 : 3); if (s === 4) break; }   // 4 이름 일치, 3 키워드 일치
-      else if (k.split('_').includes(key)) s = Math.max(s, 2);                       // 2 이름 속 낱말 일치 (cat_face)
+      if (k === key) { s = Math.max(s, k === kws[0] ? 4 : 3); if (s === 4) break; }
+      else if (k.split('_').includes(key)) s = Math.max(s, 2);
       else if (key.length >= 3 && (k.includes(key) || (k.length >= 3 && key.includes(k)))) s = Math.max(s, 1);
     }
     if (s) out.push({ emoji, name: kws[0].replace(/_/g, ' '), s });
@@ -599,8 +568,8 @@ async function submit(raw) {
   const my = ++seq;
   blank.classList.add('busy');
   let emoji = FALLBACK;
-  try { emoji = await emojiFor(word); } catch { /* 사전·서버 실패 → 🎲 */ }
-  if (my !== seq) return;   // 그사이 다른 입력이 있었다
+  try { emoji = await emojiFor(word); } catch {}
+  if (my !== seq) return;
   apply(makeTheme(word, emoji));
 }
 
@@ -612,9 +581,8 @@ blank.addEventListener('paste', e => {
   document.execCommand('insertText', false, (e.clipboardData.getData('text/plain') || '').replace(/\s+/g, ' '));
 });
 
-// ───────── 본문: are.na ⁋ Notepad 채널에서 접속할 때마다 무작위로 한 블록 ─────────
 const NOTEPAD = 'https://api.are.na/v3/channels/notepad-0o3p7vvmg7i/contents?per=100';
-const MIN_NOTE = 400;     // 이보다 짧은 메모는 제외(글자 수). 실측 2026-09-19: 35개 중 18개 통과, 폰에서 약 18줄
+const MIN_NOTE = 400;
 const FETCH_TIMEOUT = 4000;
 async function loadNote() {
   const ctl = new AbortController();
@@ -625,33 +593,31 @@ async function loadNote() {
     const pick = notes[Math.floor(Math.random() * notes.length)];
     const paras = pick.content.plain.split(/\n\s*\n/).map(x => x.replace(/\s+/g, ' ').trim()).filter(Boolean);
     return paras.length ? paras : LOREM;
-  } catch { return LOREM; }        // 실패·지연 시 로렘 입숨
+  } catch { return LOREM; }
   finally { clearTimeout(timer); }
 }
 
-// ───────── 제목: 화면 폭에 딱 맞게 ─────────
-// 100px로 놓고 글자 폭을 잰 뒤, 컨테이너 폭과의 비율만큼 키운다 (letter-spacing이 em 단위라 비율이 정확히 맞는다)
 const TITLE_FONT = '500 100px "Suisse Intl Condensed"';
-// 인트로만 크기를 움직인다: 글꼴 크기는 즉시 새 값으로 두고, 겉보기 크기만 transform scale로 옛 크기→1. 모드 전환은 apply()의 페이드
+
 const EASE = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
 const inner = title.firstElementChild;
-let titleAnim = null, titleFade = null, titleSize = 0;   // 현재 글꼴 크기(px)
+let titleAnim = null, titleFade = null, titleSize = 0;
 function fitTitle(animate = false, opts = { duration: 600, easing: EASE }) {
-  const scaleNow = titleAnim ? new DOMMatrix(getComputedStyle(inner).transform).a : 1;   // 진행 중이면 그 시점 배율에서 이어간다
+  const scaleNow = titleAnim ? new DOMMatrix(getComputedStyle(inner).transform).a : 1;
   titleAnim?.cancel();
   const fromPx = titleSize * scaleNow;
   title.style.fontSize = '100px';
   const textW = inner.getBoundingClientRect().width;
-  const emptyW = textW - blank.getBoundingClientRect().width + 240;   // 빈칸이 비었을 때의 폭 (100px 기준 빈칸 2.4em = 240px). 100px인 지금 잰다
+  const emptyW = textW - blank.getBoundingClientRect().width + 240; // 빈칸 폭은 글꼴을 되돌리기 전에 잰다
   titleSize = 100 * title.clientWidth / textW;
   title.style.fontSize = titleSize.toFixed(2) + 'px';
-  title.style.height = (100 * title.clientWidth / emptyW).toFixed(2) + 'px';   // 제목 높이 = 빈칸이 비었을 때의 크기로 늘 고정. 단어가 있어도, 폭이 바뀌어도 같다
+  title.style.height = (100 * title.clientWidth / emptyW).toFixed(2) + 'px';
   if (animate && fromPx) titleAnim = inner.animate([{ transform: `scale(${fromPx / titleSize})` }, { transform: 'none' }], opts);
 }
 
 const noteReady = loadNote();
 await Promise.all([document.fonts.load(FONT), document.fonts.load(TITLE_FONT)]);
-// 인트로: 선 없이 "LOREM IPSUM WITH"가 화면 폭을 꽉 채웠다가, 줄어들면서 그 자리에 선이 생긴다. 본문은 기다리지 않는다
+
 blank.style.width = '0';
 fitTitle();
 title.style.visibility = 'visible';
@@ -665,7 +631,7 @@ lorem = PARAS.map(t => prepareWithSegments(t, FONT, { wordBreak: 'keep-all' }));
 renderLorem();
 let t, lastW = innerWidth;
 addEventListener('resize', () => {
-  if (innerWidth === lastW) return;   // iOS 주소창 접힘(세로만 변함)은 무시
+  if (innerWidth === lastW) return; // iOS 주소창 접힘
   lastW = innerWidth;
   clearTimeout(t); t = setTimeout(() => { fitTitle(); render(); }, 150);
 });
