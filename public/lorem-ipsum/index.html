@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>lorem ipsum</title>
+<link rel="stylesheet" href="https://use.typekit.net/rti1rii.css">
 <style>
 @font-face {
   font-family: "Suisse Intl";
@@ -47,8 +48,9 @@ body { margin: 0; padding: 1rem; }
 #text.shape .c.b { color: var(--b); }
 
 #title {
-  font-family: "Suisse Intl Condensed", "Suisse Intl", sans-serif;
-  font-weight: 500;
+  font-family: "bd-orange-variable", sans-serif;
+  font-weight: 400;
+  font-variation-settings: "wght" 400;
   font-size: 9vw;
   line-height: 1;
   text-align: left;
@@ -597,7 +599,7 @@ async function loadNote() {
   finally { clearTimeout(timer); }
 }
 
-const TITLE_FONT = '500 100px "Suisse Intl Condensed"';
+const TITLE_FONT = '400 100px "bd-orange-variable"';
 
 const EASE = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
 const inner = title.firstElementChild;
@@ -616,6 +618,9 @@ function fitTitle(animate = false, opts = { duration: 600, easing: EASE }) {
 }
 
 const noteReady = loadNote();
+// typekit 스타일시트가 오기 전엔 fonts.load가 빈손으로 바로 끝난다
+const kit = document.querySelector('link[href*="typekit"]');
+if (!kit.sheet) await new Promise(r => kit.addEventListener('load', r, { once: true }));
 await Promise.all([document.fonts.load(FONT), document.fonts.load(TITLE_FONT)]);
 
 blank.style.width = '0';
