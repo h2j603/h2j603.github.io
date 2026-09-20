@@ -31,7 +31,7 @@
 html { font-family: "Suisse Intl", sans-serif; -webkit-text-size-adjust: 100%; background: var(--bg); color: var(--fg); transition: background-color 0.6s ease; }
 html, body { height: 100%; }
 /* 열은 minmax(0, …): auto면 줄바꿈 없는 제목 폭만큼 판이 늘어나 화면을 넘친다 */
-body { margin: 0; height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr 1fr; overflow: hidden; }
+body { margin: 0; height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 2fr 3fr; overflow: hidden; }
 @media (min-width: 720px) and (orientation: landscape) { body { grid-template-rows: none; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 /* 위(왼): 제목은 판 위쪽, 버튼은 판 아래쪽. 아래(오른): 글은 판 안에서만 스크롤 */
 #head { padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; }
