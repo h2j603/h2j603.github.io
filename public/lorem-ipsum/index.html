@@ -29,7 +29,13 @@
 
 :root { --bg: #fff; --fg: #000; }
 html { font-family: "Suisse Intl", sans-serif; -webkit-text-size-adjust: 100%; background: var(--bg); color: var(--fg); transition: background-color 0.6s ease; }
-body { margin: 0; padding: 1rem; }
+html, body { height: 100%; }
+/* 열은 minmax(0, …): auto면 줄바꿈 없는 제목 폭만큼 판이 늘어나 화면을 넘친다 */
+body { margin: 0; height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr 1fr; overflow: hidden; }
+@media (min-width: 720px) and (orientation: landscape) { body { grid-template-rows: none; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+/* 위(왼): 제목은 판 위쪽, 버튼은 판 아래쪽. 아래(오른): 글은 판 안에서만 스크롤 */
+#head { padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; }
+#stage { padding: 1rem; overflow-y: auto; min-height: 0; }
 #text { font-size: 16px; position: relative; }
 #text, #origin { max-width: 36rem; margin-left: auto; margin-right: auto; }
 #text .line { white-space: pre; }
@@ -55,7 +61,7 @@ body { margin: 0; padding: 1rem; }
   display: flex; align-items: flex-end;
   text-transform: uppercase;
   white-space: nowrap;
-  margin: 1.5rem 0 1.25rem;
+  margin: 0;
   letter-spacing: -0.01em;
   visibility: hidden;
   position: relative; z-index: 11; /* 네비 글로우 여백이 제목을 덮는다. 네비에 pointer-events:none을 주면 iOS 가로 스크롤이 죽음 */
@@ -69,32 +75,26 @@ body { margin: 0; padding: 1rem; }
 #blank.busy { animation: pulse 0.7s ease-in-out infinite alternate; }
 @keyframes pulse { from { opacity: 1; } to { opacity: 0.3; } }
 
-/* 글로우가 overflow에 잘리지 않게 위아래 --glow만큼 여백을 두고 마진으로 상쇄.
-   띠는 content-box에만 칠한다. gradient로 칠하면 색 전환이 안 됨 */
+/* 가로 스크롤 상자는 세로도 잘라내므로, 글로우가 잘리지 않게 위아래로 --glow만큼 여백을 두고 마진으로 상쇄 */
 #modes {
   --glow: 80px;
-  --row: calc(32px + 0.8rem);
-  position: sticky;
-  top: calc(-1 * var(--glow));
-  z-index: 10;
+  position: relative; z-index: 10;
   display: flex;
-  flex-wrap: nowrap;
   align-items: center;
   gap: 0.4rem;
-  height: var(--row);
-  margin: calc(-1 * var(--glow)) -1rem calc(2rem - var(--glow));
+  margin: calc(-1 * var(--glow)) -1rem;
   padding: var(--glow) 0;
-  background: var(--bg);
-  background-clip: content-box;
-  transition: background-color 0.6s ease;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
 #modes::-webkit-scrollbar { display: none; }
-#modes::before { content: ""; flex: 0 0 0.6rem; } /* 좌우 여백. padding이면 띠 밖이라 투명 */
+#modes::before { content: ""; flex: 0 0 0.6rem; }
 #modes::after { content: ""; flex: 0 0 1.5rem; }
-@media (min-width: 720px) { #modes { justify-content: center; } }
+@media (min-width: 720px) and (orientation: landscape) {
+  #modes { flex-wrap: wrap; overflow: visible; margin: 0; padding: 0; }
+  #modes::before, #modes::after { display: none; }
+}
 #modes button {
   --c: lawngreen; /* 테마 색, JS가 버튼마다 덮어쓴다 */
   flex: 0 0 auto;
@@ -125,10 +125,14 @@ body { margin: 0; padding: 1rem; }
 </style>
 </head>
 <body>
+<section id="head">
 <h1 id="title"><span>Lorem Ipsum with <span id="blank" contenteditable="true" enterkeyhint="go" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false" role="textbox" aria-label="a word"></span></span></h1>
 <nav id="modes" aria-label="ipsum modes"></nav>
+</section>
+<section id="stage">
 <div id="text"></div>
 <div id="origin" aria-hidden="true"></div>
+</section>
 
 <script type="module">
 import { prepareWithSegments, layoutWithLines, layoutNextLine } from './lib/pretext.js';
@@ -137,7 +141,7 @@ const FONT_SIZE = 16;
 const LINE_HEIGHT = 22;
 const STACK = '"Suisse Intl", sans-serif';
 const FONT = `${FONT_SIZE}px ${STACK}`;
-const BOTTOM_GAP = 24;
+const BOTTOM_GAP = 16;
 const ORIGIN_H = 56;
 const MIN_RUN = 2;
 const SHAPE_FONT = { min: 10, max: 16, per: 1 / 34 };
@@ -239,6 +243,7 @@ function isDark(color) {
 }
 
 const container = document.getElementById('text');
+const stage = document.getElementById('stage');
 const origin = document.getElementById('origin');
 document.documentElement.style.setProperty('--origin-h', ORIGIN_H + 'px');
 const nav = document.getElementById('modes');
@@ -317,7 +322,8 @@ const JUSTIFY_MIN = 0.6;
 
 function renderShape(t) {
   const width = container.clientWidth;
-  const avail = Math.max(240, innerHeight - container.getBoundingClientRect().top - ORIGIN_H - BOTTOM_GAP);
+  const pad = getComputedStyle(stage);
+  const avail = Math.max(200, stage.clientHeight - parseFloat(pad.paddingTop) - parseFloat(pad.paddingBottom) - ORIGIN_H - BOTTOM_GAP);
   const box = emojiBox(t), aspect = box.w / box.h;
   let W = Math.ceil(Math.min(width, avail * aspect));
   let H = Math.ceil(W / aspect);
@@ -629,10 +635,8 @@ const PARAS = await noteReady;
 BODY = PARAS.join(' ') + ' ';
 lorem = PARAS.map(t => prepareWithSegments(t, FONT, { wordBreak: 'keep-all' }));
 renderLorem();
-let t, lastW = innerWidth;
+let t;
 addEventListener('resize', () => {
-  if (innerWidth === lastW) return; // iOS 주소창 접힘
-  lastW = innerWidth;
   clearTimeout(t); t = setTimeout(() => { fitTitle(); render(); }, 150);
 });
 </script>
