@@ -229,15 +229,22 @@ function classify(img) {
   return { cls, color };
 }
 
-const darkCache = new Map();
-function isDark(color) {
-  if (!darkCache.has(color)) {
+const rgbCache = new Map();
+function rgbOf(color) {
+  if (!rgbCache.has(color)) {
     const cv = document.createElement('canvas'); cv.width = cv.height = 1;
     const ctx = cv.getContext('2d'); ctx.fillStyle = color; ctx.fillRect(0, 0, 1, 1);
-    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-    darkCache.set(color, (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.45);
+    rgbCache.set(color, [...ctx.getImageData(0, 0, 1, 1).data.slice(0, 3)]);
   }
-  return darkCache.get(color);
+  return rgbCache.get(color);
+}
+function isDark(color) {
+  const [r, g, b] = rgbOf(color);
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.45;
+}
+// 강조 글자 색 = 테마 색의 반전. 보색이면서 밝기도 뒤집혀 어떤 바탕에서도 읽힌다
+function accentOf(color) {
+  return `rgb(${rgbOf(color).map(v => 255 - v).join(' ')})`;
 }
 
 const container = document.getElementById('text');
@@ -336,7 +343,7 @@ function renderShape(t) {
   const srcs = [preparedFor(size, false), preparedFor(size, true)];
   container.className = 'shape';
   container.textContent = '';
-  container.style.cssText = `height:${avail}px;font-size:${size}px;--b:${isDark(t.color) ? 'rgba(255,255,255,0.5)' : '#fff'}`;
+  container.style.cssText = `height:${avail}px;font-size:${size}px;--b:${accentOf(t.color)}`;
   origin.textContent = t.emoji;
   origin.className = 'show';
   let cursor = { segmentIndex: 0, graphemeIndex: 0 };
