@@ -65,7 +65,7 @@ body { margin: 0; padding: 1rem; }
 #title span { display: inline-block; }
 #title > span { transform-origin: left bottom; will-change: transform; }
 
-#blank { position: relative; height: 1em; vertical-align: top; outline: none; caret-color: var(--fg); font-weight: 600; font-variation-settings: "wght" 600; }
+#blank { position: relative; height: 1em; vertical-align: top; outline: none; caret-color: var(--fg); }
 #blank:empty { width: 2.4em; }
 #blank::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.06em; height: 0.06em; background: currentColor; }
 #blank.busy { animation: pulse 0.7s ease-in-out infinite alternate; }
@@ -607,7 +607,6 @@ async function loadNote() {
 }
 
 const TITLE_FONT = '450 100px "bd-orange-variable"';
-const TITLE_MAX = 120;   // 넓은 화면에서 제목이 폭을 다 채우면 과해서 상한
 
 const EASE = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
 const inner = title.firstElementChild;
@@ -619,9 +618,9 @@ function fitTitle(animate = false, opts = { duration: 600, easing: EASE }) {
   title.style.fontSize = '100px';
   const textW = inner.getBoundingClientRect().width;
   const emptyW = textW - blank.getBoundingClientRect().width + 240; // 빈칸 폭은 글꼴을 되돌리기 전에 잰다
-  titleSize = Math.min(TITLE_MAX, 100 * title.clientWidth / textW);
+  titleSize = 100 * title.clientWidth / textW;
   title.style.fontSize = titleSize.toFixed(2) + 'px';
-  title.style.height = Math.min(TITLE_MAX, 100 * title.clientWidth / emptyW).toFixed(2) + 'px';
+  title.style.height = (100 * title.clientWidth / emptyW).toFixed(2) + 'px';
   if (animate && fromPx) titleAnim = inner.animate([{ transform: `scale(${fromPx / titleSize})` }, { transform: 'none' }], opts);
 }
 
