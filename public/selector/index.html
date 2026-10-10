@@ -4,14 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>* + *</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap">
 <style>
 @property --gap { syntax: "<length>"; inherits: false; initial-value: 0px; }
 * { margin: 0; }
 .stack > * + * { --gap: var(--space, 1em); margin-top: var(--gap); --band: var(--gap); }
 
 body {
-  font: 18px/1.7 "Times New Roman", "Nanum Myeongjo", serif;
+  font: 18px/1.7 sans-serif;
   background: #fff; color: #000;
   padding: 24px 16px 80px;
   max-width: 34em;
@@ -22,11 +21,11 @@ section.stack { --space: 1em; }
 section.stack > * + h3 { --gap: 2em; }
 section.stack > h3 + * { --gap: .4em; }
 
-h1 { font-size: 2.4em; line-height: 1.1; font-family: "Courier New", Courier, monospace; }
+h1 { font-size: 2.4em; line-height: 1.1; font-family: monospace, monospace; }
 h2 { font-size: 1.3em; }
 h3 { font-size: 1em; }
 a { color: #00e; } a:visited { color: #551a8b; }
-code, pre { font-family: "Courier New", Courier, monospace; font-size: .9em; }
+code, pre { font-family: monospace, monospace; font-size: .9em; }
 pre { white-space: pre; overflow-x: auto; padding-left: 1em; border-left: 1px solid #000; }
 .rule { border-top: 1px solid #000; }
 small { font-size: .85em; }
@@ -54,7 +53,7 @@ small { font-size: .85em; }
 .row { display: flex; gap: 12px; flex-wrap: wrap; }
 .row > div { flex: 1 1 10em; }
 .box p, .label { font-size: .85em; }
-.it { border: 1px solid #000; padding: 2px 6px; font-family: "Courier New", monospace; }
+.it { border: 1px solid #000; padding: 2px 6px; font-family: monospace, monospace; }
 .wrap { outline: 1px dashed #000; }
 
 .mb > * { margin-bottom: 12px; position: relative; }
@@ -82,7 +81,7 @@ small { font-size: .85em; }
 .rhythm blockquote { padding-left: 1em; font-style: italic; }
 
 .mc { outline: 1px dashed #000; }
-.mc-in { background: #000; color: #fff; padding: 2px 6px; font-family: "Courier New", monospace; }
+.mc-in { background: #000; color: #fff; padding: 2px 6px; font-family: monospace, monospace; }
 .mc-a .mc-in { margin-top: 24px; }
 .mc-a { position: relative; }
 .mc-a::before {
