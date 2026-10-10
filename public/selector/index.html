@@ -32,8 +32,10 @@ pre { white-space: pre; overflow-x: auto; padding-left: 1em; border-left: 1px so
 small { font-size: .85em; }
 
 .band > * + *,
+#xray:checked ~ main > * + *,
 #xray:checked ~ main .stack > * + * { position: relative; }
 .band > * + *::before,
+#xray:checked ~ main > * + *::before,
 #xray:checked ~ main .stack > * + *::before {
   content: ""; position: absolute; left: 0; right: 0; bottom: 100%;
   height: var(--band);
@@ -99,8 +101,6 @@ small { font-size: .85em; }
 
 <header class="stack">
   <h1>* + *</h1>
-  <p>부엉이 선택자를 공부하면서 적은 것. 2026년 10월.</p>
-  <p><small>이 페이지의 간격은 전부 이걸로 줬다. 왼쪽 아래 「간격 보기」를 켜면 그 여백이 빗금으로 보인다.</small></p>
 </header>
 
 <div class="rule"></div>
