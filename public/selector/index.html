@@ -3,340 +3,254 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>부엉이와 :has()</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
+<title>* + * 와 :has()</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap">
 <style>
-/* ── 토큰 ─────────────────────────────── */
-:root {
-  --paper: #F5F6F7;
-  --ink: #1E2A44;      /* 청사진 남색 */
-  --muted: #5B6578;
-  --rule: #D3D8E0;
-  --margin: #F2A86B;   /* 개발자도구 margin 색 */
-  --margin-bg: #FBE3CF;
-  --has: #3D7DCA;      /* :has()로 잡힌 대상 */
-  --has-bg: #DCE9F7;
-  --bad: #C2412D;
-  --space: 1.25rem;
-  --sans: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, monospace;
-}
+/* 간격 규칙은 이것 하나. 관계마다 다르게 주고 싶으면 --gap만 바꾼다. */
 @property --gap { syntax: "<length>"; inherits: false; initial-value: 0px; }
+* { margin: 0; }
+.stack > * + * { --gap: var(--space, 1em); margin-top: var(--gap); --band: var(--gap); }
 
-* { margin: 0; box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
 body {
-  background: var(--paper); color: var(--ink);
-  font: 400 1.0625rem/1.75 var(--sans);
-  word-break: keep-all; overflow-wrap: anywhere;
-  padding-bottom: 6rem;
+  font: 18px/1.7 "Times New Roman", "Nanum Myeongjo", serif;
+  background: #fff; color: #000;
+  padding: 24px 16px 80px;
+  max-width: 34em;
+  word-break: keep-all;
 }
+main.stack > * + * { --gap: 3em; }
+section.stack { --space: 1em; }
+section.stack > * + h3 { --gap: 2em; }
+section.stack > h3 + * { --gap: .4em; }
 
-/* ── 이 페이지의 유일한 간격 규칙 ─────────── */
-/* 관계마다 다른 간격: --gap을 세우면 그 값이 이긴다 */
-.stack > * + * { --gap: var(--space); margin-block-start: var(--gap); --band: var(--gap); }
-main.stack > * + *  { --gap: 7rem; }
-header.stack        { --space: 1.5rem; }
-section.stack       { --space: 1.25rem; }
-section.stack > * + h3   { --gap: 3rem; }
-section.stack > h2 + *   { --gap: 1.5rem; }
-section.stack > * + .demo,
-section.stack > .demo + * { --gap: 2rem; }
+h1 { font-size: 1.6em; line-height: 1.3; }
+h2 { font-size: 1.3em; }
+h3 { font-size: 1em; }
+a { color: #00e; } a:visited { color: #551a8b; }
+code, pre { font-family: "Courier New", Courier, monospace; font-size: .9em; }
+pre { white-space: pre; overflow-x: auto; padding-left: 1em; border-left: 1px solid #000; }
+.rule { border-top: 1px solid #000; }
+small { font-size: .85em; }
 
-/* ── 간격 보기(x-ray): body가 체크박스를 품으면 ── */
+/* 빗금 = margin. 원래 칠할 수 없는 빈 곳이라 ::before를 그 높이만큼 깔았다 */
 .band > * + *,
 body:has(#xray:checked) .stack > * + * { position: relative; }
 .band > * + *::before,
 body:has(#xray:checked) .stack > * + *::before {
-  content: ""; position: absolute; left: 0; right: 0;
-  bottom: 100%; height: var(--band);
-  background: repeating-linear-gradient(-45deg, var(--margin) 0 1px, var(--margin-bg) 1px 6px);
-  pointer-events: none;
+  content: ""; position: absolute; left: 0; right: 0; bottom: 100%;
+  height: var(--band);
+  background: repeating-linear-gradient(-45deg, #000 0 1px, transparent 1px 5px);
+  opacity: .35; pointer-events: none;
 }
-body:has(#xray:checked) .stack > * + *::before { opacity: .85; }
 
-/* ── 레이아웃 ─────────────────────────── */
-main { max-width: 44rem; margin-inline: auto; padding: 0 16px; }
-header { padding-top: 4rem; }
-
-h1 { font-weight: 800; font-size: clamp(2.6rem, 11vw, 5.5rem); line-height: 1.05; letter-spacing: -.035em; }
-h1 code { font: 600 1em/1 var(--mono); letter-spacing: -.05em; }
-h2 { font-size: 1.75rem; font-weight: 750; line-height: 1.3; letter-spacing: -.02em; }
-h3 { font-size: 1.1875rem; font-weight: 700; line-height: 1.4; }
-.lede { font-size: 1.1875rem; color: var(--muted); max-width: 34em; }
-p, li { max-width: 36em; }
-code { font-family: var(--mono); font-size: .88em; }
-p code, li code, h2 code, h3 code { background: #E6E9EE; padding: .05em .3em; border-radius: 3px; }
-
-pre {
-  font: 400 .875rem/1.65 var(--mono);
-  background: var(--ink); color: #E8ECF3;
-  padding: 1rem 1.1rem; border-radius: 4px; overflow-x: auto;
+#toggle {
+  position: fixed; left: 16px; bottom: 16px;
+  background: #fff; border: 1px solid #000; padding: 4px 8px; font-size: .9em;
 }
-pre .c { color: #8F9BB3; }
-pre .k { color: #F7C59A; }
+body:has(#xray:checked) #toggle { background: #ff0; }
 
-a { color: var(--has); text-underline-offset: .2em; }
-:focus-visible { outline: 2px solid var(--has); outline-offset: 2px; }
+/* 데모: 그냥 선 하나짜리 상자 */
+.box { border: 1px solid #000; padding: 12px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.row > div { flex: 1 1 10em; }
+.box p, .label { font-size: .85em; }
+.it { border: 1px solid #000; padding: 2px 6px; font-family: "Courier New", monospace; }
+.wrap { outline: 1px dashed #000; }
 
-/* 히어로: 셀렉터 두 줄 사이 간격을 처음부터 보여준다 */
-.hero-title { --space: 1.5rem; }
-.hero-title > span { display: block; }
-
-/* ── 데모 공통 ─────────────────────────── */
-.demo {
-  border: 1px solid var(--rule); background: #fff; border-radius: 6px;
-  padding: 1.25rem;
-}
-.demo-cap { font-size: .875rem; color: var(--muted); }
-.cols { display: grid; gap: 1.25rem; grid-template-columns: 1fr 1fr; }
-.panel { border: 1px dashed #A8B1C0; padding: 0; }
-.panel-name { font: 600 .75rem/1.4 var(--mono); color: var(--muted); padding-bottom: .4rem; }
-.item { background: var(--ink); color: #fff; font: 600 .8125rem/1 var(--mono); padding: .7rem .75rem; }
-.ctrl { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; font-size: .9375rem; }
-.ctrl label { display: inline-flex; align-items: center; gap: .45rem; cursor: pointer; }
-input[type=checkbox], input[type=radio] { accent-color: var(--ink); width: 1.1rem; height: 1.1rem; }
-
-/* 데모 1: margin-bottom vs * + * */
-.mb > * { margin-bottom: 14px; position: relative; }
+.mb > * { margin-bottom: 12px; position: relative; }
 .mb > *::after {
-  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 14px;
-  background: repeating-linear-gradient(-45deg, var(--margin) 0 1px, var(--margin-bg) 1px 6px);
+  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 12px;
+  background: repeating-linear-gradient(-45deg, #000 0 1px, transparent 1px 5px); opacity: .35;
 }
-.owl { --space: 14px; }
+.owl { --space: 12px; }
+.d2:has(#d2:checked) .wrap > :first-child { display: none; }
+.gap { display: flex; flex-direction: column; gap: 12px; }
 
-/* 데모 2: 숨긴 첫 요소 */
-.d2:has(#d2-hide:checked) .panel > .item:first-child { display: none; }
-.flexgap { display: flex; flex-direction: column; gap: 14px; }
+.rhythm { --space: .3em; }
+.rhythm > * + h4 { --gap: 1.6em; }
+.rhythm > h4 + * { --gap: 0px; }
+.rhythm > * + blockquote, .rhythm > blockquote + * { --gap: 1em; }
+.rhythm blockquote { padding-left: 1em; font-style: italic; }
 
-/* 데모 3: 관계별 리듬 */
-.rhythm { --space: .6rem; font-size: .9375rem; line-height: 1.6; }
-.rhythm > * + h4 { --gap: 2rem; }
-.rhythm > h4 + * { --gap: .25rem; }
-.rhythm > * + blockquote, .rhythm > blockquote + * { --gap: 1.25rem; }
-.rhythm h4 { font-size: 1rem; }
-.rhythm blockquote { border-left: 3px solid var(--ink); padding-left: .8rem; color: var(--muted); }
+.pick label { display: block; padding: 4px 6px; }
+.pick label:has(input:checked) { background: #ff0; }
+.pick:has(input:checked) label:not(:has(input:checked)) { color: #999; }
 
-/* 데모 4: 안을 보고 바깥 고르기 */
-.options { display: grid; gap: .6rem; }
-.option {
-  display: flex; gap: .75rem; align-items: flex-start;
-  border: 1.5px solid var(--rule); border-radius: 6px; padding: .85rem 1rem;
-  cursor: pointer; transition: border-color .15s, background .15s, opacity .15s;
-}
-.option b { display: block; }
-.option small { color: var(--muted); font-size: .875rem; }
-.option:has(input:checked) { border-color: var(--has); background: var(--has-bg); }
-.options:has(input:checked) .option:not(:has(input:checked)) { opacity: .45; }
+.f label { display: block; }
+.f input { font: inherit; border: 1px solid #000; padding: 2px 4px; width: 100%; max-width: 16em; }
+.f .err { display: none; color: #e00; }
+.f:has(input:user-invalid) .err { display: block; }
+.f:has(input:user-invalid) input { border-color: #e00; }
+form:has(:invalid) button { opacity: .4; }
 
-/* 데모 5: 폼 */
-.field { display: grid; gap: .35rem; }
-.field label { font-weight: 600; font-size: .9375rem; }
-.field input {
-  font: inherit; padding: .6rem .75rem; border: 1.5px solid var(--rule); border-radius: 4px; background: #fff; color: var(--ink);
-}
-.field .msg { font-size: .875rem; color: var(--bad); display: none; }
-.field:has(input:user-invalid) input { border-color: var(--bad); }
-.field:has(input:user-invalid) .msg { display: block; }
-.field:has(input:valid) label::after { content: " 확인됨"; color: var(--has); font-weight: 500; }
-.send {
-  font: 600 1rem var(--sans); padding: .7rem 1.2rem; border: 0; border-radius: 4px;
-  background: var(--ink); color: #fff; cursor: pointer;
-}
-form:has(:invalid) .send { background: #B9C0CC; cursor: not-allowed; }
+.qty { display: grid; gap: 4px; grid-template-columns: 1fr; text-align: center; }
+.qty:has(> :nth-child(3)) { grid-template-columns: 1fr 1fr; }
+.qty:has(> :nth-child(6)) { grid-template-columns: 1fr 1fr 1fr; }
+.qty + .qty { margin-top: 12px; }
 
-/* 데모 6: 개수 세기 */
-.qty { display: grid; gap: 6px; grid-template-columns: 1fr; }
-.qty:has(> :nth-child(3)) { grid-template-columns: repeat(2, 1fr); }
-.qty:has(> :nth-child(6)) { grid-template-columns: repeat(3, 1fr); }
-.qty > * { background: var(--ink); color: #fff; font: 600 .75rem/1 var(--mono); padding: .9rem .5rem; text-align: center; }
-.qty-row { display: grid; gap: 1rem; grid-template-columns: repeat(3, 1fr); align-items: start; }
-
-/* 데모 7: 다음 형제를 보고 앞 요소 고르기 */
-.toc { --space: .5rem; font-size: .9375rem; }
-.toc h4 { font-size: 1rem; }
-.toc h4:has(+ h4), .toc h4:last-child {
-  color: var(--bad); text-decoration: underline dashed; text-underline-offset: .25em;
-}
-.toc h4:has(+ h4)::after, .toc h4:last-child::after { content: " · 내용 없음"; font-weight: 500; font-size: .8125rem; }
-
-/* 노트 목록 */
-.notes { padding-left: 1.2em; --space: .9rem; }
-.notes li::marker { color: var(--margin); }
-
-/* 하단 고정 토글 */
-.xray {
-  position: fixed; right: 16px; bottom: max(16px, env(safe-area-inset-bottom));
-  display: inline-flex; align-items: center; gap: .5rem;
-  background: var(--ink); color: #fff; padding: .7rem 1rem .7rem .85rem; border-radius: 999px;
-  font-weight: 600; font-size: .9375rem; cursor: pointer;
-  box-shadow: 0 4px 14px rgba(30,42,68,.25);
-}
-.xray input { accent-color: var(--margin); }
-body:has(#xray:checked) .xray { background: var(--margin); color: var(--ink); }
-
-footer { color: var(--muted); font-size: .875rem; border-top: 1px solid var(--rule); padding-top: 1.5rem; }
-
-@media (max-width: 560px) {
-  .cols { grid-template-columns: 1fr; }
-  .qty-row { grid-template-columns: 1fr; }
-  main.stack > * + * { --gap: 5rem; }
-}
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.toc { --space: .2em; }
+.toc h4 { font-size: 1em; }
+.toc h4:has(+ h4), .toc h4:last-child { text-decoration: line-through; color: #e00; }
+.toc h4:has(+ h4)::after, .toc h4:last-child::after { content: " ← 비었음"; font-weight: normal; }
 </style>
 </head>
 <body>
 
-<label class="xray"><input type="checkbox" id="xray"> 간격 보기</label>
+<label id="toggle"><input type="checkbox" id="xray"> 간격 보기</label>
 
 <main class="stack">
 
 <header class="stack">
-  <h1 class="hero-title stack band"><span><code>* + *</code></span><span><code>:has()</code></span></h1>
-  <p class="lede">형제 <em>사이에만</em> 간격을 주는 선택자와, 안을 들여다보고 바깥을 고르는 선택자. 공부한 내용을 정리했습니다. 이 페이지의 간격과 상태 변화도 전부 이 두 선택자로 만들었고, 자바스크립트는 한 줄도 없습니다.</p>
-  <p class="demo-cap">오른쪽 아래 <b>간격 보기</b>를 켜면 페이지 전체의 <code>* + *</code> 여백이 빗금으로 드러납니다.</p>
+  <h1><code>* + *</code> 와 <code>:has()</code></h1>
+  <p>CSS 선택자 두 개를 공부하면서 적은 것. 2026년 10월.</p>
+  <p><small>이 페이지도 이 두 개로만 짰다. 자바스크립트 없음. 왼쪽 아래 「간격 보기」를 켜면 <code>* + *</code>가 만든 여백이 전부 빗금으로 보인다.</small></p>
 </header>
 
-<section class="stack">
-  <h2>부엉이 선택자 <code>* + *</code></h2>
-  <p>2014년 Heydon Pickering이 붙인 이름입니다. <code>* + *</code>가 멍하니 쳐다보는 부엉이 눈처럼 생겨서 lobotomized owl이라고 불러요.</p>
-  <p><code>A + B</code>는 “A 바로 뒤에 오는 B”입니다. 둘 다 <code>*</code>니까 뜻은 <b>바로 앞에 형제가 있는 모든 요소</b>. 첫 번째 자식만 빼고 전부 잡힙니다.</p>
-<pre><code>.stack &gt; * + * {
-  margin-block-start: var(--space);
-}</code></pre>
-  <p>그래서 간격이 요소 <em>사이에만</em> 생깁니다. 모든 요소에 <code>margin-bottom</code>을 주는 방식과 나란히 놓고 보면 차이가 보여요.</p>
+<div class="rule"></div>
 
-  <div class="demo stack">
-    <div class="cols">
-      <div><p class="panel-name">&gt; * { margin-bottom }</p>
-        <div class="panel mb"><div class="item">A</div><div class="item">B</div><div class="item">C</div></div></div>
-      <div><p class="panel-name">&gt; * + * { margin-top }</p>
-        <div class="panel owl stack band"><div class="item">A</div><div class="item">B</div><div class="item">C</div></div></div>
+<section class="stack">
+  <h2><code>* + *</code></h2>
+  <p><code>A + B</code>는 A 바로 뒤에 붙은 B. 둘 다 <code>*</code>로 두면 <b>앞에 형제가 있는 요소 전부</b>가 걸린다. 첫째만 빠진다.</p>
+<pre>.stack &gt; * + * {
+  margin-top: 1em;
+}</pre>
+<pre>  +----------+
+  | A        |  ← 첫째. 안 걸림
+  |//////////|  ← 여기만 margin
+  | B        |
+  |//////////|
+  | C        |
+  +----------+  ← 끝에 남는 여백 없음</pre>
+  <p>모양이 멍한 부엉이 눈 같다고 Heydon Pickering이 lobotomized owl이라고 불렀다(2014).</p>
+
+  <h3>margin-bottom이랑 뭐가 다른가</h3>
+  <div class="box stack">
+    <div class="row">
+      <div><p class="label"><code>&gt; * { margin-bottom }</code></p>
+        <div class="wrap mb"><div class="it">A</div><div class="it">B</div><div class="it">C</div></div></div>
+      <div><p class="label"><code>&gt; * + * { margin-top }</code></p>
+        <div class="wrap owl stack band"><div class="it">A</div><div class="it">B</div><div class="it">C</div></div></div>
     </div>
-    <p class="demo-cap">점선이 부모의 경계입니다. 왼쪽은 마지막 C 아래에 여백이 남아 부모 밖으로 새고, 오른쪽은 깔끔하게 닫힙니다.</p>
+    <p>점선이 부모 끝. 왼쪽은 C 밑에 여백이 남아서 밖으로 샌다.</p>
   </div>
 
-  <h3>간격은 요소가 아니라 관계에 붙는다</h3>
-  <p>여기서 핵심 발상이 나옵니다. 여백을 “제목은 아래 24px” 같은 요소의 속성으로 보지 않고, “제목 다음에 오는 것은 붙이고, 제목 앞은 크게 띄운다”는 <b>관계의 규칙</b>으로 씁니다.</p>
-<pre><code>.rhythm &gt; * + * { --gap: .6rem }
-.rhythm &gt; * + h4 { --gap: 2rem }
-.rhythm &gt; h4 + * { --gap: .25rem }
-.rhythm &gt; * + blockquote { --gap: 1.25rem }</code></pre>
-  <div class="demo">
+  <h3>간격을 관계로 적는다</h3>
+  <p>제일 마음에 든 부분. “제목은 아래 24px”이 아니라 “제목 다음은 붙이고, 제목 앞은 띄운다”로 적는다. 클래스를 안 달아도 글 순서만으로 리듬이 생긴다.</p>
+<pre>.rhythm &gt; * + h4         { --gap: 1.6em }
+.rhythm &gt; h4 + *         { --gap: 0 }
+.rhythm &gt; * + blockquote { --gap: 1em }</pre>
+  <div class="box">
     <div class="rhythm stack band">
-      <h4>작업 노트</h4>
-      <p>본문 문단 사이는 기본 간격.</p>
-      <p>같은 종류끼리는 같은 리듬으로 흐릅니다.</p>
-      <blockquote>인용은 앞뒤로 숨 쉴 틈을 줍니다.</blockquote>
-      <p>그리고 다시 본문.</p>
-      <h4>다음 절</h4>
-      <p>제목은 앞 내용과 멀고, 자기 내용과는 가깝습니다.</p>
+      <h4>월요일</h4>
+      <p>레퍼런스 정리.</p>
+      <p>폰트 두 개 골랐다.</p>
+      <blockquote>“구조가 먼저, 장식은 나중.”</blockquote>
+      <p>그 말 듣고 다시 했다.</p>
+      <h4>화요일</h4>
+      <p>그리드 다시.</p>
     </div>
   </div>
-  <p>요소에 클래스를 하나도 달지 않았는데 순서만으로 리듬이 정해집니다. 글의 구조가 곧 레이아웃이 되는 거죠.</p>
 
-  <h3>빠졌던 것: 숨긴 첫 요소</h3>
-  <p><code>display: none</code>으로 숨긴 요소도 DOM에는 그대로 있어서 여전히 “형제”로 셉니다. 첫 요소를 숨기면 두 번째 요소가 <code>* + *</code>에 걸린 채 맨 위로 올라와, 위쪽에 쓸데없는 여백이 생깁니다.</p>
-  <div class="demo stack d2">
-    <div class="ctrl"><label><input type="checkbox" id="d2-hide"> 첫 항목 숨기기</label></div>
-    <div class="cols">
-      <div><p class="panel-name">* + *</p>
-        <div class="panel owl stack band"><div class="item">A</div><div class="item">B</div><div class="item">C</div></div></div>
-      <div><p class="panel-name">flex + gap</p>
-        <div class="panel flexgap"><div class="item">A</div><div class="item">B</div><div class="item">C</div></div></div>
+  <h3>틀렸던 것: 숨긴 첫째</h3>
+  <p><code>display: none</code>을 줘도 DOM에는 남아 있어서 형제로 센다. 첫째를 숨기면 둘째가 <code>* + *</code>에 걸린 채로 맨 위에 올라와서 위에 빈칸이 생긴다. 한참 찾았다.</p>
+  <div class="box stack d2">
+    <label><input type="checkbox" id="d2"> 첫째 숨기기</label>
+    <div class="row">
+      <div><p class="label"><code>* + *</code></p>
+        <div class="wrap owl stack band"><div class="it">A</div><div class="it">B</div><div class="it">C</div></div></div>
+      <div><p class="label">flex + <code>gap</code></p>
+        <div class="wrap gap"><div class="it">A</div><div class="it">B</div><div class="it">C</div></div></div>
     </div>
-    <p class="demo-cap">flex·grid의 <code>gap</code>은 화면에 그려진 항목 사이만 계산하므로 이 문제가 없습니다.</p>
+    <p><code>gap</code>은 보이는 것끼리만 계산해서 괜찮다.</p>
   </div>
 </section>
+
+<div class="rule"></div>
 
 <section class="stack">
-  <h2>안을 보고 바깥을 고르는 <code>:has()</code></h2>
-  <p>CSS는 원래 바깥에서 안쪽으로만 내려가며 골랐습니다. <code>A:has(B)</code>는 거꾸로 <b>B를 품고 있는 A</b>를 고릅니다. 오랫동안 “부모 선택자는 불가능하다”던 기능이고, 2023년 말 Firefox 121을 마지막으로 주요 브라우저가 모두 지원합니다.</p>
+  <h2><code>:has()</code></h2>
+  <p><code>A:has(B)</code>는 B를 안에 가진 A. 원래 CSS는 바깥에서 안으로만 내려갈 수 있었는데 이건 거꾸로 올라온다. 부모 선택자는 안 된다는 게 오래된 상식이었다. 2023년 12월 Firefox 121까지 들어오면서 이제 다 된다.</p>
 
-  <h3>자식의 상태로 부모 꾸미기</h3>
-  <p>체크박스는 <code>:checked</code> 상태를 가지지만 그 상태로 꾸밀 수 있는 건 체크박스 자신과 뒤 형제뿐이었습니다. <code>:has()</code>를 쓰면 체크박스를 품은 카드 전체를 바꿀 수 있어요.</p>
-<pre><code>.option:has(input:checked) { border-color: blue }
-
-<span class="c">/* 하나라도 고르면, 고르지 않은 나머지를 흐리게 */</span>
-.options:has(input:checked)
-  .option:not(:has(input:checked)) { opacity: .45 }</code></pre>
-  <div class="demo">
-    <div class="options" role="radiogroup">
-      <label class="option"><input type="radio" name="plan"><span><b>스케치</b><small>러프 3장, 수정 1회</small></span></label>
-      <label class="option"><input type="radio" name="plan"><span><b>시안</b><small>방향 2개, 수정 2회</small></span></label>
-      <label class="option"><input type="radio" name="plan"><span><b>최종</b><small>원본 파일 포함</small></span></label>
-    </div>
+  <h3>안에 든 체크로 바깥 바꾸기</h3>
+<pre>label:has(input:checked) { background: yellow }
+.pick:has(input:checked)
+  label:not(:has(input:checked)) { color: gray }</pre>
+  <div class="box pick">
+    <label><input type="radio" name="p"> 스케치 — 러프 3장</label>
+    <label><input type="radio" name="p"> 시안 — 방향 2개</label>
+    <label><input type="radio" name="p"> 최종 — 원본 포함</label>
   </div>
+  <p>두 번째 줄이 좋다. 하나라도 골랐으면 나머지를 흐리게. 예전엔 JS로 했을 일.</p>
 
-  <h3>폼 전체가 입력 상태를 안다</h3>
-<pre><code>.field:has(input:user-invalid) .msg { display: block }
-form:has(:invalid) .send { background: gray }</code></pre>
-  <div class="demo">
-    <form class="stack" onsubmit="return false">
-      <div class="field">
-        <label for="mail">이메일</label>
-        <input id="mail" type="email" required placeholder="name@example.com">
-        <p class="msg">@가 들어간 이메일 주소를 입력하세요.</p>
-      </div>
-      <div><button class="send" type="submit">보내기</button></div>
-    </form>
-  </div>
-  <p><code>:user-invalid</code>는 사용자가 한 번 건드린 뒤에만 틀렸다고 표시해서, 처음부터 빨간 칸이 뜨지 않습니다.</p>
-
-  <h3>개수를 세서 레이아웃 바꾸기</h3>
-  <p><code>:has(&gt; :nth-child(n))</code>은 “자식이 n개 이상인가”라는 질문이 됩니다. 미디어 쿼리가 화면 폭에 반응한다면 이건 <b>내용의 양</b>에 반응합니다.</p>
-<pre><code>.qty                          { 1단 }
-.qty:has(&gt; :nth-child(3))     { 2단 }
-.qty:has(&gt; :nth-child(6))     { 3단 }</code></pre>
-  <div class="demo stack">
-    <div class="qty-row">
-      <div class="qty"><div>1</div><div>2</div></div>
-      <div class="qty"><div>1</div><div>2</div><div>3</div><div>4</div></div>
-      <div class="qty"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div></div>
+  <h3>폼</h3>
+<pre>.f:has(input:user-invalid) .err { display: block }
+form:has(:invalid) button { opacity: .4 }</pre>
+  <form class="box stack" onsubmit="return false">
+    <div class="f">
+      <label for="m">이메일</label>
+      <input id="m" type="email" required>
+      <p class="err">@가 빠졌다.</p>
     </div>
-    <p class="demo-cap">세 묶음 모두 같은 CSS입니다. 항목 수만 다릅니다.</p>
-  </div>
+    <div><button>보내기</button></div>
+  </form>
+  <p><code>:invalid</code> 대신 <code>:user-invalid</code>를 썼다. 앞의 것은 아무것도 안 쳤는데도 처음부터 빨갛다.</p>
 
-  <h3>뒤를 보고 앞을 고르기</h3>
-  <p><code>+</code>는 뒤쪽만 볼 수 있었는데, <code>:has(+ …)</code>로 감싸면 “다음 형제가 이런 요소인 앞 요소”가 됩니다. 제목 바로 뒤에 또 제목이 오면 그 사이 내용이 비었다는 뜻이니 표시해 봤습니다.</p>
-<pre><code>h4:has(+ h4), h4:last-child { <span class="c">/* 내용 없는 제목 */</span> }</code></pre>
-  <div class="demo">
-    <div class="toc stack">
-      <h4>리서치</h4><p>레퍼런스 30장 수집.</p>
-      <h4>컨셉</h4>
-      <h4>시안</h4><p>A안, B안.</p>
-      <h4>최종</h4>
-    </div>
+  <h3>개수 세기</h3>
+  <p><code>:has(&gt; :nth-child(3))</code> = 자식이 3개 이상인가. 화면 폭 말고 내용 양에 반응한다.</p>
+<pre>.qty                      { 1단 }
+.qty:has(&gt; :nth-child(3)) { 2단 }
+.qty:has(&gt; :nth-child(6)) { 3단 }</pre>
+  <div class="box">
+    <div class="qty"><div class="it">1</div><div class="it">2</div></div>
+    <div class="qty"><div class="it">1</div><div class="it">2</div><div class="it">3</div><div class="it">4</div></div>
+    <div class="qty"><div class="it">1</div><div class="it">2</div><div class="it">3</div><div class="it">4</div><div class="it">5</div><div class="it">6</div><div class="it">7</div></div>
+  </div>
+  <p>셋 다 CSS는 같다.</p>
+
+  <h3>뒤를 보고 앞 고르기</h3>
+  <p><code>+</code>는 뒤만 볼 수 있었는데 <code>:has(+ …)</code>로 싸면 앞을 고를 수 있다. 제목 다음에 바로 또 제목이면 내용이 빈 것.</p>
+<pre>h4:has(+ h4), h4:last-child { 빨간 줄 }</pre>
+  <div class="box toc stack">
+    <h4>리서치</h4><p>레퍼런스 30장.</p>
+    <h4>컨셉</h4>
+    <h4>시안</h4><p>A안, B안.</p>
+    <h4>최종</h4>
   </div>
 </section>
+
+<div class="rule"></div>
 
 <section class="stack">
-  <h2>둘을 같이 쓰면</h2>
-  <p>오른쪽 아래 토글이 그 예입니다. 체크박스는 페이지 구석에 하나 있을 뿐인데, <code>body</code>가 그걸 품고 있으니 페이지 전체의 상태 스위치가 됩니다.</p>
-<pre><code>body:has(#xray:checked) .stack &gt; * + *::before {
-  height: var(--band); <span class="c">/* 여백 높이만큼 */</span>
-  background: <span class="k">빗금</span>;
-}</code></pre>
-  <p>여백은 원래 칠할 수 없는 빈 공간이라, 각 요소 위에 여백과 같은 높이의 의사요소를 붙여 칠했습니다. 관계마다 간격이 다르니 간격은 <code>--gap</code> 변수 하나로 정하고, 중첩된 스택에 값이 새지 않도록 <code>@property</code>로 <code>inherits: false</code>를 걸었습니다.</p>
-  <p>그런데 빗금 높이가 0으로 나왔습니다. <code>::before</code>도 그 요소의 <em>자식</em>이라 상속을 끈 <code>--gap</code>을 받지 못한 거예요. 상속되는 <code>--band</code>에 값을 한 번 옮겨 담아서 해결했습니다.</p>
-  <p>섹션 사이 간격도 한 번 꼬였습니다. 섹션이 자기 자식 간격용으로 <code>--space</code>를 다시 정하자, 그 값이 섹션 자신의 위쪽 여백에도 쓰였거든요. 바깥 간격은 <code>main &gt; * + *</code>에서 따로 정하는 것으로 고쳤습니다.</p>
+  <h2>같이 쓰기 (이 페이지)</h2>
+  <p>「간격 보기」 체크박스는 구석에 하나 있을 뿐인데 <code>body</code>가 그걸 품고 있으니 페이지 전체 스위치가 된다.</p>
+<pre>body:has(#xray:checked) .stack &gt; * + *::before {
+  height: var(--band);
+  background: 빗금;
+}</pre>
+  <p>만들다 걸린 것 두 개.</p>
+  <p>① 간격 값 <code>--gap</code>이 안쪽 스택으로 새지 않게 <code>@property</code>로 상속을 껐더니 빗금 높이가 0이 됐다. <code>::before</code>도 자식이라 못 받은 거였다. 상속되는 <code>--band</code>에 한 번 옮겨 담아서 해결.</p>
+  <p>② 섹션 사이가 다닥다닥 붙었다. 섹션이 자기 안쪽용으로 정한 <code>--space</code>가 섹션 자신의 위 여백에도 쓰였다. 바깥 간격은 <code>main &gt; * + *</code>에서 따로 주는 걸로.</p>
 </section>
 
+<div class="rule"></div>
+
 <section class="stack">
-  <h2>헷갈렸던 것들</h2>
-  <ul class="notes stack">
-    <li><code>:has()</code>는 요소가 <b>DOM에 있는지</b>를 봅니다. 보이는지가 아닙니다. <code>display: none</code>인 자식도 매치되고, <code>:nth-child</code>로 셀 때도 포함됩니다.</li>
-    <li><code>:has()</code> 안에 <code>:has()</code>를 넣을 수 없고, <code>::before</code> 같은 의사요소도 넣을 수 없습니다.</li>
-    <li>명시도는 괄호 안에서 가장 센 선택자를 따릅니다. <code>.a:has(#b)</code>는 id 하나만큼 세져서 나중에 덮어쓰기 어렵습니다.</li>
-    <li>반대로 <code>*</code>는 명시도가 0이라 <code>.stack &gt; * + *</code>는 클래스 하나 수준입니다. 가벼워서 예외 규칙으로 덮기 쉽습니다.</li>
-    <li>flex·grid 안에서는 <code>gap</code>이 더 간단합니다. 부엉이는 글처럼 블록이 흐르는 곳, 그리고 관계마다 간격을 다르게 줄 때 강합니다.</li>
-  </ul>
+  <h2>메모</h2>
+  <p>— <code>:has()</code>는 보이는지가 아니라 DOM에 있는지를 본다. 숨긴 자식도 걸리고 <code>:nth-child</code>에도 세어진다.</p>
+  <p>— <code>:has()</code> 안에 <code>:has()</code>는 못 넣는다. <code>::before</code> 같은 것도.</p>
+  <p>— 명시도는 괄호 안에서 제일 센 것을 따른다. <code>.a:has(#b)</code>는 id급이라 나중에 덮기 귀찮다.</p>
+  <p>— 반대로 <code>*</code>는 0이라서 <code>.stack &gt; * + *</code>는 클래스 하나 무게. 예외 규칙으로 덮기 쉽다.</p>
+  <p>— flex·grid 안이면 그냥 <code>gap</code>. 부엉이는 글처럼 흐르는 곳, 관계마다 간격이 다를 때.</p>
 </section>
+
+<div class="rule"></div>
 
 <footer class="stack">
-  <p>참고: Heydon Pickering, 「Axiomatic CSS and Lobotomized Owls」(A List Apart, 2014) · Every Layout 「The Stack」 · MDN <code>:has()</code></p>
+  <p><small>읽은 것:<br>
+  <a href="https://alistapart.com/article/axiomatic-css-and-lobotomized-owls/">Axiomatic CSS and Lobotomized Owls</a> (A List Apart, 2014)<br>
+  <a href="https://every-layout.dev/layouts/stack/">Every Layout — The Stack</a><br>
+  <a href="https://developer.mozilla.org/ko/docs/Web/CSS/:has">MDN :has()</a></small></p>
+  <p><small><a href="/">hyuk.xyz</a></small></p>
 </footer>
 
 </main>
