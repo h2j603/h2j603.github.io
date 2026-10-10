@@ -6,7 +6,6 @@
 <title>* + * 와 :has()</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap">
 <style>
-/* 간격 규칙은 이것 하나. 관계마다 다르게 주고 싶으면 --gap만 바꾼다. */
 @property --gap { syntax: "<length>"; inherits: false; initial-value: 0px; }
 * { margin: 0; }
 .stack > * + * { --gap: var(--space, 1em); margin-top: var(--gap); --band: var(--gap); }
@@ -32,7 +31,6 @@ pre { white-space: pre; overflow-x: auto; padding-left: 1em; border-left: 1px so
 .rule { border-top: 1px solid #000; }
 small { font-size: .85em; }
 
-/* 빗금 = margin. 원래 칠할 수 없는 빈 곳이라 ::before를 그 높이만큼 깔았다 */
 .band > * + *,
 body:has(#xray:checked) .stack > * + * { position: relative; }
 .band > * + *::before,
@@ -49,7 +47,6 @@ body:has(#xray:checked) .stack > * + *::before {
 }
 body:has(#xray:checked) #toggle { background: #ff0; }
 
-/* 데모: 그냥 선 하나짜리 상자 */
 .box { border: 1px solid #000; padding: 12px; }
 .row { display: flex; gap: 12px; flex-wrap: wrap; }
 .row > div { flex: 1 1 10em; }
@@ -176,22 +173,22 @@ form:has(:invalid) button { opacity: .4; }
 .pick:has(input:checked)
   label:not(:has(input:checked)) { color: gray }</pre>
   <div class="box pick">
-    <label><input type="radio" name="p"> 스케치 — 러프 3장</label>
-    <label><input type="radio" name="p"> 시안 — 방향 2개</label>
-    <label><input type="radio" name="p"> 최종 — 원본 포함</label>
+    <label><input type="radio" name="p"> 스케치 (러프 3장)</label>
+    <label><input type="radio" name="p"> 시안 (방향 2개)</label>
+    <label><input type="radio" name="p"> 최종 (원본 포함)</label>
   </div>
   <p>두 번째 줄이 좋다. 하나라도 골랐으면 나머지를 흐리게. 예전엔 JS로 했을 일.</p>
 
   <h3>폼</h3>
 <pre>.f:has(input:user-invalid) .err { display: block }
 form:has(:invalid) button { opacity: .4 }</pre>
-  <form class="box stack" onsubmit="return false">
+  <form class="box stack">
     <div class="f">
       <label for="m">이메일</label>
       <input id="m" type="email" required>
       <p class="err">@가 빠졌다.</p>
     </div>
-    <div><button>보내기</button></div>
+    <div><button type="button">보내기</button></div>
   </form>
   <p><code>:invalid</code> 대신 <code>:user-invalid</code>를 썼다. 앞의 것은 아무것도 안 쳤는데도 처음부터 빨갛다.</p>
 
@@ -236,11 +233,11 @@ form:has(:invalid) button { opacity: .4 }</pre>
 
 <section class="stack">
   <h2>메모</h2>
-  <p>— <code>:has()</code>는 보이는지가 아니라 DOM에 있는지를 본다. 숨긴 자식도 걸리고 <code>:nth-child</code>에도 세어진다.</p>
-  <p>— <code>:has()</code> 안에 <code>:has()</code>는 못 넣는다. <code>::before</code> 같은 것도.</p>
-  <p>— 명시도는 괄호 안에서 제일 센 것을 따른다. <code>.a:has(#b)</code>는 id급이라 나중에 덮기 귀찮다.</p>
-  <p>— 반대로 <code>*</code>는 0이라서 <code>.stack &gt; * + *</code>는 클래스 하나 무게. 예외 규칙으로 덮기 쉽다.</p>
-  <p>— flex·grid 안이면 그냥 <code>gap</code>. 부엉이는 글처럼 흐르는 곳, 관계마다 간격이 다를 때.</p>
+  <p>- <code>:has()</code>는 보이는지가 아니라 DOM에 있는지를 본다. 숨긴 자식도 걸리고 <code>:nth-child</code>에도 세어진다.</p>
+  <p>- <code>:has()</code> 안에 <code>:has()</code>는 못 넣는다. <code>::before</code> 같은 것도.</p>
+  <p>- 명시도는 괄호 안에서 제일 센 것을 따른다. <code>.a:has(#b)</code>는 id급이라 나중에 덮기 귀찮다.</p>
+  <p>- 반대로 <code>*</code>는 0이라서 <code>.stack &gt; * + *</code>는 클래스 하나 무게. 예외 규칙으로 덮기 쉽다.</p>
+  <p>- flex·grid 안이면 그냥 <code>gap</code>. 부엉이는 글처럼 흐르는 곳, 관계마다 간격이 다를 때.</p>
 </section>
 
 <div class="rule"></div>
@@ -248,7 +245,7 @@ form:has(:invalid) button { opacity: .4 }</pre>
 <footer class="stack">
   <p><small>읽은 것:<br>
   <a href="https://alistapart.com/article/axiomatic-css-and-lobotomized-owls/">Axiomatic CSS and Lobotomized Owls</a> (A List Apart, 2014)<br>
-  <a href="https://every-layout.dev/layouts/stack/">Every Layout — The Stack</a><br>
+  <a href="https://every-layout.dev/layouts/stack/">Every Layout: The Stack</a><br>
   <a href="https://developer.mozilla.org/ko/docs/Web/CSS/:has">MDN :has()</a></small></p>
   <p><small><a href="/">hyuk.xyz</a></small></p>
 </footer>
