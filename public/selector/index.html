@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>* + * 와 :has()</title>
+<title>* + *</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap">
 <style>
 @property --gap { syntax: "<length>"; inherits: false; initial-value: 0px; }
@@ -22,7 +22,7 @@ section.stack { --space: 1em; }
 section.stack > * + h3 { --gap: 2em; }
 section.stack > h3 + * { --gap: .4em; }
 
-h1 { font-size: 1.6em; line-height: 1.3; }
+h1 { font-size: 2.4em; line-height: 1.1; font-family: "Courier New", Courier, monospace; }
 h2 { font-size: 1.3em; }
 h3 { font-size: 1em; }
 a { color: #00e; } a:visited { color: #551a8b; }
@@ -32,20 +32,21 @@ pre { white-space: pre; overflow-x: auto; padding-left: 1em; border-left: 1px so
 small { font-size: .85em; }
 
 .band > * + *,
-body:has(#xray:checked) .stack > * + * { position: relative; }
+#xray:checked ~ main .stack > * + * { position: relative; }
 .band > * + *::before,
-body:has(#xray:checked) .stack > * + *::before {
+#xray:checked ~ main .stack > * + *::before {
   content: ""; position: absolute; left: 0; right: 0; bottom: 100%;
   height: var(--band);
   background: repeating-linear-gradient(-45deg, #000 0 1px, transparent 1px 5px);
   opacity: .35; pointer-events: none;
 }
 
+#xray { position: fixed; left: 24px; bottom: 23px; z-index: 2; margin: 0; }
 #toggle {
   position: fixed; left: 16px; bottom: 16px;
-  background: #fff; border: 1px solid #000; padding: 4px 8px; font-size: .9em;
+  background: #fff; border: 1px solid #000; padding: 4px 8px 4px 30px; font-size: .9em;
 }
-body:has(#xray:checked) #toggle { background: #ff0; }
+#xray:checked + #toggle { background: #ff0; }
 
 .box { border: 1px solid #000; padding: 12px; }
 .row { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -60,7 +61,16 @@ body:has(#xray:checked) #toggle { background: #ff0; }
   background: repeating-linear-gradient(-45deg, #000 0 1px, transparent 1px 5px); opacity: .35;
 }
 .owl { --space: 12px; }
-.d2:has(#d2:checked) .wrap > :first-child { display: none; }
+
+.deep * + * { margin-top: 12px; position: relative; }
+.deep * + *::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 12px;
+  background: repeating-linear-gradient(-45deg, #000 0 1px, transparent 1px 5px); opacity: .35;
+}
+.it .it { margin-left: 12px; font-size: .9em; }
+
+.d2 > label { --gap: 0px; }
+#d2:checked ~ .row .wrap > :first-child { display: none; }
 .gap { display: flex; flex-direction: column; gap: 12px; }
 
 .rhythm { --space: .3em; }
@@ -69,44 +79,34 @@ body:has(#xray:checked) #toggle { background: #ff0; }
 .rhythm > * + blockquote, .rhythm > blockquote + * { --gap: 1em; }
 .rhythm blockquote { padding-left: 1em; font-style: italic; }
 
-.pick label { display: block; padding: 4px 6px; }
-.pick label:has(input:checked) { background: #ff0; }
-.pick:has(input:checked) label:not(:has(input:checked)) { color: #999; }
-
-.f label { display: block; }
-.f input { font: inherit; border: 1px solid #000; padding: 2px 4px; width: 100%; max-width: 16em; }
-.f .err { display: none; color: #e00; }
-.f:has(input:user-invalid) .err { display: block; }
-.f:has(input:user-invalid) input { border-color: #e00; }
-form:has(:invalid) button { opacity: .4; }
-
-.qty { display: grid; gap: 4px; grid-template-columns: 1fr; text-align: center; }
-.qty:has(> :nth-child(3)) { grid-template-columns: 1fr 1fr; }
-.qty:has(> :nth-child(6)) { grid-template-columns: 1fr 1fr 1fr; }
-.qty + .qty { margin-top: 12px; }
-
-.toc { --space: .2em; }
-.toc h4 { font-size: 1em; }
-.toc h4:has(+ h4), .toc h4:last-child { text-decoration: line-through; color: #e00; }
-.toc h4:has(+ h4)::after, .toc h4:last-child::after { content: " ← 비었음"; font-weight: normal; }
+.mc { outline: 1px dashed #000; }
+.mc-in { background: #000; color: #fff; padding: 2px 6px; font-family: "Courier New", monospace; }
+.mc-a .mc-in { margin-top: 24px; }
+.mc-a { position: relative; }
+.mc-a::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 24px;
+  background: repeating-linear-gradient(-45deg, #000 0 1px, transparent 1px 5px); opacity: .35;
+}
+.mc-b > * + * { margin-top: 24px; }
 </style>
 </head>
 <body>
 
-<label id="toggle"><input type="checkbox" id="xray"> 간격 보기</label>
+<input type="checkbox" id="xray">
+<label id="toggle" for="xray">간격 보기</label>
 
 <main class="stack">
 
 <header class="stack">
-  <h1><code>* + *</code> 와 <code>:has()</code></h1>
-  <p>CSS 선택자 두 개를 공부하면서 적은 것. 2026년 10월.</p>
-  <p><small>이 페이지도 이 두 개로만 짰다. 자바스크립트 없음. 왼쪽 아래 「간격 보기」를 켜면 <code>* + *</code>가 만든 여백이 전부 빗금으로 보인다.</small></p>
+  <h1>* + *</h1>
+  <p>부엉이 선택자를 공부하면서 적은 것. 2026년 10월.</p>
+  <p><small>이 페이지의 간격은 전부 이걸로 줬다. 왼쪽 아래 「간격 보기」를 켜면 그 여백이 빗금으로 보인다.</small></p>
 </header>
 
 <div class="rule"></div>
 
 <section class="stack">
-  <h2><code>* + *</code></h2>
+  <h2>뭐냐면</h2>
   <p><code>A + B</code>는 A 바로 뒤에 붙은 B. 둘 다 <code>*</code>로 두면 <b>앞에 형제가 있는 요소 전부</b>가 걸린다. 첫째만 빠진다.</p>
 <pre>.stack &gt; * + * {
   margin-top: 1em;
@@ -118,7 +118,7 @@ form:has(:invalid) button { opacity: .4; }
   |//////////|
   | C        |
   +----------+  ← 끝에 남는 여백 없음</pre>
-  <p>모양이 멍한 부엉이 눈 같다고 Heydon Pickering이 lobotomized owl이라고 불렀다(2014).</p>
+  <p>모양이 멍한 부엉이 눈 같다고 Heydon Pickering이 lobotomized owl이라고 불렀다(2014). 원래 글에서는 <code>.stack &gt;</code> 없이 <code>* + *</code> 한 줄을 페이지 전체에 걸었다. 요소마다 여백을 주지 말고 “흐름 안의 모든 것은 앞의 것과 1.5em 떨어진다”는 공리 하나로 시작하자는 얘기였다.</p>
 
   <h3>margin-bottom이랑 뭐가 다른가</h3>
   <div class="box stack">
@@ -128,12 +128,29 @@ form:has(:invalid) button { opacity: .4; }
       <div><p class="label"><code>&gt; * + * { margin-top }</code></p>
         <div class="wrap owl stack band"><div class="it">A</div><div class="it">B</div><div class="it">C</div></div></div>
     </div>
-    <p>점선이 부모 끝. 왼쪽은 C 밑에 여백이 남아서 밖으로 샌다.</p>
+    <p>점선이 부모 끝. <code>margin-bottom</code> 쪽은 C 밑에 여백이 남아서 밖으로 샌다. 그래서 보통 <code>:last-child { margin-bottom: 0 }</code>을 또 쓰게 되는데, 부엉이는 처음부터 그럴 일이 없다.</p>
   </div>
 
-  <h3>간격을 관계로 적는다</h3>
-  <p>제일 마음에 든 부분. “제목은 아래 24px”이 아니라 “제목 다음은 붙이고, 제목 앞은 띄운다”로 적는다. 클래스를 안 달아도 글 순서만으로 리듬이 생긴다.</p>
-<pre>.rhythm &gt; * + h4         { --gap: 1.6em }
+  <h3>&gt; 를 붙이는 이유</h3>
+  <p>원래대로 <code>* + *</code>만 쓰면 후손 전부가 걸린다. 안쪽 목록, 버튼 속 아이콘까지 다 벌어진다. 지금은 대부분 <code>&gt;</code>로 바로 아래 자식만 잡고, 간격을 줄 곳에 <code>.stack</code>을 직접 단다.</p>
+  <div class="box">
+    <div class="row">
+      <div><p class="label"><code>.wrap * + *</code></p>
+        <div class="wrap deep"><div class="it">A</div><div class="it">B<div class="it">b1</div><div class="it">b2</div></div></div></div>
+      <div><p class="label"><code>.wrap &gt; * + *</code></p>
+        <div class="wrap owl stack band"><div class="it">A</div><div class="it">B<div class="it">b1</div><div class="it">b2</div></div></div></div>
+    </div>
+  </div>
+  <p><code>&gt;</code>가 없는 쪽은 B 안의 b1, b2 사이까지 벌어졌다.</p>
+</section>
+
+<div class="rule"></div>
+
+<section class="stack">
+  <h2>간격을 관계로 적는다</h2>
+  <p>제일 마음에 든 부분. “제목은 아래 24px”이 아니라 “제목 다음은 붙이고, 제목 앞은 띄운다”로 적는다. 여백이 요소의 성질이 아니라 둘 사이의 성질이 된다. 클래스를 안 달아도 글 순서만으로 리듬이 생긴다.</p>
+<pre>.rhythm &gt; * + *          { --gap: .3em }
+.rhythm &gt; * + h4         { --gap: 1.6em }
 .rhythm &gt; h4 + *         { --gap: 0 }
 .rhythm &gt; * + blockquote { --gap: 1em }</pre>
   <div class="box">
@@ -147,97 +164,61 @@ form:has(:invalid) button { opacity: .4; }
       <p>그리드 다시.</p>
     </div>
   </div>
+  <p><code>*</code>의 명시도가 0이라서 <code>.rhythm &gt; * + *</code>는 클래스 하나 무게밖에 안 된다. 그래서 아래 줄들이 위의 기본값을 쉽게 이긴다. 기본은 가볍게, 예외는 구체적으로.</p>
 
-  <h3>틀렸던 것: 숨긴 첫째</h3>
+  <h3>값은 변수로</h3>
+  <p>처음엔 규칙마다 <code>margin-top</code>을 직접 썼다. 그러다 간격 값을 <code>--space</code> 하나로 빼니까 스택마다 값만 바꿔 끼우면 됐다.</p>
+<pre>.stack &gt; * + * { margin-top: var(--space, 1em) }
+.box   { --space: 12px }
+.post  { --space: 1.5em }</pre>
+  <p>문제는 변수가 상속된다는 것. 안쪽 스택이 바깥 값을 물려받아 엉뚱하게 벌어진다. 그래서 이 페이지는 관계마다 정하는 값을 <code>--gap</code>으로 따로 두고, <code>@property</code>로 상속을 껐다.</p>
+</section>
+
+<div class="rule"></div>
+
+<section class="stack">
+  <h2>틀렸던 것들</h2>
+
+  <h3>숨긴 첫째</h3>
   <p><code>display: none</code>을 줘도 DOM에는 남아 있어서 형제로 센다. 첫째를 숨기면 둘째가 <code>* + *</code>에 걸린 채로 맨 위에 올라와서 위에 빈칸이 생긴다. 한참 찾았다.</p>
   <div class="box stack d2">
-    <label><input type="checkbox" id="d2"> 첫째 숨기기</label>
+    <input type="checkbox" id="d2"> <label for="d2">첫째 숨기기</label>
     <div class="row">
       <div><p class="label"><code>* + *</code></p>
         <div class="wrap owl stack band"><div class="it">A</div><div class="it">B</div><div class="it">C</div></div></div>
       <div><p class="label">flex + <code>gap</code></p>
         <div class="wrap gap"><div class="it">A</div><div class="it">B</div><div class="it">C</div></div></div>
     </div>
-    <p><code>gap</code>은 보이는 것끼리만 계산해서 괜찮다.</p>
+    <p>flex의 <code>gap</code>은 보이는 것끼리만 계산해서 괜찮다. 항목이 켜졌다 꺼졌다 하는 곳이면 <code>gap</code>이 낫다.</p>
   </div>
-</section>
 
-<div class="rule"></div>
-
-<section class="stack">
-  <h2><code>:has()</code></h2>
-  <p><code>A:has(B)</code>는 B를 안에 가진 A. 원래 CSS는 바깥에서 안으로만 내려갈 수 있었는데 이건 거꾸로 올라온다. 부모 선택자는 안 된다는 게 오래된 상식이었다. 2023년 12월 Firefox 121까지 들어오면서 이제 다 된다.</p>
-
-  <h3>안에 든 체크로 바깥 바꾸기</h3>
-<pre>label:has(input:checked) { background: yellow }
-.pick:has(input:checked)
-  label:not(:has(input:checked)) { color: gray }</pre>
-  <div class="box pick">
-    <label><input type="radio" name="p"> 스케치 (러프 3장)</label>
-    <label><input type="radio" name="p"> 시안 (방향 2개)</label>
-    <label><input type="radio" name="p"> 최종 (원본 포함)</label>
-  </div>
-  <p>두 번째 줄이 좋다. 하나라도 골랐으면 나머지를 흐리게. 예전엔 JS로 했을 일.</p>
-
-  <h3>폼</h3>
-<pre>.f:has(input:user-invalid) .err { display: block }
-form:has(:invalid) button { opacity: .4 }</pre>
-  <form class="box stack">
-    <div class="f">
-      <label for="m">이메일</label>
-      <input id="m" type="email" required>
-      <p class="err">@가 빠졌다.</p>
-    </div>
-    <div><button type="button">보내기</button></div>
-  </form>
-  <p><code>:invalid</code> 대신 <code>:user-invalid</code>를 썼다. 앞의 것은 아무것도 안 쳤는데도 처음부터 빨갛다.</p>
-
-  <h3>개수 세기</h3>
-  <p><code>:has(&gt; :nth-child(3))</code> = 자식이 3개 이상인가. 화면 폭 말고 내용 양에 반응한다.</p>
-<pre>.qty                      { 1단 }
-.qty:has(&gt; :nth-child(3)) { 2단 }
-.qty:has(&gt; :nth-child(6)) { 3단 }</pre>
+  <h3>부모 밖으로 새는 margin</h3>
+  <p>첫째 자식에 <code>margin-top</code>이 있으면 부모에 테두리나 padding이 없을 때 그 여백이 부모 위로 빠져나간다(margin 상쇄). 부엉이는 첫째에 여백을 안 주니까 이게 안 생긴다.</p>
   <div class="box">
-    <div class="qty"><div class="it">1</div><div class="it">2</div></div>
-    <div class="qty"><div class="it">1</div><div class="it">2</div><div class="it">3</div><div class="it">4</div></div>
-    <div class="qty"><div class="it">1</div><div class="it">2</div><div class="it">3</div><div class="it">4</div><div class="it">5</div><div class="it">6</div><div class="it">7</div></div>
+    <div class="row">
+      <div><p class="label">모든 자식에 margin-top</p>
+        <div class="mc mc-a"><div class="mc-in">A</div><div class="mc-in">B</div></div></div>
+      <div><p class="label"><code>&gt; * + *</code></p>
+        <div class="mc mc-b"><div class="mc-in">A</div><div class="mc-in">B</div></div></div>
+    </div>
+    <p>위쪽 빗금이 A의 여백인데, 점선(부모) 바깥에 생겼다.</p>
   </div>
-  <p>셋 다 CSS는 같다.</p>
 
-  <h3>뒤를 보고 앞 고르기</h3>
-  <p><code>+</code>는 뒤만 볼 수 있었는데 <code>:has(+ …)</code>로 싸면 앞을 고를 수 있다. 제목 다음에 바로 또 제목이면 내용이 빈 것.</p>
-<pre>h4:has(+ h4), h4:last-child { 빨간 줄 }</pre>
-  <div class="box toc stack">
-    <h4>리서치</h4><p>레퍼런스 30장.</p>
-    <h4>컨셉</h4>
-    <h4>시안</h4><p>A안, B안.</p>
-    <h4>최종</h4>
-  </div>
-</section>
-
-<div class="rule"></div>
-
-<section class="stack">
-  <h2>같이 쓰기 (이 페이지)</h2>
-  <p>「간격 보기」 체크박스는 구석에 하나 있을 뿐인데 <code>body</code>가 그걸 품고 있으니 페이지 전체 스위치가 된다.</p>
-<pre>body:has(#xray:checked) .stack &gt; * + *::before {
-  height: var(--band);
-  background: 빗금;
-}</pre>
-  <p>만들다 걸린 것 두 개.</p>
-  <p>① 간격 값 <code>--gap</code>이 안쪽 스택으로 새지 않게 <code>@property</code>로 상속을 껐더니 빗금 높이가 0이 됐다. <code>::before</code>도 자식이라 못 받은 거였다. 상속되는 <code>--band</code>에 한 번 옮겨 담아서 해결.</p>
+  <h3>이 페이지 만들다 걸린 것</h3>
+  <p>① <code>--gap</code>의 상속을 껐더니 빗금 높이가 0이 됐다. 빗금은 <code>::before</code>로 그리는데 <code>::before</code>도 자식이라 못 받은 거였다. 상속되는 <code>--band</code>에 한 번 옮겨 담아서 해결.</p>
   <p>② 섹션 사이가 다닥다닥 붙었다. 섹션이 자기 안쪽용으로 정한 <code>--space</code>가 섹션 자신의 위 여백에도 쓰였다. 바깥 간격은 <code>main &gt; * + *</code>에서 따로 주는 걸로.</p>
+  <p>③ 사파리에서 <code>&lt;hr&gt;</code>에는 <code>::before</code>가 안 그려졌다. 그래서 구분선은 그냥 <code>div</code>.</p>
 </section>
 
 <div class="rule"></div>
 
 <section class="stack">
-  <h2>메모</h2>
-  <p>- <code>:has()</code>는 보이는지가 아니라 DOM에 있는지를 본다. 숨긴 자식도 걸리고 <code>:nth-child</code>에도 세어진다.</p>
-  <p>- <code>:has()</code> 안에 <code>:has()</code>는 못 넣는다. <code>::before</code> 같은 것도.</p>
-  <p>- 명시도는 괄호 안에서 제일 센 것을 따른다. <code>.a:has(#b)</code>는 id급이라 나중에 덮기 귀찮다.</p>
-  <p>- 반대로 <code>*</code>는 0이라서 <code>.stack &gt; * + *</code>는 클래스 하나 무게. 예외 규칙으로 덮기 쉽다.</p>
-  <p>- flex·grid 안이면 그냥 <code>gap</code>. 부엉이는 글처럼 흐르는 곳, 관계마다 간격이 다를 때.</p>
+  <h2>정리</h2>
+  <p>- 간격은 요소가 아니라 관계에 준다.</p>
+  <p>- <code>&gt;</code>를 붙여서 바로 아래 자식만.</p>
+  <p>- 기본은 <code>* + *</code>로 가볍게, 예외는 <code>h4 + *</code>처럼 구체적으로.</p>
+  <p>- flex·grid 안이거나 항목이 숨었다 나타나면 <code>gap</code>.</p>
+  <p>- 글처럼 흐르는 곳, 관계마다 간격이 달라야 하는 곳이 부엉이 자리.</p>
 </section>
 
 <div class="rule"></div>
@@ -245,8 +226,7 @@ form:has(:invalid) button { opacity: .4 }</pre>
 <footer class="stack">
   <p><small>읽은 것:<br>
   <a href="https://alistapart.com/article/axiomatic-css-and-lobotomized-owls/">Axiomatic CSS and Lobotomized Owls</a> (A List Apart, 2014)<br>
-  <a href="https://every-layout.dev/layouts/stack/">Every Layout: The Stack</a><br>
-  <a href="https://developer.mozilla.org/ko/docs/Web/CSS/:has">MDN :has()</a></small></p>
+  <a href="https://every-layout.dev/layouts/stack/">Every Layout: The Stack</a></small></p>
   <p><small><a href="/">hyuk.xyz</a></small></p>
 </footer>
 
