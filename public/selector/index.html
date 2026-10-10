@@ -70,9 +70,6 @@ small { font-size: .85em; }
 }
 .it .it { margin-left: 12px; font-size: .9em; }
 
-.d2 > label { --gap: 0px; }
-#d2:checked ~ .row .wrap > :first-child { display: none; }
-.gap { display: flex; flex-direction: column; gap: 12px; }
 
 .rhythm { --space: .3em; }
 .rhythm > * + h4 { --gap: 1.6em; }
@@ -80,15 +77,6 @@ small { font-size: .85em; }
 .rhythm > * + blockquote, .rhythm > blockquote + * { --gap: 1em; }
 .rhythm blockquote { padding-left: 1em; font-style: italic; }
 
-.mc { outline: 1px dashed #000; }
-.mc-in { background: #000; color: #fff; padding: 2px 6px; font-family: monospace, monospace; }
-.mc-a .mc-in { margin-top: 24px; }
-.mc-a { position: relative; }
-.mc-a::before {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 24px;
-  background: repeating-linear-gradient(-45deg, #000 0 1px, transparent 1px 5px); opacity: .35;
-}
-.mc-b > * + * { margin-top: 24px; }
 </style>
 </head>
 <body>
@@ -146,66 +134,30 @@ small { font-size: .85em; }
 
 <section class="stack">
   <h2>간격을 관계로 적는다</h2>
-  <p>제일 마음에 든 부분. “제목은 아래 24px”이 아니라 “제목 다음은 붙이고, 제목 앞은 띄운다”로 적는다. 여백이 요소의 성질이 아니라 둘 사이의 성질이 된다. 클래스를 안 달아도 글 순서만으로 리듬이 생긴다.</p>
+  <p>“제목은 아래 24px”이 아니라 “제목 다음은 붙이고, 제목 앞은 띄운다”로 적는다. 여백이 요소의 성질이 아니라 둘 사이의 성질이 된다. 클래스를 안 달아도 글 순서만으로 리듬이 생긴다.</p>
 <pre>.rhythm &gt; * + *          { --gap: .3em }
 .rhythm &gt; * + h4         { --gap: 1.6em }
 .rhythm &gt; h4 + *         { --gap: 0 }
 .rhythm &gt; * + blockquote { --gap: 1em }</pre>
   <div class="box">
     <div class="rhythm stack band">
-      <h4>월요일</h4>
-      <p>레퍼런스 정리.</p>
-      <p>폰트 두 개 골랐다.</p>
-      <blockquote>“구조가 먼저, 장식은 나중.”</blockquote>
-      <p>그 말 듣고 다시 했다.</p>
-      <h4>화요일</h4>
-      <p>그리드 다시.</p>
+      <h4>제목</h4>
+      <p>문단</p>
+      <p>문단</p>
+      <blockquote>인용</blockquote>
+      <p>문단</p>
+      <h4>제목</h4>
+      <p>문단</p>
     </div>
   </div>
   <p><code>*</code>의 명시도가 0이라서 <code>.rhythm &gt; * + *</code>는 클래스 하나 무게밖에 안 된다. 그래서 아래 줄들이 위의 기본값을 쉽게 이긴다. 기본은 가볍게, 예외는 구체적으로.</p>
 
   <h3>값은 변수로</h3>
-  <p>처음엔 규칙마다 <code>margin-top</code>을 직접 썼다. 그러다 간격 값을 <code>--space</code> 하나로 빼니까 스택마다 값만 바꿔 끼우면 됐다.</p>
+  <p>간격 값을 <code>--space</code> 하나로 빼면 스택마다 값만 바꿔 끼우면 된다.</p>
 <pre>.stack &gt; * + * { margin-top: var(--space, 1em) }
 .box   { --space: 12px }
 .post  { --space: 1.5em }</pre>
   <p>문제는 변수가 상속된다는 것. 안쪽 스택이 바깥 값을 물려받아 엉뚱하게 벌어진다. 그래서 이 페이지는 관계마다 정하는 값을 <code>--gap</code>으로 따로 두고, <code>@property</code>로 상속을 껐다.</p>
-</section>
-
-<div class="rule"></div>
-
-<section class="stack">
-  <h2>틀렸던 것들</h2>
-
-  <h3>숨긴 첫째</h3>
-  <p><code>display: none</code>을 줘도 DOM에는 남아 있어서 형제로 센다. 첫째를 숨기면 둘째가 <code>* + *</code>에 걸린 채로 맨 위에 올라와서 위에 빈칸이 생긴다. 한참 찾았다.</p>
-  <div class="box stack d2">
-    <input type="checkbox" id="d2"> <label for="d2">첫째 숨기기</label>
-    <div class="row">
-      <div><p class="label"><code>* + *</code></p>
-        <div class="wrap owl stack band"><div class="it">A</div><div class="it">B</div><div class="it">C</div></div></div>
-      <div><p class="label">flex + <code>gap</code></p>
-        <div class="wrap gap"><div class="it">A</div><div class="it">B</div><div class="it">C</div></div></div>
-    </div>
-    <p>flex의 <code>gap</code>은 보이는 것끼리만 계산해서 괜찮다. 항목이 켜졌다 꺼졌다 하는 곳이면 <code>gap</code>이 낫다.</p>
-  </div>
-
-  <h3>부모 밖으로 새는 margin</h3>
-  <p>첫째 자식에 <code>margin-top</code>이 있으면 부모에 테두리나 padding이 없을 때 그 여백이 부모 위로 빠져나간다(margin 상쇄). 부엉이는 첫째에 여백을 안 주니까 이게 안 생긴다.</p>
-  <div class="box">
-    <div class="row">
-      <div><p class="label">모든 자식에 margin-top</p>
-        <div class="mc mc-a"><div class="mc-in">A</div><div class="mc-in">B</div></div></div>
-      <div><p class="label"><code>&gt; * + *</code></p>
-        <div class="mc mc-b"><div class="mc-in">A</div><div class="mc-in">B</div></div></div>
-    </div>
-    <p>위쪽 빗금이 A의 여백인데, 점선(부모) 바깥에 생겼다.</p>
-  </div>
-
-  <h3>이 페이지 만들다 걸린 것</h3>
-  <p>① <code>--gap</code>의 상속을 껐더니 빗금 높이가 0이 됐다. 빗금은 <code>::before</code>로 그리는데 <code>::before</code>도 자식이라 못 받은 거였다. 상속되는 <code>--band</code>에 한 번 옮겨 담아서 해결.</p>
-  <p>② 섹션 사이가 다닥다닥 붙었다. 섹션이 자기 안쪽용으로 정한 <code>--space</code>가 섹션 자신의 위 여백에도 쓰였다. 바깥 간격은 <code>main &gt; * + *</code>에서 따로 주는 걸로.</p>
-  <p>③ 사파리에서 <code>&lt;hr&gt;</code>에는 <code>::before</code>가 안 그려졌다. 그래서 구분선은 그냥 <code>div</code>.</p>
 </section>
 
 <div class="rule"></div>
