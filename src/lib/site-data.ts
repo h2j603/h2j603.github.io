@@ -40,6 +40,27 @@ export function getWorks(): Work[] {
   return cache;
 }
 
+/**
+ * 작품 표에 놓이는 순서 — year desc(최신 위), 같은 연도는 stable sort로
+ * index 채널 순서 유지. 표(index.astro)와 /works.json이 같은 순서를 쓰도록
+ * 여기서 한 번만 정의한다.
+ */
+export function getTableWorks(): Work[] {
+  return getWorks()
+    .slice()
+    .sort((a, b) => {
+      const ya = parseInt(a.year || '0', 10) || 0;
+      const yb = parseInt(b.year || '0', 10) || 0;
+      return yb - ya;
+    });
+}
+
+/** 표 분류 칸(cat-tag)의 태그 순서 — 태그 전부, non-web 먼저 web은 맨 뒤. */
+export function orderedTagsOf(w: Work): string[] {
+  const nonWeb = w.tags.filter((x) => x !== 'web');
+  return w.tags.includes('web') ? [...nonWeb, 'web'] : nonWeb;
+}
+
 export interface TextBlock {
   lang: 'ko' | 'en' | null;
   html: string;
