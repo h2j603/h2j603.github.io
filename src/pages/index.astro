@@ -7,21 +7,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Base from '../layouts/Base.astro';
 import SkelImage from '../components/SkelImage.astro';
-import { getWorks, resolveImage, resolveVideo, getIntro, getIntroNotes, getLinks, getMemos, groupBilingual } from "../lib/site-data.js";
+// 표 순서(getTableWorks)와 분류 칸 순서(orderedTagsOf)는 lib에 있다 —
+// /works.json 엔드포인트가 같은 함수를 써서 순서가 갈라지지 않게.
+import { getTableWorks, orderedTagsOf, resolveImage, resolveVideo, getIntro, getIntroNotes, getLinks, getMemos, groupBilingual } from "../lib/site-data.js";
 import { buildTagMixMap } from "../lib/tag-colors.js";
 
-const works = getWorks().slice().sort((a, b) => {
-  // 표 정렬 — year desc(최신 위), 같은 연도는 stable sort로 index 채널 순서 유지.
-  const ya = parseInt(a.year || '0', 10) || 0;
-  const yb = parseInt(b.year || '0', 10) || 0;
-  return yb - ya;
-});
-
-function orderedTagsOf(w: (typeof works)[number]): string[] {
-  // 태그 전부 표시 — non-web 먼저, web은 맨 뒤. (표 카테고리 칸)
-  const nonWeb = w.tags.filter((x) => x !== 'web');
-  return w.tags.includes('web') ? [...nonWeb, 'web'] : nonWeb;
-}
+const works = getTableWorks();
 
 const introGroups = getIntro(); // About 서랍 — footer 채널은 intro로 통폐합됨
 const introNotes = getIntroNotes(); // 2단 본문 아래 1단 주석(## note 블록)
