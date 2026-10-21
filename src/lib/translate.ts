@@ -40,9 +40,7 @@ Translate the given memo from English to Korean.
 Translate the given text from Korean to Japanese.
 - Match the register of the source. The source is mostly plain declarative prose (Korean '~다' style): render it in だ・である調, not です・ます調. Keep any part that is already です・ます as it is.
 - The author is a graphic designer: render field terms with the katakana loanwords Japanese designers actually use — リサーチ (not 研究), リファレンス (not 参考資料), ブランディング, アイデンティティ, タイポグラフィ, レイアウト, モックアップ, コンセプト. When unsure whether a design/creative term is used as a loanword in the field, prefer the loanword.
-- The output must contain NO Hangul characters. Korean proper nouns go into Japanese script: Korean place and institution names in their standard kanji form (홍익대학교 → 弘益大学校, 강원도 → 江原道, 서울 → ソウル), Korean personal names in katakana (혁 → ヒョク). Latin-script names (e.g. Condensed Kiwi) stay as they are.
-- Write normal Japanese with no spaces between words. Korean word spacing must not carry over.
-- Preserve line breaks exactly. Keep URLs, code, and markdown syntax as-is. Do not translate text that is already English.
+- Preserve line breaks exactly. Keep URLs, code, markdown syntax, and proper nouns (names, titles, places) as-is. Do not translate text that is already English.
 - Output ONLY the translation. No quotes around it, no notes, no commentary.`,
 };
 
