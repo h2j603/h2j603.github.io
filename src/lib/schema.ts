@@ -40,10 +40,8 @@ export const workSchema = z.object({
   slug: z.string().min(1),
   /** 한국어 제목 (채널 이름의 '/' 앞부분). */
   title: z.string().default(''),
-  /** 영어 제목 (채널 이름의 두 번째 조각). '/' 없으면 title과 같음. */
+  /** 영어 제목 (채널 이름의 '/' 뒷부분). '/' 없으면 title과 같음. */
   titleEn: z.string().default(''),
-  /** 일본어 제목 (채널 이름의 세 번째 조각). 없으면 빌드가 자동번역해 채운다. */
-  titleJa: z.string().default(''),
   year: z.string().default(''),
   medium: z.string().default(''),
   size: z.string().default(''),
@@ -66,18 +64,14 @@ export const workSchema = z.object({
   bodyKo: z.string().default(''),
   /** English body — 마커 ##en 텍스트 블록들을 join. 호환용. */
   bodyEn: z.string().default(''),
-  /** Japanese body — ja 블록들을 join. 호환용. */
-  bodyJa: z.string().default(''),
-  /** ja 본문 또는 제목이 자동번역이면 true — 카드의 「自動翻訳」 표기용. */
-  jaAuto: z.boolean().default(false),
   /**
-   * 텍스트 블록들을 채널 순서대로 보관. lang은 ##ko / ##en / ##ja 마커 결과.
-   * 페이지에서 ko→en 짝이면 2단, ja는 그 짝과 독립 1단으로 렌더.
+   * 텍스트 블록들을 채널 순서대로 보관. lang은 ##ko / ##en 마커 결과.
+   * 페이지에서 ko→en 짝이면 2단, 그 외 1단으로 렌더.
    */
   bodyBlocks: z
     .array(
       z.object({
-        lang: z.enum(['ko', 'en', 'ja']).nullable(),
+        lang: z.enum(['ko', 'en']).nullable(),
         html: z.string(),
       }),
     )
@@ -131,10 +125,6 @@ export const memoSchema = z.object({
   titleKo: z.string().default(""),
   /** 한국어 본문 — 영어 원문 메모의 빌드타임 번역. 없으면 ''(원문 폴백). */
   textKo: z.string().default(""),
-  /** 일본어 라벨 — textJa의 첫 문장. */
-  titleJa: z.string().default(""),
-  /** 일본어 본문 — 항상 빌드타임 자동번역. 없으면 ''(한국어 폴백). */
-  textJa: z.string().default(""),
   /** 수집 시각 (ISO). */
   addedAt: z.string().default(""),
   /** 만든 사람 (block.user). */
@@ -148,12 +138,10 @@ export type Memo = z.infer<typeof memoSchema>;
 /** About 서랍 인트로 텍스트 블록 — buildIntro()/TextBlock과 같은 형태.
  *  다른 스냅샷과 일관되게 빌드 타임에 검증한다. */
 export const introBlockSchema = z.object({
-  lang: z.enum(['ko', 'en', 'ja']).nullable(),
+  lang: z.enum(['ko', 'en']).nullable(),
   html: z.string(),
   /** `## note` 마커 블록 — 2단 본문 아래 1단 주석으로 렌더. */
   note: z.boolean().default(false),
-  /** ja 블록이 자동번역이면 true — About의 「自動翻訳」 표기용. */
-  auto: z.boolean().default(false),
 });
 export const introFileSchema = z.array(introBlockSchema);
 export type IntroBlock = z.infer<typeof introBlockSchema>;

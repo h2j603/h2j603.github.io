@@ -15,10 +15,6 @@ src/data/translations.json
 # downloaded images (re-fetched at build time; skip-cached locally)
 src/assets/works/*/
 
-# 일본어 서브셋 폰트 — 빌드 산출물(scripts/subset-ja.ts). 원본 폰트 캐시도 함께.
-public/fonts/IBMPlexSansJP-subset.woff2
-.cache/
-
 # secrets
 .env
 .env.*
