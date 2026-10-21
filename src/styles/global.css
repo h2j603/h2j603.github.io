@@ -17,30 +17,6 @@
   font-style: normal;
   font-display: swap;
 }
-/* 일본어 — Heitz엔 가나·한자가 없고, 들어 있는 일본어 구두점(。、「」・)은
-   한글 기준 위치라 틀어진다. 그래서 일본어 블록에선 Heitz를 라틴 범위로만
-   잘라 쓰고(Heitz Latin) 나머지는 IBM Plex Sans JP가 그린다.
-   size-adjust 90% — Heitz가 원래 작게 보여서 같은 1rem이면 일본어가 크게
-   튄다(사용자 지정 2026-10-21). 일본어 글리프만 줄고 라틴·줄높이는 그대로.
-   파일은 빌드 산출물(scripts/subset-ja.ts, 스냅샷의 ja 글자만 담은 서브셋)이라
-   gitignore — 없으면 그냥 시스템 폴백으로 그려진다. preload는 하지 않는다
-   (일본어 모드에서만 필요한 폰트라 첫 페인트를 방해할 이유가 없다). */
-@font-face {
-  font-family: 'IBM Plex Sans JP';
-  src: url('/fonts/IBMPlexSansJP-subset.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  size-adjust: 90%;
-}
-@font-face {
-  font-family: 'Heitz Latin';
-  src: url('/fonts/Heitz-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0000-024F, U+2010-2027, U+2030-205E, U+20AC;
-}
 
 /* ───────────────────────────────────────────────────────────────────────
    디자인 토큰 — hyuk repo 원본을 lawngreen→#b362ff, orangered→#775d4f로 치환
@@ -196,23 +172,6 @@ body {
   /* 한글 어절(단어) 단위 줄바꿈. CJK 기본 글자단위 끊김 방지. */
   word-break: keep-all;
   overflow-wrap: break-word;
-}
-
-/* ── 일본어 조판 ─────────────────────────────────────────────────────────
-   body의 keep-all은 띄어쓰기 없는 일본어를 줄바꿈 못 하게 한다 → normal로
-   되돌리고, 금칙 처리(line-break: strict)와 긴 URL 대비(anywhere)를 켠다.
-   자간은 기존 값 중 가장 좁은 0.02em(라틴 본문과 동일) — 가나·한자는 같은
-   자간에서 더 넓어 보이므로 더 넓히지 않는다. 줄높이는 기존 값 그대로
-   (읽는 글 1.75rem / UI 1.25rem) — 4px 격자 유지. 새 font-size는 없다.
-   폰트는 Heitz Latin(라틴·숫자) → IBM Plex Sans JP(가나·한자·구두점).
-   선택자는 :lang(ja)가 아니라 body 안의 [lang='ja'] — ja 모드에선 html 자체가
-   lang=ja라 :lang(ja)면 한국어 폴백 블록까지 keep-all을 잃는다. */
-body [lang='ja'] {
-  font-family: 'Heitz Latin', 'IBM Plex Sans JP', sans-serif;
-  word-break: normal;
-  line-break: strict;
-  overflow-wrap: anywhere;
-  letter-spacing: 0.02em;
 }
 
 /* 팔레트 1분 전환 크로스페이드 — 파생 칠(페이지 톤·태그칩)만 부드럽게 잇는다.
@@ -1223,11 +1182,9 @@ body.lightbox-open { overflow: hidden; } /* 열린 동안 배경 스크롤 잠�
   flex-direction: column;
   gap: var(--space-pill);
 }
-/* 영어 위 / 한국어 아래 / 일본어 — 셋 다 동등 위계 (같은 크기).
-   표시는 언어 토글이 고른다 (ja 모드에선 ja만). */
+/* 영어 위 / 한국어 아래 — 둘 다 동등 위계 (같은 크기) */
 .work-card .card-title .card-title-en,
-.work-card .card-title .card-title-ko,
-.work-card .card-title .card-title-ja {
+.work-card .card-title .card-title-ko {
   line-height: 1.5rem;
 }
 
@@ -1532,23 +1489,12 @@ table.sontable .col-cat   { width: 20%; }
 }
 .bilingual > [lang='en'] { order: 1; }
 .bilingual > [lang='ko'] { order: 2; }
-/* 데스크탑 — 작품 본문·About 모두 2단 병기 대신 언어 토글(KO/EN/JA)에 따라
+/* 데스크탑 — 작품 본문·About 모두 2단 병기 대신 언어 토글(EN/KO)에 따라
    현재 언어만 1단 표시. (모바일은 mobile.css에서 ko/en 둘 다 stack으로 복원) */
 .three-col[data-lang='ko'] .bilingual > [lang='en'] { display: none; }
 .three-col[data-lang='en'] .bilingual > [lang='ko'] { display: none; }
-/* 일본어 — ko/en 짝과 독립 1단(.ja-body). ja 모드에서만 보이고 그 외엔 전부
-   숨는다 (data-lang 미부여=no-JS 상태에서도 숨김 — ja는 기본 노출 언어가 아니다) */
-.three-col:not([data-lang='ja']) [lang='ja'] { display: none; }
-.three-col[data-lang='ja'] .bilingual { display: none; }
-.three-col[data-lang='ja'] .memo [lang='ko'],
-.three-col[data-lang='ja'] .memo [lang='en'],
-.three-col[data-lang='ja'] .card-title [lang='ko'],
-.three-col[data-lang='ja'] .card-title [lang='en'] { display: none; }
-/* ja판이 없는 곳(번역 실패·키 없음)은 ja 모드에서도 한국어 1단으로 폴백 */
-.three-col[data-lang='ja'] [data-no-ja] .bilingual { display: block; }
-.three-col[data-lang='ja'] [data-no-ja] .bilingual > [lang='en'] { display: none; }
 /* 메모 한/영 — 번역 있는 메모는 라벨·본문·MT표기를 lang 스팬으로 나눠 두고
-   토글 언어만 표시. (data-lang 미부여=no-JS 상태에선 한국어만 — en·ja 숨김) */
+   토글 언어만 표시. (data-lang 미부여=no-JS 상태에선 한국어만 — en 숨김) */
 .three-col:not([data-lang='en']) .memo [lang='en'] { display: none; }
 .three-col[data-lang='en'] .memo [lang='ko'] { display: none; }
 .bilingual > div > p:first-child { padding-top: 0; }

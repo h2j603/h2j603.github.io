@@ -279,8 +279,6 @@
   .about-overlay .bilingual { display: block; }
   .three-col[data-lang='ko'] .about-overlay .bilingual > [lang='en'] { display: none; }
   .three-col[data-lang='en'] .about-overlay .bilingual > [lang='ko'] { display: none; }
-  /* ja는 여기 규칙이 필요 없다 — 전역(.three-col[data-lang='ja'])이 특이도로
-     이기고, ja판 없는 About의 한국어 폴백도 전역 [data-no-ja] 규칙이 처리한다. */
 
   /* 방명록 — 모바일 보정 (데스크탑 치수가 좁은 화면에서 깨지던 것) */
   .about-drawer { padding: 4.5rem var(--space-4) 2rem; } /* 상단 빈 공간 축소 */

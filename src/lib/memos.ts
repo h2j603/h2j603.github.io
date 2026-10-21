@@ -77,19 +77,5 @@ export async function buildMemos(): Promise<Memo[]> {
     out[enMemos[j].i].titleKo = memoLabel(ko);
   });
 
-  // 일본어 — 메모 ja는 항상 자동번역. 원천은 한국어 원문이면 text, 영어 원문이면
-  // 한국어 번역(textKo)이 있을 때 그것, 없으면 원문(text) 그대로.
-  // 실패 → ''(ja 모드에서 한국어로 폴백), 빌드는 계속.
-  const jaSources = out.map((m, i) => ({
-    i,
-    src: isKoreanText(m.text) ? m.text : m.textKo || m.text,
-  }));
-  const toJa = await translateTo('ja', jaSources.map((s) => s.src));
-  toJa.forEach((ja, j) => {
-    if (!ja) return;
-    out[jaSources[j].i].textJa = ja;
-    out[jaSources[j].i].titleJa = memoLabel(ja);
-  });
-
   return out;
 }
