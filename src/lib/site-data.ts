@@ -62,14 +62,20 @@ export function orderedTagsOf(w: Work): string[] {
 }
 
 export interface TextBlock {
-  lang: 'ko' | 'en' | null;
+  lang: 'ko' | 'en' | 'ja' | null;
   html: string;
   /** `## note` 마커 블록 — 2단 본문이 아니라 1단 주석. */
   note?: boolean;
+  /** ja 블록이 자동번역이면 true — 「自動翻訳」 표기용. */
+  auto?: boolean;
 }
 export interface BilingualGroup {
   ko?: string;
   en?: string;
+  /** 일본어 — ko/en 짝과 무관한 독립 1단. */
+  ja?: string;
+  /** 위 ja가 자동번역이면 true. */
+  jaAuto?: boolean;
 }
 
 export { groupBilingual };
@@ -86,13 +92,16 @@ function readBlocks(path: string): TextBlock[] {
  * 블록 배열을 ko/en 짝 또는 단독으로 그룹화.
  * - 현재 ko + 다음 en → 한 그룹 (좌우 2단)
  * - 그 외 → 단독 그룹 (1단)
+ * ja는 이 짝짓기 바깥이다 — ko/en 사이에 끼어 있어도 짝을 깨지 않도록
+ * 짝 판정에서 빼고, 독립 그룹으로 모아 뒤에 붙인다.
  */
 function groupBilingual(blocks: TextBlock[]): BilingualGroup[] {
   const groups: BilingualGroup[] = [];
+  const pairs = blocks.filter((b) => b.lang !== 'ja');
   let i = 0;
-  while (i < blocks.length) {
-    const cur = blocks[i];
-    const next = blocks[i + 1];
+  while (i < pairs.length) {
+    const cur = pairs[i];
+    const next = pairs[i + 1];
     if (cur.lang === 'ko' && next?.lang === 'en') {
       groups.push({ ko: cur.html, en: next.html });
       i += 2;
@@ -104,6 +113,9 @@ function groupBilingual(blocks: TextBlock[]): BilingualGroup[] {
       groups.push({ [key]: cur.html });
       i += 1;
     }
+  }
+  for (const b of blocks) {
+    if (b.lang === 'ja') groups.push({ ja: b.html, jaAuto: b.auto });
   }
   return groups;
 }

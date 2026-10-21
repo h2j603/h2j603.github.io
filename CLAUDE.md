@@ -28,6 +28,17 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 > `line-height 1.75rem` 셋뿐. 위계는 크기가 아니라 **자간**이 만든다(본문 0.02em ·
 > 제목 0.05em · 카드 메타 0.06em). 줄높이는 정수 px로 잠가 4px 세로 격자에
 > 정렬한다. 새 크기·새 서체·새 웨이트를 추가하지 말 것.
+> **예외 — 일본어 서체 `IBM Plex Sans JP`** (가나·한자용, 2026-10-21 사용자 선택).
+> 일본어 블록(`body [lang='ja']`)에서만 `'Heitz Latin', 'IBM Plex Sans JP'` 순으로
+> 세운다. `Heitz Latin`은 같은 Heitz 파일을 라틴 범위(unicode-range)로 자른 것 —
+> Heitz에 든 일본어 구두점(。、「」)은 한글 기준 위치라 틀어지므로 쓰지 않는다.
+> IBM Plex Sans JP는 `size-adjust: 90%` (Heitz가 작게 보여 같은 1rem이면 일본어가
+> 튄다 — 사용자 지정). 파일은 빌드 산출물 `public/fonts/IBMPlexSansJP-subset.woff2`
+> (gitignore) — `scripts/subset-ja.ts`가 스냅샷의 ja 글자만 골라 굽는다. 원본은
+> `.cache/fonts/`에 캐시(CI엔 캐시 스텝 없음 — 배포마다 2.3MB 재다운로드), 실패하면 경고만 내고 시스템 폴백. 웨이트는 400 하나.
+> 일본어 조판: `word-break: normal`(body의 keep-all은 띄어쓰기 없는 일본어를 못
+> 끊는다) + `line-break: strict` + 자간 0.02em. `:lang(ja)`를 쓰지 않는 이유 —
+> ja 모드에선 html이 lang=ja라 한국어 폴백 블록까지 keep-all을 잃는다.
 
 ## Architecture (the decisions we made, in order)
 
@@ -40,8 +51,12 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
    sub-channel = one project/work.
 3. **Everything lives in the work's Are.na channel:**
    - **image blocks** → the work's images (as many as you want, in order),
-   - **text blocks** (Markdown) → body copy; **1st block = Korean, 2nd =
-     English** (extra text blocks ignored with a warning),
+   - **text blocks** (Markdown) → body copy. 첫 줄의 마커로 언어를 가른다 —
+     `## ko` / `## en` / `## ja` (마커 없으면 lang null = 규격·주석 줄).
+     ko+en이 연속하면 좌우 2단, ja는 그 짝과 **독립 1단**으로 렌더된다.
+     **ja 블록이 하나도 없으면 빌드가 ko 블록을 일본어로 자동번역해 붙인다**
+     (제목도 같음 — 채널 이름 `한국어 / English / 日本語` 3조각이면 그 값,
+     2조각 이하면 비워 두고 번역). About(`intro` 채널)도 같은 규칙.,
    - **link blocks** → outbound links; the **Are.na thumbnail is downloaded
      locally** and any work with a link is auto-tagged `web`,
    - **channel description** → structured metadata as `key: value` lines.
@@ -79,18 +94,26 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
     `src/data/memos.json`. ⚠️ `.env`의 `ARENA_MEMO_CHANNEL`은 반드시 ID `5297539`
     (옛 슬러그 `notepad-...`는 rename으로 죽음). 배포는 secret 없이 config 기본
     ID를 써서 정상. (links 채널은 아직 slug 참조 — 필요 시 ID로 전환: #5297302.)
-    **메모 양방향 번역 (Claude Haiku, 빌드타임)**: `src/lib/translate.ts`가
-    언어를 감지(한글 비중 10%)해 한국어 메모→영어(`textEn`), 영어 메모→한국어
-    (`textKo`)로 번역해 굽는다. (세대+모델+타깃+프롬프트+내용) sha256 캐시
-    (`src/data/translations.json`, gitignore + CI actions/cache)라 같은 메모는
+    **번역 (Claude Haiku, 빌드타임)**: `src/lib/translate.ts` 하나가 메모·작품
+    본문/제목·About을 전부 번역한다. (세대+모델+타깃+프롬프트+내용) sha256 캐시
+    (`src/data/translations.json`, gitignore + CI actions/cache)라 같은 글은
     평생 1회만 번역 — SYSTEM 프롬프트가 키에 포함돼 프롬프트 수정만으로 해당
     방향 전체가 자동 재번역되고, 키 밖 파라미터 변경은 `CACHE_GEN` bump.
-    영→한 프롬프트에 디자인 외래어 규칙 내장 (research→리서치, 연구 X).
+    - **메모 양방향**: 언어를 감지(한글 비중 10%)해 한국어 메모→영어(`textEn`),
+      영어 메모→한국어(`textKo`).
+    - **일본어(`ja`)**: 메모는 한국어 원문→일본어(`textJa`, 영어 원문이면
+      `textKo`를 거쳐), 작품은 ##ja 블록·제목 ja가 없을 때 자동번역(`titleJa`·
+      `bodyJa`, `jaAuto: true`), About도 같다. だ・である調 + 디자인 가타카나
+      외래어(リサーチ, リファレンス, ブランディング…) 규칙 내장.
+    - 영→한 프롬프트에도 디자인 외래어 규칙 내장 (research→리서치, 연구 X).
+    - 작품 ja 번역은 작업 풀 **밖에서** 한 번에 모아 부른다 — `translateTo`가
+      캐시 파일을 통째로 다시 쓰므로 동시에 부르면 서로 덮어쓴다.
     max_tokens 16000 + `stop_reason: max_tokens`(잘림) 검사: 잘린 번역은 캐시
-    안 하고 원문 폴백. 각 모드에서 번역된 쪽에만 날짜줄 표기(회색 pill) —
-    EN 모드 `auto-translated`, KO 모드 `자동 번역`. `ANTHROPIC_API_KEY` secret
-    없거나 실패 → 원문 폴백, 빌드는 정상. 모델 교체: repo Variables
-    `TRANSLATE_MODEL` (기본 claude-haiku-4-5).
+    안 하고 원문 폴백. 번역된 쪽에만 표기(회색 pill) — EN 모드 `auto-translated`,
+    KO 모드 `자동 번역`, JA 모드 `自動翻訳`. ja 번역이 없으면 ja 모드는 한국어로
+    폴백한다(작품 카드·About은 `data-no-ja`). `ANTHROPIC_API_KEY` secret 없거나
+    실패 → 원문 폴백, 빌드는 정상. 모델 교체: repo Variables `TRANSLATE_MODEL`
+    (기본 claude-haiku-4-5).
 11. **수집 링크 (`links` 채널, 실제 슬러그 `collection-gxx8lqhxixg` / #5297302,
     private).** 링크 블록 1개 = 사이트 1개, title = 표시 이름. 우측 컬럼에
     채널 순서대로 본문 pill 스타일 스택으로 렌더 (모바일은 숨김). 스냅샷
@@ -110,6 +133,7 @@ The previous site is preserved under `old/`. `CNAME` (hyuk.xyz) lives in
 | `src/lib/schema.ts` | `Work` zod schema (source of truth) + `TAGS` |
 | `src/lib/site-data.ts` | page-side: read snapshot + resolve image assets |
 | `scripts/build-data.ts` | build-time data step (`--dry-run` supported) |
+| `scripts/subset-ja.ts` | 일본어 서브셋 폰트 생성 (IBM Plex Sans JP → `public/fonts/`) |
 | `scripts/setup-arena.ts` | idempotent Are.na structure bootstrap |
 | `scripts/setup-links.ts` | 수집 링크 채널 생성 + 예시 시드 (멱등) |
 | `src/pages/index.astro` | 단일 페이지 — 3컬럼 마크업 (JS는 `src/scripts/`로 분리) |
@@ -135,9 +159,10 @@ npm run build:nofetch         # astro build only, against existing works.json
   enough for `build`. Get it: Are.na → Settings → Developers → new application →
   personal access token (write).
 - `ARENA_INDEX_CHANNEL` — index channel slug (default `works`).
-- `ANTHROPIC_API_KEY` — Anthropic API 키 (선택). 메모 한→영 빌드타임 번역용
-  (Claude Haiku). 없으면 번역만 생략(EN 모드에서 메모가 한국어로 표시), 빌드는
-  정상. 모델 교체는 repo Variables `TRANSLATE_MODEL`.
+- `ANTHROPIC_API_KEY` — Anthropic API 키 (선택). 메모·작품·About 빌드타임 번역용
+  (Claude Haiku) — 메모 한↔영, 그리고 일본어판(작품 본문·제목, About, 메모).
+  없으면 번역만 생략(EN·JA 모드에서 한국어로 표시), 빌드는 정상. 모델 교체는
+  repo Variables `TRANSLATE_MODEL`.
 - `.env` is gitignored; mirror these as **repo secrets** for the deploy workflow.
 
 ## Status (2026-06-12 기준)

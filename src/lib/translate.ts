@@ -17,7 +17,7 @@ import { TRANSLATIONS_FILE, TRANSLATE_MODEL, getAnthropicKey } from './config.js
 
 const POOL = 4; // 동시 요청 수 — works.ts의 fetch 풀과 같은 어법
 
-export type TargetLang = 'en' | 'ko';
+export type TargetLang = 'en' | 'ko' | 'ja';
 
 const SYSTEM: Record<TargetLang, string> = {
   en: `You are translating personal notepad memos by a Korean graphic designer for the English version of his portfolio site (hyuk.xyz).
@@ -34,6 +34,13 @@ Translate the given memo from English to Korean.
 - The author is a graphic designer: render field terms the way Korean designers actually say them — use the established loanword (외래어 표기), NOT a Sino-Korean translation. e.g. research → 리서치 (not 연구), reference → 레퍼런스 (not 참고 자료), branding → 브랜딩, identity → 아이덴티티, typography → 타이포그래피, layout → 레이아웃, mockup → 목업, concept → 컨셉. When unsure whether a design/creative term is used as a loanword in the field, prefer the loanword.
 - Preserve line breaks exactly. Keep URLs, code, markdown syntax, and proper nouns/technical terms that are conventionally kept in English as-is.
 - If part of the memo is already Korean, keep it unchanged.
+- Output ONLY the translation. No quotes around it, no notes, no commentary.`,
+  ja: `You are translating texts by a Korean graphic designer for the Japanese version of his portfolio site (hyuk.xyz) — works, About, and notepad memos.
+
+Translate the given text from Korean to Japanese.
+- Match the register of the source. The source is mostly plain declarative prose (Korean '~다' style): render it in だ・である調, not です・ます調. Keep any part that is already です・ます as it is.
+- The author is a graphic designer: render field terms with the katakana loanwords Japanese designers actually use — リサーチ (not 研究), リファレンス (not 参考資料), ブランディング, アイデンティティ, タイポグラフィ, レイアウト, モックアップ, コンセプト. When unsure whether a design/creative term is used as a loanword in the field, prefer the loanword.
+- Preserve line breaks exactly. Keep URLs, code, markdown syntax, and proper nouns (names, titles, places) as-is. Do not translate text that is already English.
 - Output ONLY the translation. No quotes around it, no notes, no commentary.`,
 };
 
