@@ -10,7 +10,8 @@
     "setup:memo": "tsx scripts/setup-memo.ts",
     "build:data": "tsx scripts/build-data.ts",
     "check:arena": "tsx scripts/build-data.ts --dry-run",
-    "build": "tsx scripts/build-data.ts && astro build",
+    "build:subset-ja": "tsx scripts/subset-ja.ts",
+    "build": "tsx scripts/build-data.ts && tsx scripts/subset-ja.ts && astro build",
     "build:nofetch": "astro build",
     "dev": "tsx scripts/build-data.ts && astro dev",
     "preview": "astro preview",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "dotenv": "^16.4.7",
     "sharp": "^0.34.1",
+    "subset-font": "^2.9.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   }

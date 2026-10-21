@@ -14,6 +14,7 @@ import {
 } from './arena.js';
 import { markdownToHtml } from './body.js';
 import { parseMarker } from './intro.js';
+import { translateTo } from './translate.js';
 import {
   downloadImages,
   downloadFile,
@@ -116,10 +117,18 @@ function parseLayout(
   return cols;
 }
 
+/** 일본어 자동번역 대기분 — buildOne은 모으기만 하고, 번역은 풀 밖에서 한 번에. */
+interface JaPending {
+  /** 채널에 ##ja 블록이 하나도 없을 때 번역할 ko 블록 마크다운 (채널 순서). */
+  koMarkdowns: string[];
+  /** 제목 ja가 비었을 때 번역할 한국어 제목. 없으면 ''. */
+  titleKo: string;
+}
+
 async function buildOne(
   channel: WorkChannelRef,
   warn: (m: string) => void,
-): Promise<{ work: Work | null; skipped: boolean }> {
+): Promise<{ work: Work | null; skipped: boolean; ja: JaPending | null }> {
   const meta = parseDescriptionMetadata(channel.description);
 
   // `published: false`는 더 이상 작업을 빌드에서 제외하지 않는다 — 표에는
@@ -129,7 +138,7 @@ async function buildOne(
   const slug = (meta.slug || channel.slug || '').trim();
   if (!slug) {
     warn(`channel ${channel.id} has no usable slug`);
-    return { work: null, skipped: false };
+    return { work: null, skipped: false, ja: null };
   }
 
   const ctx = `work "${slug}"`;
@@ -139,7 +148,7 @@ async function buildOne(
   const blocks = await getChannelContents(channel.id);
   const imageBlocks: BlockImage[] = [];
   const linkBlocks: { link: Omit<WorkLink, 'thumbnail'>; thumbnailUrl: string | null }[] = [];
-  const textBlocks: { lang: 'ko' | 'en' | null; markdown: string }[] = [];
+  const textBlocks: { lang: 'ko' | 'en' | 'ja' | null; markdown: string }[] = [];
   for (const b of blocks) {
     const c = classifyBlock(b);
     if (c.kind === 'image') {
@@ -222,9 +231,10 @@ async function buildOne(
     const html = markdownToHtml(tb.markdown, `${ctx} block ${i + 1}`);
     return { lang: tb.lang, html };
   });
-  // 호환: bodyKo/En은 마커 매칭 블록들을 join (라이브러리 등 외부 쓰임 대비).
+  // 호환: bodyKo/En/Ja는 마커 매칭 블록들을 join (라이브러리 등 외부 쓰임 대비).
   const bodyKo = bodyBlocks.filter((b) => b.lang === 'ko').map((b) => b.html).join('\n');
   const bodyEn = bodyBlocks.filter((b) => b.lang === 'en').map((b) => b.html).join('\n');
+  const bodyJa = bodyBlocks.filter((b) => b.lang === 'ja').map((b) => b.html).join('\n');
 
   if (
     stats.downloaded ||
@@ -238,17 +248,31 @@ async function buildOne(
     );
   }
 
-  // 채널 이름 "한국어 / English" 형식이면 split. '/' 없으면 둘 다 같은 값.
+  // 채널 이름 "한국어 / English / 日本語" 형식이면 split.
+  //   3조각 → ko / en / ja · 2조각 → ko / en (ja는 빈 값, 자동번역 대상)
+  //   1조각 → 셋 다 같은 값이되 ja는 빈 값 (자동번역 대상)
   // channel.title을 우선해야 채널 이름 변경이 즉시 반영됨.
   const rawTitle = channel.title || meta.title || slug;
-  const slashIdx = rawTitle.indexOf('/');
-  const titleKo = (slashIdx >= 0 ? rawTitle.slice(0, slashIdx) : rawTitle).trim();
-  const titleEn = (slashIdx >= 0 ? rawTitle.slice(slashIdx + 1) : rawTitle).trim();
+  const titleParts = rawTitle.split('/').map((s) => s.trim()).filter(Boolean);
+  const titleKo = (titleParts[0] ?? rawTitle).trim();
+  const titleEn = titleParts.length >= 2 ? titleParts[1] : titleKo;
+  const titleJa = titleParts.length >= 3 ? titleParts.slice(2).join('/').trim() : '';
+
+  // ja가 없으면 빌드가 번역해 채운다 — 여기선 대기분만 모은다(번역은 풀 밖에서).
+  const hasJaBlocks = textBlocks.some((tb) => tb.lang === 'ja');
+  const ja: JaPending | null =
+    !hasJaBlocks || !titleJa
+      ? {
+          koMarkdowns: hasJaBlocks ? [] : textBlocks.filter((tb) => tb.lang === 'ko').map((tb) => tb.markdown),
+          titleKo: titleJa ? '' : titleKo,
+        }
+      : null;
 
   const parsed = workSchema.safeParse({
     slug,
     title: titleKo,
     titleEn,
+    titleJa,
     year: meta.year ?? '',
     medium: meta.medium ?? '',
     size: meta.size ?? '',
@@ -259,6 +283,7 @@ async function buildOne(
     cover,
     bodyKo,
     bodyEn,
+    bodyJa,
     bodyBlocks,
     images,
     imageLayout: parseLayout(meta.layout, images.length, warn, ctx),
@@ -266,9 +291,9 @@ async function buildOne(
   });
   if (!parsed.success) {
     warn(`${ctx}: schema validation failed: ${parsed.error.message}`);
-    return { work: null, skipped: false };
+    return { work: null, skipped: false, ja: null };
   }
-  return { work: parsed.data, skipped: false };
+  return { work: parsed.data, skipped: false, ja };
 }
 
 export async function buildWorks(): Promise<{ works: Work[]; summary: BuildSummary }> {
@@ -301,7 +326,8 @@ export async function buildWorks(): Promise<{ works: Work[]; summary: BuildSumma
   // 동시 4개 풀 — 직렬 fetch의 지연 합을 줄인다 (읽기 전용, 분당 한도
   // 120에 한참 못 미침). 결과는 인덱스 순서를 보존.
   const POOL = 4;
-  const results: ({ work: Work | null; skipped: boolean } | null)[] = new Array(refs.length).fill(null);
+  const results: ({ work: Work | null; skipped: boolean; ja: JaPending | null } | null)[] =
+    new Array(refs.length).fill(null);
   let cursor = 0;
   async function worker() {
     while (cursor < refs.length) {
@@ -310,13 +336,53 @@ export async function buildWorks(): Promise<{ works: Work[]; summary: BuildSumma
       try {
         results[i] = await buildOne(ref, warn);
       } catch (err: any) {
-        results[i] = { work: null, skipped: false };
+        results[i] = { work: null, skipped: false, ja: null };
         failed.push(ref.slug || String(ref.id));
         warn(`channel "${ref.slug || ref.id}" crashed: ${err.message}`);
       }
     }
   }
   await Promise.all(Array.from({ length: Math.min(POOL, refs.length) }, worker));
+
+  // ── 일본어 자동번역 — 풀 밖에서 대기분을 모아 한 번에 부른다 ──
+  // translateTo는 캐시 파일(translations.json)을 읽고 통째로 다시 쓰므로,
+  // 작업 풀 안에서 동시에 부르면 서로 덮어써 캐시가 유실된다(= 재과금).
+  const jaTexts: string[] = [];
+  const jaSlots: { ri: number; kind: 'body' | 'title'; idx: number }[] = [];
+  results.forEach((r, ri) => {
+    if (!r?.work || !r.ja) return;
+    r.ja.koMarkdowns.forEach((md, idx) => {
+      jaTexts.push(md);
+      jaSlots.push({ ri, kind: 'body', idx });
+    });
+    if (r.ja.titleKo) {
+      jaTexts.push(r.ja.titleKo);
+      jaSlots.push({ ri, kind: 'title', idx: -1 });
+    }
+  });
+  if (jaTexts.length) {
+    const jaOut = await translateTo('ja', jaTexts);
+    jaOut.forEach((out, k) => {
+      if (!out) return; // 실패 → ja 빈 값, 페이지는 ja 모드에서 한국어로 폴백
+      const slot = jaSlots[k];
+      const work = results[slot.ri]!.work!;
+      if (slot.kind === 'title') {
+        work.titleJa = out;
+      } else {
+        // ja 블록은 항상 맨 뒤에 붙인다 — 앞의 ko↔en 짝 렌더를 깨지 않게.
+        work.bodyBlocks.push({
+          lang: 'ja',
+          html: markdownToHtml(out, `work "${work.slug}" ja block ${slot.idx + 1}`),
+        });
+      }
+      work.jaAuto = true;
+    });
+    // 번역이 붙은 작업의 bodyJa를 다시 모은다 (스키마 필드는 문자열 하나).
+    results.forEach((r) => {
+      if (!r?.work || !r.work.jaAuto) return;
+      r.work.bodyJa = r.work.bodyBlocks.filter((b) => b.lang === 'ja').map((b) => b.html).join('\n');
+    });
+  }
 
   const works: Work[] = [];
   results.forEach((r, i) => {
