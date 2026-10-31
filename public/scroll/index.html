@@ -30,9 +30,42 @@ main {
   }
 }
 
-figcaption {
-  margin-bottom: 6px;
+figure {
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  row-gap: 6px;
+}
+
+summary {
+  list-style: none;
+  cursor: pointer;
   font: 12px/1.3 ui-monospace, monospace;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::after {
+  content: " +";
+}
+
+details[open] summary::after {
+  content: " −";
+}
+
+pre {
+  margin-top: 6px;
+  font: 12px/1.5 ui-monospace, monospace;
+  white-space: pre-wrap;
+}
+
+details p {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: keep-all;
 }
 
 .box {
@@ -95,15 +128,50 @@ figcaption {
 </head>
 <body>
 <main>
-  <figure><figcaption>auto</figcaption><div class="box"></div></figure>
-  <figure><figcaption>snap mandatory</figcaption><div class="box snap-mandatory"></div></figure>
-  <figure><figcaption>snap proximity</figcaption><div class="box snap-proximity"></div></figure>
-  <figure><figcaption>smooth</figcaption><div class="box smooth"></div></figure>
-  <figure><figcaption>overscroll contain</figcaption><div class="box contain"></div></figure>
-  <figure><figcaption>hidden</figcaption><div class="box hidden"></div></figure>
-  <figure><figcaption>scrollbar none</figcaption><div class="box no-bar"></div></figure>
-  <figure><figcaption>sticky</figcaption><div class="box sticky"></div></figure>
-  <figure><figcaption>view()</figcaption><div class="box timeline"></div></figure>
+  <figure>
+    <details><summary>auto</summary><pre>overflow: auto;</pre><p>넘치면 스크롤된다.</p></details>
+    <div class="box"></div>
+  </figure>
+  <figure>
+    <details><summary>snap mandatory</summary><pre>scroll-snap-type: y mandatory;
+.row { scroll-snap-align: start; }</pre><p>멈추면 반드시 줄 맨 위에 붙는다.</p></details>
+    <div class="box snap-mandatory"></div>
+  </figure>
+  <figure>
+    <details><summary>snap proximity</summary><pre>scroll-snap-type: y proximity;
+.row { scroll-snap-align: start; }</pre><p>줄 가까이에서 멈출 때만 붙는다.</p></details>
+    <div class="box snap-proximity"></div>
+  </figure>
+  <figure>
+    <details><summary>smooth</summary><pre>scroll-behavior: smooth;</pre><p>↑ 같은 링크 이동이 미끄러진다. 손가락 스크롤은 그대로다.</p></details>
+    <div class="box smooth"></div>
+  </figure>
+  <figure>
+    <details><summary>overscroll contain</summary><pre>overscroll-behavior: contain;</pre><p>끝에 닿아도 페이지로 스크롤이 넘어가지 않는다.</p></details>
+    <div class="box contain"></div>
+  </figure>
+  <figure>
+    <details><summary>hidden</summary><pre>overflow: hidden;</pre><p>넘친 부분을 잘라 스크롤을 막는다.</p></details>
+    <div class="box hidden"></div>
+  </figure>
+  <figure>
+    <details><summary>scrollbar none</summary><pre>scrollbar-width: none;</pre><p>스크롤은 되고 막대만 숨긴다.</p></details>
+    <div class="box no-bar"></div>
+  </figure>
+  <figure>
+    <details><summary>sticky</summary><pre>.row:first-child {
+  position: sticky;
+  top: 0;
+}</pre><p>첫 줄이 상자 위에 붙어 남는다.</p></details>
+    <div class="box sticky"></div>
+  </figure>
+  <figure>
+    <details><summary>view()</summary><pre>.row {
+  animation: fade linear both;
+  animation-timeline: view();
+}</pre><p>줄이 상자 안 어디 있는지에 따라 애니메이션이 진행된다.</p></details>
+    <div class="box timeline"></div>
+  </figure>
 </main>
 <script>
 document.querySelectorAll('.box').forEach((box, i) => {
