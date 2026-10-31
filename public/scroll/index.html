@@ -150,7 +150,7 @@ details p {
     <div class="box overscroll-contain"></div>
   </figure>
   <figure>
-    <details><summary>hidden</summary><pre>overflow: hidden;</pre><p>넘친 부분을 잘라 내고 사용자 스크롤을 막는다.</p></details>
+    <details><summary>hidden</summary><pre>overflow: hidden;</pre><p>손으로는 스크롤할 수 없지만 링크로는 이동한다. 스크롤 컨테이너이기 때문이다.</p></details>
     <div class="box hidden"></div>
   </figure>
   <figure>
@@ -165,7 +165,11 @@ details p {
     <div class="box sticky"></div>
   </figure>
   <figure>
-    <details><summary>view()</summary><pre>.row {
+    <details><summary>view()</summary><pre>@keyframes fade {
+  from, to { opacity: .1; }
+  50% { opacity: 1; }
+}
+.row {
   animation: fade linear both;
   animation-timeline: view();
 }</pre><p>애니메이션 진행을 시간 대신 줄의 위치로 정한다.</p></details>
@@ -180,7 +184,14 @@ document.querySelectorAll('.box').forEach((box, i) => {
     row.className = 'row';
     row.textContent = String(n).padStart(2, '0');
     if (n === 1) row.id = top;
+    if (n === 1 && box.classList.contains('hidden')) {
+      const a = document.createElement('a');
+      a.href = '#bottom-' + i;
+      a.textContent = '↓ 12';
+      row.append(a);
+    }
     if (n === 12) {
+      row.id = 'bottom-' + i;
       const a = document.createElement('a');
       a.href = '#' + top;
       a.textContent = '↑';
