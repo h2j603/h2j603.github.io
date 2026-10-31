@@ -19,15 +19,9 @@ body {
 
 main {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 32px 16px;
-}
-
-@media (min-width: 720px) {
-  main {
-    grid-template-columns: repeat(3, 1fr);
-    max-width: 960px;
-  }
+  grid-template-columns: min(100%, 308px);
+  justify-content: center;
+  gap: 32px 0;
 }
 
 figure {
