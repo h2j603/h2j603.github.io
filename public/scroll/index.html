@@ -94,7 +94,6 @@ details p {
   text-decoration: none;
 }
 
-/* 상자마다 하나씩 */
 .snap-mandatory { scroll-snap-type: y mandatory; }
 .snap-mandatory .row { scroll-snap-align: start; }
 
@@ -103,12 +102,12 @@ details p {
 
 .smooth { scroll-behavior: smooth; }
 
-.contain { overscroll-behavior: contain; }
+.overscroll-contain { overscroll-behavior: contain; }
 
 .hidden { overflow: hidden; }
 
-.no-bar { scrollbar-width: none; }
-.no-bar::-webkit-scrollbar { display: none; }
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
 
 .sticky .row:first-child {
   position: sticky;
@@ -120,7 +119,7 @@ details p {
   50% { opacity: 1; }
 }
 
-.timeline .row {
+.view .row {
   animation: fade linear both;
   animation-timeline: view();
 }
@@ -129,48 +128,48 @@ details p {
 <body>
 <main>
   <figure>
-    <details><summary>auto</summary><pre>overflow: auto;</pre><p>넘치면 스크롤된다.</p></details>
+    <details><summary>auto</summary><pre>overflow: auto;</pre><p>내용이 넘칠 때만 스크롤할 수 있다.</p></details>
     <div class="box"></div>
   </figure>
   <figure>
     <details><summary>snap mandatory</summary><pre>scroll-snap-type: y mandatory;
-.row { scroll-snap-align: start; }</pre><p>멈추면 반드시 줄 맨 위에 붙는다.</p></details>
+.row { scroll-snap-align: start; }</pre><p>스크롤이 멈추면 항상 줄의 시작에 맞춰 정렬된다.</p></details>
     <div class="box snap-mandatory"></div>
   </figure>
   <figure>
     <details><summary>snap proximity</summary><pre>scroll-snap-type: y proximity;
-.row { scroll-snap-align: start; }</pre><p>줄 가까이에서 멈출 때만 붙는다.</p></details>
+.row { scroll-snap-align: start; }</pre><p>스크롤이 줄의 시작 근처에서 멈출 때만 정렬된다.</p></details>
     <div class="box snap-proximity"></div>
   </figure>
   <figure>
-    <details><summary>smooth</summary><pre>scroll-behavior: smooth;</pre><p>↑ 같은 링크 이동이 미끄러진다. 손가락 스크롤은 그대로다.</p></details>
+    <details><summary>smooth</summary><pre>scroll-behavior: smooth;</pre><p>↑ 링크 같은 이동에 애니메이션이 붙는다. 손으로 하는 스크롤은 바뀌지 않는다.</p></details>
     <div class="box smooth"></div>
   </figure>
   <figure>
-    <details><summary>overscroll contain</summary><pre>overscroll-behavior: contain;</pre><p>끝에 닿아도 페이지로 스크롤이 넘어가지 않는다.</p></details>
-    <div class="box contain"></div>
+    <details><summary>overscroll contain</summary><pre>overscroll-behavior: contain;</pre><p>상자 끝에 닿아도 스크롤이 페이지로 이어지지 않는다.</p></details>
+    <div class="box overscroll-contain"></div>
   </figure>
   <figure>
-    <details><summary>hidden</summary><pre>overflow: hidden;</pre><p>넘친 부분을 잘라 스크롤을 막는다.</p></details>
+    <details><summary>hidden</summary><pre>overflow: hidden;</pre><p>넘친 부분을 잘라 내고 사용자 스크롤을 막는다.</p></details>
     <div class="box hidden"></div>
   </figure>
   <figure>
-    <details><summary>scrollbar none</summary><pre>scrollbar-width: none;</pre><p>스크롤은 되고 막대만 숨긴다.</p></details>
-    <div class="box no-bar"></div>
+    <details><summary>scrollbar none</summary><pre>scrollbar-width: none;</pre><p>스크롤바를 숨긴다. 스크롤은 그대로 된다.</p></details>
+    <div class="box scrollbar-none"></div>
   </figure>
   <figure>
     <details><summary>sticky</summary><pre>.row:first-child {
   position: sticky;
   top: 0;
-}</pre><p>첫 줄이 상자 위에 붙어 남는다.</p></details>
+}</pre><p>첫 줄이 스크롤되어도 상자 위쪽에 고정된다.</p></details>
     <div class="box sticky"></div>
   </figure>
   <figure>
     <details><summary>view()</summary><pre>.row {
   animation: fade linear both;
   animation-timeline: view();
-}</pre><p>줄이 상자 안 어디 있는지에 따라 애니메이션이 진행된다.</p></details>
-    <div class="box timeline"></div>
+}</pre><p>애니메이션 진행을 시간 대신 줄의 위치로 정한다.</p></details>
+    <div class="box view"></div>
   </figure>
 </main>
 <script>
