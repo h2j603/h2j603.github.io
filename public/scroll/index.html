@@ -7,545 +7,121 @@
 <style>
 * {
   margin: 0;
+  box-sizing: border-box;
 }
 
 body {
-  max-width: 34em;
-  padding: 24px 16px 80px;
-  font: 18px/1.7 sans-serif;
+  padding: 16px;
+  font: 16px/1.4 Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   color: #000;
   background: #fff;
-  word-break: keep-all;
 }
 
-.stack > * + * {
-  margin-top: var(--space, 1em);
+main {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px 16px;
 }
 
-main.stack > * + * {
-  margin-top: 3em;
+@media (min-width: 720px) {
+  main {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 960px;
+  }
 }
 
-section.stack > * + h3 {
-  margin-top: 2em;
-}
-
-section.stack > h3 + * {
-  margin-top: .4em;
-}
-
-h1 {
-  font-family: monospace, monospace;
-  font-size: 2.4em;
-  line-height: 1.1;
-}
-
-h2 {
-  font-size: 1.3em;
-}
-
-h3 {
-  font-size: 1em;
-}
-
-a {
-  color: #00e;
-}
-
-a:visited {
-  color: #551a8b;
-}
-
-code, pre {
-  font-family: monospace, monospace;
-  font-size: .9em;
-}
-
-pre {
-  overflow-x: auto;
-  padding-left: 1em;
-  border-left: 1px solid #000;
-}
-
-small {
-  font-size: .85em;
-}
-
-.line {
-  border-top: 1px solid #000;
-}
-
-#show {
-  position: fixed;
-  left: 24px;
-  bottom: 23px;
-  z-index: 2;
-}
-
-#show-label {
-  position: fixed;
-  left: 16px;
-  bottom: 16px;
-  z-index: 1;
-  padding: 4px 8px 4px 30px;
-  border: 1px solid #000;
-  background: #fff;
-  font-size: .9em;
-}
-
-#show:checked + #show-label,
-#show:checked ~ main .sc {
-  background: #ff0;
-}
-
-#show:checked ~ main .sc {
-  outline: 2px solid #000;
-  outline-offset: -2px;
+figcaption {
+  margin-bottom: 6px;
+  font: 12px/1.3 ui-monospace, monospace;
 }
 
 .box {
-  --space: 12px;
-  padding: 12px;
+  height: 240px;
+  overflow: auto;
   border: 1px solid #000;
-}
-
-.box p, .label {
-  font-size: .85em;
 }
 
 .row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.row > div {
-  flex: 1 1 10em;
-  min-width: 0;
-}
-
-.sc {
-  overflow: auto;
-  border: 1px solid #000;
-  font-family: monospace, monospace;
-  font-size: .85em;
-}
-
-.tall {
-  height: 9em;
-}
-
-.sc .sc {
-  font-size: 1em;
-}
-
-.tall > div {
-  margin: 6px;
-}
-
-.item {
-  padding: 2px 6px;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 80px;
+  padding: 8px;
   border-bottom: 1px solid #000;
+  background: #fff;
+  font-variant-numeric: tabular-nums;
 }
 
-.stick {
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 상자마다 하나씩 */
+.snap-mandatory { scroll-snap-type: y mandatory; }
+.snap-mandatory .row { scroll-snap-align: start; }
+
+.snap-proximity { scroll-snap-type: y proximity; }
+.snap-proximity .row { scroll-snap-align: start; }
+
+.smooth { scroll-behavior: smooth; }
+
+.contain { overscroll-behavior: contain; }
+
+.hidden { overflow: hidden; }
+
+.no-bar { scrollbar-width: none; }
+.no-bar::-webkit-scrollbar { display: none; }
+
+.sticky .row:first-child {
   position: sticky;
   top: 0;
-  padding: 2px 6px;
-  background: #000;
-  color: #fff;
 }
 
-.hidden {
-  overflow: hidden;
+@keyframes fade {
+  from, to { opacity: .1; }
+  50% { opacity: 1; }
 }
 
-.clip {
-  overflow: clip;
-}
-
-.snap-row {
-  display: flex;
-  gap: 8px;
-  padding: 8px;
-  overflow-x: auto;
-}
-
-.snap-row > div {
-  flex: 0 0 70%;
-  height: 4em;
-  padding: 4px 6px;
-  border: 1px solid #000;
-}
-
-.snap-on {
-  scroll-snap-type: x mandatory;
-  scroll-padding: 8px;
-}
-
-.snap-on > div {
-  scroll-snap-align: start;
-}
-
-.outer {
-  height: 10em;
-}
-
-.outer > p {
-  padding: 2px 6px;
-}
-
-.inner {
-  height: 5em;
-  margin: 0 6px;
-}
-
-.contain {
-  overscroll-behavior: contain;
-}
-
-.stuck-box > div > .stick {
-  container-type: scroll-state;
-}
-
-.stuck-box .stick {
-  padding: 0;
-}
-
-.stuck-box .stick span {
-  display: block;
-  padding: 2px 6px;
-}
-
-@container scroll-state(stuck: top) {
-  .stuck-box .stick span {
-    background: #ff0;
-    color: #000;
-  }
-}
-
-.carousel {
-  scroll-marker-group: after;
-}
-
-.carousel::scroll-button(left) {
-  content: "←" / "이전";
-}
-
-.carousel::scroll-button(right) {
-  content: "→" / "다음";
-}
-
-.carousel::scroll-button(*) {
-  padding: 0 10px;
-  border: 1px solid #000;
-  background: #fff;
-  font: inherit;
-}
-
-.carousel::scroll-button(*):disabled {
-  opacity: .3;
-}
-
-.carousel::scroll-marker-group {
-  display: flex;
-  gap: 6px;
-  padding: 6px 0;
-}
-
-.carousel > div::scroll-marker {
-  content: " ";
-  width: 10px;
-  height: 10px;
-  border: 1px solid #000;
-  border-radius: 50%;
-}
-
-.carousel > div::scroll-marker:target-current {
-  background: #000;
-}
-
-.view-box > .item {
-  margin: 1em 0;
-  border: 1px solid #000;
-}
-
-@supports (animation-timeline: view()) {
-  .view-box > .item {
-    animation: reveal linear both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 100%;
-  }
-
-  @keyframes reveal {
-    from { opacity: 0; transform: translateX(-40%); }
-    to { opacity: 1; transform: none; }
-  }
-}
-
-#bar {
-  display: none;
-}
-
-@supports (animation-timeline: scroll()) {
-  #bar {
-    display: block;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1;
-    height: 3px;
-    background: #000;
-    transform-origin: 0 50%;
-    animation: grow linear both;
-    animation-timeline: scroll(root);
-  }
-
-  @keyframes grow {
-    from { transform: scaleX(0); }
-    to { transform: scaleX(1); }
-  }
+.timeline .row {
+  animation: fade linear both;
+  animation-timeline: view();
 }
 </style>
 </head>
 <body>
-
-<div id="bar"></div>
-
-<input type="checkbox" id="show">
-<label id="show-label" for="show">스크롤 컨테이너 보기</label>
-
-<main class="stack">
-
-<header class="stack">
-  <h1>overflow: auto</h1>
-</header>
-
-<div class="line"></div>
-
-<section class="stack">
-  <p>넘친 내용을 잘라 두고 안에서 굴릴 수 있게 된 상자를 <b>스크롤 컨테이너</b>라고 한다. <code>overflow</code>가 <code>auto</code>, <code>scroll</code>, <code>hidden</code> 중 하나면 그렇게 된다. 페이지 전체도 하나의 스크롤 컨테이너다.</p>
-  <p><code>sticky</code>, <code>scroll-snap</code>, <code>scroll-margin</code>, <code>overscroll-behavior</code>, 스크롤 애니메이션까지 전부 <b>가장 가까운 스크롤 컨테이너</b>를 기준으로 움직인다. 스크롤 CSS가 안 먹을 때는 대부분 기준이 다른 상자로 잡힌 경우다.</p>
-<pre>  +----------+
-  |          |  ← 보이는 영역
-  |          |
-  +----------+
-  :          :  ← 잘린 내용.
-  :          :    굴려야 보임
-  +..........+</pre>
-
-  <h3>hidden도 스크롤 컨테이너다</h3>
-  <p><code>overflow: hidden</code>은 스크롤바만 없앨 뿐 스크롤 컨테이너는 그대로 만든다. 스크립트로 굴릴 수도 있다. 진짜로 자르기만 하는 값은 <code>overflow: clip</code>이다.</p>
-  <p>그래서 <code>hidden</code> 안에 넣은 <code>sticky</code>는 바깥 스크롤을 못 본다. 가장 가까운 컨테이너가 굴러가지 않는 <code>hidden</code> 상자로 잡혀서다.</p>
-  <div class="box stack">
-    <div class="row">
-      <div><p class="label"><code>.wrap { overflow: hidden }</code></p>
-        <div class="sc tall"><div class="hidden sc">
-          <div class="stick">sticky</div>
-          <div class="item">1</div><div class="item">2</div><div class="item">3</div><div class="item">4</div><div class="item">5</div><div class="item">6</div><div class="item">7</div><div class="item">8</div><div class="item">9</div>
-        </div></div></div>
-      <div><p class="label"><code>.wrap { overflow: clip }</code></p>
-        <div class="sc tall"><div class="clip">
-          <div class="stick">sticky</div>
-          <div class="item">1</div><div class="item">2</div><div class="item">3</div><div class="item">4</div><div class="item">5</div><div class="item">6</div><div class="item">7</div><div class="item">8</div><div class="item">9</div>
-        </div></div></div>
-    </div>
-    <p>두 상자를 굴려 본다. <code>hidden</code> 쪽 검은 줄은 같이 올라가 버리고, <code>clip</code> 쪽은 위에 붙는다. 아래 토글을 켜면 <code>hidden</code> 쪽에만 안쪽 상자가 하나 더 칠해진다.</p>
-  </div>
-
-  <h3>한쪽만 줘도 양쪽이 바뀐다</h3>
-  <p><code>overflow-x: hidden</code>만 쓰고 y는 그대로 두면 y가 <code>visible</code>로 남지 않고 <code>auto</code>로 바뀐다. 한 축이 컨테이너가 되면 다른 축도 따라간다. 가로 넘침만 막으려고 쓴 한 줄이 sticky를 깨는 흔한 경로다. 이럴 때도 <code>clip</code>을 쓰면 된다.</p>
-<pre>/* y → auto */
-.page { overflow-x: hidden }
-
-/* y는 visible 그대로 */
-.page { overflow-x: clip }</pre>
-
-  <h3>스크롤바 자리 미리 잡기</h3>
-  <p>윈도우처럼 스크롤바가 폭을 차지하는 환경에서는, 내용이 길어져 스크롤바가 생기는 순간 본문 폭이 줄면서 화면이 옆으로 움찔한다. <code>scrollbar-gutter: stable</code>은 스크롤바가 없을 때도 그 폭을 비워 둔다. 맥·아이폰처럼 스크롤바가 내용 위에 떠 있는 환경에서는 아무 효과가 없다.</p>
-<pre>html {
-  scrollbar-gutter: stable;
-}</pre>
-</section>
-
-<div class="line"></div>
-
-<section class="stack">
-  <h2>sticky</h2>
-  <p><code>position: sticky</code>는 <code>top</code> 같은 기준값이 있어야 붙는다. 그리고 <b>부모 상자 안에서만</b> 붙는다. 부모가 화면을 벗어나면 같이 밀려 나간다.</p>
-<pre>.group h4 {
-  position: sticky;
-  top: 0;
-}</pre>
-  <div class="box stack">
-    <div class="sc tall">
-      <div><div class="stick">ㄱ</div><div class="item">가방</div><div class="item">거울</div><div class="item">고양이</div><div class="item">기차</div></div>
-      <div><div class="stick">ㄴ</div><div class="item">나무</div><div class="item">노을</div><div class="item">눈</div><div class="item">늑대</div></div>
-      <div><div class="stick">ㄷ</div><div class="item">다리</div><div class="item">도시</div><div class="item">돌</div><div class="item">달</div></div>
-    </div>
-    <p>머리글마다 묶음 하나가 부모다. 다음 묶음이 올라오면 앞 머리글이 밀려난다. 주소록 머리글이 이렇게 만들어진다.</p>
-  </div>
-
-  <h3>붙었는지 아는 sticky</h3>
-  <p>sticky가 지금 붙어 있는지는 원래 CSS로 알 수 없었다. 붙을 때 그림자를 달려면 스크립트로 위치를 지켜봐야 했다. <code>container-type: scroll-state</code>를 주면 붙은 상태를 컨테이너 쿼리로 물을 수 있다. 크롬 133부터 되고, 사파리·파이어폭스는 아직이다(2026년 10월).</p>
-<pre>h4 {
-  position: sticky;
-  top: 0;
-  container-type: scroll-state;
-}
-@container scroll-state(stuck: top) {
-  h4 span { background: yellow }
-}</pre>
-  <div class="box stack">
-    <div class="sc tall stuck-box">
-      <div><div class="stick"><span>ㄱ</span></div><div class="item">가방</div><div class="item">거울</div><div class="item">고양이</div><div class="item">기차</div></div>
-      <div><div class="stick"><span>ㄴ</span></div><div class="item">나무</div><div class="item">노을</div><div class="item">눈</div><div class="item">늑대</div></div>
-      <div><div class="stick"><span>ㄷ</span></div><div class="item">다리</div><div class="item">도시</div><div class="item">돌</div><div class="item">달</div></div>
-    </div>
-    <p>크롬에서 굴리면 위에 붙은 머리글만 노래진다. 쿼리는 컨테이너 자신이 아니라 안쪽 요소만 바꿀 수 있어서 글자를 <code>span</code>으로 한 번 감쌌다.</p>
-  </div>
-</section>
-
-<div class="line"></div>
-
-<section class="stack">
-  <h2>scroll-snap</h2>
-  <p>굴리다 멈추면 정해 둔 자리에 딱 맞춰 선다. 컨테이너에 방향을, 자식에 맞출 위치를 준다.</p>
-<pre>.row {
-  scroll-snap-type: x mandatory;
-  scroll-padding: 8px;
-}
-.row &gt; * {
-  scroll-snap-align: start;
-}</pre>
-  <div class="box stack">
-    <p class="label">스냅 없음</p>
-    <div class="sc snap-row"><div>1</div><div>2</div><div>3</div><div>4</div></div>
-    <p class="label"><code>x mandatory</code></p>
-    <div class="sc snap-row snap-on"><div>1</div><div>2</div><div>3</div><div>4</div></div>
-    <p>옆으로 밀어 본다. 위는 아무 데서나 서고, 아래는 늘 카드 왼쪽 끝이 8px 안쪽에 맞는다.</p>
-  </div>
-  <p><code>mandatory</code>는 반드시 맞춘다. <code>proximity</code>는 맞춤 자리 근처에서 멈췄을 때만 맞춘다. 카드가 화면보다 길면 <code>mandatory</code>는 카드 중간을 못 보게 막을 수 있어서, 그때는 <code>proximity</code>를 쓴다.</p>
-  <p><code>scroll-padding</code>은 컨테이너 쪽 여백, <code>scroll-margin</code>은 자식 쪽 여백이다. 둘 다 스냅 자리를 옮긴다.</p>
-
-  <h3>버튼과 점까지 CSS로</h3>
-  <p>스냅 줄에 이전·다음 버튼과 위치 점을 붙이는 일도 원래 스크립트 몫이었다. <code>::scroll-button()</code>과 <code>::scroll-marker</code>를 쓰면 브라우저가 진짜 버튼과 링크를 만들어 준다. 키보드로 움직이고 화면 낭독기도 읽는다. 크롬 135부터 되고, 사파리·파이어폭스는 아직이다(2026년 10월).</p>
-<pre>.row {
-  scroll-marker-group: after;
-}
-.row::scroll-button(left) {
-  content: "←" / "이전";
-}
-.row::scroll-button(right) {
-  content: "→" / "다음";
-}
-.row &gt; *::scroll-marker {
-  content: " ";
-}
-.row &gt; *::scroll-marker:target-current {
-  background: black;
-}</pre>
-  <div class="box stack">
-    <div class="sc snap-row snap-on carousel"><div>1</div><div>2</div><div>3</div><div>4</div></div>
-    <p><code>content</code>의 <code>/</code> 뒤는 화면 낭독기가 읽는 이름이다. 지금 보이는 카드의 점은 <code>:target-current</code>로 칠한다. 크롬이 아니면 버튼과 점 없이 스냅 줄만 보인다.</p>
-  </div>
-</section>
-
-<div class="line"></div>
-
-<section class="stack">
-  <h2>scroll-margin</h2>
-  <p><code>#제목</code> 링크로 뛰면 대상이 화면 맨 위에 붙는다. 위에 고정 머리글이 있으면 그 밑에 깔린다. 대상에 <code>scroll-margin-top</code>을 주면 그만큼 덜 올라간다.</p>
-<pre>h2 {
-  scroll-margin-top: 4rem;
-}</pre>
-  <p>페이지 전체에 한 번에 걸고 싶으면 컨테이너 쪽인 <code>html</code>에 <code>scroll-padding-top</code>을 준다. 스냅과 같은 짝이다.</p>
-</section>
-
-<div class="line"></div>
-
-<section class="stack">
-  <h2>overscroll-behavior</h2>
-  <p>안쪽 상자를 끝까지 굴리고 더 굴리면 스크롤이 바깥 상자로 넘어간다. 이걸 스크롤 체이닝이라고 한다. 안쪽에 <code>contain</code>을 주면 끝에서 멈춘다.</p>
-  <div class="box stack">
-    <div class="row">
-      <div><p class="label">기본</p>
-        <div class="sc outer"><p>바깥</p>
-          <div class="sc inner"><div class="item">1</div><div class="item">2</div><div class="item">3</div><div class="item">4</div><div class="item">5</div><div class="item">6</div></div>
-          <p>바깥</p><p>바깥</p><p>바깥</p><p>바깥</p><p>바깥</p></div></div>
-      <div><p class="label"><code>contain</code></p>
-        <div class="sc outer"><p>바깥</p>
-          <div class="sc inner contain"><div class="item">1</div><div class="item">2</div><div class="item">3</div><div class="item">4</div><div class="item">5</div><div class="item">6</div></div>
-          <p>바깥</p><p>바깥</p><p>바깥</p><p>바깥</p><p>바깥</p></div></div>
-    </div>
-    <p>안쪽 숫자 상자를 6까지 내리고 계속 민다. 기본 쪽은 바깥이 따라 내려가고, <code>contain</code> 쪽은 그 자리에 선다.</p>
-  </div>
-  <p>모달이나 사이드 메뉴 안을 굴릴 때 뒤 페이지가 같이 굴러가는 걸 이걸로 막는다.</p>
-</section>
-
-<div class="line"></div>
-
-<section class="stack">
-  <h2>animation-timeline</h2>
-  <p>애니메이션의 시간을 초가 아니라 스크롤 위치로 바꾼다. 맨 위의 검은 줄이 이 페이지를 굴린 만큼 길어진다. 스크립트는 없다.</p>
-<pre>.bar {
-  animation: grow linear both;
-  animation-timeline: scroll(root);
-}
-@keyframes grow {
-  from { transform: scaleX(0) }
-  to   { transform: scaleX(1) }
-}</pre>
-  <p><code>scroll(root)</code>는 페이지 전체, <code>scroll(nearest)</code>는 가장 가까운 스크롤 컨테이너를 기준으로 삼는다. 여기서도 기준은 컨테이너다. 지원하지 않는 브라우저에서는 줄이 안 보이게 <code>@supports</code>로 감쌌다.</p>
-
-  <h3>view(): 들어오는 만큼</h3>
-  <p><code>scroll()</code>이 컨테이너를 얼마나 굴렸나를 본다면, <code>view()</code>는 요소 하나가 보이는 영역을 얼마나 지나갔나를 본다. <code>animation-range</code>로 그중 어느 구간에 애니메이션을 걸지 고른다. <code>entry</code>는 요소가 아래 끝에 걸치기 시작해서 다 들어올 때까지다.</p>
-<pre>.item {
-  animation: reveal linear both;
-  animation-timeline: view();
-  animation-range: entry 0% entry 100%;
-}</pre>
-  <div class="box stack">
-    <div class="sc tall view-box">
-      <div class="item">1</div><div class="item">2</div><div class="item">3</div><div class="item">4</div><div class="item">5</div><div class="item">6</div><div class="item">7</div><div class="item">8</div>
-    </div>
-    <p>상자를 천천히 굴린다. 줄이 아래 끝에서 올라오는 동안 왼쪽에서 밀려 들어온다. 손을 멈추면 애니메이션도 멈춘다. 여기서도 기준은 가장 가까운 스크롤 컨테이너다.</p>
-  </div>
-  <p>스크롤로 움직이는 화면은 멀미를 부를 수 있다. 실제로 쓸 때는 <code>prefers-reduced-motion</code>로 끌 수 있게 한다.</p>
-</section>
-
-<div class="line"></div>
-
-<section class="stack">
-  <h2>정리</h2>
-  <p>- 스크롤 CSS는 전부 가장 가까운 스크롤 컨테이너 기준.</p>
-  <p>- <code>hidden</code>도 컨테이너를 만든다. 자르기만 할 때는 <code>clip</code>.</p>
-  <p>- sticky가 안 붙으면 조상 중에 <code>overflow</code>가 걸린 상자부터 찾는다.</p>
-  <p>- 컨테이너 쪽은 <code>scroll-padding</code>, 자식 쪽은 <code>scroll-margin</code>.</p>
-  <p>- 안쪽 스크롤이 밖으로 새면 <code>overscroll-behavior: contain</code>.</p>
-  <p>- 스크롤바 생길 때 화면이 움찔하면 <code>scrollbar-gutter: stable</code>.</p>
-  <p>- 굴린 양은 <code>scroll()</code>, 요소가 지나간 정도는 <code>view()</code>.</p>
-  <p>- 붙은 상태·캐러셀 버튼은 이제 CSS로도 된다. 아직 크롬만.</p>
-</section>
-
-<div class="line"></div>
-
-<footer class="stack">
-  <p><small>참고한 것:<br>
-  <a href="https://www.w3.org/TR/css-overflow-3/">CSS Overflow Module Level 3</a> (W3C)<br>
-  <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/position">MDN: position</a><br>
-  <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll_snap">MDN: CSS scroll snap</a><br>
-  <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/overscroll-behavior">MDN: overscroll-behavior</a><br>
-  <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations">MDN: CSS scroll-driven animations</a><br>
-  <a href="https://webkit.org/blog/17101/a-guide-to-scroll-driven-animations-with-just-css/">A guide to Scroll-driven Animations with just CSS</a> (WebKit)<br>
-  <a href="https://developer.chrome.com/blog/css-scroll-state-queries">CSS scroll-state queries</a> (Chrome for Developers)<br>
-  <a href="https://developer.chrome.com/blog/carousels-with-css">Carousels with CSS</a> (Chrome for Developers)<br>
-  <a href="https://caniuse.com/mdn-css_properties_scrollbar-gutter_stable">Can I use: scrollbar-gutter</a></small></p>
-  <p><small>Thanks to Claude</small></p>
-  <p><small><a href="/">hyuk.xyz</a></small></p>
-</footer>
-
+<main>
+  <figure><figcaption>auto</figcaption><div class="box"></div></figure>
+  <figure><figcaption>snap mandatory</figcaption><div class="box snap-mandatory"></div></figure>
+  <figure><figcaption>snap proximity</figcaption><div class="box snap-proximity"></div></figure>
+  <figure><figcaption>smooth</figcaption><div class="box smooth"></div></figure>
+  <figure><figcaption>overscroll contain</figcaption><div class="box contain"></div></figure>
+  <figure><figcaption>hidden</figcaption><div class="box hidden"></div></figure>
+  <figure><figcaption>scrollbar none</figcaption><div class="box no-bar"></div></figure>
+  <figure><figcaption>sticky</figcaption><div class="box sticky"></div></figure>
+  <figure><figcaption>view()</figcaption><div class="box timeline"></div></figure>
 </main>
+<script>
+document.querySelectorAll('.box').forEach((box, i) => {
+  const top = 'top-' + i;
+  for (let n = 1; n <= 12; n++) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.textContent = String(n).padStart(2, '0');
+    if (n === 1) row.id = top;
+    if (n === 12) {
+      const a = document.createElement('a');
+      a.href = '#' + top;
+      a.textContent = '↑';
+      row.append(a);
+    }
+    box.append(row);
+  }
+});
+</script>
 </body>
 </html>
