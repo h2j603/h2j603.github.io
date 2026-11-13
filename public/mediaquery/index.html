@@ -19,7 +19,7 @@ body {
 
 main {
   display: grid;
-  grid-template-columns: min(100%, 520px);
+  grid-template-columns: min(100%, 560px);
   justify-content: center;
   gap: 32px 0;
 }
@@ -87,8 +87,39 @@ details[open] summary::after {
   content: " −";
 }
 
+.frames {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.fr {
+  display: grid;
+  row-gap: 4px;
+  font: 11px/1.3 ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.box {
+  position: relative;
+  overflow: hidden;
+  outline: 1px solid #000;
+  background: #d9d9d9;
+}
+
+.box iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
 pre {
-  margin-top: 6px;
+  margin-top: 12px;
   padding: 8px;
   border: 1px solid #000;
   font: 12px/1.5 ui-monospace, monospace;
@@ -97,15 +128,35 @@ pre {
 }
 
 details p {
-  margin-top: 6px;
-  font-size: 13px;
-  line-height: 1.6;
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.7;
   word-break: keep-all;
+}
+
+details p code {
+  font: 12px/1 ui-monospace, monospace;
+  padding: 1px 3px;
+  background: #eee;
 }
 
 details p.ref {
   font: 11px/1.5 ui-monospace, monospace;
   color: #777;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 12px;
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+dt {
+  font: 12px/1.9 ui-monospace, monospace;
 }
 </style>
 </head>
@@ -121,129 +172,200 @@ details p.ref {
   </section>
 
   <figure>
-    <details><summary>9/13 · 다크 모드는 지움</summary><pre>- @media (prefers-color-scheme: dark) { … }</pre>
-    <p>배경을 한 색으로 통일하면서 시스템 다크 모드를 따라 뒤집는 블록을 지웠다. 검정 배경은 버튼으로만 고른다.</p>
-    <p class="ref">046d854</p></details>
+    <details><summary>읽는 법</summary>
+    <pre>@media (max-width: 40rem) {
+  body { font-size: 14px; }
+}</pre>
+    <p>@media는 "이 조건이 참일 때만 안쪽 CSS를 쓴다"는 뜻이다. 위 예는 화면 폭이 40rem 이하일 때만 글자를 14px로 만든다. 조건이 거짓이면 블록 전체가 없는 것처럼 무시된다.</p>
+    <dl>
+      <dt>rem</dt><dd>브라우저 기본 글자 크기 단위. 기본값은 16px이라 40rem = 640px, 64rem = 1024px, 30rem = 480px다.</dd>
+      <dt>max-width</dt><dd>폭이 이 값 이하. min-width는 이상.</dd>
+      <dt>max-height</dt><dd>높이가 이 값 이하.</dd>
+      <dt>orientation</dt><dd>portrait = 세로가 더 긴 화면, landscape = 가로가 더 긴 화면.</dd>
+      <dt>pointer</dt><dd>coarse = 손가락처럼 굵은 입력, fine = 마우스처럼 정밀한 입력.</dd>
+      <dt>hover</dt><dd>hover = 올려 두기(마우스 오버)가 되는 기기.</dd>
+      <dt>prefers-*</dt><dd>화면 크기가 아니라 기기 설정을 묻는다. 다크 모드, 동작 줄이기 등.</dd>
+      <dt>and</dt><dd>둘 다 참이어야 참.</dd>
+      <dt>,</dt><dd>쉼표는 "또는". 하나만 참이어도 참.</dd>
+    </dl>
+    <p>조건이 여럿 겹쳐 참이면, 같은 속성은 CSS 파일에서 더 아래에 쓴 규칙이 이긴다.</p>
+    <p>아래 각 항목의 회색 화면은 지금 공개된 티저(2026.hongiksidi.com)를 그 크기의 창에 띄운 것이다. 폭·높이·방향은 창 크기를 따르고, pointer·hover·prefers-*는 이 페이지를 보는 기기를 따른다. 그래서 같은 화면도 폰과 데스크톱에서 다르게 보이는 항목이 있다.</p>
+    </details>
   </figure>
 
   <figure>
-    <details><summary>9/25 · 두 기준선</summary><pre>@media (max-width: 64rem) { … }   /* 8칸 */
+    <details><summary>9/13 · 다크 모드는 지움</summary>
+    <div class="frames" data-f="390x844"></div>
+    <pre>- @media (prefers-color-scheme: dark) { … }</pre>
+    <p>prefers-color-scheme는 기기가 다크 모드인지 묻는다. 폰을 다크 모드로 두면 dark가 참이 된다.</p>
+    <p>티저는 처음에 이 블록으로 배경과 글자색을 뒤집었다. 9/13에 배경을 #d9d9d9 한 색으로 통일하면서 이 블록을 지웠다.</p>
+    <p>그래서 지금은 기기가 다크 모드여도 위 화면처럼 회색 그대로다. 검정 배경은 화면 안의 배경 버튼으로만 고른다.</p>
+    <p class="ref">046d854 · e4017cc</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>9/25 · 두 기준선</summary>
+    <div class="frames" data-f="1440x900 1024x768 390x844"></div>
+    <pre>@media (max-width: 64rem) { … }   /* 8칸 */
 @media (max-width: 40rem) { … }   /* 4칸 */</pre>
-    <p>컬럼을 12(데스크톱) · 8(1024px 이하) · 4(640px 이하)로 정했다. 40rem과 64rem은 마지막까지 남은 두 기준선이다.</p>
+    <p>티저는 화면을 세로 칸(컬럼)으로 나눠 배치한다. 넓은 화면은 12칸, 1024px(64rem) 이하는 8칸, 640px(40rem) 이하는 4칸으로 정했다.</p>
+    <p>390px 폰에서는 두 조건이 다 참이다. 4칸 블록이 더 아래에 있어서 4칸이 이긴다. 큰 기준을 위에, 작은 기준을 아래에 쓰는 이유다.</p>
+    <p>64rem과 40rem은 마지막까지 남은 두 기준선이다. 40rem 쪽은 10/30에 "폰이지만 가로 폰은 아님" 조건으로 자랐다.</p>
     <p class="ref">e268113</p></details>
   </figure>
 
   <figure>
-    <details><summary>9/25~ · 움직임 줄이기</summary><pre>@media (prefers-reduced-motion: reduce) {
+    <details><summary>9/25~ · 움직임 줄이기</summary>
+    <div class="frames" data-f="390x844"></div>
+    <pre>@media (prefers-reduced-motion: reduce) {
   .mq-track { animation: none; }
 }</pre>
-    <p>기기 설정에서 동작 줄이기를 켠 사람에게는 흐르는 띠 · 배경색 전환 · 숨쉬기 움직임을 끈다. 새 움직임이 생길 때마다 이 목록에 더했다.</p>
+    <p>아이폰은 설정 › 손쉬운 사용 › 동작 › 동작 줄이기를 켤 수 있다. 움직임에 어지러움을 느끼는 사람이 켠다. 켜면 이 조건이 참이 된다.</p>
+    <p>티저는 이 조건에서 흐르는 띠 · 배경색 전환 · 숨쉬기 움직임을 끈다. 새 움직임이 생길 때마다 이 목록에 더했다.</p>
+    <p>위 화면은 이 페이지를 보는 기기의 설정을 따른다. 동작 줄이기를 켜고 다시 열면 띠가 멈춰 있다.</p>
     <p class="ref">a7f3132 · 3e22717 · 82eac30 · 5cf59c9</p></details>
   </figure>
 
   <figure>
-    <details><summary>10/18 · 경계에서 안 튀게</summary><pre>/* 전: 천 = 컬럼 몇 칸 */
+    <details><summary>10/18 · 경계에서 안 튀게</summary>
+    <div class="frames" data-f="640x500 641x500"></div>
+    <pre>/* 전: 천 = 컬럼 몇 칸 */
 :root { --cloth-span: 6; }
 @media (max-width: 40rem) { :root { --cols: 4; --cloth-span: 4; } }
 
 /* 후: 폰 블록 안의 한 식 */
 --cloth-d: min(100vw - 2 * var(--cell), 80svh, 500px);</pre>
-    <p>천 크기를 컬럼 칸 수로 정하면 컬럼 수가 바뀌는 경계에서 크기가 뛴다. 크기는 min()·max() 식으로 옮기고, 쿼리는 배치만 바꾸게 했다.</p>
-    <p>폰 쪽 식은 500px에서 멈춰 태블릿 쪽 크기와 이어진다.</p>
+    <p>처음에는 천 크기를 "6칸"처럼 컬럼 칸 수로 정했다. 그러면 640px와 641px 사이처럼 칸 수가 바뀌는 경계에서 1px 차이로 천 크기가 확 뛴다.</p>
+    <p>그래서 크기는 min() 식으로 옮겼다. min()은 안의 값 중 가장 작은 것을 고른다. 여기서는 화면 폭에서 양옆 한 칸씩 뺀 값 · 화면 높이의 80% · 500px 중 작은 값이다. 쿼리는 배치만 바꾸고 크기는 식이 정한다.</p>
+    <p>폰 쪽 식은 500px에서 멈춰, 경계 건너편 태블릿 쪽 크기와 이어진다.</p>
+    <p>위 두 화면이 640px와 641px다. 지금은 세로 화면이 1024px까지 폰 배치라(11/8) 경계를 보이려고 가로로 긴 창을 썼다.</p>
     <p class="ref">98e51c1</p></details>
   </figure>
 
   <figure>
-    <details><summary>10/18 · 68rem → 75rem</summary><pre>@media (max-width: 68rem)
+    <details><summary>10/18 · 68rem → 75rem</summary>
+    <div class="frames" data-f="1089x800"></div>
+    <pre>@media (max-width: 68rem)
 → @media (max-width: 75rem)</pre>
-    <p>2페이지를 태블릿 배치로 바꾸는 폭을 68rem으로 넣었다. 1089px에서도 답답해서 같은 날 75rem으로 올렸다.</p>
-    <p class="ref">98e51c1 · 62d0901</p></details>
+    <p>2페이지를 태블릿 배치로 바꾸는 폭을 68rem(1088px)으로 넣었다. 1089px 화면에서도 답답해서 같은 날 75rem(1200px)으로 올렸다.</p>
+    <p>기준선은 기기 목록이 아니라 실제로 답답해 보이는 폭에서 정한다는 예다.</p>
+    <p>이 쿼리는 11/3 새 배치에서 지워졌다. 위 화면은 1089px에서의 지금 모습이다.</p>
+    <p class="ref">98e51c1 · 62d0901 · 3e22717</p></details>
   </figure>
 
   <figure>
-    <details><summary>10/18 · 높이로 가르기</summary><pre>@media (max-width: 40rem) and (max-height: 46rem)
+    <details><summary>10/18 · 높이로 가르기</summary>
+    <div class="frames" data-f="375x667 390x844"></div>
+    <pre>@media (max-width: 40rem) and (max-height: 46rem)
 → @media (max-width: 40rem) and (max-height: 52rem)</pre>
-    <p>아이폰 SE(높이 667px)에서 오른쪽 조절판이 천 꼭짓점을 덮었다. 높이 조건을 붙여 낮은 폰만 조절판을 가로 한 줄로 눕혔다.</p>
-    <p>같은 날 기준을 52rem(832px)으로 올렸다. 커밋 메모: 「사파리 실제 높이」.</p>
-    <p class="ref">216bd27 · f7f13c9</p></details>
+    <p>폭이 같은 폰도 높이는 다르다. 아이폰 SE는 375×667, 아이폰 14는 390×844다.</p>
+    <p>낮은 폰에서는 배경색 정사각형 버튼이 천을 가렸다. 그래서 and로 높이 조건을 붙여, 폭 640px 이하이면서 높이도 낮은 폰만 정사각형을 가로 한 줄로 눕혔다.</p>
+    <p>기준은 처음 46rem(736px)이었다가 같은 날 52rem(832px)으로 올렸다. 커밋 메모: 「사파리 실제 높이」. 사파리는 주소창과 아래 툴바가 화면 높이를 먹어서, 기기 높이보다 실제로 쓸 수 있는 높이가 작다.</p>
+    <p>이 쿼리도 11/3에 지워졌다. 위 두 화면은 지금 모습이다.</p>
+    <p class="ref">216bd27 · f7f13c9 · 3e22717</p></details>
   </figure>
 
   <figure>
-    <details><summary>10/29 · svh가 흔들릴 때</summary><pre>:root { --sv: 100svh; }
+    <details><summary>10/29 · svh가 흔들릴 때</summary>
+    <pre>:root { --sv: 100svh; }
 .field { height: var(--sv); }
 
 // 손가락 기기: 지금까지 본 가장 작은 높이로 묶는다
 if (lw() !== sw) { sw = lw(); root.removeProperty('--sv'); sh = field.clientHeight; return; }
 sh = Math.min(sh, field.clientHeight);
 root.setProperty('--sv', sh + 'px');</pre>
-    <p>100svh는 주소창이 펼쳐진 가장 작은 높이다. 카톡·텔레그램 같은 인앱 브라우저에서는 툴바가 접힐 때 svh 값도 바뀌어 화면이 통째로 다시 놓였다.</p>
-    <p>높이를 쓰는 곳을 전부 var(--sv)로 바꾸고, 손가락 기기에서는 JS가 px로 고정했다. 폭이 바뀌면(회전) 고정을 풀고 다시 잰다.</p>
+    <p>미디어쿼리는 아니지만 같은 문제를 다룬다. 화면 높이를 CSS에서 쓰는 단위는 셋이다. vh는 브라우저가 정한 기준 높이, svh는 주소창 등 툴바가 펼쳐졌을 때의 가장 작은 높이, lvh는 툴바가 접혔을 때의 가장 큰 높이다.</p>
+    <p>티저는 화면 한 칸을 100svh로 잡았다. 그런데 카톡·텔레그램 같은 앱 안 브라우저에서는 스크롤할 때 툴바가 접히면서 svh 값까지 바뀌었다. 그때마다 화면 전체가 다시 놓였다.</p>
+    <p>그래서 높이를 쓰는 곳을 전부 var(--sv) 하나로 모으고, 손가락 기기에서는 JS가 "지금까지 본 가장 작은 높이"를 px로 고정했다. 폭이 바뀌면(회전) 고정을 풀고 다시 잰다.</p>
+    <p>앱 안 브라우저의 툴바는 iframe 안에서 재현되지 않아 이 항목엔 화면을 넣지 않았다.</p>
     <p class="ref">e510d74 · 872509b</p></details>
   </figure>
 
   <figure>
-    <details><summary>10/30 · 폭으로 못 가르는 기기</summary><pre>@media (orientation: landscape)
+    <details><summary>10/30 · 폭으로 못 가르는 기기</summary>
+    <div class="frames" data-f="844x390"></div>
+    <pre>@media (orientation: landscape)
    and (max-height: 30rem)
    and (pointer: coarse) { … }</pre>
-    <p>가로로 돌린 아이폰 사파리는 약 844×308이다. 폭만 보면 데스크톱으로 분류되어 슬라이더가 잘리고 라벨이 사진 위에 겹쳤다.</p>
-    <p>가로 · 높이 480px 이하 · 손가락 기기, 세 조건을 같이 걸어 가로 폰만 따로 잡았다.</p>
+    <p>폰을 가로로 돌리면 아이폰 사파리는 약 844×308이다. 폭 844px는 640px보다 넓으니 폭 기준으로는 데스크톱으로 분류된다. 그 결과 슬라이더가 잘리고 라벨이 사진 위에 겹쳤다.</p>
+    <p>그래서 세 조건을 and로 같이 걸었다. 가로 화면이고 · 높이가 480px 이하이고 · 손가락 기기일 때. 셋이 다 참인 화면이 "가로 폰"이다.</p>
+    <p>pointer는 창 크기가 아니라 보는 기기를 따른다. 위 화면은 폰으로 보면 가로 폰 배치, 마우스가 있는 컴퓨터로 보면 데스크톱 배치다.</p>
     <p class="ref">872509b · 293c237</p></details>
   </figure>
 
   <figure>
-    <details><summary>10/30 · "폰인데 가로 폰은 아님"</summary><pre>@media (max-width: 40rem)
+    <details><summary>10/30 · "폰인데 가로 폰은 아님"</summary>
+    <div class="frames" data-f="568x320 640x360"></div>
+    <pre>@media (max-width: 40rem)
 →
 @media (max-width: 40rem) and (orientation: portrait),
        (max-width: 40rem) and (min-height: 30.0625rem),
        (max-width: 40rem) and (pointer: fine),
        (max-width: 40rem) and (pointer: none) { … }</pre>
-    <p>568×320·640×360에서는 폰 규칙과 가로 폰 규칙이 둘 다 걸려 천이 잘렸다. 폰 규칙에서 가로 폰을 빼야 했다.</p>
-    <p>"A이면서 B가 아님"은 한 줄로 쓰기 어렵다. 가로 폰 조건 셋을 하나씩 뒤집어(세로 · 높이 481px 이상 · 마우스 · 포인터 없음) 쉼표로 이었다. 쉼표는 "또는"이다.</p>
+    <p>작은 폰을 가로로 돌리면 568×320, 640×360 같은 크기가 나온다. 폭이 640px 이하라 폰 규칙도 참이고, 가로 폰 규칙도 참이다. 두 규칙이 한꺼번에 걸려 천이 잘렸다. 폰 규칙에서 가로 폰을 빼야 했다.</p>
+    <p>CSS 미디어쿼리에는 "A이면서 B는 아님"을 한 줄로 쓰는 쉬운 방법이 없다. 그래서 가로 폰 조건 셋을 하나씩 뒤집었다. 가로 → 세로(portrait), 높이 480px 이하 → 481px 이상(30.0625rem), 손가락 → 마우스(fine) 또는 포인터 없음(none).</p>
+    <p>뒤집은 조건 넷을 쉼표("또는")로 이었다. 폭 640px 이하이면서 넷 중 하나라도 참이면 폰 배치다. 가로 폰은 넷 다 거짓이라 빠진다.</p>
+    <p>위 두 화면도 보는 기기에 따라 다르다. 폰으로 보면 가로 폰 배치, 컴퓨터로 보면 pointer: fine 갈래 때문에 폰 배치다.</p>
     <p class="ref">e4017cc</p></details>
   </figure>
 
   <figure>
-    <details><summary>10/30 · CSS와 JS가 같은 문자열</summary><pre>window.PHONE_MQ = '(max-width: 40rem) and (orientation: portrait), …';
+    <details><summary>10/30 · CSS와 JS가 같은 문자열</summary>
+    <div class="frames" data-f="390x844"></div>
+    <pre>window.PHONE_MQ = '(max-width: 40rem) and (orientation: portrait), …';
 matchMedia(window.PHONE_MQ).matches</pre>
-    <p>JS도 폰인지 알아야 했다(첫 배율 · 커서). 쿼리 문자열을 한 변수에 두고 matchMedia로 같이 쓴다.</p>
-    <p>CSS 쪽은 변수를 못 읽어 같은 문자열을 손으로 복사해 둔다. CSS 세 곳과 JS 한 곳이다.</p>
-    <p class="ref">e4017cc · index.html:29</p></details>
+    <p>JS도 지금 폰 배치인지 알아야 했다. 첫 화면 배율과 커서 모양이 폰에서 달라서다.</p>
+    <p>matchMedia()는 JS에서 미디어쿼리를 검사하는 함수다. CSS와 같은 문자열을 넣으면 지금 참인지 거짓인지 돌려준다. 이 페이지 맨 위 「지금 이 화면」도 matchMedia로 만들었다.</p>
+    <p>그래서 쿼리 문자열을 한 변수에 두고 JS는 그 변수를 읽는다. CSS 쪽은 @media 조건에 변수를 쓸 수 없어서 같은 문자열을 손으로 복사해 둔다. CSS 세 곳과 JS 한 곳이다. 하나를 고치면 넷을 다 고쳐야 한다.</p>
+    <p class="ref">e4017cc · f3e8d29</p></details>
   </figure>
 
   <figure>
-    <details><summary>11/3 · 다 지우고 둘만</summary><pre>- @media (max-width: 75rem)
+    <details><summary>11/3 · 다 지우고 둘만</summary>
+    <div class="frames" data-f="1440x900 1024x768"></div>
+    <pre>- @media (max-width: 75rem)
 - @media (max-width: 64rem) { …큰 블록… }
 - @media (min-width: 40.0625rem) ×2
 - @media … (max-height: 34rem) …
 - @media … (max-height: 40rem) …
 - @media … (max-height: 52rem) …
 + @media (max-width: 64rem) { :root { --cols: 8; } }</pre>
-    <p>배치를 세 단으로 새로 짜면서 태블릿·낮은 화면 블록을 모두 지웠다. 태블릿 쿼리는 좌표 눈금 간격만 바꾸고 배치는 데스크톱과 같다.</p>
+    <p>배치를 세 단으로 새로 짜면서 태블릿용 · 낮은 화면용 블록을 모두 지웠다. 쿼리가 많을수록 겹치는 경우를 다 확인해야 한다. 새 배치는 처음부터 화면 크기에 덜 기대게 짰다.</p>
+    <p>남은 태블릿 쿼리는 한 줄이다. 좌표 눈금 간격(--cols)만 8로 바꾸고 배치는 데스크톱과 같다. 위 두 화면을 비교하면 배치는 같고 눈금만 다르다.</p>
     <p class="ref">3e22717</p></details>
   </figure>
 
   <figure>
-    <details><summary>11/5 · 손가락 · 마우스</summary><pre>@media (hover: hover) {
+    <details><summary>11/5 · 손가락 · 마우스</summary>
+    <div class="frames" data-f="390x844"></div>
+    <pre>@media (hover: hover) {
   .guide .k-nudge:hover { font-weight: 700; }
 }
 @media (pointer: coarse) {
   .k-nudge { /* 누름 영역 44×44px */ }
 }</pre>
-    <p>올리면 굵어지는 효과는 마우스 기기에만 건다. 손가락 기기에는 누를 낱말 둘레에 보이지 않는 44px 영역을 붙였다. 일부 폰에서 「반영」이 눌리지 않았다.</p>
+    <p>손가락에는 "올려 두기"가 없다. 그래서 낱말에 올리면 굵어지는 효과는 hover: hover 기기, 곧 마우스 기기에만 건다.</p>
+    <p>손가락은 마우스보다 굵어서 작은 낱말을 빗맞힌다. 일부 폰에서 「반영」이 눌리지 않았다. 그래서 pointer: coarse 기기에서는 낱말 둘레에 보이지 않는 44×44px 누름 영역을 붙였다.</p>
     <p class="ref">7d98d96 · c42c482</p></details>
   </figure>
 
   <figure>
-    <details><summary>11/8 · 갈래가 많으면 남는 것</summary><pre>/* 가로 폰 블록 */
+    <details><summary>11/8 · 갈래가 많으면 남는 것</summary>
+    <div class="frames" data-f="844x390"></div>
+    <pre>/* 가로 폰 블록 */
 .col-right { --gfs: 16px; }  →  14px</pre>
-    <p>세로 폰 글자를 14px로 바꿀 때 세로 폰 블록과 데스크톱만 고쳤다. 가로 폰 블록에는 16px가 남았다. 굵기 700도 가로 폰만 500으로 남았다.</p>
-    <p>값을 바꾸면 모든 @media 블록에서 같은 속성을 찾는다.</p>
+    <p>세로 폰 글자를 14px로 바꿀 때 세로 폰 블록과 데스크톱만 고쳤다. 가로 폰 블록에는 16px가 그대로 남았다. 굵기 700도 가로 폰에서만 500으로 남아 있었다.</p>
+    <p>@media 블록이 갈래마다 따로 있으면 같은 속성이 여러 곳에 흩어진다. 값을 하나 바꾸면 모든 @media 블록에서 같은 속성을 찾아 같이 바꾼다.</p>
     <p class="ref">12c51ac</p></details>
   </figure>
 
   <figure>
-    <details><summary>11/8 · 태블릿 세로 = 폰</summary><pre>… , (max-width: 64rem) and (orientation: portrait)</pre>
-    <p>폰 쿼리 끝에 갈래 하나를 더했다. 1024px 이하 세로 화면(아이패드 세로)도 폰 배치를 쓴다. CSS 세 곳과 JS를 같이 고쳤다.</p>
+    <details><summary>11/8 · 태블릿 세로 = 폰</summary>
+    <div class="frames" data-f="820x1180 1180x820"></div>
+    <pre>… , (max-width: 64rem) and (orientation: portrait)</pre>
+    <p>폰 쿼리 끝에 쉼표로 갈래 하나를 더했다. 폭 1024px 이하이면서 세로인 화면, 곧 아이패드를 세로로 든 화면도 폰 배치를 쓴다.</p>
+    <p>위 두 화면은 같은 아이패드(820×1180)를 세로·가로로 든 것이다. 세로는 폰 배치, 가로는 데스크톱 배치다.</p>
+    <p>폰 쿼리는 CSS 세 곳과 JS 한 곳에 있어 넷을 같이 고쳤다.</p>
     <p class="ref">f3e8d29</p></details>
   </figure>
 
@@ -261,7 +383,7 @@ const QS = [
   ['(prefers-reduced-motion: reduce)', '움직임 끔']
 ];
 const box = document.getElementById('qs');
-const rows = QS.map(([q, label]) => {
+QS.forEach(([q, label]) => {
   const el = document.createElement('div');
   el.className = 'q';
   el.innerHTML = '<span></span><span></span><span></span>';
@@ -273,7 +395,6 @@ const rows = QS.map(([q, label]) => {
   const set = () => { el.classList.toggle('on', m.matches); el.children[0].textContent = m.matches ? '●' : '○'; };
   m.addEventListener('change', set);
   set();
-  return el;
 });
 const size = document.getElementById('size');
 const show = () => {
@@ -282,6 +403,79 @@ const show = () => {
 };
 addEventListener('resize', show);
 show();
+
+/* 티저 창: 항목을 열고 화면 근처에 있을 때만 불러오고, 벗어나면 비운다(WebGL 여러 개 방지) */
+const SRC = 'https://2026.hongiksidi.com/';
+const GAP = 8;
+const sets = [...document.querySelectorAll('.frames')].map(el => {
+  const dims = el.dataset.f.split(' ').map(s => s.split('x').map(Number));
+  const frs = dims.map(([w, h]) => {
+    const fr = document.createElement('div');
+    fr.className = 'fr';
+    fr.innerHTML = '<div class="box"></div><span></span>';
+    fr.children[1].textContent = w + ' × ' + h;
+    el.append(fr);
+    return { fr, box: fr.children[0], w, h, ifr: null };
+  });
+  return { el, frs, details: el.closest('details'), near: false };
+});
+
+const fit = s => {
+  const cw = s.el.clientWidth;
+  if (!cw) return;
+  /* 한 줄에 다 넣은 배율이 너무 작으면 줄을 바꾼다. 같은 묶음은 같은 배율이라 크기 비교가 그대로다 */
+  const capH = Math.min(440, innerHeight * .6);
+  const sumW = s.frs.reduce((a, f) => a + f.w, 0);
+  const maxH = Math.max(...s.frs.map(f => f.h));
+  const row = Math.min((cw - GAP * (s.frs.length - 1)) / sumW, capH / maxH);
+  const one = Math.min(...s.frs.map(f => Math.min(cw / f.w, capH / f.h)));
+  const k = Math.min(row >= one * .6 ? row : one, 1);
+  s.frs.forEach(f => {
+    f.box.style.width = Math.round(f.w * k) + 'px';
+    f.box.style.height = Math.round(f.h * k) + 'px';
+    if (f.ifr) f.ifr.style.transform = 'scale(' + k + ')';
+    f.k = k;
+  });
+};
+
+const sync = s => {
+  const want = s.details.open && s.near;
+  s.frs.forEach(f => {
+    if (want && !f.ifr) {
+      f.ifr = document.createElement('iframe');
+      f.ifr.width = f.w;
+      f.ifr.height = f.h;
+      f.ifr.tabIndex = -1;
+      f.ifr.title = '티저 ' + f.w + '×' + f.h;
+      f.ifr.style.transform = 'scale(' + (f.k || 1) + ')';
+      f.ifr.src = SRC;
+      f.box.append(f.ifr);
+    } else if (!want && f.ifr) {
+      f.ifr.remove();
+      f.ifr = null;
+    }
+  });
+};
+
+const io = new IntersectionObserver(es => es.forEach(e => {
+  const s = sets.find(x => x.el === e.target);
+  s.near = e.isIntersecting;
+  sync(s);
+}), { rootMargin: '50% 0px' });
+
+sets.forEach(s => {
+  io.observe(s.el);
+  /* 닫힌 details 안은 상자가 없어 관찰자가 늦게 알린다 — 열 때는 직접 잰다 */
+  s.details.addEventListener('toggle', () => {
+    fit(s);
+    const r = s.el.getBoundingClientRect();
+    s.near = r.bottom > -innerHeight / 2 && r.top < innerHeight * 1.5;
+    sync(s);
+  });
+});
+const refit = () => sets.forEach(fit);
+addEventListener('resize', refit);
+refit();
 </script>
 </body>
 </html>
