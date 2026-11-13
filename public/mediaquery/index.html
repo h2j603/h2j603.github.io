@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>@media</title>
+<style>
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  padding: 16px;
+  font: 16px/1.4 Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  color: #000;
+  background: #fff;
+}
+
+main {
+  display: grid;
+  grid-template-columns: min(100%, 520px);
+  justify-content: center;
+  gap: 32px 0;
+}
+
+h2 {
+  font: 12px/1.3 ui-monospace, monospace;
+  font-weight: 400;
+}
+
+.now {
+  border: 1px solid #000;
+}
+
+.size {
+  padding: 8px;
+  border-bottom: 1px solid #000;
+  font: 12px/1.5 ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.q {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  padding: 6px 8px;
+  border-bottom: 1px solid #000;
+  font: 12px/1.5 ui-monospace, monospace;
+  overflow-wrap: anywhere;
+  opacity: .25;
+}
+
+.q:last-child {
+  border-bottom: 0;
+}
+
+.q.on {
+  opacity: 1;
+}
+
+.q span:last-child {
+  grid-column: 2;
+  font: 12px/1.5 Pretendard, "Apple SD Gothic Neo", sans-serif;
+  word-break: keep-all;
+}
+
+figure {
+  display: grid;
+  row-gap: 6px;
+}
+
+summary {
+  list-style: none;
+  cursor: pointer;
+  font: 12px/1.3 ui-monospace, monospace;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::after {
+  content: " +";
+}
+
+details[open] summary::after {
+  content: " −";
+}
+
+pre {
+  margin-top: 6px;
+  padding: 8px;
+  border: 1px solid #000;
+  font: 12px/1.5 ui-monospace, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+details p {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+details p.ref {
+  font: 11px/1.5 ui-monospace, monospace;
+  color: #777;
+}
+</style>
+</head>
+<body>
+<main>
+
+  <section>
+    <h2>지금 이 화면</h2>
+    <div class="now">
+      <div class="size" id="size"></div>
+      <div id="qs"></div>
+    </div>
+  </section>
+
+  <figure>
+    <details><summary>9/13 · 다크 모드는 지움</summary><pre>- @media (prefers-color-scheme: dark) { … }</pre>
+    <p>배경을 한 색으로 통일하면서 시스템 다크 모드를 따라 뒤집는 블록을 지웠다. 검정 배경은 버튼으로만 고른다.</p>
+    <p class="ref">046d854</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>9/25 · 두 기준선</summary><pre>@media (max-width: 64rem) { … }   /* 8칸 */
+@media (max-width: 40rem) { … }   /* 4칸 */</pre>
+    <p>컬럼을 12(데스크톱) · 8(1024px 이하) · 4(640px 이하)로 정했다. 40rem과 64rem은 마지막까지 남은 두 기준선이다.</p>
+    <p class="ref">e268113</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>9/25~ · 움직임 줄이기</summary><pre>@media (prefers-reduced-motion: reduce) {
+  .mq-track { animation: none; }
+}</pre>
+    <p>기기 설정에서 동작 줄이기를 켠 사람에게는 흐르는 띠 · 배경색 전환 · 숨쉬기 움직임을 끈다. 새 움직임이 생길 때마다 이 목록에 더했다.</p>
+    <p class="ref">a7f3132 · 3e22717 · 82eac30 · 5cf59c9</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>10/18 · 경계에서 안 튀게</summary><pre>/* 전: 천 = 컬럼 몇 칸 */
+:root { --cloth-span: 6; }
+@media (max-width: 40rem) { :root { --cols: 4; --cloth-span: 4; } }
+
+/* 후: 폰 블록 안의 한 식 */
+--cloth-d: min(100vw - 2 * var(--cell), 80svh, 500px);</pre>
+    <p>천 크기를 컬럼 칸 수로 정하면 컬럼 수가 바뀌는 경계에서 크기가 뛴다. 크기는 min()·max() 식으로 옮기고, 쿼리는 배치만 바꾸게 했다.</p>
+    <p>폰 쪽 식은 500px에서 멈춰 태블릿 쪽 크기와 이어진다.</p>
+    <p class="ref">98e51c1</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>10/18 · 68rem → 75rem</summary><pre>@media (max-width: 68rem)
+→ @media (max-width: 75rem)</pre>
+    <p>2페이지를 태블릿 배치로 바꾸는 폭을 68rem으로 넣었다. 1089px에서도 답답해서 같은 날 75rem으로 올렸다.</p>
+    <p class="ref">98e51c1 · 62d0901</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>10/18 · 높이로 가르기</summary><pre>@media (max-width: 40rem) and (max-height: 46rem)
+→ @media (max-width: 40rem) and (max-height: 52rem)</pre>
+    <p>아이폰 SE(높이 667px)에서 오른쪽 조절판이 천 꼭짓점을 덮었다. 높이 조건을 붙여 낮은 폰만 조절판을 가로 한 줄로 눕혔다.</p>
+    <p>같은 날 기준을 52rem(832px)으로 올렸다. 커밋 메모: 「사파리 실제 높이」.</p>
+    <p class="ref">216bd27 · f7f13c9</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>10/29 · svh가 흔들릴 때</summary><pre>:root { --sv: 100svh; }
+.field { height: var(--sv); }
+
+// 손가락 기기: 지금까지 본 가장 작은 높이로 묶는다
+if (lw() !== sw) { sw = lw(); root.removeProperty('--sv'); sh = field.clientHeight; return; }
+sh = Math.min(sh, field.clientHeight);
+root.setProperty('--sv', sh + 'px');</pre>
+    <p>100svh는 주소창이 펼쳐진 가장 작은 높이다. 카톡·텔레그램 같은 인앱 브라우저에서는 툴바가 접힐 때 svh 값도 바뀌어 화면이 통째로 다시 놓였다.</p>
+    <p>높이를 쓰는 곳을 전부 var(--sv)로 바꾸고, 손가락 기기에서는 JS가 px로 고정했다. 폭이 바뀌면(회전) 고정을 풀고 다시 잰다.</p>
+    <p class="ref">e510d74 · 872509b</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>10/30 · 폭으로 못 가르는 기기</summary><pre>@media (orientation: landscape)
+   and (max-height: 30rem)
+   and (pointer: coarse) { … }</pre>
+    <p>가로로 돌린 아이폰 사파리는 약 844×308이다. 폭만 보면 데스크톱으로 분류되어 슬라이더가 잘리고 라벨이 사진 위에 겹쳤다.</p>
+    <p>가로 · 높이 480px 이하 · 손가락 기기, 세 조건을 같이 걸어 가로 폰만 따로 잡았다.</p>
+    <p class="ref">872509b · 293c237</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>10/30 · "폰인데 가로 폰은 아님"</summary><pre>@media (max-width: 40rem)
+→
+@media (max-width: 40rem) and (orientation: portrait),
+       (max-width: 40rem) and (min-height: 30.0625rem),
+       (max-width: 40rem) and (pointer: fine),
+       (max-width: 40rem) and (pointer: none) { … }</pre>
+    <p>568×320·640×360에서는 폰 규칙과 가로 폰 규칙이 둘 다 걸려 천이 잘렸다. 폰 규칙에서 가로 폰을 빼야 했다.</p>
+    <p>"A이면서 B가 아님"은 한 줄로 쓰기 어렵다. 가로 폰 조건 셋을 하나씩 뒤집어(세로 · 높이 481px 이상 · 마우스 · 포인터 없음) 쉼표로 이었다. 쉼표는 "또는"이다.</p>
+    <p class="ref">e4017cc</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>10/30 · CSS와 JS가 같은 문자열</summary><pre>window.PHONE_MQ = '(max-width: 40rem) and (orientation: portrait), …';
+matchMedia(window.PHONE_MQ).matches</pre>
+    <p>JS도 폰인지 알아야 했다(첫 배율 · 커서). 쿼리 문자열을 한 변수에 두고 matchMedia로 같이 쓴다.</p>
+    <p>CSS 쪽은 변수를 못 읽어 같은 문자열을 손으로 복사해 둔다. CSS 세 곳과 JS 한 곳이다.</p>
+    <p class="ref">e4017cc · index.html:29</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>11/3 · 다 지우고 둘만</summary><pre>- @media (max-width: 75rem)
+- @media (max-width: 64rem) { …큰 블록… }
+- @media (min-width: 40.0625rem) ×2
+- @media … (max-height: 34rem) …
+- @media … (max-height: 40rem) …
+- @media … (max-height: 52rem) …
++ @media (max-width: 64rem) { :root { --cols: 8; } }</pre>
+    <p>배치를 세 단으로 새로 짜면서 태블릿·낮은 화면 블록을 모두 지웠다. 태블릿 쿼리는 좌표 눈금 간격만 바꾸고 배치는 데스크톱과 같다.</p>
+    <p class="ref">3e22717</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>11/5 · 손가락 · 마우스</summary><pre>@media (hover: hover) {
+  .guide .k-nudge:hover { font-weight: 700; }
+}
+@media (pointer: coarse) {
+  .k-nudge { /* 누름 영역 44×44px */ }
+}</pre>
+    <p>올리면 굵어지는 효과는 마우스 기기에만 건다. 손가락 기기에는 누를 낱말 둘레에 보이지 않는 44px 영역을 붙였다. 일부 폰에서 「반영」이 눌리지 않았다.</p>
+    <p class="ref">7d98d96 · c42c482</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>11/8 · 갈래가 많으면 남는 것</summary><pre>/* 가로 폰 블록 */
+.col-right { --gfs: 16px; }  →  14px</pre>
+    <p>세로 폰 글자를 14px로 바꿀 때 세로 폰 블록과 데스크톱만 고쳤다. 가로 폰 블록에는 16px가 남았다. 굵기 700도 가로 폰만 500으로 남았다.</p>
+    <p>값을 바꾸면 모든 @media 블록에서 같은 속성을 찾는다.</p>
+    <p class="ref">12c51ac</p></details>
+  </figure>
+
+  <figure>
+    <details><summary>11/8 · 태블릿 세로 = 폰</summary><pre>… , (max-width: 64rem) and (orientation: portrait)</pre>
+    <p>폰 쿼리 끝에 갈래 하나를 더했다. 1024px 이하 세로 화면(아이패드 세로)도 폰 배치를 쓴다. CSS 세 곳과 JS를 같이 고쳤다.</p>
+    <p class="ref">f3e8d29</p></details>
+  </figure>
+
+</main>
+<script>
+const PHONE = '(max-width: 40rem) and (orientation: portrait), (max-width: 40rem) and (min-height: 30.0625rem), (max-width: 40rem) and (pointer: fine), (max-width: 40rem) and (pointer: none), (max-width: 64rem) and (orientation: portrait)';
+const LAND = '(orientation: landscape) and (max-height: 30rem) and (pointer: coarse)';
+const QS = [
+  [PHONE, '폰 세로 배치'],
+  [LAND, '가로 폰 배치'],
+  ['(max-width: 64rem)', '8칸'],
+  ['(min-width: 64.0625rem)', '데스크톱 천 상한'],
+  ['(pointer: coarse)', '누름 영역 44px'],
+  ['(hover: hover)', '호버 굵게 · 회색'],
+  ['(prefers-reduced-motion: reduce)', '움직임 끔']
+];
+const box = document.getElementById('qs');
+const rows = QS.map(([q, label]) => {
+  const el = document.createElement('div');
+  el.className = 'q';
+  el.innerHTML = '<span></span><span></span><span></span>';
+  el.children[1].textContent = q.replace(/, /g, ',\n');
+  el.children[1].style.whiteSpace = 'pre-wrap';
+  el.children[2].textContent = label;
+  box.append(el);
+  const m = matchMedia(q);
+  const set = () => { el.classList.toggle('on', m.matches); el.children[0].textContent = m.matches ? '●' : '○'; };
+  m.addEventListener('change', set);
+  set();
+  return el;
+});
+const size = document.getElementById('size');
+const show = () => {
+  const w = innerWidth, h = innerHeight;
+  size.textContent = w + ' × ' + h + 'px · ' + (w / 16).toFixed(2) + ' × ' + (h / 16).toFixed(2) + 'rem';
+};
+addEventListener('resize', show);
+show();
+</script>
+</body>
+</html>
