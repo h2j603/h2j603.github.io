@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>@media</title>
 <style>
+@font-face {
+  font-family: 'Heitz';
+  src: url('/fonts/Heitz-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
   margin: 0;
   box-sizing: border-box;
@@ -12,7 +20,7 @@
 
 body {
   padding: 16px;
-  font: 16px/1.4 Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  font: 400 16px/1.4 'Heitz', sans-serif;
   color: #fff;
   background: #000;
 }
@@ -32,7 +40,7 @@ section {
 
 h2 {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.3;
 }
 
@@ -88,7 +96,8 @@ p code {
 }
 
 p b {
-  font-weight: 600;
+  display: block;
+  font-weight: 400;
 }
 
 .lead {
@@ -114,7 +123,7 @@ a {
 
 .next b {
   display: block;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 pre i {
@@ -151,9 +160,9 @@ pre i {
     <h2>사잇값</h2>
     <div class="frames" data-f="1089x800 844x390"></div>
     <p>데스크톱과 폰 사이, 그리고 둘 다에 안 맞는 화면을 하나씩 잡았다.</p>
-    <p>태블릿 — 데스크톱 배치가 좁아 보이는 너비부터 태블릿 배치로 넘겼다. 처음 정한 폭도 답답해서 같은 날 기준을 더 넓혔다.</p>
-    <p>낮은 화면 — 폭이 같아도 높이가 낮으면 오른쪽 조절판이 천을 덮고, 세로 막대를 둘 자리도 모자랐다. 높이 조건을 붙여 낮은 화면에서만 조절판을 가로로 눕혔다. 기준은 기기 전체 높이가 아니라 사파리에서 실제로 보이는 높이로 잡았다.</p>
-    <p>가로 폰 — 가로로 돌린 폰은 너비만 보면 데스크톱과 같다. 가로 방향 · 낮은 높이 · 터치 기기, 세 조건을 함께 걸어 따로 잡았다. 시안 셋을 띄워 보고 그중 하나로 정했다. 위 가로 화면은 폰으로 볼 때만 가로 폰 배치로 보인다.</p>
+    <p><b>태블릿</b>데스크톱 배치가 좁아 보이는 너비부터 태블릿 배치로 넘겼다. 처음 정한 폭도 답답해서 같은 날 기준을 더 넓혔다.</p>
+    <p><b>낮은 화면</b>폭이 같아도 높이가 낮으면 오른쪽 조절판이 천을 덮고, 세로 막대를 둘 자리도 모자랐다. 높이 조건을 붙여 낮은 화면에서만 조절판을 가로로 눕혔다. 기준은 기기 전체 높이가 아니라 사파리에서 실제로 보이는 높이로 잡았다.</p>
+    <p><b>가로 폰</b>가로로 돌린 폰은 너비만 보면 데스크톱과 같다. 가로 방향 · 낮은 높이 · 터치 기기, 세 조건을 함께 걸어 따로 잡았다. 시안 셋을 띄워 보고 그중 하나로 정했다. 위 가로 화면은 폰으로 볼 때만 가로 폰 배치로 보인다.</p>
     <p>경계에서 크기가 갑자기 튀지 않도록, 크기는 min() 같은 식으로 계산하고 미디어쿼리는 배치만 바꾸게 했다.</p>
     <pre>@media (max-width: 75rem) { <i>태블릿</i> }
 @media (max-width: 40rem) and (max-height: 52rem) { <i>낮은 폰</i> }
