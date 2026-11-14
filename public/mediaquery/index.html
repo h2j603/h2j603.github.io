@@ -44,7 +44,8 @@ h2 {
   line-height: 1.3;
 }
 
-p {
+p,
+.next li {
   font-size: 15px;
   line-height: 1.75;
   word-break: keep-all;
@@ -95,7 +96,8 @@ p code {
   white-space: nowrap;
 }
 
-p b {
+p b,
+.next b {
   display: block;
   font-weight: 400;
 }
@@ -113,17 +115,6 @@ a {
   display: grid;
   row-gap: 16px;
   padding-left: 1.2em;
-}
-
-.next li {
-  font-size: 15px;
-  line-height: 1.75;
-  word-break: keep-all;
-}
-
-.next b {
-  display: block;
-  font-weight: 400;
 }
 
 pre i {
@@ -201,7 +192,6 @@ pre i {
 
 </main>
 <script>
-/* 티저 창: 화면 근처에 있을 때만 불러오고, 벗어나면 비운다(WebGL 여러 개 방지) */
 const SRC = 'https://2026.hongiksidi.com/';
 const GAP = 8;
 const sets = [...document.querySelectorAll('.frames')].map(el => {
@@ -217,10 +207,8 @@ const sets = [...document.querySelectorAll('.frames')].map(el => {
   return { el, frs };
 });
 
-/* 한 줄에 다 넣은 배율이 너무 작으면 줄을 바꾼다. 같은 묶음은 같은 배율이라 크기 비교가 그대로다 */
 const fit = s => {
   const cw = s.el.clientWidth;
-  if (!cw) return;
   const capH = Math.min(440, innerHeight * .6);
   const sumW = s.frs.reduce((a, f) => a + f.w, 0);
   const maxH = Math.max(...s.frs.map(f => f.h));
