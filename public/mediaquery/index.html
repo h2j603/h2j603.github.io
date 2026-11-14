@@ -69,9 +69,16 @@ p,
 
 .box {
   position: relative;
+  display: grid;
+  place-items: center;
   overflow: hidden;
+  padding: 0;
+  border: 0;
   outline: 1px solid #fff;
   background: #222;
+  color: #888;
+  font: 14px/1 'Heitz', sans-serif;
+  cursor: pointer;
 }
 
 .box iframe {
@@ -200,8 +207,9 @@ const sets = [...document.querySelectorAll('.frames')].map(el => {
     const [w, h] = d.split('x').map(Number);
     const fr = document.createElement('div');
     fr.className = 'fr';
-    fr.innerHTML = '<div class="box"></div><span></span>';
+    fr.innerHTML = '<button class="box" type="button">▶</button><span></span>';
     fr.children[1].textContent = w + ' × ' + h;
+    fr.children[0].setAttribute('aria-label', '티저 ' + w + '×' + h + ' 불러오기');
     el.append(fr);
     return { box: fr.children[0], w, h, ifr: null, k: 1 };
   });
@@ -224,30 +232,31 @@ const fit = s => {
   });
 };
 
-const sync = (s, near) => s.frs.forEach(f => {
-  if (near && !f.ifr) {
-    f.ifr = document.createElement('iframe');
-    f.ifr.width = f.w;
-    f.ifr.height = f.h;
-    f.ifr.tabIndex = -1;
-    f.ifr.title = '티저 ' + f.w + '×' + f.h;
-    f.ifr.style.transform = 'scale(' + f.k + ')';
-    f.ifr.src = SRC;
-    f.box.append(f.ifr);
-  } else if (!near && f.ifr) {
-    f.ifr.remove();
-    f.ifr = null;
-  }
-});
+let live = null;
+const unload = f => {
+  f.ifr.remove();
+  f.ifr = null;
+  f.box.textContent = '▶';
+};
+const load = f => {
+  if (live === f) return;
+  if (live) unload(live);
+  f.box.textContent = '';
+  f.ifr = document.createElement('iframe');
+  f.ifr.width = f.w;
+  f.ifr.height = f.h;
+  f.ifr.tabIndex = -1;
+  f.ifr.title = '티저 ' + f.w + '×' + f.h;
+  f.ifr.style.transform = 'scale(' + f.k + ')';
+  f.ifr.src = SRC;
+  f.box.append(f.ifr);
+  live = f;
+};
+sets.forEach(s => s.frs.forEach(f => f.box.addEventListener('click', () => load(f))));
 
 const refit = () => sets.forEach(fit);
 addEventListener('resize', refit);
 refit();
-
-const io = new IntersectionObserver(es => es.forEach(e => {
-  sync(sets.find(s => s.el === e.target), e.isIntersecting);
-}), { rootMargin: '25% 0px' });
-sets.forEach(s => io.observe(s.el));
 </script>
 </body>
 </html>
