@@ -21,56 +21,33 @@ main {
   display: grid;
   grid-template-columns: min(100%, 560px);
   justify-content: center;
-  gap: 24px 0;
+  gap: 56px 0;
+  padding: 24px 0 80px;
 }
 
-summary {
+section {
   display: grid;
-  grid-template-columns: 20px 1fr;
-  list-style: none;
-  cursor: pointer;
-  font: 12px/1.5 ui-monospace, monospace;
-  overflow-wrap: anywhere;
+  row-gap: 12px;
 }
 
-summary::-webkit-details-marker {
-  display: none;
+h2 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
-summary .d {
-  opacity: .25;
-}
-
-summary .d.on {
-  opacity: 1;
-}
-
-.how {
-  display: grid;
-  row-gap: 10px;
-  padding: 0 0 24px;
-  border-bottom: 1px solid #fff;
-}
-
-.how li {
-  list-style: none;
-  font-size: 14px;
-  line-height: 1.6;
+p {
+  font-size: 15px;
+  line-height: 1.75;
   word-break: keep-all;
 }
-
-.how em {
-  font-style: normal;
-  white-space: nowrap;
-}
-
 
 .frames {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 8px;
-  margin-top: 12px;
+  margin: 4px 0;
 }
 
 .fr {
@@ -78,6 +55,7 @@ summary .d.on {
   row-gap: 4px;
   font: 11px/1.3 ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
+  color: #888;
 }
 
 .box {
@@ -97,127 +75,91 @@ summary .d.on {
 }
 
 pre {
-  margin-top: 12px;
   padding: 8px;
   border: 1px solid #fff;
-  font: 12px/1.5 ui-monospace, monospace;
+  font: 12px/1.6 ui-monospace, monospace;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
-details p {
-  margin-top: 8px;
-  font-size: 14px;
-  line-height: 1.7;
-  word-break: keep-all;
+pre i {
+  font-style: normal;
+  color: #888;
 }
-
-
-.gone {
-  display: grid;
-  gap: 6px 0;
-  margin-top: 12px;
-  font: 11px/1.5 ui-monospace, monospace;
-  overflow-wrap: anywhere;
-}
-
 </style>
 </head>
 <body>
 <main>
 
-  <ol class="how">
-    <li>기준선은 컬럼 수(12 · 8 · 4칸)로 정하고, 실제로 답답해 보이는 폭에서 고친다.</li>
-    <li>크기는 min() 같은 식이 정하고, 쿼리는 배치만 바꾼다.</li>
-    <li>폭으로 못 가르는 화면은 높이 · 방향 · 입력 방식을 같이 본다.</li>
-    <li>"A이면서 B는 아님"은 B 조건을 하나씩 뒤집어 쉼표("또는")로 잇는다.</li>
-    <li>짝 쿼리는 경계가 겹치지 않게 맞춘다. <em>64rem ↔ 64.0625rem</em>.</li>
-    <li>CSS와 JS는 쿼리 문자열 하나를 같이 쓴다.</li>
-    <li>갈래는 줄인다. 갈래가 많으면 값을 고칠 때 빠지는 블록이 생긴다.</li>
-  </ol>
+  <section>
+    <h2>데스크톱</h2>
+    <div class="frames" data-f="1440x900"></div>
+    <p>넓은 화면부터 만들었다. 피그마에서 데스크톱 시안을 그리고 HTML로 옮겼다.</p>
+    <p>화면은 세로 칸(컬럼)으로 나눠 배치했다. 좁아지면 칸 수만 줄도록 기준선 두 개를 미리 그어 뒀다. 이때 미디어쿼리는 칸 수를 바꾸는 두 줄뿐이었다.</p>
+    <pre>@media (max-width: 64rem) { <i>8칸</i> }
+@media (max-width: 40rem) { <i>4칸</i> }</pre>
+  </section>
 
-  <details data-q="PHONE"><summary><span class="d"></span><span>(max-width: 40rem) …</span></summary>
-  <div class="frames" data-f="390x844 820x1180"></div>
-  <pre>@media (max-width: 40rem) and (orientation: portrait),
-       (max-width: 40rem) and (min-height: 30.0625rem),
-       (max-width: 40rem) and (pointer: fine),
-       (max-width: 40rem) and (pointer: none),
-       (max-width: 64rem) and (orientation: portrait) { … }</pre>
-  <p>폰 배치. "폭 640px(40rem) 이하" 한 줄에서 시작해, 가로 폰 조건 셋을 뒤집어 가로 폰을 빼고, 아이패드 세로를 갈래로 더했다. 천 크기는 이 블록 안의 min() 식이 정하고, JS도 같은 문자열을 matchMedia로 읽는다.</p></details>
+  <section>
+    <h2>폰</h2>
+    <div class="frames" data-f="390x844"></div>
+    <p>그다음 폰을 따로 짰다. 데스크톱을 줄이는 대신, 폰 블록 안에서 로고 · 정보 · 동작 버튼의 자리를 새로 정했다. 동작 버튼은 화면 아래 띠로 내렸다.</p>
+    <p>폰에서 정리한 구조는 데스크톱에도 거꾸로 입혔다. 마지막엔 폰 여백을 한 값으로 맞추고 운영에 올렸다.</p>
+    <pre>@media (max-width: 40rem) { <i>폰 배치</i> }</pre>
+  </section>
 
-  <details data-q="(max-width: 64rem)"><summary><span class="d"></span><span>(max-width: 64rem)</span></summary>
-  <div class="frames" data-f="1440x900 1024x768"></div>
-  <p>폭 1024px 이하면 컬럼을 12칸에서 8칸으로. 태블릿 배치 전체였던 블록을 눈금 간격 한 줄로 줄였다.</p></details>
+  <section>
+    <h2>사잇값</h2>
+    <div class="frames" data-f="1089x800 844x390"></div>
+    <p>데스크톱과 폰 사이, 그리고 둘 다에 안 맞는 화면을 하나씩 잡았다.</p>
+    <p>태블릿 — 데스크톱 배치가 답답해 보이는 폭부터 태블릿 배치로 바꿨다. 처음 정한 폭에서도 답답해서 같은 날 더 넓혔다.</p>
+    <p>낮은 화면 — 폭이 같아도 높이가 낮으면 오른쪽 조절판이 천을 덮었고, 세로 막대를 둘 자리가 모자랐다. 높이 조건을 붙여 낮은 화면에서만 조절판을 가로로 눕혔다. 기준은 기기 높이가 아니라 사파리에서 실제로 보이는 높이로 잡았다.</p>
+    <p>가로 폰 — 가로로 돌린 폰은 폭만 보면 데스크톱이다. 가로 · 낮은 높이 · 손가락 기기, 세 조건을 같이 걸어 따로 잡았다. 시안 셋을 띄워 보고 하나로 정했다. 위 가로 화면은 폰으로 볼 때만 가로 폰 배치로 나온다.</p>
+    <p>경계에서 크기가 튀지 않도록, 크기는 min() 같은 식이 정하고 쿼리는 배치만 바꾸게 했다.</p>
+    <pre>@media (max-width: 75rem) { <i>태블릿</i> }
+@media (max-width: 40rem) and (max-height: 52rem) { <i>낮은 폰</i> }
+@media (orientation: landscape) and (max-height: 30rem)
+   and (pointer: coarse) { <i>가로 폰</i> }</pre>
+  </section>
 
-  <details data-q="(prefers-reduced-motion: reduce)"><summary><span class="d"></span><span>(prefers-reduced-motion: reduce)</span></summary>
-  <div class="frames" data-f="390x844"></div>
-  <p>기기 설정 「동작 줄이기」가 켜져 있으면 흐르는 띠 · 배경색 전환 · 숨쉬기를 끈다. 움직임이 생길 때마다 이 목록에 더했다.</p></details>
-
-  <details data-q="(hover: hover)"><summary><span class="d"></span><span>(hover: hover)</span></summary>
-  <div class="frames" data-f="1440x900"></div>
-  <p>올려 두기가 되는 기기(마우스)에서만 낱말을 굵게 · 회색으로. 폰으로 보면 위 화면에서도 꺼져 있다.</p></details>
-
-  <details data-q="(min-width: 64.0625rem)"><summary><span class="d"></span><span>(min-width: 64.0625rem)</span></summary>
-  <div class="frames" data-f="1024x768 1025x768"></div>
-  <p>폭 1025px 이상이면 천의 최대 크기를 "화면 높이 − 9칸" 식으로 묶는다. 64.0625rem은 64rem(1024px) 바로 다음 값이라 위 쿼리와 겹치지 않는다.</p></details>
-
-  <details data-q="LAND"><summary><span class="d"></span><span>(orientation: landscape) and (max-height: 30rem) and (pointer: coarse)</span></summary>
-  <div class="frames" data-f="844x390"></div>
-  <p>가로 · 높이 480px 이하 · 손가락 기기, 셋 다 참이면 가로 폰. 가로 아이폰(약 844×308)은 폭만 보면 데스크톱이다. 위 화면은 폰으로 볼 때만 가로 폰 배치로 나온다.</p></details>
-
-  <details data-q="(pointer: coarse)"><summary><span class="d"></span><span>(pointer: coarse)</span></summary>
-  <div class="frames" data-f="390x844"></div>
-  <p>손가락 기기에서는 누를 낱말 둘레에 보이지 않는 44×44px 영역을 붙인다. 일부 폰에서 「반영」이 눌리지 않았다.</p></details>
-
-  <details><summary><span></span><span>지운 쿼리</span></summary>
-  <div class="gone">
-    <span>(min-width: 48rem)</span>
-    <span>(prefers-color-scheme: dark)</span>
-    <span>(min-width: 60rem)</span>
-    <span>(min-width: 40rem) and (max-width: 60rem)</span>
-    <span>(max-width: 68rem)</span>
-    <span>(max-width: 40rem) and (max-height: 46rem)</span>
-    <span>(max-width: 75rem)</span>
-    <span>(max-width: 64rem) and (max-height: 34rem) and (min-width: 40.0625rem)</span>
-    <span>(max-width: 40rem) and (max-height: 52rem)</span>
-    <span>(min-width: 40.0625rem)</span>
-    <span>(pointer: fine) and (min-width: 40.0625rem)</span>
-    <span>(min-width: 40.0625rem) and (max-width: 64rem) and (max-height: 40rem)</span>
-  </div></details>
+  <section>
+    <h2>다시 짜며 줄이기</h2>
+    <div class="frames" data-f="820x1180 1180x820"></div>
+    <p>배치를 세 단으로 새로 짜면서 태블릿 · 낮은 화면 블록을 거의 다 지웠다. 태블릿은 데스크톱 배치를 그대로 쓰고 눈금 간격만 바꾼다.</p>
+    <p>남은 갈래는 데스크톱 · 폰 · 가로 폰 셋이다. 폰 조건에서 가로 폰을 뺐고, 나중에 세로로 든 아이패드를 폰 쪽에 더했다. 위 두 화면이 같은 아이패드를 세로 · 가로로 든 모습이다.</p>
+    <p>갈래가 줄자 한 블록에만 남은 값이 드러났다. 글자 크기를 바꿀 때 가로 폰 블록만 빠져 있었다.</p>
+    <p>입력 방식도 화면 크기와 따로 걸었다. 마우스는 올리면 낱말이 굵어지고, 손가락은 낱말 둘레의 넓은 누름 영역으로 누른다.</p>
+    <pre>@media (max-width: 64rem) { <i>눈금 간격</i> }
+@media (max-width: 40rem) and (orientation: portrait), …,
+       (max-width: 64rem) and (orientation: portrait) { <i>폰</i> }
+@media (orientation: landscape) and (max-height: 30rem)
+   and (pointer: coarse) { <i>가로 폰</i> }
+@media (hover: hover) { <i>올리면 굵게</i> }
+@media (pointer: coarse) { <i>넓은 누름 영역</i> }</pre>
+  </section>
 
 </main>
 <script>
-const PHONE = '(max-width: 40rem) and (orientation: portrait), (max-width: 40rem) and (min-height: 30.0625rem), (max-width: 40rem) and (pointer: fine), (max-width: 40rem) and (pointer: none), (max-width: 64rem) and (orientation: portrait)';
-const LAND = '(orientation: landscape) and (max-height: 30rem) and (pointer: coarse)';
-document.querySelectorAll('details[data-q]').forEach(d => {
-  const q = { PHONE, LAND }[d.dataset.q] || d.dataset.q;
-  const dot = d.querySelector('.d');
-  const m = matchMedia(q);
-  const set = () => { dot.classList.toggle('on', m.matches); dot.textContent = m.matches ? '●' : '○'; };
-  m.addEventListener('change', set);
-  set();
-});
-
-/* 티저 창: 항목을 열고 화면 근처에 있을 때만 불러오고, 벗어나면 비운다(WebGL 여러 개 방지) */
+/* 티저 창: 화면 근처에 있을 때만 불러오고, 벗어나면 비운다(WebGL 여러 개 방지) */
 const SRC = 'https://2026.hongiksidi.com/';
 const GAP = 8;
 const sets = [...document.querySelectorAll('.frames')].map(el => {
-  const dims = el.dataset.f.split(' ').map(s => s.split('x').map(Number));
-  const frs = dims.map(([w, h]) => {
+  const frs = el.dataset.f.split(' ').map(d => {
+    const [w, h] = d.split('x').map(Number);
     const fr = document.createElement('div');
     fr.className = 'fr';
     fr.innerHTML = '<div class="box"></div><span></span>';
     fr.children[1].textContent = w + ' × ' + h;
     el.append(fr);
-    return { fr, box: fr.children[0], w, h, ifr: null };
+    return { box: fr.children[0], w, h, ifr: null, k: 1 };
   });
-  return { el, frs, details: el.closest('details'), near: false };
+  return { el, frs };
 });
 
+/* 한 줄에 다 넣은 배율이 너무 작으면 줄을 바꾼다. 같은 묶음은 같은 배율이라 크기 비교가 그대로다 */
 const fit = s => {
   const cw = s.el.clientWidth;
   if (!cw) return;
-  /* 한 줄에 다 넣은 배율이 너무 작으면 줄을 바꾼다. 같은 묶음은 같은 배율이라 크기 비교가 그대로다 */
   const capH = Math.min(440, innerHeight * .6);
   const sumW = s.frs.reduce((a, f) => a + f.w, 0);
   const maxH = Math.max(...s.frs.map(f => f.h));
@@ -225,51 +167,37 @@ const fit = s => {
   const one = Math.min(...s.frs.map(f => Math.min(cw / f.w, capH / f.h)));
   const k = Math.min(row >= one * .6 ? row : one, 1);
   s.frs.forEach(f => {
+    f.k = k;
     f.box.style.width = Math.round(f.w * k) + 'px';
     f.box.style.height = Math.round(f.h * k) + 'px';
     if (f.ifr) f.ifr.style.transform = 'scale(' + k + ')';
-    f.k = k;
   });
 };
 
-const sync = s => {
-  const want = s.details.open && s.near;
-  s.frs.forEach(f => {
-    if (want && !f.ifr) {
-      f.ifr = document.createElement('iframe');
-      f.ifr.width = f.w;
-      f.ifr.height = f.h;
-      f.ifr.tabIndex = -1;
-      f.ifr.title = '티저 ' + f.w + '×' + f.h;
-      f.ifr.style.transform = 'scale(' + (f.k || 1) + ')';
-      f.ifr.src = SRC;
-      f.box.append(f.ifr);
-    } else if (!want && f.ifr) {
-      f.ifr.remove();
-      f.ifr = null;
-    }
-  });
-};
-
-const io = new IntersectionObserver(es => es.forEach(e => {
-  const s = sets.find(x => x.el === e.target);
-  s.near = e.isIntersecting;
-  sync(s);
-}), { rootMargin: '50% 0px' });
-
-sets.forEach(s => {
-  io.observe(s.el);
-  /* 닫힌 details 안은 상자가 없어 관찰자가 늦게 알린다 — 열 때는 직접 잰다 */
-  s.details.addEventListener('toggle', () => {
-    fit(s);
-    const r = s.el.getBoundingClientRect();
-    s.near = r.bottom > -innerHeight / 2 && r.top < innerHeight * 1.5;
-    sync(s);
-  });
+const sync = (s, near) => s.frs.forEach(f => {
+  if (near && !f.ifr) {
+    f.ifr = document.createElement('iframe');
+    f.ifr.width = f.w;
+    f.ifr.height = f.h;
+    f.ifr.tabIndex = -1;
+    f.ifr.title = '티저 ' + f.w + '×' + f.h;
+    f.ifr.style.transform = 'scale(' + f.k + ')';
+    f.ifr.src = SRC;
+    f.box.append(f.ifr);
+  } else if (!near && f.ifr) {
+    f.ifr.remove();
+    f.ifr = null;
+  }
 });
+
 const refit = () => sets.forEach(fit);
 addEventListener('resize', refit);
 refit();
+
+const io = new IntersectionObserver(es => es.forEach(e => {
+  sync(sets.find(s => s.el === e.target), e.isIntersecting);
+}), { rootMargin: '25% 0px' });
+sets.forEach(s => io.observe(s.el));
 </script>
 </body>
 </html>
