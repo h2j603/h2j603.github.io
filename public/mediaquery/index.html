@@ -128,9 +128,35 @@ pre i {
   font-style: normal;
   color: #888;
 }
+.only {
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 32px);
+  font-size: 17px;
+}
+
+main {
+  display: none;
+}
+
+@media (max-width: 40rem) and (orientation: portrait),
+       (max-width: 40rem) and (min-height: 30.0625rem),
+       (max-width: 40rem) and (pointer: fine),
+       (max-width: 40rem) and (pointer: none),
+       (max-width: 64rem) and (orientation: portrait),
+       (orientation: landscape) and (max-height: 30rem) and (pointer: coarse) {
+  .only {
+    display: none;
+  }
+
+  main {
+    display: grid;
+  }
+}
 </style>
 </head>
 <body>
+<p class="only">핸드폰에서만 확인 가능합니다.</p>
 <main>
 
   <section>
