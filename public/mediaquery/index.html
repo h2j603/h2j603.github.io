@@ -64,11 +64,6 @@ summary .d.on {
   white-space: nowrap;
 }
 
-.how li span {
-  display: block;
-  font: 11px/1.5 ui-monospace, monospace;
-  color: #888;
-}
 
 .frames {
   display: flex;
@@ -117,36 +112,28 @@ details p {
   word-break: keep-all;
 }
 
-details p.ref {
-  font: 11px/1.5 ui-monospace, monospace;
-  color: #888;
-}
 
 .gone {
   display: grid;
-  gap: 2px 0;
+  gap: 6px 0;
   margin-top: 12px;
   font: 11px/1.5 ui-monospace, monospace;
   overflow-wrap: anywhere;
 }
 
-.gone span:nth-child(2n) {
-  margin-bottom: 6px;
-  color: #888;
-}
 </style>
 </head>
 <body>
 <main>
 
   <ol class="how">
-    <li>기준선은 컬럼 수(12 · 8 · 4칸)로 정하고, 실제로 답답해 보이는 폭에서 고친다.<span>e268113 · 62d0901</span></li>
-    <li>크기는 min() 같은 식이 정하고, 쿼리는 배치만 바꾼다.<span>98e51c1</span></li>
-    <li>폭으로 못 가르는 화면은 높이 · 방향 · 입력 방식을 같이 본다.<span>216bd27 · 872509b</span></li>
-    <li>"A이면서 B는 아님"은 B 조건을 하나씩 뒤집어 쉼표("또는")로 잇는다.<span>e4017cc</span></li>
-    <li>짝 쿼리는 경계가 겹치지 않게 맞춘다. <em>64rem ↔ 64.0625rem</em>.<span>b169199</span></li>
-    <li>CSS와 JS는 쿼리 문자열 하나를 같이 쓴다.<span>e4017cc</span></li>
-    <li>갈래는 줄인다. 갈래가 많으면 값을 고칠 때 빠지는 블록이 생긴다.<span>3e22717 · 12c51ac</span></li>
+    <li>기준선은 컬럼 수(12 · 8 · 4칸)로 정하고, 실제로 답답해 보이는 폭에서 고친다.</li>
+    <li>크기는 min() 같은 식이 정하고, 쿼리는 배치만 바꾼다.</li>
+    <li>폭으로 못 가르는 화면은 높이 · 방향 · 입력 방식을 같이 본다.</li>
+    <li>"A이면서 B는 아님"은 B 조건을 하나씩 뒤집어 쉼표("또는")로 잇는다.</li>
+    <li>짝 쿼리는 경계가 겹치지 않게 맞춘다. <em>64rem ↔ 64.0625rem</em>.</li>
+    <li>CSS와 JS는 쿼리 문자열 하나를 같이 쓴다.</li>
+    <li>갈래는 줄인다. 갈래가 많으면 값을 고칠 때 빠지는 블록이 생긴다.</li>
   </ol>
 
   <details data-q="PHONE"><summary><span class="d"></span><span>(max-width: 40rem) …</span></summary>
@@ -156,53 +143,46 @@ details p.ref {
        (max-width: 40rem) and (pointer: fine),
        (max-width: 40rem) and (pointer: none),
        (max-width: 64rem) and (orientation: portrait) { … }</pre>
-  <p>폰 배치. "폭 640px(40rem) 이하" 한 줄에서 시작해, 가로 폰 조건 셋을 뒤집어 가로 폰을 빼고, 아이패드 세로를 갈래로 더했다. 천 크기는 이 블록 안의 min() 식이 정하고, JS도 같은 문자열을 matchMedia로 읽는다.</p>
-  <p class="ref">03a5451 · 98e51c1 · e4017cc · f3e8d29</p></details>
+  <p>폰 배치. "폭 640px(40rem) 이하" 한 줄에서 시작해, 가로 폰 조건 셋을 뒤집어 가로 폰을 빼고, 아이패드 세로를 갈래로 더했다. 천 크기는 이 블록 안의 min() 식이 정하고, JS도 같은 문자열을 matchMedia로 읽는다.</p></details>
 
   <details data-q="(max-width: 64rem)"><summary><span class="d"></span><span>(max-width: 64rem)</span></summary>
   <div class="frames" data-f="1440x900 1024x768"></div>
-  <p>폭 1024px 이하면 컬럼을 12칸에서 8칸으로. 태블릿 배치 전체였던 블록을 눈금 간격 한 줄로 줄였다.</p>
-  <p class="ref">e268113 · 3e22717</p></details>
+  <p>폭 1024px 이하면 컬럼을 12칸에서 8칸으로. 태블릿 배치 전체였던 블록을 눈금 간격 한 줄로 줄였다.</p></details>
 
   <details data-q="(prefers-reduced-motion: reduce)"><summary><span class="d"></span><span>(prefers-reduced-motion: reduce)</span></summary>
   <div class="frames" data-f="390x844"></div>
-  <p>기기 설정 「동작 줄이기」가 켜져 있으면 흐르는 띠 · 배경색 전환 · 숨쉬기를 끈다. 움직임이 생길 때마다 이 목록에 더했다.</p>
-  <p class="ref">a7f3132 · 82eac30 · 5cf59c9</p></details>
+  <p>기기 설정 「동작 줄이기」가 켜져 있으면 흐르는 띠 · 배경색 전환 · 숨쉬기를 끈다. 움직임이 생길 때마다 이 목록에 더했다.</p></details>
 
   <details data-q="(hover: hover)"><summary><span class="d"></span><span>(hover: hover)</span></summary>
   <div class="frames" data-f="1440x900"></div>
-  <p>올려 두기가 되는 기기(마우스)에서만 낱말을 굵게 · 회색으로. 폰으로 보면 위 화면에서도 꺼져 있다.</p>
-  <p class="ref">86f53e7 · 7d98d96</p></details>
+  <p>올려 두기가 되는 기기(마우스)에서만 낱말을 굵게 · 회색으로. 폰으로 보면 위 화면에서도 꺼져 있다.</p></details>
 
   <details data-q="(min-width: 64.0625rem)"><summary><span class="d"></span><span>(min-width: 64.0625rem)</span></summary>
   <div class="frames" data-f="1024x768 1025x768"></div>
-  <p>폭 1025px 이상이면 천의 최대 크기를 "화면 높이 − 9칸" 식으로 묶는다. 64.0625rem은 64rem(1024px) 바로 다음 값이라 위 쿼리와 겹치지 않는다.</p>
-  <p class="ref">b169199</p></details>
+  <p>폭 1025px 이상이면 천의 최대 크기를 "화면 높이 − 9칸" 식으로 묶는다. 64.0625rem은 64rem(1024px) 바로 다음 값이라 위 쿼리와 겹치지 않는다.</p></details>
 
   <details data-q="LAND"><summary><span class="d"></span><span>(orientation: landscape) and (max-height: 30rem) and (pointer: coarse)</span></summary>
   <div class="frames" data-f="844x390"></div>
-  <p>가로 · 높이 480px 이하 · 손가락 기기, 셋 다 참이면 가로 폰. 가로 아이폰(약 844×308)은 폭만 보면 데스크톱이다. 위 화면은 폰으로 볼 때만 가로 폰 배치로 나온다.</p>
-  <p class="ref">872509b · 293c237</p></details>
+  <p>가로 · 높이 480px 이하 · 손가락 기기, 셋 다 참이면 가로 폰. 가로 아이폰(약 844×308)은 폭만 보면 데스크톱이다. 위 화면은 폰으로 볼 때만 가로 폰 배치로 나온다.</p></details>
 
   <details data-q="(pointer: coarse)"><summary><span class="d"></span><span>(pointer: coarse)</span></summary>
   <div class="frames" data-f="390x844"></div>
-  <p>손가락 기기에서는 누를 낱말 둘레에 보이지 않는 44×44px 영역을 붙인다. 일부 폰에서 「반영」이 눌리지 않았다.</p>
-  <p class="ref">c42c482</p></details>
+  <p>손가락 기기에서는 누를 낱말 둘레에 보이지 않는 44×44px 영역을 붙인다. 일부 폰에서 「반영」이 눌리지 않았다.</p></details>
 
   <details><summary><span></span><span>지운 쿼리</span></summary>
   <div class="gone">
-    <span>(min-width: 48rem)</span><span>03a5451 → 3b42239</span>
-    <span>(prefers-color-scheme: dark)</span><span>03a5451 → 046d854</span>
-    <span>(min-width: 60rem)</span><span>3b42239 → 0e68933</span>
-    <span>(min-width: 40rem) and (max-width: 60rem)</span><span>3b42239 → 90d6528</span>
-    <span>(max-width: 68rem)</span><span>98e51c1 → 62d0901</span>
-    <span>(max-width: 40rem) and (max-height: 46rem)</span><span>216bd27 → f7f13c9</span>
-    <span>(max-width: 75rem)</span><span>62d0901 → 3e22717</span>
-    <span>(max-width: 64rem) and (max-height: 34rem) and (min-width: 40.0625rem)</span><span>98e51c1 → 3e22717</span>
-    <span>(max-width: 40rem) and (max-height: 52rem)</span><span>f7f13c9 → 3e22717</span>
-    <span>(min-width: 40.0625rem)</span><span>badde30 → 3e22717</span>
-    <span>(pointer: fine) and (min-width: 40.0625rem)</span><span>78a0260 → 8c82acc</span>
-    <span>(min-width: 40.0625rem) and (max-width: 64rem) and (max-height: 40rem)</span><span>5c1c02b → 3e22717</span>
+    <span>(min-width: 48rem)</span>
+    <span>(prefers-color-scheme: dark)</span>
+    <span>(min-width: 60rem)</span>
+    <span>(min-width: 40rem) and (max-width: 60rem)</span>
+    <span>(max-width: 68rem)</span>
+    <span>(max-width: 40rem) and (max-height: 46rem)</span>
+    <span>(max-width: 75rem)</span>
+    <span>(max-width: 64rem) and (max-height: 34rem) and (min-width: 40.0625rem)</span>
+    <span>(max-width: 40rem) and (max-height: 52rem)</span>
+    <span>(min-width: 40.0625rem)</span>
+    <span>(pointer: fine) and (min-width: 40.0625rem)</span>
+    <span>(min-width: 40.0625rem) and (max-width: 64rem) and (max-height: 40rem)</span>
   </div></details>
 
 </main>
