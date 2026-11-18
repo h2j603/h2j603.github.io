@@ -1,8 +1,8 @@
 // 탈네모 프로토타이퍼 UI. 값과 결과만 보여 준다. 조형 판단은 사용자 몫.
-import { DEFAULTS, CONTROLS, getPath, setPath, merge, resolvePreset } from './schema.js?v=8e5cb13';
-import { layoutSyllable, layoutJamo } from './layout.js?v=8e5cb13';
-import { contourToPathD } from './outline.js?v=8e5cb13';
-import { CHO, JUNG, JONG } from './jamo.js?v=8e5cb13';
+import { DEFAULTS, CONTROLS, getPath, setPath, merge, resolvePreset } from './schema.js?v=7c5052f';
+import { layoutSyllable, layoutJamo } from './layout.js?v=7c5052f';
+import { contourToPathD } from './outline.js?v=7c5052f';
+import { CHO, JUNG, JONG } from './jamo.js?v=7c5052f';
 
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -401,8 +401,13 @@ function applyAxisLine(text) {
 
 /* ── 프리셋·저장 ────────────────────────────────────── */
 
+// 저장은 "프리셋 위에서 바꾼 것"만 남긴다. 프리셋(기본값)이 나중에 바뀌어도 손대지 않은 값은 새 기본값을 따른다
 function save() {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(state.P)); } catch {}
+  try {
+    const base = state.presets[state.presetFile];
+    const rec = base ? { base: state.presetFile, d: diff(resolvePreset(base), state.P) || {} } : state.P;
+    localStorage.setItem(LS_KEY, JSON.stringify(rec));
+  } catch {}
 }
 
 function loadSaved() {
@@ -604,8 +609,10 @@ async function boot() {
   await loadPresets();
 
   const saved = loadSaved();
-  if (saved) {
-    try { state.P = resolvePreset(saved); } catch {}
+  if (saved && saved.base && state.presets[saved.base]) {
+    try { state.presetFile = saved.base; state.P = merge(resolvePreset(state.presets[saved.base]), saved.d || {}); } catch {}
+  } else if (saved) {
+    try { state.P = resolvePreset(saved); } catch {} // 예전 형식(전체 값)
   } else if (state.presetFile && state.presets[state.presetFile]) {
     try { state.P = resolvePreset(state.presets[state.presetFile]); } catch {}
   }
