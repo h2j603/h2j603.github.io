@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=cf51666';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=cf51666';
-import { filletPatches } from './fillet.js?v=cf51666';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=8e5cb13';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=8e5cb13';
+import { filletPatches } from './fillet.js?v=8e5cb13';
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -263,7 +263,7 @@ export function layoutSyllable(P, char, opt = {}) {
           for (let i = 1; i < q.pts.length - 1; i++) add('joint', strokeCircle(q.pts[i][0], q.pts[i][1], hw / 2, { ...P.stroke, weight: hw }));
         } else add('line', [strokeOpen(q.pts, P.stroke)]);
       }
-      else if (q.t === 'circle' && p.jamo === 'ㅇ' && P.cons.ngShape === 'dot') {
+      else if (q.t === 'circle' && p.jamo === 'ㅇ' && (p.slot === 'jong' && P.jong.ngShape !== 'same' ? P.jong.ngShape : P.cons.ngShape) === 'dot') {
         // 점 ㅇ: 속이 찬 정원. 지름 = (상자 한 변) × ngDot
         const D = (q.s + wt) * P.cons.ngDot;
         add('dot', strokeCircle(q.cx, q.cy, D / 4, { ...P.stroke, weight: D / 2 }));
