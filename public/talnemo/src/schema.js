@@ -16,11 +16,13 @@ export const DEFAULTS = {
   // 자소 크기(초성 기준)
   cons: {
     w: 300, h: 300,      // 자음 상자 너비·높이
-    squareRef: 'h',      // ㅇ·ㅁ 한 변의 기준: h | w | min
+    squareRef: 'h',      // ㅇ·ㅁ 한 변의 공통 기준: h | w | min | bar(가로모음 가로줄 폭)
+    ngCho: 'same',       // 초성 ㅇ 기준: same(공통 따름) | h | w | min | bar
+    mCho: 'same',        // 초성 ㅁ 기준
     pairW: 1.5,          // 겹자음 전체 너비 = w × pairW
     pairGap: 30,         // 겹자음 두 자소 사이
   },
-  jong: { scaleW: 1, scaleH: 1 },   // 종성 크기 = 초성 크기 × scale
+  jong: { scaleW: 1, scaleH: 1, squareRef: 'same' },   // 종성 크기 = 초성 크기 × scale, 종성 ㅇ·ㅁ 기준
 
   vowel: {
     stem: 640,           // 세로모음 기둥 길이
@@ -78,7 +80,10 @@ export const CONTROLS = [
   { g: '획', k: 'stroke.cap', opts: ['square', 'butt', 'round'], label: '끝' },
   { g: '자음', k: 'cons.w', min: 120, max: 500, step: 5, label: '자음 너비' },
   { g: '자음', k: 'cons.h', min: 120, max: 500, step: 5, label: '자음 높이' },
-  { g: '자음', k: 'cons.squareRef', opts: ['h', 'w', 'min'], label: 'ㅇㅁ 기준' },
+  { g: '자음', k: 'cons.squareRef', opts: ['h', 'w', 'min', 'bar'], label: 'ㅇㅁ 기준' },
+  { g: '자음', k: 'cons.ngCho', opts: ['same', 'h', 'w', 'min', 'bar'], label: '초성 ㅇ 기준' },
+  { g: '자음', k: 'cons.mCho', opts: ['same', 'h', 'w', 'min', 'bar'], label: '초성 ㅁ 기준' },
+  { g: '자음', k: 'jong.squareRef', opts: ['same', 'h', 'w', 'min', 'bar'], label: '종성 ㅇㅁ 기준' },
   { g: '자음', k: 'cons.pairW', min: 1, max: 2.2, step: 0.01, label: '겹자음 너비' },
   { g: '자음', k: 'cons.pairGap', min: -40, max: 120, step: 1, label: '겹자음 간격' },
   { g: '자음', k: 'jong.scaleW', min: 0.4, max: 1.4, step: 0.01, label: '종성 너비' },
