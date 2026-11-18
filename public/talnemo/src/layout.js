@@ -255,6 +255,13 @@ export function layoutSyllable(P, char, opt = {}) {
         add('dot', strokeCircle(q.cx, q.cy, D / 4, { ...P.stroke, weight: D / 2 }));
       }
       else if (q.t === 'circle') add('circle', strokeCircle(q.cx, q.cy, q.s / 2, P.stroke));
+      else if (P.stroke.cap === 'round') {
+        // 둥근 끝이면 ㅁ 정사각형도 예외 없이 모서리를 둥글게: 위 가운데에서 출발하는 닫힌 획 + 모서리 원판
+        const a = q.s / 2, x0 = q.cx - a, x1 = q.cx + a, y0 = q.cy - a, y1 = q.cy + a;
+        const loop = [[q.cx, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0], [q.cx, y0]];
+        add('line', [strokeOpen(loop, { ...P.stroke, contrast: 0, miterLimit: 1 })]);
+        for (let i = 1; i < loop.length - 1; i++) add('joint', strokeCircle(loop[i][0], loop[i][1], hw / 2, { ...P.stroke, weight: hw }));
+      }
       else {
         const a = q.s / 2;
         add('square', strokeClosed([[q.cx - a, q.cy - a], [q.cx + a, q.cy - a], [q.cx + a, q.cy + a], [q.cx - a, q.cy + a]], { ...P.stroke, contrast: 0 }));
