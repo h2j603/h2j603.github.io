@@ -39,7 +39,7 @@ function consSize(P, ch, slot, mod) {
     if (P.cons.strokeAxis !== 'w') h *= f;
   }
   if (PAIR[ch]) w *= P.cons.pairW;
-  else if (SQUARE_JAMO.has(ch)) {
+  else if (SQUARE_JAMO.has(ch) && !(ch === 'ㅁ' && P.cons.mSquare === false)) {
     // 한 변 기준: 자리·자소별 지정(same 이면 공통 기준 cons.squareRef). bar = 가로모음 가로줄 잉크 폭
     let ref = P.cons.squareRef;
     const own = slot === 'jong' ? P.jong.squareRef : ch === 'ㅇ' ? P.cons.ngCho : P.cons.mCho;
@@ -65,15 +65,17 @@ function consPrims(P, ch, box) {
   }
   const X = u => box.x + hw + u * Math.max(0, box.w - 2 * hw);
   const Y = v => box.y + hw + v * Math.max(0, box.h - 2 * hw);
-  return SIMPLE[ch].map(p => p.t === 'line'
+  // ㅁ 정사각형 규칙을 끄면 다른 자음처럼 상자 비율을 따르는 닫힌 사각 획
+  const src = ch === 'ㅁ' && P.cons.mSquare === false ? [{ t: 'line', pts: [[.5, 0], [1, 0], [1, 1], [0, 1], [0, 0], [.5, 0]] }] : SIMPLE[ch];
+  return src.map(p => p.t === 'line'
     ? { t: 'line', pts: p.pts.map(([u, v]) => [X(u), Y(v)]) }
-    : { t: p.t, box: [X(p.box[0]), Y(p.box[1]), X(p.box[2]), Y(p.box[3])] });
+    : { t: p.t, va: p.va, box: [X(p.box[0]), Y(p.box[1]), X(p.box[2]), Y(p.box[3])] });
 }
 
 function shiftPrims(prims, dx, dy) {
   return prims.map(p => p.t === 'line'
     ? { t: 'line', pts: p.pts.map(([x, y]) => [x + dx, y + dy]) }
-    : { t: p.t, box: [p.box[0] + dx, p.box[1] + dy, p.box[2] + dx, p.box[3] + dy] });
+    : { t: p.t, va: p.va, box: [p.box[0] + dx, p.box[1] + dy, p.box[2] + dx, p.box[3] + dy] });
 }
 
 function primsBounds(prims, hw) {
@@ -87,9 +89,9 @@ function primsBounds(prims, hw) {
 }
 
 // 정사각형·정원: 상자 안 최대 정사각형/원을 가운데에 둔다
-function inscribed(b) {
+function inscribed(b, va) {
   const w = b[2] - b[0], h = b[3] - b[1], s = Math.min(w, h);
-  const cx = (b[0] + b[2]) / 2, cy = (b[1] + b[3]) / 2;
+  const cx = (b[0] + b[2]) / 2, cy = va === 'bottom' ? b[3] - s / 2 : (b[1] + b[3]) / 2;
   return { cx, cy, s, set: { w, h } };
 }
 
@@ -218,7 +220,7 @@ export function layoutSyllable(P, char, opt = {}) {
       if (q.t === 'line') return { t: 'line', pts: q.pts.map(([x, y]) => rot(...T(x, y))) };
       // 정원·정사각형: 상자를 비균등 변환한 뒤 내접 도형으로 다시 그린다. 회전은 받지 않고 이동만 받는다
       const [x0, y0] = T(q.box[0], q.box[1]), [x1, y1] = T(q.box[2], q.box[3]);
-      const ins = inscribed([x0, y0, x1, y1]);
+      const ins = inscribed([x0, y0, x1, y1], q.va);
       const [ncx, ncy] = rot(ins.cx, ins.cy);
       const changed = Math.abs(ins.set.w - ins.set.h) > 0.5 || (q.t === 'square' && Math.abs(ang) > 1e-6);
       if (changed) constraints.push({ slot: p.slot, jamo: p.jamo, shape: q.t, set: { w: +ins.set.w.toFixed(1), h: +ins.set.h.toFixed(1), rotate: +(ang * 180 / Math.PI).toFixed(2) }, drawn: { side: +ins.s.toFixed(1), rotate: 0 } });
@@ -239,7 +241,13 @@ export function layoutSyllable(P, char, opt = {}) {
     const cs = [], kinds = [];
     const add = (k, list) => { for (const c of list) { cs.push(c); kinds.push(k); } };
     for (const q of p.prims) {
-      if (q.t === 'line') add('line', [strokeOpen(q.pts, P.stroke)]);
+      if (q.t === 'line') {
+        if (P.stroke.cap === 'round') {
+          // 둥근 끝이면 꺾임도 둥글게: 꺾인 자리는 베벨로 자르고 지름 = 굵기인 원판을 덧놓는다(뾰족한 ㅅ 꼭짓점이 잘리거나 튀지 않음)
+          add('line', [strokeOpen(q.pts, { ...P.stroke, miterLimit: 1 })]);
+          for (let i = 1; i < q.pts.length - 1; i++) add('joint', strokeCircle(q.pts[i][0], q.pts[i][1], hw / 2, { ...P.stroke, weight: hw }));
+        } else add('line', [strokeOpen(q.pts, P.stroke)]);
+      }
       else if (q.t === 'circle' && p.jamo === 'ㅇ' && P.cons.ngShape === 'dot') {
         // 점 ㅇ: 속이 찬 정원. 지름 = (상자 한 변) × ngDot
         const D = (q.s + wt) * P.cons.ngDot;
