@@ -19,6 +19,7 @@ export const DEFAULTS = {
     squareRef: 'h',      // ㅇ·ㅁ 한 변의 공통 기준: h | w | min | bar(가로모음 가로줄 폭)
     ngCho: 'same',       // 초성 ㅇ 기준: same(공통 따름) | h | w | min | bar
     mCho: 'same',        // 초성 ㅁ 기준
+    mSquare: true,       // ㅁ 정사각형 규칙. false 면 다른 자음처럼 상자 비율(너비×높이)을 따른다
     strokeMin: 1,        // 획수 기반 크기: 1획 자음 배율(4획 = 1). 1 = 끔. ㅇ은 예외
     strokeAxis: 'both',  // 획수 크기를 적용할 방향: both | w | h
     ngShape: 'ring',     // ㅇ 모양: ring(고리) | dot(점)
@@ -86,6 +87,7 @@ export const CONTROLS = [
   { g: '자음', k: 'cons.h', min: 120, max: 500, step: 5, label: '자음 높이' },
   { g: '자음', k: 'cons.squareRef', opts: ['h', 'w', 'min', 'bar'], label: 'ㅇㅁ 기준' },
   { g: '자음', k: 'cons.ngCho', opts: ['same', 'h', 'w', 'min', 'bar'], label: '초성 ㅇ 기준' },
+  { g: '자음', k: 'cons.mSquare', opts: [true, false], label: 'ㅁ 정사각형' },
   { g: '자음', k: 'cons.mCho', opts: ['same', 'h', 'w', 'min', 'bar'], label: '초성 ㅁ 기준' },
   { g: '자음', k: 'cons.strokeMin', min: 0.4, max: 1, step: 0.01, label: '획수 크기(1획 배율)' },
   { g: '자음', k: 'cons.strokeAxis', opts: ['both', 'w', 'h'], label: '획수 크기 방향' },

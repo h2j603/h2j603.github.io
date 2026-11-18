@@ -1,9 +1,41 @@
 {
-  "meta": { "id": "ahn", "name": "안상수형", "note": "기본. 근거: 닿자·홀자·받침 모양·크기·위치 동일, 받침은 홀자 정중앙 아래, 쌍받침은 오른쪽으로 나감, 한글 최초 가변폭(위키백과 안상수). 11/18 혁님이 웹 슬라이더로 맞춘 값 반영. 초성 ㅇ은 가로모음 폭(bar), 초성 ㅁ·종성 ㅇㅁ은 min(혁님 지정)." },
-  "stroke": { "weight": 77, "cap": "round" },
-  "cons": { "w": 165, "h": 345, "squareRef": "min", "ngCho": "bar", "mCho": "min", "pairW": 1.79, "pairGap": -15 },
-  "jong": { "scaleH": 0.71, "squareRef": "min" },
-  "vowel": { "stem": 370, "branch": 163, "branchY": 146, "tick": 82 },
-  "place": { "gapVJ": 11, "jongX": "vowel", "pairOverhang": true, "jongY": "vowel", "compoundStem": "bar" },
-  "frame": { "align": "bottom", "fixedAdvance": 1400 }
+  "meta": {
+    "id": "ahn",
+    "name": "안상수형",
+    "note": "기본. 근거: 닿자·홀자·받침 모양·크기·위치 동일, 받침은 홀자 정중앙 아래, 쌍받침은 오른쪽으로 나감, 한글 최초 가변폭(위키백과 안상수). 11/18 혁님이 웹 슬라이더로 맞춘 값 반영. 11/18 혁님: 자음 높이 맞춤 → ㅇ 지름 = 자음 높이, ㅁ 정사각형 규칙 해제(상자 비율 따름), ㅎ 원은 아래 붙임. 종성 ㅇ도 지름 = 종성 높이."
+  },
+  "stroke": {
+    "weight": 77,
+    "cap": "round"
+  },
+  "cons": {
+    "w": 165,
+    "h": 345,
+    "squareRef": "min",
+    "ngCho": "h",
+    "pairW": 1.79,
+    "pairGap": -15,
+    "mSquare": false
+  },
+  "jong": {
+    "scaleH": 0.71,
+    "squareRef": "h"
+  },
+  "vowel": {
+    "stem": 370,
+    "branch": 163,
+    "branchY": 146,
+    "tick": 82
+  },
+  "place": {
+    "gapVJ": 11,
+    "jongX": "vowel",
+    "pairOverhang": true,
+    "jongY": "vowel",
+    "compoundStem": "bar"
+  },
+  "frame": {
+    "align": "bottom",
+    "fixedAdvance": 1400
+  }
 }
