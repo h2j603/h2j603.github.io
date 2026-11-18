@@ -537,6 +537,18 @@ function doJSON() {
   download(blob, `${state.P.meta.id}.json`);
 }
 
+// 바꾼 값만 한 줄 JSON 으로 클립보드에 복사(텔레그램에 붙여 넣기용)
+async function doCopy(e) {
+  const btn = e.currentTarget;
+  const d = diff(DEFAULTS, state.P) || {};
+  delete d.meta; // 설명문은 빼고 값만
+  const text = JSON.stringify(d);
+  try { await navigator.clipboard.writeText(text); }
+  catch { window.prompt('길게 눌러 복사', text); return; }
+  btn.textContent = '복사됨';
+  setTimeout(() => { btn.textContent = '값 복사'; }, 1500);
+}
+
 /* ── 초기화 ─────────────────────────────────────────── */
 
 function buildTabs() {
@@ -583,6 +595,7 @@ function bind() {
   $('#ufo').addEventListener('click', doUFO);
   $('#otf').addEventListener('click', doOTF);
   $('#json').addEventListener('click', doJSON);
+  $('#copy').addEventListener('click', doCopy);
 }
 
 async function boot() {
