@@ -19,6 +19,10 @@ export const DEFAULTS = {
     squareRef: 'h',      // ㅇ·ㅁ 한 변의 공통 기준: h | w | min | bar(가로모음 가로줄 폭)
     ngCho: 'same',       // 초성 ㅇ 기준: same(공통 따름) | h | w | min | bar
     mCho: 'same',        // 초성 ㅁ 기준
+    strokeMin: 1,        // 획수 기반 크기: 1획 자음 배율(4획 = 1). 1 = 끔. ㅇ은 예외
+    strokeAxis: 'both',  // 획수 크기를 적용할 방향: both | w | h
+    ngShape: 'ring',     // ㅇ 모양: ring(고리) | dot(점)
+    ngDot: 0.5,          // 점 ㅇ 지름(상자 한 변 대비)
     pairW: 1.5,          // 겹자음 전체 너비 = w × pairW
     pairGap: 30,         // 겹자음 두 자소 사이
   },
@@ -83,6 +87,10 @@ export const CONTROLS = [
   { g: '자음', k: 'cons.squareRef', opts: ['h', 'w', 'min', 'bar'], label: 'ㅇㅁ 기준' },
   { g: '자음', k: 'cons.ngCho', opts: ['same', 'h', 'w', 'min', 'bar'], label: '초성 ㅇ 기준' },
   { g: '자음', k: 'cons.mCho', opts: ['same', 'h', 'w', 'min', 'bar'], label: '초성 ㅁ 기준' },
+  { g: '자음', k: 'cons.strokeMin', min: 0.4, max: 1, step: 0.01, label: '획수 크기(1획 배율)' },
+  { g: '자음', k: 'cons.strokeAxis', opts: ['both', 'w', 'h'], label: '획수 크기 방향' },
+  { g: '자음', k: 'cons.ngShape', opts: ['ring', 'dot'], label: 'ㅇ 모양' },
+  { g: '자음', k: 'cons.ngDot', min: 0.15, max: 1, step: 0.01, label: '점 ㅇ 크기' },
   { g: '자음', k: 'jong.squareRef', opts: ['same', 'h', 'w', 'min', 'bar'], label: '종성 ㅇㅁ 기준' },
   { g: '자음', k: 'cons.pairW', min: 1, max: 2.2, step: 0.01, label: '겹자음 너비' },
   { g: '자음', k: 'cons.pairGap', min: -40, max: 120, step: 1, label: '겹자음 간격' },

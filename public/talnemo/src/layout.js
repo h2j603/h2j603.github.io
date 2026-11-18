@@ -1,6 +1,6 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js';
 import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js';
 
 function rng(seed) {
@@ -31,6 +31,13 @@ function slotMods(P, ctx) {
 function consSize(P, ch, slot, mod) {
   const sw = slot === 'jong' ? P.jong.scaleW : 1, sh = slot === 'jong' ? P.jong.scaleH : 1;
   let w = P.cons.w * sw, h = P.cons.h * sh;
+  // 획수 기반 크기: 1획 = strokeMin 배, 4획 = 1배, 사이는 직선 보간. ㅇ은 예외(자기 기준을 따름)
+  if (ch !== 'ㅇ' && P.cons.strokeMin !== 1) {
+    const n = PAIR[ch] ? Math.max(...PAIR[ch].split('').map(c => STROKES[c])) : STROKES[ch];
+    const f = P.cons.strokeMin + (1 - P.cons.strokeMin) * (Math.min(n, 4) - 1) / 3;
+    if (P.cons.strokeAxis !== 'h') w *= f;
+    if (P.cons.strokeAxis !== 'w') h *= f;
+  }
   if (PAIR[ch]) w *= P.cons.pairW;
   else if (SQUARE_JAMO.has(ch)) {
     // 한 변 기준: 자리·자소별 지정(same 이면 공통 기준 cons.squareRef). bar = 가로모음 가로줄 잉크 폭
@@ -233,6 +240,11 @@ export function layoutSyllable(P, char, opt = {}) {
     const add = (k, list) => { for (const c of list) { cs.push(c); kinds.push(k); } };
     for (const q of p.prims) {
       if (q.t === 'line') add('line', [strokeOpen(q.pts, P.stroke)]);
+      else if (q.t === 'circle' && p.jamo === 'ㅇ' && P.cons.ngShape === 'dot') {
+        // 점 ㅇ: 속이 찬 정원. 지름 = (상자 한 변) × ngDot
+        const D = (q.s + wt) * P.cons.ngDot;
+        add('dot', strokeCircle(q.cx, q.cy, D / 4, { ...P.stroke, weight: D / 2 }));
+      }
       else if (q.t === 'circle') add('circle', strokeCircle(q.cx, q.cy, q.s / 2, P.stroke));
       else {
         const a = q.s / 2;
