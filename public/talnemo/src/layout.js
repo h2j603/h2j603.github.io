@@ -1,0 +1,262 @@
+// 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
+// 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
+import { SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js';
+
+function rng(seed) {
+  let a = seed >>> 0;
+  return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+const lerp = (a, b, t) => a + (b - a) * t;
+
+function matchRule(r, ctx) {
+  const w = r.when || {};
+  if ('jong' in w && w.jong !== !!ctx.jong) return false;
+  if (w.vclass && w.vclass !== ctx.vclass) return false;
+  for (const k of ['cho', 'jung']) if (w[k] && !w[k].includes(ctx[k])) return false;
+  if (w.jongJamo && !(ctx.jong && w.jongJamo.includes(ctx.jong))) return false;
+  return true;
+}
+
+function slotMods(P, ctx) {
+  const m = { cho: {}, jung: {}, jong: {} };
+  for (const r of P.rules || []) if (matchRule(r, ctx)) Object.assign(m[r.slot], r);
+  return m;
+}
+
+// 자음 상자 크기
+function consSize(P, ch, slot, mod) {
+  const sw = slot === 'jong' ? P.jong.scaleW : 1, sh = slot === 'jong' ? P.jong.scaleH : 1;
+  let w = P.cons.w * sw, h = P.cons.h * sh;
+  if (PAIR[ch]) w *= P.cons.pairW;
+  else if (SQUARE_JAMO.has(ch)) {
+    const s = P.cons.squareRef === 'w' ? w : P.cons.squareRef === 'min' ? Math.min(w, h) : h;
+    w = s; h = s;
+  }
+  w *= mod.scaleW ?? 1; h *= mod.scaleH ?? 1;
+  return { w, h };
+}
+
+// 자음 골격: 정규화 프리미티브를 상자에 매핑(획 굵기만큼 안쪽으로)
+function consPrims(P, ch, box) {
+  const hw = P.stroke.weight / 2;
+  if (PAIR[ch]) {
+    const [a, b] = PAIR[ch].split('');
+    const g = P.cons.pairGap;
+    const half = (box.w - g) / 2;
+    return [
+      ...consPrims(P, a, { x: box.x, y: box.y, w: half, h: box.h }),
+      ...consPrims(P, b, { x: box.x + half + g, y: box.y, w: half, h: box.h }),
+    ];
+  }
+  const X = u => box.x + hw + u * Math.max(0, box.w - 2 * hw);
+  const Y = v => box.y + hw + v * Math.max(0, box.h - 2 * hw);
+  return SIMPLE[ch].map(p => p.t === 'line'
+    ? { t: 'line', pts: p.pts.map(([u, v]) => [X(u), Y(v)]) }
+    : { t: p.t, box: [X(p.box[0]), Y(p.box[1]), X(p.box[2]), Y(p.box[3])] });
+}
+
+function shiftPrims(prims, dx, dy) {
+  return prims.map(p => p.t === 'line'
+    ? { t: 'line', pts: p.pts.map(([x, y]) => [x + dx, y + dy]) }
+    : { t: p.t, box: [p.box[0] + dx, p.box[1] + dy, p.box[2] + dx, p.box[3] + dy] });
+}
+
+function primsBounds(prims, hw) {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  const add = (x, y) => { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); };
+  for (const p of prims) {
+    if (p.t === 'line') p.pts.forEach(([x, y]) => add(x, y));
+    else { add(p.box[0], p.box[1]); add(p.box[2], p.box[3]); }
+  }
+  return { x: x0 - hw, y: y0 - hw, w: x1 - x0 + 2 * hw, h: y1 - y0 + 2 * hw };
+}
+
+// 정사각형·정원: 상자 안 최대 정사각형/원을 가운데에 둔다
+function inscribed(b) {
+  const w = b[2] - b[0], h = b[3] - b[1], s = Math.min(w, h);
+  const cx = (b[0] + b[2]) / 2, cy = (b[1] + b[3]) / 2;
+  return { cx, cy, s, set: { w, h } };
+}
+
+export function layoutSyllable(P, char, opt = {}) {
+  const d = typeof char === 'string' ? decompose(char.codePointAt(0)) : char;
+  if (!d) return null;
+  const { cho, jung, jong } = d;
+  const vclass = VCLASS[jung];
+  const ctx = { cho, jung, jong, vclass };
+  const mods = slotMods(P, ctx);
+  const wt = P.stroke.weight, hw = wt / 2;
+  const pl = P.place, V = P.vowel;
+  const parts = [];
+
+  // 초성
+  const cs = consSize(P, cho, 'cho', mods.cho);
+  const choBox = { x: mods.cho.dx || 0, y: mods.cho.dy || 0, ...cs };
+
+  // 중성
+  let upperBottom = choBox.y + choBox.h;
+  let stemPart = null;          // 기둥이 있는 세로 부분(받침까지 늘임 대상)
+  let stemX = null;
+  const vOpts = (stem) => ({ stem, branch: V.branch, branchY: V.branchY, branchGap: V.branchGap, dbl: V.dbl });
+  const hOpts = { bar: V.bar, tick: V.tick, tickX: V.tickX, tickGap: V.tickGap };
+  const jm = mods.jung;
+  const jungPrims = [];
+
+  if (vclass === 'V') {
+    const vv = verticalVowel(jung, vOpts(jm.stem ?? V.stem));
+    const ox = choBox.x + choBox.w + pl.gapCV + hw + (jm.dx || 0);
+    const oy = pl.vY + hw + (jm.dy || 0);
+    stemPart = { prims: shiftPrims(vv.prims, ox, oy), kind: 'V' };
+    jungPrims.push(stemPart);
+    stemX = ox;
+  } else {
+    const hName = vclass === 'H' ? jung : COMPOUND[jung][0];
+    const hv = horizontalVowel(hName, hOpts);
+    let barX = 0;
+    if (pl.hAlign === 'center') {
+      const d = (hv.w + wt - choBox.w) / 2;
+      if (d > 0) choBox.x += d; else barX = -d;
+    }
+    const oy = choBox.y + choBox.h + pl.gapCH + hw + (jm.dy || 0);
+    const hp = shiftPrims(hv.prims, barX + hw + (jm.dx || 0), oy);
+    jungPrims.push({ prims: hp, kind: 'H' });
+    upperBottom = oy + hv.h + hw;
+    if (vclass === 'C') {
+      const vName = COMPOUND[jung][1];
+      const barRight = barX + hv.w + wt;
+      let stem = jm.stem ?? V.stem;
+      const top = pl.vY;
+      if (pl.compoundStem === 'bar') stem = Math.max(stem, upperBottom - top - wt);
+      const vv = verticalVowel(vName, vOpts(stem));
+      const ox = Math.max(choBox.x + choBox.w, barRight) + pl.gapCV + hw;
+      stemPart = { prims: shiftPrims(vv.prims, ox, top + hw), kind: 'V' };
+      jungPrims.push(stemPart);
+      stemX = ox;
+    }
+  }
+  const jungAll = jungPrims.flatMap(j => j.prims);
+
+  // 종성
+  let jongBox = null;
+  if (jong) {
+    const js = consSize(P, jong, 'jong', mods.jong);
+    const right = Math.max(choBox.x + choBox.w, primsBounds(jungAll, hw).x + primsBounds(jungAll, hw).w);
+    let x = choBox.x;
+    if (pl.jongX === 'center') x = (right - js.w) / 2;
+    else if (pl.jongX === 'stem' && stemX != null) x = stemX + hw - js.w;
+    else if (pl.jongX === 'right') x = right - js.w;
+    else if (pl.jongX === 'vowel') {
+      // 홀자 정중앙 아래. 겹받침은 앞 자소를 중앙에 두고 뒤 자소가 오른쪽으로 나간다
+      const jb = primsBounds(jungAll, hw);
+      const cxv = jb.x + jb.w / 2;
+      const anchorW = PAIR[jong] && pl.pairOverhang ? (js.w - P.cons.pairGap) / 2 : js.w;
+      x = cxv - anchorW / 2;
+    }
+    jongBox = { x: x + (mods.jong.dx || 0), y: (pl.jongY === 'vowel' ? Math.max(upperBottom, primsBounds(jungAll, hw).y + primsBounds(jungAll, hw).h) : upperBottom) + pl.gapVJ + (mods.jong.dy || 0), ...js };
+    // 기둥을 종성 아래끝까지
+    if (pl.stemSpanJong && stemPart) {
+      const target = jongBox.y + jongBox.h - hw;
+      stemPart.prims = stemPart.prims.map(p => {
+        const [a, b] = [p.pts[0], p.pts[p.pts.length - 1]];
+        const vertical = p.pts.length === 2 && Math.abs(a[0] - b[0]) < 1e-6;
+        if (!vertical) return p;
+        const ys = [a[1], b[1]];
+        return { t: 'line', pts: [[a[0], Math.min(...ys)], [a[0], Math.max(Math.max(...ys), target)]] };
+      });
+    }
+  }
+
+  const rawParts = [
+    { slot: 'cho', jamo: cho, prims: consPrims(P, cho, choBox), setBox: choBox },
+    { slot: 'jung', jamo: jung, prims: jungPrims.flatMap(j => j.prims) },
+  ];
+  if (jong) rawParts.push({ slot: 'jong', jamo: jong, prims: consPrims(P, jong, jongBox), setBox: jongBox });
+
+  // 자연 크기 경계
+  let bb = null;
+  for (const p of rawParts) {
+    const b = primsBounds(p.prims, hw);
+    bb = bb ? { x0: Math.min(bb.x0, b.x), y0: Math.min(bb.y0, b.y), x1: Math.max(bb.x1, b.x + b.w), y1: Math.max(bb.y1, b.y + b.h) } : { x0: b.x, y0: b.y, x1: b.x + b.w, y1: b.y + b.h };
+  }
+  const natW = bb.x1 - bb.x0, natH = bb.y1 - bb.y0;
+
+  // 탈네모 축: fit 0 = 맞춤 틀 안으로 비균등 축소/확대, 1 = 자연 크기
+  const fit = opt.fit ?? P.frame.fit;
+  const sx = lerp(P.frame.fitBox / natW, 1, fit), sy = lerp(P.frame.fitBox / natH, 1, fit);
+  const T = (x, y) => [(x - bb.x0) * sx, (y - bb.y0) * sy];
+
+  const exp = opt.noExp ? { jitter: 0, rotate: 0, seed: 1 } : P.exp;
+  const r = rng((exp.seed * 7919) ^ (typeof char === 'string' ? char.codePointAt(0) : 0));
+  const constraints = [];
+
+  const outParts = rawParts.map((p, i) => {
+    const jx = (r() * 2 - 1) * exp.jitter, jy = (r() * 2 - 1) * exp.jitter;
+    const ang = (r() * 2 - 1) * exp.rotate * Math.PI / 180;
+    // 회전 중심: 자리 상자 가운데
+    const pb = primsBounds(p.prims, hw);
+    const [cx, cy] = T(pb.x + pb.w / 2, pb.y + pb.h / 2);
+    const rot = (x, y) => {
+      const dx = x - cx, dy = y - cy, c = Math.cos(ang), s = Math.sin(ang);
+      return [cx + dx * c - dy * s + jx, cy + dx * s + dy * c + jy];
+    };
+    const prims = p.prims.map(q => {
+      if (q.t === 'line') return { t: 'line', pts: q.pts.map(([x, y]) => rot(...T(x, y))) };
+      // 정원·정사각형: 상자를 비균등 변환한 뒤 내접 도형으로 다시 그린다. 회전은 받지 않고 이동만 받는다
+      const [x0, y0] = T(q.box[0], q.box[1]), [x1, y1] = T(q.box[2], q.box[3]);
+      const ins = inscribed([x0, y0, x1, y1]);
+      const [ncx, ncy] = rot(ins.cx, ins.cy);
+      const changed = Math.abs(ins.set.w - ins.set.h) > 0.5 || (q.t === 'square' && Math.abs(ang) > 1e-6);
+      if (changed) constraints.push({ slot: p.slot, jamo: p.jamo, shape: q.t, set: { w: +ins.set.w.toFixed(1), h: +ins.set.h.toFixed(1), rotate: +(ang * 180 / Math.PI).toFixed(2) }, drawn: { side: +ins.s.toFixed(1), rotate: 0 } });
+      return { t: q.t, cx: ncx, cy: ncy, s: ins.s };
+    });
+    return { slot: p.slot, jamo: p.jamo, prims };
+  });
+
+  // 정렬·폭
+  const W = natW * sx, H = natH * sy;
+  const F = P.font;
+  const oy = P.frame.align === 'center' ? (F.frameH - H) / 2 : P.frame.align === 'bottom' ? F.frameH - H : 0;
+  const advance = P.frame.width === 'fixed' ? P.frame.fixedAdvance : Math.round(W + 2 * F.sidebearing);
+  const ox = P.frame.width === 'fixed' ? (advance - W) / 2 : F.sidebearing;
+  const toFont = (x, y) => [x + ox, F.frameTop - (y + oy)];
+
+  for (const p of outParts) {
+    const cs = [], kinds = [];
+    const add = (k, list) => { for (const c of list) { cs.push(c); kinds.push(k); } };
+    for (const q of p.prims) {
+      if (q.t === 'line') add('line', [strokeOpen(q.pts, P.stroke)]);
+      else if (q.t === 'circle') add('circle', strokeCircle(q.cx, q.cy, q.s / 2, P.stroke));
+      else {
+        const a = q.s / 2;
+        add('square', strokeClosed([[q.cx - a, q.cy - a], [q.cx + a, q.cy - a], [q.cx + a, q.cy + a], [q.cx - a, q.cy + a]], { ...P.stroke, contrast: 0 }));
+      }
+    }
+    // y 를 뒤집으면 감는 방향도 뒤집히므로 되돌린다: 바깥 = 반시계(PostScript·UFO 관례), 구멍 = 시계
+    p.contours = cs.map(c => reverseContour(mapContour(c, toFont)));
+    p.kinds = kinds; // 윤곽마다 line | circle | square — 내보내기 합집합 대상 구분용
+    // 골격(중심선), 폰트 좌표. line: 점열 / circle·square: 중심·지름(한 변) — 획 굵기 중심 기준
+    p.skeleton = p.prims.map(q => q.t === 'line'
+      ? { t: 'line', pts: q.pts.map(([x, y]) => toFont(x, y)) }
+      : { t: q.t, c: toFont(q.cx, q.cy), d: q.s });
+    const b = primsBoundsDrawn(p.prims, hw);
+    p.origin = toFont(b.x, b.y + b.h).map(v => Math.round(v)); // 왼쪽 아래(폰트 좌표)
+  }
+
+  return {
+    char: typeof char === 'string' ? char : null, cho, jung, jong, vclass, advance, parts: outParts,
+    info: { natW: Math.round(natW), natH: Math.round(natH), scaleX: +sx.toFixed(3), scaleY: +sy.toFixed(3), constraints },
+  };
+}
+
+function primsBoundsDrawn(prims, hw) {
+  const flat = prims.map(q => q.t === 'line' ? q : { t: 'line', pts: [[q.cx - q.s / 2, q.cy - q.s / 2], [q.cx + q.s / 2, q.cy + q.s / 2]] });
+  return primsBounds(flat, hw);
+}
+
+// 자소 낱자 그리기용 기준 맥락(자연 크기·실험 끔)
+export const CANON = { cho: c => ({ cho: c, jung: 'ㅏ', jong: null }), jung: v => ({ cho: 'ㅇ', jung: v, jong: null }), jong: j => ({ cho: 'ㄱ', jung: 'ㅏ', jong: j }) };
+export function layoutJamo(P, slot, ch) {
+  const s = layoutSyllable(P, CANON[slot](ch), { fit: 1, noExp: true });
+  return s.parts.find(p => p.slot === slot);
+}
