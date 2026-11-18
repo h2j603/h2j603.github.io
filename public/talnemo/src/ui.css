@@ -136,7 +136,7 @@ body.dragging .sample { cursor: ew-resize; }
   border: 0;
   border-bottom: 1px solid var(--line);
   background: transparent;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 /* 인스펙터 */
@@ -176,7 +176,7 @@ body.dragging .sample { cursor: ew-resize; }
   border: 1px solid var(--line);
   background: transparent;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 14px;
+  font-size: 16px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -332,3 +332,7 @@ summary {
   .gsize { width: 100%; }
   .gsize input { flex: 1 1 auto; width: auto; }
 }
+
+/* 아이폰 사파리는 16px 미만 입력칸에 포커스하면 화면을 확대한다 → 입력칸은 16px */
+.ctrl input[type="number"] { font-size: 16px; }
+#axisline { font-size: 16px; }

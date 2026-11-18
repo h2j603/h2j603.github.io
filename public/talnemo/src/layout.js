@@ -33,7 +33,11 @@ function consSize(P, ch, slot, mod) {
   let w = P.cons.w * sw, h = P.cons.h * sh;
   if (PAIR[ch]) w *= P.cons.pairW;
   else if (SQUARE_JAMO.has(ch)) {
-    const s = P.cons.squareRef === 'w' ? w : P.cons.squareRef === 'min' ? Math.min(w, h) : h;
+    // 한 변 기준: 자리·자소별 지정(same 이면 공통 기준 cons.squareRef). bar = 가로모음 가로줄 잉크 폭
+    let ref = P.cons.squareRef;
+    const own = slot === 'jong' ? P.jong.squareRef : ch === 'ㅇ' ? P.cons.ngCho : P.cons.mCho;
+    if (own && own !== 'same') ref = own;
+    const s = ref === 'w' ? w : ref === 'min' ? Math.min(w, h) : ref === 'bar' ? P.vowel.bar + P.stroke.weight : h;
     w = s; h = s;
   }
   w *= mod.scaleW ?? 1; h *= mod.scaleH ?? 1;

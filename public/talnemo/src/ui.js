@@ -17,7 +17,7 @@ const state = {
   tab: 'chars',
   sel: null,
   axisKey: 'stroke.weight',
-  typed: '세벌식 탈네모꼴',
+  typed: '',
   presets: {},
   presetFile: null,
 };
