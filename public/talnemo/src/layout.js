@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=d6a3b60';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=d6a3b60';
-import { filletPatches } from './fillet.js?v=d6a3b60';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=cf51666';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=cf51666';
+import { filletPatches } from './fillet.js?v=cf51666';
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -18,6 +18,15 @@ function matchRule(r, ctx) {
   if (w.jongJamo && !(ctx.jong && w.jongJamo.includes(ctx.jong))) return false;
   return true;
 }
+
+// 받침 5갈래(김주성체 구조): 세로 / 가로·홑기둥 / 가로·겹기둥 / 섞임·홑기둥 / 섞임·겹기둥.
+// 홑/겹의 실제 소속은 원문에 없어 꼭지·기둥이 둘인 모음을 겹으로 임시 분류했다
+const JONG_GROUP = {};
+'ㅏㅐㅑㅒㅓㅔㅕㅖㅣ'.split('').forEach(v => JONG_GROUP[v] = 'V');
+'ㅗㅜㅡ'.split('').forEach(v => JONG_GROUP[v] = 'Hs');
+'ㅛㅠ'.split('').forEach(v => JONG_GROUP[v] = 'Hd');
+'ㅘㅚㅝㅟㅢ'.split('').forEach(v => JONG_GROUP[v] = 'Cs');
+'ㅙㅞ'.split('').forEach(v => JONG_GROUP[v] = 'Cd');
 
 function slotMods(P, ctx) {
   const m = { cho: {}, jung: {}, jong: {}, place: {} };
@@ -49,6 +58,9 @@ function consSize(P, ch, slot, mod) {
     w = s; h = s;
   }
   w *= mod.scaleW ?? 1; h *= mod.scaleH ?? 1;
+  // 모듈 격자: 자음 상자(잉크 폭·높이)를 모듈 크기의 정수배로 맞춘다(최소 1칸). 0 = 끔
+  const M = P.cons.module;
+  if (M > 0) { w = Math.max(1, Math.round(w / M)) * M; h = Math.max(1, Math.round(h / M)) * M; }
   return { w, h };
 }
 
@@ -104,7 +116,9 @@ export function layoutSyllable(P, char, opt = {}) {
   const ctx = { cho, jung, jong, vclass };
   const mods = slotMods(P, ctx);
   const wt = P.stroke.weight, hw = wt / 2;
-  const pl = { ...P.place, ...mods.place }, V = P.vowel;
+  // 받침 5갈래: 모음 갈래별 종성 x 기준(same = 공통 jongX). 규칙(rules)의 place 가 더 우선
+  const g5 = JONG_GROUP[jung], byGroup = g5 && P.place['jongX' + g5];
+  const pl = { ...P.place, ...(byGroup && byGroup !== 'same' ? { jongX: byGroup } : {}), ...mods.place }, V = P.vowel;
   const parts = [];
 
   // 초성
