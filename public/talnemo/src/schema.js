@@ -27,6 +27,7 @@ export const DEFAULTS = {
     ngDot: 0.5,          // 점 ㅇ 지름(상자 한 변 대비)
     pairW: 1.5,          // 겹자음 전체 너비 = w × pairW
     pairGap: 30,         // 겹자음 두 자소 사이
+    module: 0,           // 모듈 격자: 자음 폭·높이를 이 값의 정수배로. 0 = 끔
   },
   jong: { scaleW: 1, scaleH: 1, squareRef: 'same' },   // 종성 크기 = 초성 크기 × scale, 종성 ㅇ·ㅁ 기준
 
@@ -50,6 +51,7 @@ export const DEFAULTS = {
     vY: 0,               // 세로모음 위끝 높이(초성 윗선 기준, 음수=위로)
     hAlign: 'left',      // 가로모음 위 초성 정렬: left | center
     jongX: 'cho',        // 종성 x 기준: cho | center | stem | right | vowel(홀자 중앙 아래)
+    jongXV: 'same', jongXHs: 'same', jongXHd: 'same', jongXCs: 'same', jongXCd: 'same', // 받침 5갈래별 종성 x(same = jongX)
     pairOverhang: false, // jongX=vowel 일 때 겹받침 뒤 자소가 오른쪽으로 나간다
     jongY: 'cho',        // 종성 y 기준: cho(초성·가로모음 아래) | vowel(모음 전체 아래)
     stemSpanJong: false, // 받침이 있으면 기둥을 종성 아래끝까지 늘인다
@@ -91,6 +93,7 @@ export const CONTROLS = [
   { g: '자음', k: 'cons.ngCho', opts: ['same', 'h', 'w', 'min', 'bar'], label: '초성 ㅇ 기준' },
   { g: '자음', k: 'cons.mSquare', opts: [true, false], label: 'ㅁ 정사각형' },
   { g: '자음', k: 'cons.mCho', opts: ['same', 'h', 'w', 'min', 'bar'], label: '초성 ㅁ 기준' },
+  { g: '자음', k: 'cons.module', min: 0, max: 120, step: 1, label: '모듈 격자' },
   { g: '자음', k: 'cons.strokeMin', min: 0.4, max: 1, step: 0.01, label: '획수 크기(1획 배율)' },
   { g: '자음', k: 'cons.strokeAxis', opts: ['both', 'w', 'h'], label: '획수 크기 방향' },
   { g: '자음', k: 'cons.ngShape', opts: ['ring', 'dot'], label: 'ㅇ 모양' },
@@ -115,6 +118,11 @@ export const CONTROLS = [
   { g: '배치', k: 'place.vY', min: -200, max: 200, step: 1, label: '세로모음 높이' },
   { g: '배치', k: 'place.hAlign', opts: ['left', 'center'], label: '가로모음 정렬' },
   { g: '배치', k: 'place.jongX', opts: ['cho', 'center', 'stem', 'right', 'vowel'], label: '종성 x' },
+  { g: '배치', k: 'place.jongXV', opts: ['same', 'cho', 'center', 'stem', 'right', 'vowel'], label: '종성 x · 세로' },
+  { g: '배치', k: 'place.jongXHs', opts: ['same', 'cho', 'center', 'stem', 'right', 'vowel'], label: '종성 x · 가로 홑' },
+  { g: '배치', k: 'place.jongXHd', opts: ['same', 'cho', 'center', 'stem', 'right', 'vowel'], label: '종성 x · 가로 겹' },
+  { g: '배치', k: 'place.jongXCs', opts: ['same', 'cho', 'center', 'stem', 'right', 'vowel'], label: '종성 x · 섞임 홑' },
+  { g: '배치', k: 'place.jongXCd', opts: ['same', 'cho', 'center', 'stem', 'right', 'vowel'], label: '종성 x · 섞임 겹' },
   { g: '배치', k: 'place.jongY', opts: ['cho', 'vowel'], label: '종성 y' },
   { g: '배치', k: 'place.pairOverhang', opts: [false, true], label: '겹받침 오른쪽으로' },
   { g: '배치', k: 'place.stemSpanJong', opts: [false, true], label: '기둥 받침까지' },
