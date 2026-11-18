@@ -268,7 +268,10 @@ export function layoutSyllable(P, char, opt = {}) {
       }
     }
     // 교차부 둥글리기: 서로 다른 직선 획이 만나는 안쪽 모서리에 원호 조각
-    add('fillet', filletPatches(p.prims.filter(q => q.t === 'line').map(q => q.pts), P.stroke, P.stroke.fillet));
+    // 안쪽 모서리 둥글리기: 교차부 + 꺾임(ㅁ 정사각형은 닫힌 점열로 넘긴다)
+    const filletLines = p.prims.flatMap(q => q.t === 'line' ? [q.pts]
+      : q.t === 'square' ? [(a => [[q.cx, q.cy - a], [q.cx + a, q.cy - a], [q.cx + a, q.cy + a], [q.cx - a, q.cy + a], [q.cx - a, q.cy - a], [q.cx, q.cy - a]])(q.s / 2)] : []);
+    add('fillet', filletPatches(filletLines, P.stroke, P.stroke.fillet));
     // y 를 뒤집으면 감는 방향도 뒤집히므로 되돌린다: 바깥 = 반시계(PostScript·UFO 관례), 구멍 = 시계
     p.contours = cs.map((c, i) => {
       const m = reverseContour(mapContour(c, toFont));

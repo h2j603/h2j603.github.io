@@ -1,6 +1,6 @@
-// 교차부 둥글리기(필렛): 서로 다른 획이 만나는 안쪽 모서리에 원호 조각을 덧놓는다.
+// 안쪽 모서리 둥글리기(필렛): 획이 만나거나(교차부) 꺾이는(ㄱ·ㄴ·ㅁ 속) 안쪽 모서리에 원호 조각을 덧놓는다.
 // 획 윤곽은 그대로 두고, 모서리 C · 접점 T1 · 원호 · 접점 T2 로 된 조각만 더한다(채움이 겹쳐도 결과는 합집합).
-// 같은 획 안의 꺾임(ㄱ·ㄴ 안쪽 모서리)은 대상이 아니다. 좌표는 배치 좌표(y-아래).
+// 좌표는 배치 좌표(y-아래).
 import { segWidth } from './outline.js';
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
@@ -29,7 +29,6 @@ export function filletPatches(lines, stroke, r) {
   const out = [], eps = 0.5;
   for (let i = 0; i < segs.length; i++) for (let j = i + 1; j < segs.length; j++) {
     const s1 = segs[i], s2 = segs[j];
-    if (s1.gi === s2.gi) continue;
     const den = cross(s1.u, s2.u);
     if (Math.abs(den) < 1e-6) continue; // 평행
     for (const k1 of [1, -1]) for (const k2 of [1, -1]) {
@@ -52,13 +51,14 @@ export function filletPatches(lines, stroke, r) {
       const room1 = dot(e1, s1.u) > 0 ? s1.len - t1 : t1, room2 = dot(e2, s2.u) > 0 ? s2.len - t2 : t2;
       // 테두리를 따라가다 다른 획에 닿으면 그 거리의 절반까지만(맞은편 조각과 나눠 써서 실틈이 안 남게)
       const others = segs.filter(s => s !== s1 && s !== s2);
-      const clear = e => { for (let x = 2; x <= r * 3; x += 2) if (others.some(s => inside(add(C, mul(e, x)), s, -1))) return x / 2; return Infinity; };
-      const d = Math.min(r / Math.tan(phi / 2), room1, room2, clear(e1), clear(e2));
+      const clear = e => { for (let x = 2; x <= r * 3; x += 2) if (others.some(s => inside(add(C, mul(e, x)), s, 0.5))) return x / 2; return Infinity; };
+      const d = Math.min(r / Math.tan(phi / 2), r * 1.5, room1, room2, clear(e1), clear(e2)); // 예각에선 접점이 멀리 가므로 r×1.5 에서 끊는다
       if (d < 1) continue;
       const rr = d * Math.tan(phi / 2);
       const T1 = add(C, mul(e1, d)), T2 = add(C, mul(e2, d));
       const L = (4 / 3) * Math.tan((Math.PI - phi) / 4) * rr; // 원호 근사 핸들
-      out.push([['M', C[0], C[1]], ['L', T1[0], T1[1]],
+      const C0 = sub(C, mul(add(e1, e2), 2)); // 꼭짓점을 획 속으로 2유닛 물려 화면 안티앨리어싱 실금 방지
+      out.push([['M', C0[0], C0[1]], ['L', T1[0], T1[1]],
         ['C', T1[0] - e1[0] * L, T1[1] - e1[1] * L, T2[0] - e2[0] * L, T2[1] - e2[1] * L, T2[0], T2[1]], ['Z']]);
     }
   }
