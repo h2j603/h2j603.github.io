@@ -58,8 +58,9 @@ export const DEFAULTS = {
   },
 
   // 다벌식 규칙: 조건이 맞으면 해당 자리 자소의 크기·위치를 바꾼다(JSON 추가만으로 계열 확장)
-  // { when: { jong: true|false, vclass: 'V'|'H'|'C', cho: 'ㄱ…', jung: 'ㅏ…' }, slot: 'cho'|'jung'|'jong',
-  //   scaleW, scaleH, dx, dy, stem }
+  // { when: { jong: true|false, vclass: 'V'|'H'|'C', cho: 'ㄱ…', jung: 'ㅏ…', jongJamo: 'ㄳ…' },
+  //   slot: 'cho'|'jung'|'jong', scaleW, scaleH, dx, dy, stem,   ← 자리별 크기·위치
+  //   place: { jongX, jongY, gapVJ, … } }                          ← 배치 규칙 조건부 덮어쓰기(slot 없이도 됨)
   rules: [],
 
   // 실험(장식 변형). 기본 꺼짐. 탈네모 축과 섞지 않는다

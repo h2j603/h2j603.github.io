@@ -206,7 +206,6 @@ function render() {
   $('#sample').innerHTML = sampleHTML();
   for (const b of document.querySelectorAll('#tabs button'))
     b.classList.toggle('on', b.dataset.tab === state.tab);
-  $('#typingrow').hidden = state.tab !== 'input';
   syncControls();
   renderInspector();
 }
@@ -568,8 +567,16 @@ function bind() {
   typing.value = state.typed;
   typing.addEventListener('input', () => {
     state.typed = typing.value.slice(0, 400);
+    if (state.typed) state.tab = 'input'; // 치기 시작하면 입력 탭으로
     schedule();
   });
+
+  // 글자 크기(표본 표시 크기만, 글꼴 값 아님). 이 브라우저에 기억
+  const gs = $('#gsize'), gv = $('#gsizeval');
+  const setG = (v) => { $('#sample').style.setProperty('--g', v + 'px'); gs.value = v; gv.textContent = v + 'px'; };
+  let g0 = 0; try { g0 = +localStorage.getItem('talnemo.gsize') || 0; } catch {}
+  setG(g0 || parseInt(getComputedStyle($('#sample')).getPropertyValue('--g')) || 96);
+  gs.addEventListener('input', () => { setG(+gs.value); try { localStorage.setItem('talnemo.gsize', gs.value); } catch {} });
 
   $('#preset').addEventListener('change', (e) => applyPreset(e.currentTarget.value));
   $('#reset').addEventListener('click', () => { if (state.presetFile) applyPreset(state.presetFile); });

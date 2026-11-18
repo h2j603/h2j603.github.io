@@ -19,8 +19,11 @@ function matchRule(r, ctx) {
 }
 
 function slotMods(P, ctx) {
-  const m = { cho: {}, jung: {}, jong: {} };
-  for (const r of P.rules || []) if (matchRule(r, ctx)) Object.assign(m[r.slot], r);
+  const m = { cho: {}, jung: {}, jong: {}, place: {} };
+  for (const r of P.rules || []) if (matchRule(r, ctx)) {
+    if (r.slot) Object.assign(m[r.slot], r);
+    if (r.place) Object.assign(m.place, r.place);   // 배치 규칙을 조건부로 덮어쓴다(예: 겹기둥이면 jongX 바꿈)
+  }
   return m;
 }
 
@@ -87,7 +90,7 @@ export function layoutSyllable(P, char, opt = {}) {
   const ctx = { cho, jung, jong, vclass };
   const mods = slotMods(P, ctx);
   const wt = P.stroke.weight, hw = wt / 2;
-  const pl = P.place, V = P.vowel;
+  const pl = { ...P.place, ...mods.place }, V = P.vowel;
   const parts = [];
 
   // 초성

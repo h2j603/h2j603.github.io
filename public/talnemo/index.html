@@ -17,11 +17,12 @@
 </header>
 <main>
   <section class="stage">
+    <div class="typing" id="typingrow">
+      <input id="typing" type="text" aria-label="직접 입력" placeholder="여기에 쳐 보기" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <label class="gsize"><span>크기</span><input id="gsize" type="range" min="24" max="320" step="1" aria-label="글자 크기(px)"><output id="gsizeval"></output></label>
+    </div>
     <nav class="tabs" id="tabs" aria-label="표본"></nav>
     <div class="sample" id="sample"></div>
-    <div class="typing" id="typingrow" hidden>
-      <input id="typing" type="text" aria-label="입력" placeholder="여기에 입력" autocomplete="off" autocapitalize="off" spellcheck="false">
-    </div>
     <section class="inspector" id="inspector" aria-label="글자 인스펙터" hidden></section>
   </section>
   <aside class="panel">

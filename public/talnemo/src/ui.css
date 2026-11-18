@@ -129,9 +129,9 @@ body.dragging .sample { cursor: ew-resize; }
 .space { flex: none; width: calc(var(--g) * 0.34); }
 .brk { flex: 0 0 100%; height: 0; }
 
-.typing { padding: 0 12px 12px; }
-.typing input {
-  width: 100%;
+.typing { display: flex; align-items: center; gap: 24px; padding: 12px 12px 0; }
+.typing #typing {
+  flex: 1 1 auto; min-width: 0;
   padding: 10px 0;
   border: 0;
   border-bottom: 1px solid var(--line);
@@ -207,7 +207,7 @@ summary {
   text-align: right;
   font-size: 14px;
 }
-.ctrl input[type="range"] {
+.ctrl input[type="range"], .gsize input[type="range"] {
   grid-column: 1 / -1;
   width: 100%;
   height: 32px;
@@ -216,15 +216,15 @@ summary {
   -webkit-appearance: none;
   appearance: none;
 }
-.ctrl input[type="range"]::-webkit-slider-runnable-track {
+.ctrl input[type="range"]::-webkit-slider-runnable-track, .gsize input[type="range"]::-webkit-slider-runnable-track {
   height: 2px;
   background: var(--line);
 }
-.ctrl input[type="range"]::-moz-range-track {
+.ctrl input[type="range"]::-moz-range-track, .gsize input[type="range"]::-moz-range-track {
   height: 2px;
   background: var(--line);
 }
-.ctrl input[type="range"]::-webkit-slider-thumb {
+.ctrl input[type="range"]::-webkit-slider-thumb, .gsize input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 28px;
@@ -234,7 +234,7 @@ summary {
   border-radius: 50%;
   background: var(--ink);
 }
-.ctrl input[type="range"]::-moz-range-thumb {
+.ctrl input[type="range"]::-moz-range-thumb, .gsize input[type="range"]::-moz-range-thumb {
   width: 20px;
   height: 20px;
   border: 4px solid var(--bg);
@@ -322,4 +322,13 @@ summary {
     border-left: 1px solid var(--line);
     overflow-y: auto;
   }
+}
+
+.gsize { flex: 0 0 auto; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--muted); }
+.gsize input { width: 140px; }
+.gsize output { width: 4.5em; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+@media (max-width: 760px) {
+  .typing { flex-wrap: wrap; gap: 12px; }
+  .gsize { width: 100%; }
+  .gsize input { flex: 1 1 auto; width: auto; }
 }
