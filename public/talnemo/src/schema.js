@@ -11,7 +11,7 @@ export const DEFAULTS = {
     contrast: 0,         // 획 대비. 0 = 균일 굵기. 가로획만 가늘어진다
     cap: 'square',       // square | butt | round
     miterLimit: 4,
-    fillet: 0,           // 교차부 둥글리기 반지름. 0 = 끔. 서로 다른 획이 만나는 안쪽 모서리만
+    fillet: 0,           // 안쪽 모서리 둥글리기 반지름. 0 = 끔. 교차부 + 꺾임 안쪽
   },
 
   // 자소 크기(초성 기준)
@@ -84,7 +84,7 @@ export const CONTROLS = [
   { g: '획', k: 'stroke.weight', min: 10, max: 180, step: 1, label: '굵기' },
   { g: '획', k: 'stroke.contrast', min: 0, max: 0.8, step: 0.01, label: '대비' },
   { g: '획', k: 'stroke.cap', opts: ['square', 'butt', 'round'], label: '끝' },
-  { g: '획', k: 'stroke.fillet', min: 0, max: 120, step: 1, label: '교차부 둥글리기' },
+  { g: '획', k: 'stroke.fillet', min: 0, max: 120, step: 1, label: '안쪽 모서리 둥글리기' },
   { g: '자음', k: 'cons.w', min: 120, max: 500, step: 5, label: '자음 너비' },
   { g: '자음', k: 'cons.h', min: 120, max: 500, step: 5, label: '자음 높이' },
   { g: '자음', k: 'cons.squareRef', opts: ['h', 'w', 'min', 'bar'], label: 'ㅇㅁ 기준' },
