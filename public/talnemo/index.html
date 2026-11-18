@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>탈네모</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="src/ui.css">
+<script src="vendor/opentype.min.js"></script>
+<script src="vendor/polygon-clipping.umd.min.js"></script>
+</head>
+<body>
+<header class="top">
+  <select id="preset" aria-label="프리셋"></select>
+  <button id="reset" type="button">프리셋 값으로 되돌리기</button>
+</header>
+<main>
+  <section class="stage">
+    <nav class="tabs" id="tabs" aria-label="표본"></nav>
+    <div class="sample" id="sample"></div>
+    <div class="typing" id="typingrow" hidden>
+      <input id="typing" type="text" aria-label="입력" placeholder="여기에 입력" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <section class="inspector" id="inspector" aria-label="글자 인스펙터" hidden></section>
+  </section>
+  <aside class="panel">
+    <input id="axisline" type="text" aria-label="축 값 직접 입력" placeholder="weight 80 fit 0.4 cons.w 280" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div id="controls"></div>
+    <div class="exports">
+      <select id="range" aria-label="글자 범위">
+        <option value="sample">표본</option>
+        <option value="2350">2,350</option>
+        <option value="11172">11,172</option>
+      </select>
+      <button id="ufo" type="button">UFO 받기</button>
+      <button id="otf" type="button">OTF 받기</button>
+      <button id="json" type="button">프리셋 JSON 받기</button>
+      <p class="status" id="exstatus"></p>
+    </div>
+  </aside>
+</main>
+<script type="module" src="src/ui.js"></script>
+</body>
+</html>
