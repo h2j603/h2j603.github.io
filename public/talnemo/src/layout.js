@@ -2,6 +2,7 @@
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
 import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js';
 import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js';
+import { filletPatches } from './fillet.js';
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -259,8 +260,13 @@ export function layoutSyllable(P, char, opt = {}) {
         add('square', strokeClosed([[q.cx - a, q.cy - a], [q.cx + a, q.cy - a], [q.cx + a, q.cy + a], [q.cx - a, q.cy + a]], { ...P.stroke, contrast: 0 }));
       }
     }
+    // 교차부 둥글리기: 서로 다른 직선 획이 만나는 안쪽 모서리에 원호 조각
+    add('fillet', filletPatches(p.prims.filter(q => q.t === 'line').map(q => q.pts), P.stroke, P.stroke.fillet));
     // y 를 뒤집으면 감는 방향도 뒤집히므로 되돌린다: 바깥 = 반시계(PostScript·UFO 관례), 구멍 = 시계
-    p.contours = cs.map(c => reverseContour(mapContour(c, toFont)));
+    p.contours = cs.map((c, i) => {
+      const m = reverseContour(mapContour(c, toFont));
+      return kinds[i] === 'fillet' && signedArea(m) < 0 ? reverseContour(m) : m; // 조각은 늘 바깥(반시계)
+    });
     p.kinds = kinds; // 윤곽마다 line | circle | square — 내보내기 합집합 대상 구분용
     // 골격(중심선), 폰트 좌표. line: 점열 / circle·square: 중심·지름(한 변) — 획 굵기 중심 기준
     p.skeleton = p.prims.map(q => q.t === 'line'
@@ -274,6 +280,13 @@ export function layoutSyllable(P, char, opt = {}) {
     char: typeof char === 'string' ? char : null, cho, jung, jong, vclass, advance, parts: outParts,
     info: { natW: Math.round(natW), natH: Math.round(natH), scaleX: +sx.toFixed(3), scaleY: +sy.toFixed(3), constraints },
   };
+}
+
+function signedArea(c) {
+  const pts = c.filter(k => k[0] !== 'Z').map(k => [k[k.length - 2], k[k.length - 1]]);
+  let a = 0;
+  for (let i = 0; i < pts.length; i++) { const p = pts[i], q = pts[(i + 1) % pts.length]; a += p[0] * q[1] - q[0] * p[1]; }
+  return a / 2;
 }
 
 function primsBoundsDrawn(prims, hw) {
