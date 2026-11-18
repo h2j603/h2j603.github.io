@@ -1,8 +1,8 @@
 // 탈네모 프로토타이퍼 UI. 값과 결과만 보여 준다. 조형 판단은 사용자 몫.
-import { DEFAULTS, CONTROLS, getPath, setPath, merge, resolvePreset } from './schema.js';
-import { layoutSyllable, layoutJamo } from './layout.js';
-import { contourToPathD } from './outline.js';
-import { CHO, JUNG, JONG } from './jamo.js';
+import { DEFAULTS, CONTROLS, getPath, setPath, merge, resolvePreset } from './schema.js?v=d6a3b60';
+import { layoutSyllable, layoutJamo } from './layout.js?v=d6a3b60';
+import { contourToPathD } from './outline.js?v=d6a3b60';
+import { CHO, JUNG, JONG } from './jamo.js?v=d6a3b60';
 
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -611,6 +611,21 @@ async function boot() {
   }
   buildControls();
   render();
+  debugStamp();
 }
+
+// ?debug: 실기기 확인용. 실제로 불러온 코드 버전과 ㅁ 관련 값을 화면 구석에 찍는다
+function debugStamp() {
+  if (!/[?&]debug\b/.test(location.search)) return;
+  const v = new URL(import.meta.url).searchParams.get('v') || 'dev';
+  const g = layoutSyllable(state.P, '마').parts[0];
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:99;background:#000;color:#fff;font:12px/1.4 monospace;padding:6px 8px;white-space:pre';
+  el.textContent = `v ${v}\ncap ${state.P.stroke.cap} · mSquare ${state.P.cons.mSquare}\nㅁ 모서리 원판 ${g.kinds.filter(k => k === 'joint').length}`;
+  document.body.appendChild(el);
+}
+
+// 뒤로가기 캐시(bfcache)로 되살아난 페이지는 예전 코드를 그대로 쓰므로 새로 불러온다
+addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 
 boot();
