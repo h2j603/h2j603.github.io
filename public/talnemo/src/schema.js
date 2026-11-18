@@ -29,7 +29,7 @@ export const DEFAULTS = {
     pairGap: 30,         // 겹자음 두 자소 사이
     module: 0,           // 모듈 격자: 자음 폭·높이를 이 값의 정수배로. 0 = 끔
   },
-  jong: { scaleW: 1, scaleH: 1, squareRef: 'same' },   // 종성 크기 = 초성 크기 × scale, 종성 ㅇ·ㅁ 기준
+  jong: { scaleW: 1, scaleH: 1, squareRef: 'same', ngShape: 'same' },   // 종성 크기 = 초성 크기 × scale, 종성 ㅇ·ㅁ 기준
 
   vowel: {
     stem: 640,           // 세로모음 기둥 길이
@@ -99,6 +99,7 @@ export const CONTROLS = [
   { g: '자음', k: 'cons.ngShape', opts: ['ring', 'dot'], label: 'ㅇ 모양' },
   { g: '자음', k: 'cons.ngDot', min: 0.15, max: 1, step: 0.01, label: '점 ㅇ 크기' },
   { g: '자음', k: 'jong.squareRef', opts: ['same', 'h', 'w', 'min', 'bar'], label: '종성 ㅇㅁ 기준' },
+  { g: '자음', k: 'jong.ngShape', opts: ['same', 'ring', 'dot'], label: '종성 ㅇ 모양' },
   { g: '자음', k: 'cons.pairW', min: 1, max: 2.2, step: 0.01, label: '겹자음 너비' },
   { g: '자음', k: 'cons.pairGap', min: -40, max: 120, step: 1, label: '겹자음 간격' },
   { g: '자음', k: 'jong.scaleW', min: 0.4, max: 1.4, step: 0.01, label: '종성 너비' },

@@ -1,8 +1,8 @@
 // 탈네모 프로토타이퍼 UI. 값과 결과만 보여 준다. 조형 판단은 사용자 몫.
-import { DEFAULTS, CONTROLS, getPath, setPath, merge, resolvePreset } from './schema.js?v=cf51666';
-import { layoutSyllable, layoutJamo } from './layout.js?v=cf51666';
-import { contourToPathD } from './outline.js?v=cf51666';
-import { CHO, JUNG, JONG } from './jamo.js?v=cf51666';
+import { DEFAULTS, CONTROLS, getPath, setPath, merge, resolvePreset } from './schema.js?v=8e5cb13';
+import { layoutSyllable, layoutJamo } from './layout.js?v=8e5cb13';
+import { contourToPathD } from './outline.js?v=8e5cb13';
+import { CHO, JUNG, JONG } from './jamo.js?v=8e5cb13';
 
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
