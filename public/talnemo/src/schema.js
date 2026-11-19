@@ -138,10 +138,10 @@ export const CONTROLS = [
 ];
 
 export const SHIFT_CASES = [['V0', '세로'], ['V1', '세로+받침'], ['H0', '가로'], ['H1', '가로+받침'], ['C0', '섞임'], ['C1', '섞임+받침']];
-const SLOT_NAME = { cho: '초성', jung: '중성', jong: '종성' };
+export const SHIFT_SLOTS = [['cho', '초성'], ['jung', '중성'], ['jong', '종성']];
 for (const [c] of SHIFT_CASES) for (const k of Object.keys(DEFAULTS.shift[c])) {
   CONTROLS.push({ g: '위치', k: `shift.${c}.${k}`, shiftCase: c, min: -300, max: 300, step: 1,
-    label: SLOT_NAME[k.slice(0, -1)] + (k.endsWith('X') ? ' 가로' : ' 세로') });
+    shiftSlot: k.slice(0, -1), label: k.endsWith('X') ? 'x' : 'y' });
 }
 
 export function getPath(o, k) { return k.split('.').reduce((a, b) => a?.[b], o); }

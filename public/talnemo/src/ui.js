@@ -1,8 +1,8 @@
 // 탈네모 프로토타이퍼 UI. 값과 결과만 보여 준다. 조형 판단은 사용자 몫.
-import { DEFAULTS, CONTROLS, SHIFT_CASES, getPath, setPath, merge, resolvePreset } from './schema.js?v=ffc858f';
-import { layoutSyllable, layoutJamo } from './layout.js?v=ffc858f';
-import { contourToPathD } from './outline.js?v=ffc858f';
-import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=ffc858f';
+import { DEFAULTS, CONTROLS, SHIFT_CASES, SHIFT_SLOTS, getPath, setPath, merge, resolvePreset } from './schema.js?v=5025467';
+import { layoutSyllable, layoutJamo } from './layout.js?v=5025467';
+import { contourToPathD } from './outline.js?v=5025467';
+import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=5025467';
 
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -69,7 +69,8 @@ function glyphHTML(P, ch, { guides = true } = {}) {
   return `<div class="cell${sel}" data-ch="${ch}">` +
     `<svg class="glyph" viewBox="${x0} 0 ${w} 1000" aria-label="${ch}">` +
     (guides ? guidesHTML(x0, x1) : '') +
-    `<path d="${d}" fill="#000" fill-rule="nonzero"/></svg></div>`;
+    (sel ? s.parts.map((p) => `<path data-slot="${p.slot}" d="${pathOf([p])}" fill="#000" fill-rule="nonzero"/>`).join('')
+      : `<path d="${d}" fill="#000" fill-rule="nonzero"/>`) + `</svg></div>`;
 }
 
 function jamoCellHTML(P, slot, ch) {
@@ -249,41 +250,51 @@ function buildControls() {
     const sum = document.createElement('summary');
     sum.textContent = g;
     det.appendChild(sum);
-    if (g === '위치') det.appendChild(caseRow());
+    if (g === '위치') det.append(...caseRows());
     for (const c of CONTROLS.filter((x) => x.g === g)) {
       const row = ctrlRow(c);
-      if (c.shiftCase) row.dataset.case = c.shiftCase;
+      if (c.shiftCase) { row.dataset.case = c.shiftCase; row.dataset.slot = c.shiftSlot; }
       det.appendChild(row);
     }
     wrap.appendChild(det);
   }
 }
 
-// 위치 묶음: 경우 하나를 골라 그 경우의 막대만 보인다(선택은 화면 상태, 값은 P.shift)
-function caseRow() {
+// 위치 묶음: 경우·자리를 골라 그 x·y 막대만 보인다(선택은 화면 상태, 값은 P.shift)
+function segRow(label, id, items, onPick) {
   const row = document.createElement('div');
   row.className = 'ctrl';
   const lab = document.createElement('div');
   lab.className = 'lab';
-  lab.textContent = '경우';
+  lab.textContent = label;
   const seg = document.createElement('div');
   seg.className = 'seg';
-  seg.id = 'shift-case';
-  for (const [c, name] of SHIFT_CASES) {
+  seg.id = id;
+  for (const [v, name] of items) {
     const b = document.createElement('button');
     b.type = 'button';
     b.textContent = name;
-    b.dataset.v = c;
-    b.onclick = () => { state.shiftCase = c; syncCase(); };
+    b.dataset.v = v;
+    b.onclick = () => { onPick(v); syncCase(); };
     seg.appendChild(b);
   }
   row.append(lab, seg);
   return row;
 }
+function caseRows() {
+  return [segRow('경우', 'shift-case', SHIFT_CASES, (v) => { state.shiftCase = v; }),
+    segRow('자리', 'shift-slot', SHIFT_SLOTS, (v) => { state.shiftSlot = v; })];
+}
 function syncCase() {
   const c = state.shiftCase || 'V0';
+  if (c[1] === '0' && state.shiftSlot === 'jong') state.shiftSlot = 'cho';
+  const sl = state.shiftSlot || 'cho';
   for (const b of document.querySelectorAll('#shift-case button')) b.classList.toggle('on', b.dataset.v === c);
-  for (const r of document.querySelectorAll('#controls [data-case]')) r.hidden = r.dataset.case !== c;
+  for (const b of document.querySelectorAll('#shift-slot button')) {
+    b.classList.toggle('on', b.dataset.v === sl);
+    b.disabled = b.dataset.v === 'jong' && c[1] === '0';
+  }
+  for (const r of document.querySelectorAll('#controls [data-case]')) r.hidden = r.dataset.case !== c || r.dataset.slot !== sl;
 }
 
 function ctrlRow(c) {
@@ -356,6 +367,20 @@ function onDown(e) {
   if (e.button > 0) return;
   const cell = e.target.closest?.('.cell');
   if (!cell || !cell.dataset.ch) return;
+  // 고른 글자의 자모를 누르면 바로 끌어 옮긴다(경우별 위치 P.shift)
+  const slot = cell.classList.contains('sel') && e.target.dataset?.slot;
+  if (slot) {
+    const d = decompose(cell.dataset.ch.codePointAt(0));
+    const c = VCLASS[d.jung] + (d.jong ? '1' : '0');
+    const k = `shift.${c}.${slot}`;
+    state.shiftCase = c; state.shiftSlot = slot;
+    drag = { part: true, ch: cell.dataset.ch, k, x0: e.clientX, y0: e.clientY,
+      vx: getPath(state.P, k + 'X'), vy: getPath(state.P, k + 'Y'),
+      upp: 1 / (e.target.ownerSVGElement.getScreenCTM()?.a || 1), active: false, cancelled: false };
+    e.preventDefault();
+    syncControls();
+    return;
+  }
   drag = {
     ch: cell.dataset.ch, x0: e.clientX, y0: e.clientY,
     lastX: e.clientX, lastY: e.clientY,
@@ -373,6 +398,18 @@ function onDown(e) {
 
 function onMove(e) {
   if (!drag) return;
+  if (drag.part) {
+    const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
+    if (!drag.active && Math.hypot(dx, dy) < 4) return;
+    drag.active = true;
+    e.preventDefault();
+    const c = CONTROLS.find((x) => x.k === drag.k + 'X');
+    setPath(state.P, drag.k + 'X', quantize(c, drag.vx + dx * drag.upp));
+    setPath(state.P, drag.k + 'Y', quantize(c, drag.vy - dy * drag.upp)); // 화면 아래 = y 감소
+    save();
+    schedule();
+    return;
+  }
   drag.lastX = e.clientX; drag.lastY = e.clientY;
   if (!drag.active) {
     if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 8) {
@@ -393,6 +430,12 @@ function onMove(e) {
 
 function onUp() {
   if (!drag) return;
+  if (drag.part) {
+    const { active, ch } = drag;
+    drag = null;
+    if (!active) toggleSel(ch);
+    return;
+  }
   clearTimeout(drag.timer);
   const wasActive = drag.active;
   const ch = drag.ch, cancelled = drag.cancelled;
