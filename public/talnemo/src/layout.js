@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=7c5052f';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=7c5052f';
-import { filletPatches } from './fillet.js?v=7c5052f';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=ffc858f';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=ffc858f';
+import { filletPatches } from './fillet.js?v=ffc858f';
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -203,6 +203,15 @@ export function layoutSyllable(P, char, opt = {}) {
     { slot: 'jung', jamo: jung, prims: jungPrims.flatMap(j => j.prims) },
   ];
   if (jong) rawParts.push({ slot: 'jong', jamo: jong, prims: consPrims(P, jong, jongBox), setBox: jongBox });
+
+  // 경우별 위치(P.shift): 자리마다 따로 평행이동. 로컬 좌표는 y-아래라 Y 부호를 뒤집는다
+  const sh = P.shift?.[vclass + (jong ? '1' : '0')];
+  if (sh) for (const p of rawParts) {
+    const dx = sh[p.slot + 'X'] || 0, dy = -(sh[p.slot + 'Y'] || 0);
+    if (!dx && !dy) continue;
+    p.prims = shiftPrims(p.prims, dx, dy);
+    if (p.setBox) p.setBox = { ...p.setBox, x: p.setBox.x + dx, y: p.setBox.y + dy };
+  }
 
   // 자연 크기 경계
   let bb = null;

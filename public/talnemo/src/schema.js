@@ -73,6 +73,10 @@ export const DEFAULTS = {
   //   place: { jongX, jongY, gapVJ, … } }                          ← 배치 규칙 조건부 덮어쓰기(slot 없이도 됨)
   rules: [],
 
+  // 경우별 위치: 모음 모양(V 세로·H 가로·C 섞임) × 받침(0 없음·1 있음). 배치가 끝난 뒤 자리마다 평행이동(유닛, y는 +위)
+  shift: Object.fromEntries(['V0', 'V1', 'H0', 'H1', 'C0', 'C1'].map((c) => [c,
+    Object.fromEntries((c[1] === '1' ? ['cho', 'jung', 'jong'] : ['cho', 'jung']).flatMap((s) => [[s + 'X', 0], [s + 'Y', 0]]))])),
+
   // 실험(장식 변형). 기본 꺼짐. 탈네모 축과 섞지 않는다
   exp: { seed: 1, jitter: 0, rotate: 0 },
 };
@@ -132,6 +136,13 @@ export const CONTROLS = [
   { g: '실험', k: 'exp.rotate', min: 0, max: 20, step: 0.5, label: '회전' },
   { g: '실험', k: 'exp.seed', min: 1, max: 99, step: 1, label: '시드' },
 ];
+
+export const SHIFT_CASES = [['V0', '세로'], ['V1', '세로+받침'], ['H0', '가로'], ['H1', '가로+받침'], ['C0', '섞임'], ['C1', '섞임+받침']];
+const SLOT_NAME = { cho: '초성', jung: '중성', jong: '종성' };
+for (const [c] of SHIFT_CASES) for (const k of Object.keys(DEFAULTS.shift[c])) {
+  CONTROLS.push({ g: '위치', k: `shift.${c}.${k}`, shiftCase: c, min: -300, max: 300, step: 1,
+    label: SLOT_NAME[k.slice(0, -1)] + (k.endsWith('X') ? ' 가로' : ' 세로') });
+}
 
 export function getPath(o, k) { return k.split('.').reduce((a, b) => a?.[b], o); }
 export function setPath(o, k, v) {
