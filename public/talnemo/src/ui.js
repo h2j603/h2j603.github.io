@@ -1,8 +1,8 @@
 // 탈네모 프로토타이퍼 UI. 값과 결과만 보여 준다. 조형 판단은 사용자 몫.
-import { DEFAULTS, CONTROLS, getPath, setPath, merge, resolvePreset } from './schema.js?v=7c5052f';
-import { layoutSyllable, layoutJamo } from './layout.js?v=7c5052f';
-import { contourToPathD } from './outline.js?v=7c5052f';
-import { CHO, JUNG, JONG } from './jamo.js?v=7c5052f';
+import { DEFAULTS, CONTROLS, SHIFT_CASES, getPath, setPath, merge, resolvePreset } from './schema.js?v=ffc858f';
+import { layoutSyllable, layoutJamo } from './layout.js?v=ffc858f';
+import { contourToPathD } from './outline.js?v=ffc858f';
+import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=ffc858f';
 
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -212,6 +212,8 @@ function render() {
 
 function toggleSel(ch) {
   state.sel = state.sel === ch ? null : ch;
+  const d = state.sel && decompose(state.sel.codePointAt(0)); // 고른 글자의 경우로 위치 막대를 맞춘다
+  if (d) state.shiftCase = VCLASS[d.jung] + (d.jong ? '1' : '0');
   schedule();
 }
 
@@ -247,9 +249,41 @@ function buildControls() {
     const sum = document.createElement('summary');
     sum.textContent = g;
     det.appendChild(sum);
-    for (const c of CONTROLS.filter((x) => x.g === g)) det.appendChild(ctrlRow(c));
+    if (g === '위치') det.appendChild(caseRow());
+    for (const c of CONTROLS.filter((x) => x.g === g)) {
+      const row = ctrlRow(c);
+      if (c.shiftCase) row.dataset.case = c.shiftCase;
+      det.appendChild(row);
+    }
     wrap.appendChild(det);
   }
+}
+
+// 위치 묶음: 경우 하나를 골라 그 경우의 막대만 보인다(선택은 화면 상태, 값은 P.shift)
+function caseRow() {
+  const row = document.createElement('div');
+  row.className = 'ctrl';
+  const lab = document.createElement('div');
+  lab.className = 'lab';
+  lab.textContent = '경우';
+  const seg = document.createElement('div');
+  seg.className = 'seg';
+  seg.id = 'shift-case';
+  for (const [c, name] of SHIFT_CASES) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = name;
+    b.dataset.v = c;
+    b.onclick = () => { state.shiftCase = c; syncCase(); };
+    seg.appendChild(b);
+  }
+  row.append(lab, seg);
+  return row;
+}
+function syncCase() {
+  const c = state.shiftCase || 'V0';
+  for (const b of document.querySelectorAll('#shift-case button')) b.classList.toggle('on', b.dataset.v === c);
+  for (const r of document.querySelectorAll('#controls [data-case]')) r.hidden = r.dataset.case !== c;
 }
 
 function ctrlRow(c) {
@@ -301,6 +335,7 @@ function ctrlRow(c) {
 }
 
 function syncControls() {
+  syncCase();
   for (const [k, e] of els) {
     const v = getPath(state.P, k);
     if (e.seg) {
