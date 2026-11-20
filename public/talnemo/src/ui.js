@@ -1,8 +1,8 @@
 // 탈네모 프로토타이퍼 UI. 값과 결과만 보여 준다. 조형 판단은 사용자 몫.
-import { DEFAULTS, CONTROLS, SHIFT_CASES, shiftCase, pruneUnknown, getPath, setPath, merge, resolvePreset } from './schema.js?v=fa86fac';
-import { layoutSyllable, layoutJamo } from './layout.js?v=fa86fac';
-import { contourToPathD } from './outline.js?v=fa86fac';
-import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=fa86fac';
+import { DEFAULTS, CONTROLS, SHIFT_CASES, shiftCase, pruneUnknown, getPath, setPath, merge, resolvePreset } from './schema.js?v=c6a6458';
+import { layoutSyllable, layoutJamo } from './layout.js?v=c6a6458';
+import { contourToPathD } from './outline.js?v=c6a6458';
+import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=c6a6458';
 
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -11,6 +11,7 @@ const SAMPLE_CHARS = [...'가고과의각곡꿈똠없닭앎핥뷁쀍왜'];
 const AXIS_CHARS = [...'각곡꿈없닭'];
 const TABS = [['글자', 'chars'], ['문장', 'sentence'], ['이름', 'name'], ['자소', 'jamo'], ['축 단독', 'axis'], ['입력', 'input']];
 const LS_KEY = 'talnemo.p.v1';
+const VER = new URL(import.meta.url).search; // 배포본은 ?v=<커밋> — 프리셋 JSON도 같은 버전으로 받아 폰 캐시를 피한다
 
 const state = {
   P: merge(DEFAULTS, {}),
@@ -491,7 +492,7 @@ async function loadPresets() {
   const sel = $('#preset');
   let files = [];
   try {
-    const idx = await (await fetch('presets/index.json')).json();
+    const idx = await (await fetch('presets/index.json' + VER)).json();
     files = Array.isArray(idx.files) ? idx.files : [];
   } catch { files = []; }
 
@@ -499,7 +500,7 @@ async function loadPresets() {
   for (const f of files) {
     let name = f;
     try {
-      const j = await (await fetch('presets/' + f)).json();
+      const j = await (await fetch('presets/' + f + VER)).json();
       state.presets[f] = j;
       name = j.meta?.name || f;
     } catch {}
@@ -534,7 +535,7 @@ const listOf = (x) => (typeof x === 'string' ? [...x] : x);
 async function resolveChars() {
   const mode = $('#range').value;
   let cs = null;
-  try { cs = await import('./charsets.js?v=fa86fac'); } catch {}
+  try { cs = await import('./charsets.js?v=c6a6458'); } catch {}
   if (mode === '11172') {
     if (cs?.all11172) return listOf(typeof cs.all11172 === 'function' ? cs.all11172() : cs.all11172);
     const out = [];
@@ -567,7 +568,7 @@ async function doUFO() {
     status('만드는 중');
     const chars = await resolveChars();
     const [{ buildUFO }, { makeZip }] = await Promise.all([
-      import('./export-ufo.js?v=fa86fac'), import('./zip.js?v=fa86fac'),
+      import('./export-ufo.js?v=c6a6458'), import('./zip.js?v=c6a6458'),
     ]);
     const out = await buildUFO(state.P, chars, window.polygonClipping);
     const blob = out instanceof Blob ? out : await makeZip(out);
@@ -583,7 +584,7 @@ async function doOTF() {
     status('만드는 중');
     if (!window.opentype) throw new Error('opentype 없음');
     const chars = await resolveChars();
-    const { buildOTF } = await import('./export-otf.js?v=fa86fac');
+    const { buildOTF } = await import('./export-otf.js?v=c6a6458');
     const out = await buildOTF(window.opentype, state.P, chars, window.polygonClipping);
     download(out instanceof Blob ? out : new Blob([out]), `${state.P.meta.id}.otf`);
     status('');
