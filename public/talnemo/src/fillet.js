@@ -1,7 +1,7 @@
 // 안쪽 모서리 둥글리기(필렛): 획이 만나거나(교차부) 꺾이는(ㄱ·ㄴ·ㅁ 속) 안쪽 모서리에 원호 조각을 덧놓는다.
 // 획 윤곽은 그대로 두고, 모서리 C · 접점 T1 · 원호 · 접점 T2 로 된 조각만 더한다(채움이 겹쳐도 결과는 합집합).
 // 좌표는 배치 좌표(y-아래).
-import { segWidth } from './outline.js?v=06651b0';
+import { segWidth } from './outline.js?v=d86280f';
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1]];
