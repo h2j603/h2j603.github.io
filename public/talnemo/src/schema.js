@@ -41,6 +41,7 @@ export const DEFAULTS = {
     tick: 80,            // 가로모음 꼭지 길이
     tickX: 0.5,          // 꼭지 위치(가로줄 비율)
     tickGap: 120,        // ㅛ·ㅠ 꼭지 간격
+    dblThin: 0,          // 두 기둥 모음(ㅐㅒㅔㅖㅙㅞ) 획 가늘게: 굵기 × (1 − 값). 0 = 끔
   },
 
   // 배치 규칙. 세로(V)·가로(H)·복합(C) 모음 분류마다 따로 둔다
@@ -62,8 +63,9 @@ export const DEFAULTS = {
   // 틀
   frame: {
     align: 'top',        // 정렬 기준: top | center | bottom
-    width: 'proportional', // proportional | fixed
+    width: 'proportional', // proportional | fixed | group(모임꼴별: 세로·가로·섞임 모음마다 한 너비)
     fixedAdvance: 1000,
+    groupW: { V: 870, H: 590, C: 990 }, // width=group 일 때 모임꼴 너비. 왼쪽 여백 = font.sidebearing
     fit: 1,              // 탈네모 축: 0 맞춤(네모틀에 맞게 줄임) ↔ 1 고정(자소 크기 고정)
     fitBox: 760,         // 맞춤 틀 한 변
   },
@@ -74,7 +76,7 @@ export const DEFAULTS = {
   //   place: { jongX, jongY, gapVJ, … } }                          ← 배치 규칙 조건부 덮어쓰기(slot 없이도 됨)
   rules: [],
 
-  // 받침 위치 예외: 받침이 있을 때만 종성을 평행이동(유닛, y는 +위). V 세로모음 · H 가로모음(섞임 포함). 받침 없는 글자(오·아)는 예외 없음
+  // 받침 위치 예외: 받침이 있을 때만 종성을 평행이동(유닛, y는 +위). V 세로모음(섞임 포함) · H 가로모음. 받침 없는 글자(오·아)는 예외 없음
   shift: { V: { jongX: 0, jongY: 0 }, H: { jongX: 0, jongY: 0 } },
 
   // 실험(장식 변형). 기본 꺼짐. 탈네모 축과 섞지 않는다
@@ -85,8 +87,11 @@ export const DEFAULTS = {
 export const CONTROLS = [
   { g: '틀', k: 'frame.fit', min: 0, max: 1, step: 0.01, label: '맞춤 ↔ 고정' },
   { g: '틀', k: 'frame.align', opts: ['top', 'center', 'bottom'], label: '정렬 기준' },
-  { g: '틀', k: 'frame.width', opts: ['proportional', 'fixed'], label: '폭' },
+  { g: '틀', k: 'frame.width', opts: ['proportional', 'fixed', 'group'], label: '폭' },
   { g: '틀', k: 'frame.fixedAdvance', min: 500, max: 1400, step: 10, label: '고정폭' },
+  { g: '틀', k: 'frame.groupW.V', min: 400, max: 1400, step: 10, label: '모임꼴 너비 세로' },
+  { g: '틀', k: 'frame.groupW.H', min: 400, max: 1400, step: 10, label: '모임꼴 너비 가로' },
+  { g: '틀', k: 'frame.groupW.C', min: 400, max: 1400, step: 10, label: '모임꼴 너비 섞임' },
   { g: '획', k: 'stroke.weight', min: 10, max: 180, step: 1, label: '굵기' },
   { g: '획', k: 'stroke.contrast', min: 0, max: 0.8, step: 0.01, label: '대비' },
   { g: '획', k: 'stroke.cap', opts: ['square', 'butt', 'round'], label: '끝' },
@@ -117,6 +122,7 @@ export const CONTROLS = [
   { g: '모음', k: 'vowel.tick', min: 20, max: 250, step: 1, label: '꼭지' },
   { g: '모음', k: 'vowel.tickX', min: 0, max: 1, step: 0.01, label: '꼭지 위치' },
   { g: '모음', k: 'vowel.tickGap', min: 40, max: 300, step: 1, label: '꼭지 간격' },
+  { g: '모음', k: 'vowel.dblThin', min: 0, max: 0.5, step: 0.01, label: '이중모음 획 가늘게' },
   { g: '배치', k: 'place.gapCV', min: -100, max: 200, step: 1, label: '초–세로모음' },
   { g: '배치', k: 'place.gapCH', min: -100, max: 200, step: 1, label: '초–가로모음' },
   { g: '배치', k: 'place.gapVJ', min: -100, max: 200, step: 1, label: '위–종성' },
@@ -134,8 +140,8 @@ export const CONTROLS = [
   { g: '실험', k: 'exp.seed', min: 1, max: 99, step: 1, label: '시드' },
 ];
 
-export const SHIFT_CASES = [['V', '세로모음+받침'], ['H', '가로모음+받침']];
-export const shiftCase = (vclass) => (vclass === 'V' ? 'V' : 'H');
+export const SHIFT_CASES = [['V', '세로·섞임모음+받침'], ['H', '가로모음+받침']];
+export const shiftCase = (vclass) => (vclass === 'H' ? 'H' : 'V');
 for (const [c] of SHIFT_CASES) for (const a of ['X', 'Y']) {
   CONTROLS.push({ g: '위치', k: `shift.${c}.jong${a}`, shiftCase: c, min: -300, max: 300, step: 1, label: '종성 ' + a.toLowerCase() });
 }
