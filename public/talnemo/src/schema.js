@@ -53,7 +53,7 @@ export const DEFAULTS = {
     hAlign: 'left',      // 가로모음 위 초성 정렬: left | center
     jongX: 'cho',        // 종성 x 기준: cho | center | stem | right | vowel(홀자 중앙 아래) | lastStem(들숨: 마지막 기둥 오른끝, 곁줄기 제외)
     pairOverhang: false, // jongX=vowel 일 때 겹받침 뒤 자소가 오른쪽으로 나간다
-    jongY: 'cho',        // 종성 y 기준: cho(초성·가로모음 아래) | vowel(모음 전체 아래)
+    jongY: 'cho',        // 종성 y 기준: cho(초성·가로모음 아래) | vowel(모음 전체 아래) | fixed(모음 길이와 무관: 세로 = 기둥 아래, 가로·섞임 = ㅜ 꼭지 아래)
     stemSpanJong: false, // 받침이 있으면 기둥을 종성 아래끝까지 늘인다
     branchIn: 0,         // ㅓㅕㅔㅖ 들임(유닛): 기둥을 왼쪽으로 옮기는 양. 0 = 곁줄기만큼 자리를 더 잡음, 곁줄기 길이 = 기둥이 ㅣ 자리
     euBase: 'gap',       // ㅡ 위치: gap(초–가로모음 간격) | stem(가로줄 아래끝 = 초성+세로모음 아래끝, 아의 아랫단)
@@ -130,7 +130,7 @@ export const CONTROLS = [
   { g: '배치', k: 'place.vY', min: -200, max: 200, step: 1, label: '세로모음 높이' },
   { g: '배치', k: 'place.hAlign', opts: ['left', 'center'], label: '가로모음 정렬' },
   { g: '배치', k: 'place.jongX', opts: ['cho', 'center', 'stem', 'right', 'vowel', 'lastStem'], label: '종성 x' },
-  { g: '배치', k: 'place.jongY', opts: ['cho', 'vowel'], label: '종성 y' },
+  { g: '배치', k: 'place.jongY', opts: ['cho', 'vowel', 'fixed'], label: '종성 y' },
   { g: '배치', k: 'place.pairOverhang', opts: [false, true], label: '겹받침 오른쪽으로' },
   { g: '배치', k: 'place.stemSpanJong', opts: [false, true], label: '기둥 받침까지' },
   { g: '배치', k: 'place.branchIn', min: 0, max: 300, step: 1, label: 'ㅓ 들임' },

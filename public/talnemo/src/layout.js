@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=fb9613f';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=fb9613f';
-import { filletPatches } from './fillet.js?v=fb9613f';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=bba5f2f';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=bba5f2f';
+import { filletPatches } from './fillet.js?v=bba5f2f';
 
 const DBL = 'ㅐㅒㅔㅖㅙㅞ'; // 두 기둥 모음: vowel.dblThin 이 기둥(세로획) 가로 너비만 줄인다
 const isVert = (q) => q.t === 'line' && q.pts.length === 2 && Math.abs(q.pts[0][0] - q.pts[1][0]) < 1e-6;
@@ -122,6 +122,7 @@ export function layoutSyllable(P, char, opt = {}) {
   let upperBottom = choBox.y + choBox.h;
   let stemPart = null;          // 기둥이 있는 세로 부분(받침까지 늘임 대상)
   let stemX = null;
+  let hRef = -Infinity;          // 가로·섞임 계열 종성 y 고정 기준(모음 모양과 무관한 값)
   const vOpts = (stem) => ({ stem, branch: V.branch, branchY: V.branchY, branchGap: V.branchGap, dbl: V.dbl });
   const hOpts = { bar: V.bar, tick: V.tick, tickX: V.tickX, tickGap: V.tickGap };
   const jm = mods.jung;
@@ -144,18 +145,21 @@ export function layoutSyllable(P, char, opt = {}) {
       const d = (hv.w + wt - choBox.w) / 2;
       if (d > 0) choBox.x += d; else barX = -d;
     }
-    let oy = choBox.y + choBox.h + pl.gapCH + hw + (jm.dy || 0);
+    const oy0 = choBox.y + choBox.h + pl.gapCH + hw + (jm.dy || 0);
     // ㅡ: 가로줄 아래끝을 '아'(같은 초성+세로모음)의 아랫단에 맞춘다. 초성과 겹치지 않게 가로줄 굵기만큼은 띄운다
     const euY = () => {
       const vBottom = Math.max(choBox.y + choBox.h, pl.vY + V.stem + wt);
       return Math.max(vBottom - hw, choBox.y + choBox.h + wt) + (jm.dy || 0);
     };
-    if (jung === 'ㅡ' && pl.euBase === 'stem') oy = euY();
     // 가로줄 높이 고정: ㅗㅛㅜㅠ(섞임 포함)도 가로줄을 ㅡ 가로줄 높이에 둔다. 꼭지만 위·아래로 뻗는다(ㅏㅓㅣ 기둥 고정과 같은 생각)
-    if (pl.hBarY === 'fixed') {
-      const barY = pl.euBase === 'stem' ? euY() : oy;           // ㅡ 의 가로줄 y(로컬 y-아래)
-      oy = barY - ('ㅗㅛ'.includes(hName) ? V.tick : 0);         // ㅗㅛ 는 꼭지가 위라 가로줄이 로컬 y = tick
-    }
+    const oyOf = (name) => {
+      const eu = pl.euBase === 'stem' ? euY() : oy0;             // ㅡ 의 가로줄 y(로컬 y-아래)
+      if (pl.hBarY === 'fixed') return eu - ('ㅗㅛ'.includes(name) ? V.tick : 0); // ㅗㅛ 는 꼭지가 위라 가로줄이 로컬 y = tick
+      return name === 'ㅡ' ? eu : oy0;
+    };
+    const oy = oyOf(hName);
+    // 종성 y 고정(jongY fixed)용: 가로 계열에서 가장 아래로 내려가는 모음(ㅜ 꼭지) 아랫끝
+    hRef = oyOf('ㅜ') + horizontalVowel('ㅜ', hOpts).h + hw;
     const hp = shiftPrims(hv.prims, barX + hw + (jm.dx || 0), oy);
     jungPrims.push({ prims: hp, kind: 'H' });
     upperBottom = oy + hv.h + hw;
@@ -170,6 +174,7 @@ export function layoutSyllable(P, char, opt = {}) {
       stemPart = { prims: shiftPrims(vv.prims, ox, top + hw), kind: 'V' };
       jungPrims.push(stemPart);
       stemX = ox;
+      hRef = Math.max(hRef, top + (jm.stem ?? V.stem) + wt);      // 섞임: 기본 기둥 아랫끝도 기준에 넣는다
     }
   }
   const jungAll = jungPrims.flatMap(j => j.prims);
@@ -195,7 +200,13 @@ export function layoutSyllable(P, char, opt = {}) {
       const anchorW = PAIR[jong] && pl.pairOverhang ? (js.w - P.cons.pairGap) / 2 : js.w;
       x = cxv - anchorW / 2;
     }
-    jongBox = { x: x + (mods.jong.dx || 0), y: (pl.jongY === 'vowel' ? Math.max(upperBottom, primsBounds(jungAll, hw).y + primsBounds(jungAll, hw).h) : upperBottom) + pl.gapVJ + (mods.jong.dy || 0), ...js };
+    // 종성 y: cho = 초성·가로모음 아래 / vowel = 이 글자 모음 전체 아래 / fixed = 모음 길이와 무관한 고정 자리
+    //   fixed: 세로 = 기둥 아래(세로모음 기둥은 길이가 같아 원래 고정), 가로·섞임 = 가장 긴 가로 계열(ㅜ 꼭지) 아래. ㅡ 가 짧다고 올라오지 않는다
+    const jbot = primsBounds(jungAll, hw).y + primsBounds(jungAll, hw).h;
+    const baseY = pl.jongY === 'vowel' ? Math.max(upperBottom, jbot)
+      : pl.jongY === 'fixed' ? (vclass === 'V' ? Math.max(upperBottom, jbot) : Math.max(choBox.y + choBox.h, hRef))
+      : upperBottom;
+    jongBox = { x: x + (mods.jong.dx || 0), y: baseY + pl.gapVJ + (mods.jong.dy || 0), ...js };
     // 기둥을 종성 아래끝까지
     if (pl.stemSpanJong && stemPart) {
       const target = jongBox.y + jongBox.h - hw;
