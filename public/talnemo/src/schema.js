@@ -58,6 +58,7 @@ export const DEFAULTS = {
     branchIn: 0,         // ㅓㅕㅔㅖ 들임(유닛): 기둥을 왼쪽으로 옮기는 양. 0 = 곁줄기만큼 자리를 더 잡음, 곁줄기 길이 = 기둥이 ㅣ 자리
     euBase: 'gap',       // ㅡ 위치: gap(초–가로모음 간격) | stem(가로줄 아래끝 = 초성+세로모음 아래끝, 아의 아랫단)
     compoundStem: 'fixed', // 복합모음 기둥: fixed | bar(가로줄까지)
+    hBarY: 'flow',       // 가로모음 가로줄 높이: flow(꼭지 따라 ㅗ·ㅜ·ㅡ 가 다름) | fixed(모두 ㅡ 가로줄 높이)
   },
 
   // 틀
@@ -135,6 +136,7 @@ export const CONTROLS = [
   { g: '배치', k: 'place.branchIn', min: 0, max: 300, step: 1, label: 'ㅓ 들임' },
   { g: '배치', k: 'place.euBase', opts: ['gap', 'stem'], label: 'ㅡ 위치' },
   { g: '배치', k: 'place.compoundStem', opts: ['fixed', 'bar'], label: '복합모음 기둥' },
+  { g: '배치', k: 'place.hBarY', opts: ['flow', 'fixed'], label: 'ㅗㅜㅡ 가로줄 높이' },
   { g: '실험', k: 'exp.jitter', min: 0, max: 80, step: 1, label: '흔들림' },
   { g: '실험', k: 'exp.rotate', min: 0, max: 20, step: 0.5, label: '회전' },
   { g: '실험', k: 'exp.seed', min: 1, max: 99, step: 1, label: '시드' },

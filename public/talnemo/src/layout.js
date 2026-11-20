@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=e391b02';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=e391b02';
-import { filletPatches } from './fillet.js?v=e391b02';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=fb9613f';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=fb9613f';
+import { filletPatches } from './fillet.js?v=fb9613f';
 
 const DBL = 'ㅐㅒㅔㅖㅙㅞ'; // 두 기둥 모음: vowel.dblThin 이 기둥(세로획) 가로 너비만 줄인다
 const isVert = (q) => q.t === 'line' && q.pts.length === 2 && Math.abs(q.pts[0][0] - q.pts[1][0]) < 1e-6;
@@ -146,9 +146,15 @@ export function layoutSyllable(P, char, opt = {}) {
     }
     let oy = choBox.y + choBox.h + pl.gapCH + hw + (jm.dy || 0);
     // ㅡ: 가로줄 아래끝을 '아'(같은 초성+세로모음)의 아랫단에 맞춘다. 초성과 겹치지 않게 가로줄 굵기만큼은 띄운다
-    if (jung === 'ㅡ' && pl.euBase === 'stem') {
+    const euY = () => {
       const vBottom = Math.max(choBox.y + choBox.h, pl.vY + V.stem + wt);
-      oy = Math.max(vBottom - hw, choBox.y + choBox.h + wt) + (jm.dy || 0);
+      return Math.max(vBottom - hw, choBox.y + choBox.h + wt) + (jm.dy || 0);
+    };
+    if (jung === 'ㅡ' && pl.euBase === 'stem') oy = euY();
+    // 가로줄 높이 고정: ㅗㅛㅜㅠ(섞임 포함)도 가로줄을 ㅡ 가로줄 높이에 둔다. 꼭지만 위·아래로 뻗는다(ㅏㅓㅣ 기둥 고정과 같은 생각)
+    if (pl.hBarY === 'fixed') {
+      const barY = pl.euBase === 'stem' ? euY() : oy;           // ㅡ 의 가로줄 y(로컬 y-아래)
+      oy = barY - ('ㅗㅛ'.includes(hName) ? V.tick : 0);         // ㅗㅛ 는 꼭지가 위라 가로줄이 로컬 y = tick
     }
     const hp = shiftPrims(hv.prims, barX + hw + (jm.dx || 0), oy);
     jungPrims.push({ prims: hp, kind: 'H' });
