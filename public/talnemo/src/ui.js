@@ -1,15 +1,25 @@
 // 탈네모 프로토타이퍼 UI. 값과 결과만 보여 준다. 조형 판단은 사용자 몫.
-import { DEFAULTS, CONTROLS, SHIFT_CASES, shiftCase, pruneUnknown, getPath, setPath, merge, resolvePreset } from './schema.js?v=63b3a42';
-import { layoutSyllable, layoutJamo } from './layout.js?v=63b3a42';
-import { contourToPathD } from './outline.js?v=63b3a42';
-import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=63b3a42';
+import { DEFAULTS, CONTROLS, SHIFT_CASES, shiftCase, pruneUnknown, getPath, setPath, merge, resolvePreset } from './schema.js?v=e2f9e99';
+import { layoutSyllable, layoutJamo } from './layout.js?v=e2f9e99';
+import { contourToPathD } from './outline.js?v=e2f9e99';
+import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=e2f9e99';
 
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
 const SAMPLE_CHARS = [...'가고과의각곡꿈똠없닭앎핥뷁쀍왜'];
-const AXIS_CHARS = [...'각곡꿈없닭'];
-const TABS = [['글자', 'chars'], ['문장', 'sentence'], ['이름', 'name'], ['자소', 'jamo'], ['축 단독', 'axis'], ['입력', 'input']];
+// 문장 탭: 한 줄에 한 문장. 홀자 갈래(세로·가로·섞임)·겹받침·ㅇㅎ 보정을 고루 보게 고른 문장
+const SENTENCES = [
+  '다람쥐 헌 쳇바퀴에 타고파',
+  '키스의 고유조건은 입술끼리 만나야 하고 특별한 기술은 필요치 않다',
+  '정 참판 양반댁 규수 큰 교자 타고 혼례 치른 날',
+  '맑은 하늘 아래 흙길을 밟고 걷는다',
+  '값싼 닭볶음탕에 넋두리를 얹다',
+  '왜 웬 외워 의외의 뭐 쉬워',
+  '탈네모꼴 글자는 네모틀을 벗어난다',
+  '오늘 우리 모두 함께 노래해요',
+];
+const TABS = [['글자', 'chars'], ['문장', 'sentence'], ['이름', 'name'], ['자소', 'jamo'], ['입력', 'input']];
 const LS_KEY = 'talnemo.p.v1';
 const VER = new URL(import.meta.url).search; // 배포본은 ?v=<커밋> — 프리셋 JSON도 같은 버전으로 받아 폰 캐시를 피한다
 
@@ -17,7 +27,6 @@ const state = {
   P: merge(DEFAULTS, {}),
   tab: 'chars',
   sel: null,
-  axisKey: 'stroke.weight',
   typed: '',
   presets: {},
   presetFile: null,
@@ -101,22 +110,12 @@ function sampleHTML() {
     case 'chars':
       return lineHTML(SAMPLE_CHARS);
     case 'sentence':
-      return lineHTML('다람쥐 헌 쳇바퀴에 타고파', P);
+      return SENTENCES.map((t) => lineHTML(t, P)).join('');
     case 'name':
       return lineHTML('세벌식 탈네모꼴', P);
     case 'jamo': {
       const row = (slot, list) => `<div class="line">${list.map((ch) => jamoCellHTML(P, slot, ch)).join('')}</div>`;
       return row('cho', CHO) + row('jung', JUNG) + row('jong', JONG);
-    }
-    case 'axis': {
-      const c = CONTROLS.find((x) => x.k === state.axisKey && x.min != null);
-      if (!c) return '';
-      const vals = [0, 0.25, 0.5, 0.75, 1].map((t) => quantize(c, c.min + (c.max - c.min) * t));
-      return vals.map((v) => {
-        const Q = structuredClone(P);
-        setPath(Q, c.k, v);
-        return `<div class="line"><span class="k num">${fmt(c, v)}</span>${AXIS_CHARS.map((ch) => glyphHTML(Q, ch)).join('')}</div>`;
-      }).join('');
     }
     case 'input':
       return state.typed.trim() ? lineHTML(state.typed) : '';
@@ -232,7 +231,7 @@ function quantize(c, v) {
 function setValue(k, v) {
   const c = CONTROLS.find((x) => x.k === k);
   if (!c) return;
-  if (c.min != null) { v = quantize(c, v); state.axisKey = k; }
+  if (c.min != null) v = quantize(c, v);
   else if (c.opts && !c.opts.some((o) => String(o) === String(v))) return;
   else if (c.opts) v = c.opts.find((o) => String(o) === String(v));
   setPath(state.P, k, v);
@@ -417,7 +416,6 @@ function onMove(e) {
   const dx = e.clientX - drag.ax;
   const dy = e.clientY - drag.ay;
   setPath(state.P, 'stroke.weight', quantize({ min: 10, max: 180, step: 1 }, drag.w0 + dx * 0.5));
-  state.axisKey = 'stroke.weight';
   setPath(state.P, 'frame.fit', quantize({ min: 0, max: 1, step: 0.01 }, drag.f0 - dy * 0.004));
   save();
   schedule();
@@ -520,7 +518,6 @@ function applyPreset(file) {
   if (!raw) return;
   try {
     state.P = resolvePreset(raw);
-    state.axisKey = state.axisKey || 'stroke.weight';
     save();
     buildControls();
     render();
@@ -537,7 +534,7 @@ const listOf = (x) => (typeof x === 'string' ? [...x] : x);
 async function resolveChars() {
   const mode = $('#range').value;
   let cs = null;
-  try { cs = await import('./charsets.js?v=63b3a42'); } catch {}
+  try { cs = await import('./charsets.js?v=e2f9e99'); } catch {}
   if (mode === '11172') {
     if (cs?.all11172) return listOf(typeof cs.all11172 === 'function' ? cs.all11172() : cs.all11172);
     const out = [];
@@ -570,7 +567,7 @@ async function doUFO() {
     status('만드는 중');
     const chars = await resolveChars();
     const [{ buildUFO }, { makeZip }] = await Promise.all([
-      import('./export-ufo.js?v=63b3a42'), import('./zip.js?v=63b3a42'),
+      import('./export-ufo.js?v=e2f9e99'), import('./zip.js?v=e2f9e99'),
     ]);
     const out = await buildUFO(state.P, chars, window.polygonClipping);
     const blob = out instanceof Blob ? out : await makeZip(out);
@@ -586,7 +583,7 @@ async function doOTF() {
     status('만드는 중');
     if (!window.opentype) throw new Error('opentype 없음');
     const chars = await resolveChars();
-    const { buildOTF } = await import('./export-otf.js?v=63b3a42');
+    const { buildOTF } = await import('./export-otf.js?v=e2f9e99');
     const out = await buildOTF(window.opentype, state.P, chars, window.polygonClipping);
     download(out instanceof Blob ? out : new Blob([out]), `${state.P.meta.id}.otf`);
     status('');
