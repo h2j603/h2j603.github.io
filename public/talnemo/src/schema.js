@@ -54,7 +54,6 @@ export const DEFAULTS = {
     pairOverhang: false, // jongX=vowel 일 때 겹받침 뒤 자소가 오른쪽으로 나간다
     jongY: 'cho',        // 종성 y 기준: cho(초성·가로모음 아래) | vowel(모음 전체 아래)
     stemSpanJong: false, // 받침이 있으면 기둥을 종성 아래끝까지 늘인다
-    hJongFit: true,      // 가로모음+받침: 초성+가로모음 높이를 초성+세로모음 높이에 맞춘다(초성 높이를 줄임)
     compoundStem: 'fixed', // 복합모음 기둥: fixed | bar(가로줄까지)
   },
 
@@ -125,7 +124,6 @@ export const CONTROLS = [
   { g: '배치', k: 'place.jongY', opts: ['cho', 'vowel'], label: '종성 y' },
   { g: '배치', k: 'place.pairOverhang', opts: [false, true], label: '겹받침 오른쪽으로' },
   { g: '배치', k: 'place.stemSpanJong', opts: [false, true], label: '기둥 받침까지' },
-  { g: '배치', k: 'place.hJongFit', opts: [false, true], label: '가로+받침 높이 = 세로' },
   { g: '배치', k: 'place.compoundStem', opts: ['fixed', 'bar'], label: '복합모음 기둥' },
   { g: '실험', k: 'exp.jitter', min: 0, max: 80, step: 1, label: '흔들림' },
   { g: '실험', k: 'exp.rotate', min: 0, max: 20, step: 0.5, label: '회전' },
