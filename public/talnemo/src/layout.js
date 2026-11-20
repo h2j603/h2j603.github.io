@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=d86280f';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=d86280f';
-import { filletPatches } from './fillet.js?v=d86280f';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=4ced24d';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=4ced24d';
+import { filletPatches } from './fillet.js?v=4ced24d';
 
 const DBL = 'ㅐㅒㅔㅖㅙㅞ'; // 두 기둥 모음: vowel.dblThin 이 기둥(세로획) 가로 너비만 줄인다
 const isVert = (q) => q.t === 'line' && q.pts.length === 2 && Math.abs(q.pts[0][0] - q.pts[1][0]) < 1e-6;
@@ -177,6 +177,11 @@ export function layoutSyllable(P, char, opt = {}) {
     if (pl.jongX === 'center') x = (right - js.w) / 2;
     else if (pl.jongX === 'stem' && stemX != null) x = stemX + hw - js.w;
     else if (pl.jongX === 'right') x = right - js.w;
+    else if (pl.jongX === 'lastStem') {
+      // 들숨 방식: 받침 오른끝 = 마지막 기둥 오른끝(곁줄기 제외). 기둥 없는 가로모음은 right 와 같다
+      const xs = stemPart ? stemPart.prims.filter(isVert).map(q => q.pts[0][0]) : [];
+      x = (xs.length ? Math.max(...xs) + hw : right) - js.w;
+    }
     else if (pl.jongX === 'vowel') {
       // 홀자 정중앙 아래. 겹받침은 앞 자소를 중앙에 두고 뒤 자소가 오른쪽으로 나간다
       const jb = primsBounds(jungAll, hw);
