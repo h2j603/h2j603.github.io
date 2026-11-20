@@ -1,8 +1,11 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=80d4bba';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=80d4bba';
-import { filletPatches } from './fillet.js?v=80d4bba';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=2e7ef5e';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=2e7ef5e';
+import { filletPatches } from './fillet.js?v=2e7ef5e';
+
+const DBL = 'ㅐㅒㅔㅖㅙㅞ'; // 두 기둥 모음: vowel.dblThin 이 기둥(세로획) 가로 너비만 줄인다
+const isVert = (q) => q.t === 'line' && q.pts.length === 2 && Math.abs(q.pts[0][0] - q.pts[1][0]) < 1e-6;
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -197,7 +200,8 @@ export function layoutSyllable(P, char, opt = {}) {
 
   const rawParts = [
     { slot: 'cho', jamo: cho, prims: consPrims(P, cho, choBox), setBox: choBox },
-    { slot: 'jung', jamo: jung, prims: jungPrims.flatMap(j => j.prims) },
+    { slot: 'jung', jamo: jung, prims: jungPrims.flatMap(j => j.kind === 'V' && DBL.includes(jung) && P.vowel.dblThin
+      ? j.prims.map(q => isVert(q) ? { ...q, thin: true } : q) : j.prims) },
   ];
   if (jong) rawParts.push({ slot: 'jong', jamo: jong, prims: consPrims(P, jong, jongBox), setBox: jongBox });
 
@@ -238,7 +242,7 @@ export function layoutSyllable(P, char, opt = {}) {
       return [cx + dx * c - dy * s + jx, cy + dx * s + dy * c + jy];
     };
     const prims = p.prims.map(q => {
-      if (q.t === 'line') return { t: 'line', pts: q.pts.map(([x, y]) => rot(...T(x, y))) };
+      if (q.t === 'line') return { t: 'line', pts: q.pts.map(([x, y]) => rot(...T(x, y))), ...(q.thin ? { thin: true } : {}) };
       // 정원·정사각형: 상자를 비균등 변환한 뒤 내접 도형으로 다시 그린다. 회전은 받지 않고 이동만 받는다
       const [x0, y0] = T(q.box[0], q.box[1]), [x1, y1] = T(q.box[2], q.box[3]);
       const ell = q.t === 'circle' && /[ㅇㅎㄶㅀ]/.test(p.jamo) && P.cons.ngRound === false; // ㅎ의 원도 ㅇ처럼 상자 폭에 맞춘 타원
@@ -264,16 +268,18 @@ export function layoutSyllable(P, char, opt = {}) {
   const ox = P.frame.width === 'fixed' ? (advance - W) / 2 : F.sidebearing;
   const toFont = (x, y) => [x + ox, F.frameTop - (y + oy)];
 
-  const DBL = 'ㅐㅒㅔㅖㅙㅞ';
   for (const p of outParts) {
-    // 이중모음 획 보정: 두 기둥 모음의 중성만 굵기를 줄인다(골격·자리는 그대로)
-    const thin = p.slot === 'jung' && DBL.includes(jung) ? (P.vowel.dblThin || 0) : 0;
-    const stroke = thin ? { ...P.stroke, weight: P.stroke.weight * (1 - thin) } : P.stroke;
-    const hw = stroke.weight / 2;
+    const stroke = P.stroke, hw = stroke.weight / 2;
     const cs = [], kinds = [];
     const add = (k, list) => { for (const c of list) { cs.push(c); kinds.push(k); } };
     for (const q of p.prims) {
-      if (q.t === 'line') {
+      if (q.thin) {
+        // 이중모음 기둥: 가로 너비만 줄인다. 끝 덧댐(굵기/2)이 줄어든 만큼 끝점을 늘려 기둥 길이는 그대로
+        const tw = stroke.weight * (1 - P.vowel.dblThin), ext = stroke.cap === 'butt' ? 0 : (stroke.weight - tw) / 2;
+        const [a, b] = q.pts, dir = Math.sign(b[1] - a[1]) || 1;
+        add('line', [strokeOpen([[a[0], a[1] - dir * ext], [b[0], b[1] + dir * ext]], { ...stroke, weight: tw, cap: stroke.cap === 'round' ? 'round' : stroke.cap, miterLimit: 1 })]);
+      }
+      else if (q.t === 'line') {
         if (stroke.cap === 'round') {
           // 둥근 끝이면 꺾임도 둥글게: 꺾인 자리는 베벨로 자르고 지름 = 굵기인 원판을 덧놓는다(뾰족한 ㅅ 꼭짓점이 잘리거나 튀지 않음)
           add('line', [strokeOpen(q.pts, { ...stroke, miterLimit: 1 })]);

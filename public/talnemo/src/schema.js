@@ -41,7 +41,7 @@ export const DEFAULTS = {
     tick: 80,            // 가로모음 꼭지 길이
     tickX: 0.5,          // 꼭지 위치(가로줄 비율)
     tickGap: 120,        // ㅛ·ㅠ 꼭지 간격
-    dblThin: 0,          // 두 기둥 모음(ㅐㅒㅔㅖㅙㅞ) 획 가늘게: 굵기 × (1 − 값). 0 = 끔
+    dblThin: 0,          // 두 기둥 모음(ㅐㅒㅔㅖㅙㅞ) 기둥 가로 너비 가늘게: 기둥 굵기 × (1 − 값). 곁줄기·가로줄은 그대로. 0 = 끔
   },
 
   // 배치 규칙. 세로(V)·가로(H)·복합(C) 모음 분류마다 따로 둔다
@@ -122,7 +122,7 @@ export const CONTROLS = [
   { g: '모음', k: 'vowel.tick', min: 20, max: 250, step: 1, label: '꼭지' },
   { g: '모음', k: 'vowel.tickX', min: 0, max: 1, step: 0.01, label: '꼭지 위치' },
   { g: '모음', k: 'vowel.tickGap', min: 40, max: 300, step: 1, label: '꼭지 간격' },
-  { g: '모음', k: 'vowel.dblThin', min: 0, max: 0.5, step: 0.01, label: '이중모음 획 가늘게' },
+  { g: '모음', k: 'vowel.dblThin', min: 0, max: 0.5, step: 0.01, label: '이중모음 기둥 가늘게' },
   { g: '배치', k: 'place.gapCV', min: -100, max: 200, step: 1, label: '초–세로모음' },
   { g: '배치', k: 'place.gapCH', min: -100, max: 200, step: 1, label: '초–가로모음' },
   { g: '배치', k: 'place.gapVJ', min: -100, max: 200, step: 1, label: '위–종성' },
