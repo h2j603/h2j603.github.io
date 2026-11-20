@@ -1,8 +1,8 @@
 // UFO 3 내보내기. 브라우저·Node 공용(fs 없음): {상대경로: 문자열} 만 낸다.
-import { mergeContours } from './merge.js?v=78036d7';
+import { mergeContours } from './merge.js?v=ca978cc';
 // 자소 글리프 = 로컬 좌표 외곽선 / 음절 글리프 = 자소 컴포넌트 조합.
-import { CHO, JUNG, JONG, glyphName, jamoUnicode } from './jamo.js?v=78036d7';
-import { layoutSyllable, layoutJamo } from './layout.js?v=78036d7';
+import { CHO, JUNG, JONG, glyphName, jamoUnicode } from './jamo.js?v=ca978cc';
+import { layoutSyllable, layoutJamo } from './layout.js?v=ca978cc';
 
 const K = 0.5522847498; // 4점 원의 베지어 계수
 

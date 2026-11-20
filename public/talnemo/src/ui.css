@@ -127,6 +127,7 @@ body.dragging .sample { cursor: ew-resize; }
 .cell.sel svg { touch-action: none; }
 .cell.sel path[data-slot] { cursor: grab; }
 .glyph { display: block; height: var(--g); width: auto; }
+.glyph.tall { height: calc(var(--g) * 1.4); margin-top: calc(var(--g) * -0.4); } /* 위 400유닛 = 기둥 위로 늘림이 들어갈 자리. 줄 배치는 그대로 */
 .jamo .glyph { height: 76px; }
 .cell.jamo { margin: 0 12px 12px 0; }
 .space { flex: none; width: calc(var(--g) * 0.34); }
