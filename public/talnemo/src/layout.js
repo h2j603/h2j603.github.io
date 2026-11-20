@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=c4ea231';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=c4ea231';
-import { filletPatches } from './fillet.js?v=c4ea231';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=a71e032';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=a71e032';
+import { filletPatches } from './fillet.js?v=a71e032';
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -126,8 +126,8 @@ export function layoutSyllable(P, char, opt = {}) {
 
   if (vclass === 'V') {
     const vv = verticalVowel(jung, vOpts(jm.stem ?? V.stem));
-    // ㅓㅕㅔㅖ: in 이면 첫 기둥을 'ㅣ' 자리에 두고 곁줄기는 초성 쪽으로 들인다 → 어 너비 = 이 너비
-    const inB = pl.leftBranch === 'in' && 'ㅓㅕㅔㅖ'.includes(jung) ? V.branch : 0;
+    // ㅓㅕㅔㅖ: 기둥을 왼쪽으로 들여 곁줄기가 초성 쪽 빈자리를 쓴다(곁줄기 길이만큼 들이면 어 너비 = 이 너비)
+    const inB = 'ㅓㅕㅔㅖ'.includes(jung) ? Math.min(pl.branchIn || 0, V.branch) : 0;
     const ox = choBox.x + choBox.w + pl.gapCV + hw + (jm.dx || 0) - inB;
     const oy = pl.vY + hw + (jm.dy || 0);
     stemPart = { prims: shiftPrims(vv.prims, ox, oy), kind: 'V' };
