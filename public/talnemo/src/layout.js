@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=06732d1';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=06732d1';
-import { filletPatches } from './fillet.js?v=06732d1';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=662cad7';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=662cad7';
+import { filletPatches } from './fillet.js?v=662cad7';
 
 const DBL = 'ㅐㅒㅔㅖㅙㅞ'; // 두 기둥 모음: vowel.dblThin 이 기둥(세로획) 가로 너비만 줄인다
 const isVert = (q) => q.t === 'line' && q.pts.length === 2 && Math.abs(q.pts[0][0] - q.pts[1][0]) < 1e-6;
@@ -129,7 +129,8 @@ export function layoutSyllable(P, char, opt = {}) {
   let upperBottom = choBox.y + choBox.h;
   let stemPart = null;          // 기둥이 있는 세로 부분(받침까지 늘임 대상)
   let stemX = null;
-  const vOpts = (stem) => ({ stem, branch: V.branch, branchY: V.branchY, branchGap: V.branchGap, dbl: V.dbl });
+  const up = V.stemUp || 0;     // 기둥 위로 늘림: 위끝만 올라가고 아래끝·곁줄기 자리는 그대로
+  const vOpts = (stem) => ({ stem: stem + up, branch: V.branch, branchY: V.branchY + up, branchGap: V.branchGap, dbl: V.dbl });
   const hOpts = { bar: V.bar, tick: V.tick, tickX: V.tickX, tickGap: V.tickGap };
   const jm = mods.jung;
   const jungPrims = [];
@@ -139,7 +140,7 @@ export function layoutSyllable(P, char, opt = {}) {
     // ㅓㅕㅔㅖ: 기둥을 왼쪽으로 들여 곁줄기가 초성 쪽 빈자리를 쓴다(곁줄기 길이만큼 들이면 어 너비 = 이 너비)
     const inB = 'ㅓㅕㅔㅖ'.includes(jung) ? Math.min(pl.branchIn || 0, V.branch) : 0;
     const ox = choBox.x + choBox.w + pl.gapCV + hw + (jm.dx || 0) - inB;
-    const oy = pl.vY + hw + (jm.dy || 0);
+    const oy = pl.vY - up + hw + (jm.dy || 0);
     stemPart = { prims: shiftPrims(vv.prims, ox, oy), kind: 'V' };
     jungPrims.push(stemPart);
     stemX = ox;
@@ -172,8 +173,8 @@ export function layoutSyllable(P, char, opt = {}) {
       const vName = COMPOUND[jung][1];
       const barRight = barX + hv.w + wt;
       let stem = jm.stem ?? V.stem;
-      const top = pl.vY;
-      if (pl.compoundStem === 'bar') stem = Math.max(stem, upperBottom - top - wt);
+      const top = pl.vY - up;
+      if (pl.compoundStem === 'bar') stem = Math.max(stem, upperBottom - top - wt - up);
       const vv = verticalVowel(vName, vOpts(stem));
       const ox = Math.max(choBox.x + choBox.w, barRight) + pl.gapCV + hw;
       stemPart = { prims: shiftPrims(vv.prims, ox, top + hw), kind: 'V' };
@@ -245,6 +246,14 @@ export function layoutSyllable(P, char, opt = {}) {
   for (const p of rawParts) {
     const b = primsBounds(p.prims, hw);
     bb = bb ? { x0: Math.min(bb.x0, b.x), y0: Math.min(bb.y0, b.y), x1: Math.max(bb.x1, b.x + b.w), y1: Math.max(bb.y1, b.y + b.h) } : { x0: b.x, y0: b.y, x1: b.x + b.w, y1: b.y + b.h };
+  }
+  // 기둥 위로 늘림은 정렬 기준에서 뺀다: 늘린 만큼 초성 위로 솟고, 글자 나머지는 제자리
+  if (up && stemPart) {
+    const tops = rawParts.map((p) => {
+      const t = primsBounds(p.prims, hw).y;
+      return p.slot === 'jung' && Math.abs(t - (pl.vY - up + (jm.dy || 0))) < 1e-6 ? t + up : t;
+    });
+    bb.y0 = Math.min(...tops);
   }
   const natW = bb.x1 - bb.x0, natH = bb.y1 - bb.y0;
 

@@ -33,6 +33,7 @@ export const DEFAULTS = {
 
   vowel: {
     stem: 640,           // 세로모음 기둥 길이
+    stemUp: 0,           // 세로모음 기둥 위로 늘림(유닛): 위끝만 올라간다. 아래끝·곁줄기 자리는 그대로
     branch: 110,         // 곁줄기 길이
     branchY: 150,        // 곁줄기 높이(기둥 위끝에서)
     branchGap: 90,       // ㅑ·ㅕ 두 곁줄기 간격
@@ -115,6 +116,7 @@ export const CONTROLS = [
   { g: '자음', k: 'jong.scaleW', min: 0.4, max: 1.4, step: 0.01, label: '종성 너비' },
   { g: '자음', k: 'jong.scaleH', min: 0.4, max: 1.4, step: 0.01, label: '종성 높이' },
   { g: '모음', k: 'vowel.stem', min: 200, max: 1000, step: 5, label: '기둥' },
+  { g: '모음', k: 'vowel.stemUp', min: 0, max: 400, step: 1, label: '기둥 위로' },
   { g: '모음', k: 'vowel.branch', min: 30, max: 300, step: 1, label: '곁줄기' },
   { g: '모음', k: 'vowel.branchY', min: 0, max: 600, step: 1, label: '곁줄기 높이' },
   { g: '모음', k: 'vowel.branchGap', min: 40, max: 300, step: 1, label: '곁줄기 간격' },
