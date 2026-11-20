@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=ead59f3';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=ead59f3';
-import { filletPatches } from './fillet.js?v=ead59f3';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=6a13af3';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=6a13af3';
+import { filletPatches } from './fillet.js?v=6a13af3';
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -139,7 +139,12 @@ export function layoutSyllable(P, char, opt = {}) {
       const d = (hv.w + wt - choBox.w) / 2;
       if (d > 0) choBox.x += d; else barX = -d;
     }
-    const oy = choBox.y + choBox.h + pl.gapCH + hw + (jm.dy || 0);
+    let oy = choBox.y + choBox.h + pl.gapCH + hw + (jm.dy || 0);
+    // ㅡ: 가로줄 아래끝을 '아'(같은 초성+세로모음)의 아랫단에 맞춘다. 초성과 겹치지 않게 가로줄 굵기만큼은 띄운다
+    if (jung === 'ㅡ' && pl.euBase === 'stem') {
+      const vBottom = Math.max(choBox.y + choBox.h, pl.vY + V.stem + wt);
+      oy = Math.max(vBottom - hw, choBox.y + choBox.h + wt) + (jm.dy || 0);
+    }
     const hp = shiftPrims(hv.prims, barX + hw + (jm.dx || 0), oy);
     jungPrims.push({ prims: hp, kind: 'H' });
     upperBottom = oy + hv.h + hw;
