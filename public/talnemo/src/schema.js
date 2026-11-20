@@ -27,7 +27,6 @@ export const DEFAULTS = {
     ngDot: 0.5,          // 점 ㅇ 지름(상자 한 변 대비)
     pairW: 1.5,          // 겹자음 전체 너비 = w × pairW
     pairGap: 30,         // 겹자음 두 자소 사이
-    module: 0,           // 모듈 격자: 자음 폭·높이를 이 값의 정수배로. 0 = 끔
   },
   jong: { scaleW: 1, scaleH: 1, squareRef: 'same', ngShape: 'same' },   // 종성 크기 = 초성 크기 × scale, 종성 ㅇ·ㅁ 기준
 
@@ -51,7 +50,6 @@ export const DEFAULTS = {
     vY: 0,               // 세로모음 위끝 높이(초성 윗선 기준, 음수=위로)
     hAlign: 'left',      // 가로모음 위 초성 정렬: left | center
     jongX: 'cho',        // 종성 x 기준: cho | center | stem | right | vowel(홀자 중앙 아래)
-    jongXV: 'same', jongXHs: 'same', jongXHd: 'same', jongXCs: 'same', jongXCd: 'same', // 받침 5갈래별 종성 x(same = jongX)
     pairOverhang: false, // jongX=vowel 일 때 겹받침 뒤 자소가 오른쪽으로 나간다
     jongY: 'cho',        // 종성 y 기준: cho(초성·가로모음 아래) | vowel(모음 전체 아래)
     stemSpanJong: false, // 받침이 있으면 기둥을 종성 아래끝까지 늘인다
@@ -73,9 +71,8 @@ export const DEFAULTS = {
   //   place: { jongX, jongY, gapVJ, … } }                          ← 배치 규칙 조건부 덮어쓰기(slot 없이도 됨)
   rules: [],
 
-  // 경우별 위치: 모음 모양(V 세로·H 가로·C 섞임) × 받침(0 없음·1 있음). 배치가 끝난 뒤 자리마다 평행이동(유닛, y는 +위)
-  shift: Object.fromEntries(['V0', 'V1', 'H0', 'H1', 'C0', 'C1'].map((c) => [c,
-    Object.fromEntries((c[1] === '1' ? ['cho', 'jung', 'jong'] : ['cho', 'jung']).flatMap((s) => [[s + 'X', 0], [s + 'Y', 0]]))])),
+  // 받침 위치 예외: 받침이 있을 때만 종성을 평행이동(유닛, y는 +위). V 세로모음(섞임 포함) · H 가로모음. 받침 없는 글자(오·아)는 예외 없음
+  shift: { V: { jongX: 0, jongY: 0 }, H: { jongX: 0, jongY: 0 } },
 
   // 실험(장식 변형). 기본 꺼짐. 탈네모 축과 섞지 않는다
   exp: { seed: 1, jitter: 0, rotate: 0 },
@@ -97,7 +94,6 @@ export const CONTROLS = [
   { g: '자음', k: 'cons.ngCho', opts: ['same', 'h', 'w', 'min', 'bar'], label: '초성 ㅇ 기준' },
   { g: '자음', k: 'cons.mSquare', opts: [true, false], label: 'ㅁ 정사각형' },
   { g: '자음', k: 'cons.mCho', opts: ['same', 'h', 'w', 'min', 'bar'], label: '초성 ㅁ 기준' },
-  { g: '자음', k: 'cons.module', min: 0, max: 120, step: 1, label: '모듈 격자' },
   { g: '자음', k: 'cons.strokeMin', min: 0.4, max: 1, step: 0.01, label: '획수 크기(1획 배율)' },
   { g: '자음', k: 'cons.strokeAxis', opts: ['both', 'w', 'h'], label: '획수 크기 방향' },
   { g: '자음', k: 'cons.ngShape', opts: ['ring', 'dot'], label: 'ㅇ 모양' },
@@ -123,11 +119,6 @@ export const CONTROLS = [
   { g: '배치', k: 'place.vY', min: -200, max: 200, step: 1, label: '세로모음 높이' },
   { g: '배치', k: 'place.hAlign', opts: ['left', 'center'], label: '가로모음 정렬' },
   { g: '배치', k: 'place.jongX', opts: ['cho', 'center', 'stem', 'right', 'vowel'], label: '종성 x' },
-  { g: '배치', k: 'place.jongXV', opts: ['same', 'cho', 'center', 'stem', 'right', 'vowel'], label: '종성 x · 세로' },
-  { g: '배치', k: 'place.jongXHs', opts: ['same', 'cho', 'center', 'stem', 'right', 'vowel'], label: '종성 x · 가로 홑' },
-  { g: '배치', k: 'place.jongXHd', opts: ['same', 'cho', 'center', 'stem', 'right', 'vowel'], label: '종성 x · 가로 겹' },
-  { g: '배치', k: 'place.jongXCs', opts: ['same', 'cho', 'center', 'stem', 'right', 'vowel'], label: '종성 x · 섞임 홑' },
-  { g: '배치', k: 'place.jongXCd', opts: ['same', 'cho', 'center', 'stem', 'right', 'vowel'], label: '종성 x · 섞임 겹' },
   { g: '배치', k: 'place.jongY', opts: ['cho', 'vowel'], label: '종성 y' },
   { g: '배치', k: 'place.pairOverhang', opts: [false, true], label: '겹받침 오른쪽으로' },
   { g: '배치', k: 'place.stemSpanJong', opts: [false, true], label: '기둥 받침까지' },
@@ -137,11 +128,20 @@ export const CONTROLS = [
   { g: '실험', k: 'exp.seed', min: 1, max: 99, step: 1, label: '시드' },
 ];
 
-export const SHIFT_CASES = [['V0', '세로'], ['V1', '세로+받침'], ['H0', '가로'], ['H1', '가로+받침'], ['C0', '섞임'], ['C1', '섞임+받침']];
-export const SHIFT_SLOTS = [['cho', '초성'], ['jung', '중성'], ['jong', '종성']];
-for (const [c] of SHIFT_CASES) for (const k of Object.keys(DEFAULTS.shift[c])) {
-  CONTROLS.push({ g: '위치', k: `shift.${c}.${k}`, shiftCase: c, min: -300, max: 300, step: 1,
-    shiftSlot: k.slice(0, -1), label: k.endsWith('X') ? 'x' : 'y' });
+export const SHIFT_CASES = [['V', '세로모음+받침'], ['H', '가로모음+받침']];
+export const shiftCase = (vclass) => (vclass === 'H' ? 'H' : 'V');
+for (const [c] of SHIFT_CASES) for (const a of ['X', 'Y']) {
+  CONTROLS.push({ g: '위치', k: `shift.${c}.jong${a}`, shiftCase: c, min: -300, max: 300, step: 1, label: '종성 ' + a.toLowerCase() });
+}
+
+// 저장값에서 스키마에 없는 키를 버린다(옛 저장값이 지운 변수를 되살리지 않게)
+export function pruneUnknown(p, base = DEFAULTS) {
+  const out = {};
+  for (const [k, v] of Object.entries(p || {})) {
+    if (!(k in base)) continue;
+    out[k] = isObj(base[k]) && isObj(v) ? pruneUnknown(v, base[k]) : v;
+  }
+  return out;
 }
 
 export function getPath(o, k) { return k.split('.').reduce((a, b) => a?.[b], o); }

@@ -1,8 +1,8 @@
 // 탈네모 프로토타이퍼 UI. 값과 결과만 보여 준다. 조형 판단은 사용자 몫.
-import { DEFAULTS, CONTROLS, SHIFT_CASES, SHIFT_SLOTS, getPath, setPath, merge, resolvePreset } from './schema.js?v=5025467';
-import { layoutSyllable, layoutJamo } from './layout.js?v=5025467';
-import { contourToPathD } from './outline.js?v=5025467';
-import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=5025467';
+import { DEFAULTS, CONTROLS, SHIFT_CASES, shiftCase, pruneUnknown, getPath, setPath, merge, resolvePreset } from './schema.js?v=e26ed11';
+import { layoutSyllable, layoutJamo } from './layout.js?v=e26ed11';
+import { contourToPathD } from './outline.js?v=e26ed11';
+import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=e26ed11';
 
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -214,7 +214,7 @@ function render() {
 function toggleSel(ch) {
   state.sel = state.sel === ch ? null : ch;
   const d = state.sel && decompose(state.sel.codePointAt(0)); // 고른 글자의 경우로 위치 막대를 맞춘다
-  if (d) state.shiftCase = VCLASS[d.jung] + (d.jong ? '1' : '0');
+  if (d) state.shiftCase = shiftCase(VCLASS[d.jung]);
   schedule();
 }
 
@@ -253,7 +253,7 @@ function buildControls() {
     if (g === '위치') det.append(...caseRows());
     for (const c of CONTROLS.filter((x) => x.g === g)) {
       const row = ctrlRow(c);
-      if (c.shiftCase) { row.dataset.case = c.shiftCase; row.dataset.slot = c.shiftSlot; }
+      if (c.shiftCase) row.dataset.case = c.shiftCase;
       det.appendChild(row);
     }
     wrap.appendChild(det);
@@ -282,19 +282,12 @@ function segRow(label, id, items, onPick) {
   return row;
 }
 function caseRows() {
-  return [segRow('경우', 'shift-case', SHIFT_CASES, (v) => { state.shiftCase = v; }),
-    segRow('자리', 'shift-slot', SHIFT_SLOTS, (v) => { state.shiftSlot = v; })];
+  return [segRow('경우', 'shift-case', SHIFT_CASES, (v) => { state.shiftCase = v; })];
 }
 function syncCase() {
-  const c = state.shiftCase || 'V0';
-  if (c[1] === '0' && state.shiftSlot === 'jong') state.shiftSlot = 'cho';
-  const sl = state.shiftSlot || 'cho';
+  const c = state.shiftCase || 'V';
   for (const b of document.querySelectorAll('#shift-case button')) b.classList.toggle('on', b.dataset.v === c);
-  for (const b of document.querySelectorAll('#shift-slot button')) {
-    b.classList.toggle('on', b.dataset.v === sl);
-    b.disabled = b.dataset.v === 'jong' && c[1] === '0';
-  }
-  for (const r of document.querySelectorAll('#controls [data-case]')) r.hidden = r.dataset.case !== c || r.dataset.slot !== sl;
+  for (const r of document.querySelectorAll('#controls [data-case]')) r.hidden = r.dataset.case !== c;
 }
 
 function ctrlRow(c) {
@@ -367,13 +360,12 @@ function onDown(e) {
   if (e.button > 0) return;
   const cell = e.target.closest?.('.cell');
   if (!cell || !cell.dataset.ch) return;
-  // 고른 글자의 자모를 누르면 바로 끌어 옮긴다(경우별 위치 P.shift)
-  const slot = cell.classList.contains('sel') && e.target.dataset?.slot;
-  if (slot) {
+  // 고른 글자의 종성을 누르면 바로 끌어 옮긴다(받침 위치 예외 P.shift)
+  if (cell.classList.contains('sel') && e.target.dataset?.slot === 'jong') {
     const d = decompose(cell.dataset.ch.codePointAt(0));
-    const c = VCLASS[d.jung] + (d.jong ? '1' : '0');
-    const k = `shift.${c}.${slot}`;
-    state.shiftCase = c; state.shiftSlot = slot;
+    const c = shiftCase(VCLASS[d.jung]);
+    const k = `shift.${c}.jong`;
+    state.shiftCase = c;
     drag = { part: true, ch: cell.dataset.ch, k, x0: e.clientX, y0: e.clientY,
       vx: getPath(state.P, k + 'X'), vy: getPath(state.P, k + 'Y'),
       upp: 1 / (e.target.ownerSVGElement.getScreenCTM()?.a || 1), active: false, cancelled: false };
@@ -542,7 +534,7 @@ const listOf = (x) => (typeof x === 'string' ? [...x] : x);
 async function resolveChars() {
   const mode = $('#range').value;
   let cs = null;
-  try { cs = await import('./charsets.js'); } catch {}
+  try { cs = await import('./charsets.js?v=e26ed11'); } catch {}
   if (mode === '11172') {
     if (cs?.all11172) return listOf(typeof cs.all11172 === 'function' ? cs.all11172() : cs.all11172);
     const out = [];
@@ -575,7 +567,7 @@ async function doUFO() {
     status('만드는 중');
     const chars = await resolveChars();
     const [{ buildUFO }, { makeZip }] = await Promise.all([
-      import('./export-ufo.js'), import('./zip.js'),
+      import('./export-ufo.js?v=e26ed11'), import('./zip.js?v=e26ed11'),
     ]);
     const out = await buildUFO(state.P, chars, window.polygonClipping);
     const blob = out instanceof Blob ? out : await makeZip(out);
@@ -591,7 +583,7 @@ async function doOTF() {
     status('만드는 중');
     if (!window.opentype) throw new Error('opentype 없음');
     const chars = await resolveChars();
-    const { buildOTF } = await import('./export-otf.js');
+    const { buildOTF } = await import('./export-otf.js?v=e26ed11');
     const out = await buildOTF(window.opentype, state.P, chars, window.polygonClipping);
     download(out instanceof Blob ? out : new Blob([out]), `${state.P.meta.id}.otf`);
     status('');
@@ -688,9 +680,9 @@ async function boot() {
 
   const saved = loadSaved();
   if (saved && saved.base && state.presets[saved.base]) {
-    try { state.presetFile = saved.base; state.P = merge(resolvePreset(state.presets[saved.base]), saved.d || {}); } catch {}
+    try { state.presetFile = saved.base; state.P = merge(resolvePreset(state.presets[saved.base]), pruneUnknown(saved.d)); } catch {}
   } else if (saved) {
-    try { state.P = resolvePreset(saved); } catch {} // 예전 형식(전체 값)
+    try { state.P = resolvePreset(pruneUnknown(saved)); } catch {} // 예전 형식(전체 값)
   } else if (state.presetFile && state.presets[state.presetFile]) {
     try { state.P = resolvePreset(state.presets[state.presetFile]); } catch {}
   }
