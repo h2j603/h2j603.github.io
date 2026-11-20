@@ -1,8 +1,8 @@
 // 탈네모 프로토타이퍼 UI. 값과 결과만 보여 준다. 조형 판단은 사용자 몫.
-import { DEFAULTS, CONTROLS, SHIFT_CASES, shiftCase, pruneUnknown, getPath, setPath, merge, resolvePreset } from './schema.js?v=f67b1b5';
-import { layoutSyllable, layoutJamo } from './layout.js?v=f67b1b5';
-import { contourToPathD } from './outline.js?v=f67b1b5';
-import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=f67b1b5';
+import { DEFAULTS, CONTROLS, SHIFT_CASES, shiftCase, pruneUnknown, getPath, setPath, merge, resolvePreset } from './schema.js?v=4015fb0';
+import { layoutSyllable, layoutJamo } from './layout.js?v=4015fb0';
+import { contourToPathD } from './outline.js?v=4015fb0';
+import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=4015fb0';
 
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -255,6 +255,7 @@ function buildControls() {
     for (const c of CONTROLS.filter((x) => x.g === g)) {
       const row = ctrlRow(c);
       if (c.shiftCase) row.dataset.case = c.shiftCase;
+      if (c.when) row.dataset.when = c.k; // 다른 선택지에 묶인 막대: 그 선택지일 때만 보인다
       det.appendChild(row);
     }
     wrap.appendChild(det);
@@ -341,6 +342,7 @@ function ctrlRow(c) {
 
 function syncControls() {
   syncCase();
+  for (const r of document.querySelectorAll('#controls [data-when]')) r.hidden = !CONTROLS.find((c) => c.k === r.dataset.when).when(state.P);
   for (const [k, e] of els) {
     const v = getPath(state.P, k);
     if (e.seg) {
@@ -535,7 +537,7 @@ const listOf = (x) => (typeof x === 'string' ? [...x] : x);
 async function resolveChars() {
   const mode = $('#range').value;
   let cs = null;
-  try { cs = await import('./charsets.js?v=f67b1b5'); } catch {}
+  try { cs = await import('./charsets.js?v=4015fb0'); } catch {}
   if (mode === '11172') {
     if (cs?.all11172) return listOf(typeof cs.all11172 === 'function' ? cs.all11172() : cs.all11172);
     const out = [];
@@ -568,7 +570,7 @@ async function doUFO() {
     status('만드는 중');
     const chars = await resolveChars();
     const [{ buildUFO }, { makeZip }] = await Promise.all([
-      import('./export-ufo.js?v=f67b1b5'), import('./zip.js?v=f67b1b5'),
+      import('./export-ufo.js?v=4015fb0'), import('./zip.js?v=4015fb0'),
     ]);
     const out = await buildUFO(state.P, chars, window.polygonClipping);
     const blob = out instanceof Blob ? out : await makeZip(out);
@@ -584,7 +586,7 @@ async function doOTF() {
     status('만드는 중');
     if (!window.opentype) throw new Error('opentype 없음');
     const chars = await resolveChars();
-    const { buildOTF } = await import('./export-otf.js?v=f67b1b5');
+    const { buildOTF } = await import('./export-otf.js?v=4015fb0');
     const out = await buildOTF(window.opentype, state.P, chars, window.polygonClipping);
     download(out instanceof Blob ? out : new Blob([out]), `${state.P.meta.id}.otf`);
     status('');

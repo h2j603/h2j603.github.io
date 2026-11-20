@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=f67b1b5';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=f67b1b5';
-import { filletPatches } from './fillet.js?v=f67b1b5';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=4015fb0';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=4015fb0';
+import { filletPatches } from './fillet.js?v=4015fb0';
 
 const DBL = 'ㅐㅒㅔㅖㅙㅞ'; // 두 기둥 모음: vowel.dblThin 이 기둥(세로획) 가로 너비만 줄인다
 const isVert = (q) => q.t === 'line' && q.pts.length === 2 && Math.abs(q.pts[0][0] - q.pts[1][0]) < 1e-6;
@@ -82,14 +82,14 @@ function consPrims(P, ch, box) {
   const Y = v => box.y + hw + v * Math.max(0, box.h - 2 * hw);
   // ㅁ 정사각형 규칙을 끄면 다른 자음처럼 상자 비율을 따르는 닫힌 사각 획
   const src = ch === 'ㅁ' && P.cons.mSquare === false ? [{ t: 'line', pts: [[.5, 0], [1, 0], [1, 1], [0, 1], [0, 0], [.5, 0]] }] : SIMPLE[ch];
-  return src.map(p => p.t === 'line'
-    ? { t: 'line', pts: p.pts.map(([u, v]) => [X(u), Y(v)]) }
+  return src.map((p, i) => p.t === 'line'
+    ? { t: 'line', pts: p.pts.map(([u, v]) => [X(u), Y(v)]), ...(ch === 'ㅎ' && i === 0 ? { hTick: true } : {}) }
     : { t: p.t, va: p.va, box: [X(p.box[0]), Y(p.box[1]), X(p.box[2]), Y(p.box[3])] });
 }
 
 function shiftPrims(prims, dx, dy) {
   return prims.map(p => p.t === 'line'
-    ? { t: 'line', pts: p.pts.map(([x, y]) => [x + dx, y + dy]) }
+    ? { ...p, pts: p.pts.map(([x, y]) => [x + dx, y + dy]) }
     : { t: p.t, va: p.va, box: [p.box[0] + dx, p.box[1] + dy, p.box[2] + dx, p.box[3] + dy] });
 }
 
@@ -279,7 +279,12 @@ export function layoutSyllable(P, char, opt = {}) {
       return [cx + dx * c - dy * s + jx, cy + dx * s + dy * c + jy];
     };
     const prims = p.prims.map(q => {
-      if (q.t === 'line') return { t: 'line', pts: q.pts.map(([x, y]) => rot(...T(x, y))), ...(q.thin ? { thin: true } : {}) };
+      if (q.t === 'line') {
+        const pts = q.pts.map(([x, y]) => rot(...T(x, y)));
+        // ㅎ 꼭지 시각 보정: 위끝을 hTickOver 만큼 위로(정렬이 끝난 뒤라 글자 자리는 그대로, 윗선 위로 튀어나온다)
+        if (q.hTick && P.cons.hTickOver) { const k = pts[0][1] <= pts[1][1] ? 0 : 1; pts[k] = [pts[k][0], pts[k][1] - P.cons.hTickOver]; }
+        return { t: 'line', pts, ...(q.thin ? { thin: true } : {}) };
+      }
       // 정원·정사각형: 상자를 비균등 변환한 뒤 내접 도형으로 다시 그린다. 회전은 받지 않고 이동만 받는다
       const [x0, y0] = T(q.box[0], q.box[1]), [x1, y1] = T(q.box[2], q.box[3]);
       const ell = q.t === 'circle' && /[ㅇㅎㄶㅀ]/.test(p.jamo) && P.cons.ngRound === false; // ㅎ의 원도 ㅇ처럼 상자 폭에 맞춘 타원
