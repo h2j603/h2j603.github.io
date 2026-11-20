@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=e26ed11';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=e26ed11';
-import { filletPatches } from './fillet.js?v=e26ed11';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=b4b8503';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=b4b8503';
+import { filletPatches } from './fillet.js?v=b4b8503';
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -194,7 +194,7 @@ export function layoutSyllable(P, char, opt = {}) {
   if (jong) rawParts.push({ slot: 'jong', jamo: jong, prims: consPrims(P, jong, jongBox), setBox: jongBox });
 
   // 받침 위치 예외(P.shift): 받침 있는 글자의 종성만 평행이동. 로컬 좌표는 y-아래라 Y 부호를 뒤집는다
-  const sh = jong && P.shift?.[vclass === 'H' ? 'H' : 'V'];
+  const sh = jong && P.shift?.[vclass === 'V' ? 'V' : 'H'];
   const jp = sh && rawParts.find((p) => p.slot === 'jong');
   if (jp && (sh.jongX || sh.jongY)) {
     const dx = sh.jongX || 0, dy = -(sh.jongY || 0);

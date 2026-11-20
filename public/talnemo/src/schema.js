@@ -71,7 +71,7 @@ export const DEFAULTS = {
   //   place: { jongX, jongY, gapVJ, … } }                          ← 배치 규칙 조건부 덮어쓰기(slot 없이도 됨)
   rules: [],
 
-  // 받침 위치 예외: 받침이 있을 때만 종성을 평행이동(유닛, y는 +위). V 세로모음(섞임 포함) · H 가로모음. 받침 없는 글자(오·아)는 예외 없음
+  // 받침 위치 예외: 받침이 있을 때만 종성을 평행이동(유닛, y는 +위). V 세로모음 · H 가로모음(섞임 포함). 받침 없는 글자(오·아)는 예외 없음
   shift: { V: { jongX: 0, jongY: 0 }, H: { jongX: 0, jongY: 0 } },
 
   // 실험(장식 변형). 기본 꺼짐. 탈네모 축과 섞지 않는다
@@ -129,7 +129,7 @@ export const CONTROLS = [
 ];
 
 export const SHIFT_CASES = [['V', '세로모음+받침'], ['H', '가로모음+받침']];
-export const shiftCase = (vclass) => (vclass === 'H' ? 'H' : 'V');
+export const shiftCase = (vclass) => (vclass === 'V' ? 'V' : 'H');
 for (const [c] of SHIFT_CASES) for (const a of ['X', 'Y']) {
   CONTROLS.push({ g: '위치', k: `shift.${c}.jong${a}`, shiftCase: c, min: -300, max: 300, step: 1, label: '종성 ' + a.toLowerCase() });
 }
