@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=1030c1c';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=1030c1c';
-import { filletPatches } from './fillet.js?v=1030c1c';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=3222a66';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=3222a66';
+import { filletPatches } from './fillet.js?v=3222a66';
 
 const DBL = 'ㅐㅒㅔㅖㅙㅞ'; // 두 기둥 모음: vowel.dblThin 이 기둥(세로획) 가로 너비만 줄인다
 const isVert = (q) => q.t === 'line' && q.pts.length === 2 && Math.abs(q.pts[0][0] - q.pts[1][0]) < 1e-6;
@@ -171,12 +171,13 @@ export function layoutSyllable(P, char, opt = {}) {
     upperBottom = oy + hv.h + hw;
     if (vclass === 'C') {
       const vName = COMPOUND[jung][1];
-      const barRight = barX + hv.w + wt;
       let stem = jm.stem ?? V.stem;
       const top = pl.vY - up;
       if (pl.compoundStem === 'bar') stem = Math.max(stem, upperBottom - top - wt - up);
       const vv = verticalVowel(vName, vOpts(stem));
-      const ox = Math.max(choBox.x + choBox.w, barRight) + pl.gapCV + hw;
+      // 섞임의 세로 부분 = 홀로 쓴 세로모음과 같은 자리(와의 ㅏ = 아의 ㅏ, 궈의 ㅓ = 거의 ㅓ). 가로줄 끝은 기준에 넣지 않는다
+      const inBc = 'ㅓㅔ'.includes(vName) ? Math.min(pl.branchIn || 0, V.branch) : 0;
+      const ox = choBox.x + choBox.w + pl.gapCV + hw - inBc;
       stemPart = { prims: shiftPrims(vv.prims, ox, top + hw), kind: 'V' };
       jungPrims.push(stemPart);
       stemX = ox;
