@@ -85,6 +85,7 @@ button { cursor: pointer; }
 
 .sample {
   padding: 12px;
+  padding-top: max(12px, calc(var(--g) * 0.42)); /* 기둥 위로(최대 400 = 글자 높이 0.4)가 위 칸에서 잘리지 않게 */
   --g: 96px;
   height: 55vh;
   overflow-y: auto;
