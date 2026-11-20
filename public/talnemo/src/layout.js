@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=d0221cd';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=d0221cd';
-import { filletPatches } from './fillet.js?v=d0221cd';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=e2d2cdf';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=e2d2cdf';
+import { filletPatches } from './fillet.js?v=e2d2cdf';
 
 const DBL = 'ㅐㅒㅔㅖㅙㅞ'; // 두 기둥 모음: vowel.dblThin 이 기둥(세로획) 가로 너비만 줄인다
 const isVert = (q) => q.t === 'line' && q.pts.length === 2 && Math.abs(q.pts[0][0] - q.pts[1][0]) < 1e-6;
@@ -160,9 +160,12 @@ export function layoutSyllable(P, char, opt = {}) {
     stemX = ox;
   } else {
     const hName = vclass === 'H' ? jung : COMPOUND[jung][0];
-    const hv = horizontalVowel(hName, hOpts);
+    // 섞임 가로줄 왼쪽 맞춤(cAlign left): 초성 왼끝에서 시작해 기둥 왼끝에서 멈춘다 → 와 너비 = 아 너비
+    const cLeft = vclass === 'C' && pl.cAlign === 'left';
+    const inBc0 = cLeft && 'ㅓㅔ'.includes(COMPOUND[jung][1]) ? Math.min(pl.branchIn || 0, V.branch) : 0;
+    const hv = horizontalVowel(hName, cLeft ? { ...hOpts, bar: Math.max(0, Math.min(V.bar, choBox.w + pl.gapCV - inBc0 - wt)) } : hOpts);
     let barX = 0;
-    if (pl.hAlign === 'center') {
+    if (pl.hAlign === 'center' && !cLeft) {
       const d = (hv.w + wt - choBox.w) / 2;
       if (d > 0) choBox.x += d; else barX = -d;
     }
