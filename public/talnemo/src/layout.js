@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=ca978cc';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=ca978cc';
-import { filletPatches } from './fillet.js?v=ca978cc';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=1030c1c';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=1030c1c';
+import { filletPatches } from './fillet.js?v=1030c1c';
 
 const DBL = 'ㅐㅒㅔㅖㅙㅞ'; // 두 기둥 모음: vowel.dblThin 이 기둥(세로획) 가로 너비만 줄인다
 const isVert = (q) => q.t === 'line' && q.pts.length === 2 && Math.abs(q.pts[0][0] - q.pts[1][0]) < 1e-6;
