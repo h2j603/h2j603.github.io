@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=3222a66';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=3222a66';
-import { filletPatches } from './fillet.js?v=3222a66';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=2d2dd1b';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=2d2dd1b';
+import { filletPatches } from './fillet.js?v=2d2dd1b';
 
 const DBL = 'ㅐㅒㅔㅖㅙㅞ'; // 두 기둥 모음: vowel.dblThin 이 기둥(세로획) 가로 너비만 줄인다
 const isVert = (q) => q.t === 'line' && q.pts.length === 2 && Math.abs(q.pts[0][0] - q.pts[1][0]) < 1e-6;
@@ -267,6 +267,7 @@ export function layoutSyllable(P, char, opt = {}) {
   const r = rng((exp.seed * 7919) ^ (typeof char === 'string' ? char.codePointAt(0) : 0));
   const constraints = [];
 
+  const ov = 2 * (P.cons.ngOver || 0); // ㅇ·ㅎ 원 시각 보정: 위아래로 각각 ngOver 만큼 넘친다(정렬 기준에는 안 들어감)
   const outParts = rawParts.map((p, i) => {
     const jx = (r() * 2 - 1) * exp.jitter, jy = (r() * 2 - 1) * exp.jitter;
     const ang = (r() * 2 - 1) * exp.rotate * Math.PI / 180;
@@ -285,12 +286,12 @@ export function layoutSyllable(P, char, opt = {}) {
       const ins = inscribed([x0, y0, x1, y1], q.va);
       if (ell) {
         const [ncx, ncy] = rot(ins.cx, ins.cy);
-        return { t: 'circle', cx: ncx, cy: ncy, s: x1 - x0, sy: y1 - y0 };
+        return { t: 'circle', cx: ncx, cy: ncy, s: x1 - x0, sy: y1 - y0 + ov };
       }
       const [ncx, ncy] = rot(ins.cx, ins.cy);
       const changed = Math.abs(ins.set.w - ins.set.h) > 0.5 || (q.t === 'square' && Math.abs(ang) > 1e-6);
       if (changed) constraints.push({ slot: p.slot, jamo: p.jamo, shape: q.t, set: { w: +ins.set.w.toFixed(1), h: +ins.set.h.toFixed(1), rotate: +(ang * 180 / Math.PI).toFixed(2) }, drawn: { side: +ins.s.toFixed(1), rotate: 0 } });
-      return { t: q.t, cx: ncx, cy: ncy, s: ins.s };
+      return q.t === 'circle' && ov ? { t: 'circle', cx: ncx, cy: ncy, s: ins.s, sy: ins.s + ov } : { t: q.t, cx: ncx, cy: ncy, s: ins.s };
     });
     return { slot: p.slot, jamo: p.jamo, prims };
   });
