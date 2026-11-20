@@ -54,7 +54,7 @@ export const DEFAULTS = {
     pairOverhang: false, // jongX=vowel 일 때 겹받침 뒤 자소가 오른쪽으로 나간다
     jongY: 'cho',        // 종성 y 기준: cho(초성·가로모음 아래) | vowel(모음 전체 아래)
     stemSpanJong: false, // 받침이 있으면 기둥을 종성 아래끝까지 늘인다
-    leftBranch: 'out',   // ㅓㅕㅔㅖ 곁줄기: out(기둥 왼쪽에 곁줄기만큼 자리를 더 잡음) | in(기둥은 ㅣ 자리, 곁줄기는 초성 쪽 안으로)
+    branchIn: 0,         // ㅓㅕㅔㅖ 들임(유닛): 기둥을 왼쪽으로 옮기는 양. 0 = 곁줄기만큼 자리를 더 잡음, 곁줄기 길이 = 기둥이 ㅣ 자리
     euBase: 'gap',       // ㅡ 위치: gap(초–가로모음 간격) | stem(가로줄 아래끝 = 초성+세로모음 아래끝, 아의 아랫단)
     compoundStem: 'fixed', // 복합모음 기둥: fixed | bar(가로줄까지)
   },
@@ -126,7 +126,7 @@ export const CONTROLS = [
   { g: '배치', k: 'place.jongY', opts: ['cho', 'vowel'], label: '종성 y' },
   { g: '배치', k: 'place.pairOverhang', opts: [false, true], label: '겹받침 오른쪽으로' },
   { g: '배치', k: 'place.stemSpanJong', opts: [false, true], label: '기둥 받침까지' },
-  { g: '배치', k: 'place.leftBranch', opts: ['out', 'in'], label: 'ㅓ 곁줄기' },
+  { g: '배치', k: 'place.branchIn', min: 0, max: 300, step: 1, label: 'ㅓ 들임' },
   { g: '배치', k: 'place.euBase', opts: ['gap', 'stem'], label: 'ㅡ 위치' },
   { g: '배치', k: 'place.compoundStem', opts: ['fixed', 'bar'], label: '복합모음 기둥' },
   { g: '실험', k: 'exp.jitter', min: 0, max: 80, step: 1, label: '흔들림' },
