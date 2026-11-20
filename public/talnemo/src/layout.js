@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=349bc6d';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=349bc6d';
-import { filletPatches } from './fillet.js?v=349bc6d';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=80d4bba';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=80d4bba';
+import { filletPatches } from './fillet.js?v=80d4bba';
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -202,7 +202,7 @@ export function layoutSyllable(P, char, opt = {}) {
   if (jong) rawParts.push({ slot: 'jong', jamo: jong, prims: consPrims(P, jong, jongBox), setBox: jongBox });
 
   // 받침 위치 예외(P.shift): 받침 있는 글자의 종성만 평행이동. 로컬 좌표는 y-아래라 Y 부호를 뒤집는다
-  const sh = jong && P.shift?.[vclass === 'V' ? 'V' : 'H'];
+  const sh = jong && P.shift?.[vclass === 'H' ? 'H' : 'V']; // 섞임 = 세로 쪽(책: 맘과 같은 받침 자리)
   const jp = sh && rawParts.find((p) => p.slot === 'jong');
   if (jp && (sh.jongX || sh.jongY)) {
     const dx = sh.jongX || 0, dy = -(sh.jongY || 0);
@@ -259,44 +259,50 @@ export function layoutSyllable(P, char, opt = {}) {
   const W = natW * sx, H = natH * sy;
   const F = P.font;
   const oy = P.frame.align === 'center' ? (F.frameH - H) / 2 : P.frame.align === 'bottom' ? F.frameH - H : 0;
-  const advance = P.frame.width === 'fixed' ? P.frame.fixedAdvance : Math.round(W + 2 * F.sidebearing);
+  const advance = P.frame.width === 'fixed' ? P.frame.fixedAdvance
+    : P.frame.width === 'group' ? P.frame.groupW[vclass] : Math.round(W + 2 * F.sidebearing);
   const ox = P.frame.width === 'fixed' ? (advance - W) / 2 : F.sidebearing;
   const toFont = (x, y) => [x + ox, F.frameTop - (y + oy)];
 
+  const DBL = 'ㅐㅒㅔㅖㅙㅞ';
   for (const p of outParts) {
+    // 이중모음 획 보정: 두 기둥 모음의 중성만 굵기를 줄인다(골격·자리는 그대로)
+    const thin = p.slot === 'jung' && DBL.includes(jung) ? (P.vowel.dblThin || 0) : 0;
+    const stroke = thin ? { ...P.stroke, weight: P.stroke.weight * (1 - thin) } : P.stroke;
+    const hw = stroke.weight / 2;
     const cs = [], kinds = [];
     const add = (k, list) => { for (const c of list) { cs.push(c); kinds.push(k); } };
     for (const q of p.prims) {
       if (q.t === 'line') {
-        if (P.stroke.cap === 'round') {
+        if (stroke.cap === 'round') {
           // 둥근 끝이면 꺾임도 둥글게: 꺾인 자리는 베벨로 자르고 지름 = 굵기인 원판을 덧놓는다(뾰족한 ㅅ 꼭짓점이 잘리거나 튀지 않음)
-          add('line', [strokeOpen(q.pts, { ...P.stroke, miterLimit: 1 })]);
-          for (let i = 1; i < q.pts.length - 1; i++) add('joint', strokeCircle(q.pts[i][0], q.pts[i][1], hw / 2, { ...P.stroke, weight: hw }));
-        } else add('line', [strokeOpen(q.pts, P.stroke)]);
+          add('line', [strokeOpen(q.pts, { ...stroke, miterLimit: 1 })]);
+          for (let i = 1; i < q.pts.length - 1; i++) add('joint', strokeCircle(q.pts[i][0], q.pts[i][1], hw / 2, { ...stroke, weight: hw }));
+        } else add('line', [strokeOpen(q.pts, stroke)]);
       }
       else if (q.t === 'circle' && p.jamo === 'ㅇ' && (p.slot === 'jong' && P.jong.ngShape !== 'same' ? P.jong.ngShape : P.cons.ngShape) === 'dot') {
         // 점 ㅇ: 속이 찬 정원. 지름 = (상자 한 변) × ngDot
         const D = (Math.min(q.s, q.sy ?? q.s) + wt) * P.cons.ngDot;
-        add('dot', strokeCircle(q.cx, q.cy, D / 4, { ...P.stroke, weight: D / 2 }));
+        add('dot', strokeCircle(q.cx, q.cy, D / 4, { ...stroke, weight: D / 2 }));
       }
-      else if (q.t === 'circle') add('circle', strokeCircle(q.cx, q.cy, q.s / 2, P.stroke, (q.sy ?? q.s) / 2));
-      else if (P.stroke.cap === 'round') {
+      else if (q.t === 'circle') add('circle', strokeCircle(q.cx, q.cy, q.s / 2, stroke, (q.sy ?? q.s) / 2));
+      else if (stroke.cap === 'round') {
         // 둥근 끝이면 ㅁ 정사각형도 예외 없이 모서리를 둥글게: 위 가운데에서 출발하는 닫힌 획 + 모서리 원판
         const a = q.s / 2, x0 = q.cx - a, x1 = q.cx + a, y0 = q.cy - a, y1 = q.cy + a;
         const loop = [[q.cx, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0], [q.cx, y0]];
-        add('line', [strokeOpen(loop, { ...P.stroke, contrast: 0, miterLimit: 1 })]);
-        for (let i = 1; i < loop.length - 1; i++) add('joint', strokeCircle(loop[i][0], loop[i][1], hw / 2, { ...P.stroke, weight: hw }));
+        add('line', [strokeOpen(loop, { ...stroke, contrast: 0, miterLimit: 1 })]);
+        for (let i = 1; i < loop.length - 1; i++) add('joint', strokeCircle(loop[i][0], loop[i][1], hw / 2, { ...stroke, weight: hw }));
       }
       else {
         const a = q.s / 2;
-        add('square', strokeClosed([[q.cx - a, q.cy - a], [q.cx + a, q.cy - a], [q.cx + a, q.cy + a], [q.cx - a, q.cy + a]], { ...P.stroke, contrast: 0 }));
+        add('square', strokeClosed([[q.cx - a, q.cy - a], [q.cx + a, q.cy - a], [q.cx + a, q.cy + a], [q.cx - a, q.cy + a]], { ...stroke, contrast: 0 }));
       }
     }
     // 교차부 둥글리기: 서로 다른 직선 획이 만나는 안쪽 모서리에 원호 조각
     // 안쪽 모서리 둥글리기: 교차부 + 꺾임(ㅁ 정사각형은 닫힌 점열로 넘긴다)
     const filletLines = p.prims.flatMap(q => q.t === 'line' ? [q.pts]
       : q.t === 'square' ? [(a => [[q.cx, q.cy - a], [q.cx + a, q.cy - a], [q.cx + a, q.cy + a], [q.cx - a, q.cy + a], [q.cx - a, q.cy - a], [q.cx, q.cy - a]])(q.s / 2)] : []);
-    add('fillet', filletPatches(filletLines, P.stroke, P.stroke.fillet));
+    add('fillet', filletPatches(filletLines, stroke, stroke.fillet));
     // y 를 뒤집으면 감는 방향도 뒤집히므로 되돌린다: 바깥 = 반시계(PostScript·UFO 관례), 구멍 = 시계
     p.contours = cs.map((c, i) => {
       const m = reverseContour(mapContour(c, toFont));
