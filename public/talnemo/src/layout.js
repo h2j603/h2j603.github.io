@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=6fd3df6';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=6fd3df6';
-import { filletPatches } from './fillet.js?v=6fd3df6';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=fa86fac';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=fa86fac';
+import { filletPatches } from './fillet.js?v=fa86fac';
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -49,7 +49,8 @@ function consSize(P, ch, slot, mod) {
     const own = slot === 'jong' ? P.jong.squareRef : ch === 'ㅇ' ? P.cons.ngCho : P.cons.mCho;
     if (own && own !== 'same') ref = own;
     const s = ref === 'w' ? w : ref === 'min' ? Math.min(w, h) : ref === 'bar' ? P.vowel.bar + P.stroke.weight : h;
-    w = s; h = s;
+    // ㅇ 정원 깨기: 높이는 기준 그대로, 폭은 다른 자음 폭
+    w = ch === 'ㅇ' && P.cons.ngRound === false ? P.cons.w * sw : s; h = s;
   }
   w *= mod.scaleW ?? 1; h *= mod.scaleH ?? 1;
   return { w, h };
@@ -240,7 +241,12 @@ export function layoutSyllable(P, char, opt = {}) {
       if (q.t === 'line') return { t: 'line', pts: q.pts.map(([x, y]) => rot(...T(x, y))) };
       // 정원·정사각형: 상자를 비균등 변환한 뒤 내접 도형으로 다시 그린다. 회전은 받지 않고 이동만 받는다
       const [x0, y0] = T(q.box[0], q.box[1]), [x1, y1] = T(q.box[2], q.box[3]);
+      const ell = q.t === 'circle' && p.jamo === 'ㅇ' && P.cons.ngRound === false;
       const ins = inscribed([x0, y0, x1, y1], q.va);
+      if (ell) {
+        const [ncx, ncy] = rot(ins.cx, ins.cy);
+        return { t: 'circle', cx: ncx, cy: ncy, s: x1 - x0, sy: y1 - y0 };
+      }
       const [ncx, ncy] = rot(ins.cx, ins.cy);
       const changed = Math.abs(ins.set.w - ins.set.h) > 0.5 || (q.t === 'square' && Math.abs(ang) > 1e-6);
       if (changed) constraints.push({ slot: p.slot, jamo: p.jamo, shape: q.t, set: { w: +ins.set.w.toFixed(1), h: +ins.set.h.toFixed(1), rotate: +(ang * 180 / Math.PI).toFixed(2) }, drawn: { side: +ins.s.toFixed(1), rotate: 0 } });
@@ -270,10 +276,10 @@ export function layoutSyllable(P, char, opt = {}) {
       }
       else if (q.t === 'circle' && p.jamo === 'ㅇ' && (p.slot === 'jong' && P.jong.ngShape !== 'same' ? P.jong.ngShape : P.cons.ngShape) === 'dot') {
         // 점 ㅇ: 속이 찬 정원. 지름 = (상자 한 변) × ngDot
-        const D = (q.s + wt) * P.cons.ngDot;
+        const D = (Math.min(q.s, q.sy ?? q.s) + wt) * P.cons.ngDot;
         add('dot', strokeCircle(q.cx, q.cy, D / 4, { ...P.stroke, weight: D / 2 }));
       }
-      else if (q.t === 'circle') add('circle', strokeCircle(q.cx, q.cy, q.s / 2, P.stroke));
+      else if (q.t === 'circle') add('circle', strokeCircle(q.cx, q.cy, q.s / 2, P.stroke, (q.sy ?? q.s) / 2));
       else if (P.stroke.cap === 'round') {
         // 둥근 끝이면 ㅁ 정사각형도 예외 없이 모서리를 둥글게: 위 가운데에서 출발하는 닫힌 획 + 모서리 원판
         const a = q.s / 2, x0 = q.cx - a, x1 = q.cx + a, y0 = q.cy - a, y1 = q.cy + a;
@@ -300,7 +306,7 @@ export function layoutSyllable(P, char, opt = {}) {
     // 골격(중심선), 폰트 좌표. line: 점열 / circle·square: 중심·지름(한 변) — 획 굵기 중심 기준
     p.skeleton = p.prims.map(q => q.t === 'line'
       ? { t: 'line', pts: q.pts.map(([x, y]) => toFont(x, y)) }
-      : { t: q.t, c: toFont(q.cx, q.cy), d: q.s });
+      : { t: q.t, c: toFont(q.cx, q.cy), d: q.s, ...(q.sy != null ? { dy: q.sy } : {}) });
     const b = primsBoundsDrawn(p.prims, hw);
     p.origin = toFont(b.x, b.y + b.h).map(v => Math.round(v)); // 왼쪽 아래(폰트 좌표)
   }
@@ -319,7 +325,7 @@ function signedArea(c) {
 }
 
 function primsBoundsDrawn(prims, hw) {
-  const flat = prims.map(q => q.t === 'line' ? q : { t: 'line', pts: [[q.cx - q.s / 2, q.cy - q.s / 2], [q.cx + q.s / 2, q.cy + q.s / 2]] });
+  const flat = prims.map(q => q.t === 'line' ? q : { t: 'line', pts: [[q.cx - q.s / 2, q.cy - (q.sy ?? q.s) / 2], [q.cx + q.s / 2, q.cy + (q.sy ?? q.s) / 2]] });
   return primsBounds(flat, hw);
 }
 

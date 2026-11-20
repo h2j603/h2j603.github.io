@@ -140,14 +140,18 @@ export function strokeClosed(pts, stroke) {
 }
 
 // 원(ㅇ·ㅎ) → 고리. 대비가 있어도 원은 균일(정원 조건).
-export function strokeCircle(cx, cy, r, stroke) {
+export function strokeCircle(cx, cy, r, stroke, ry = r) {
   const h = stroke.weight / 2;
-  const ring = (rr, positive) => {
-    const c = [['M', cx + rr, cy], ...arcCmds(cx, cy, rr, 0, Math.PI * 2), ['Z']];
+  // ry ≠ r 이면 타원: 단위원을 x·y 따로 늘인다(획 굵기는 가로·세로 끝에서 정확)
+  const ring = (rx, rY, positive) => {
+    const sc = (x, y) => [cx + (x - cx) * rx, cy + (y - cy) * rY];
+    const c = [['M', cx + rx, cy], ...arcCmds(cx, cy, 1, 0, Math.PI * 2).map(k => {
+      const o = [k[0]]; for (let i = 1; i < k.length; i += 2) o.push(...sc(k[i], k[i + 1])); return o;
+    }), ['Z']];
     return orient(c, positive);
   };
-  const out = [ring(r + h, true)];
-  if (r - h > 1) out.push(ring(r - h, false));
+  const out = [ring(r + h, ry + h, true)];
+  if (Math.min(r, ry) - h > 1) out.push(ring(r - h, ry - h, false));
   return out;
 }
 

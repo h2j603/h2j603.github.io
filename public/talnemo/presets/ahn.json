@@ -13,6 +13,7 @@
     "h": 290,
     "squareRef": "min",
     "ngCho": "bar",
+    "ngRound": false,
     "pairW": 1.79,
     "pairGap": -15
   },

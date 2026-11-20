@@ -1,8 +1,8 @@
 // UFO 3 내보내기. 브라우저·Node 공용(fs 없음): {상대경로: 문자열} 만 낸다.
-import { mergeContours } from './merge.js?v=6fd3df6';
+import { mergeContours } from './merge.js?v=fa86fac';
 // 자소 글리프 = 로컬 좌표 외곽선 / 음절 글리프 = 자소 컴포넌트 조합.
-import { CHO, JUNG, JONG, glyphName, jamoUnicode } from './jamo.js?v=6fd3df6';
-import { layoutSyllable, layoutJamo } from './layout.js?v=6fd3df6';
+import { CHO, JUNG, JONG, glyphName, jamoUnicode } from './jamo.js?v=fa86fac';
+import { layoutSyllable, layoutJamo } from './layout.js?v=fa86fac';
 
 const K = 0.5522847498; // 4점 원의 베지어 계수
 
@@ -109,12 +109,13 @@ function skeletonPoints(part) {
     if (q.t === 'line') return { closed: false, pts: q.pts.map(([x, y], i) => ({ x, y, type: i ? 'line' : 'move' })) };
     const [cx, cy] = q.c, r = q.d / 2, k = r * K;
     if (q.t === 'circle') {
+      const rv = (q.dy ?? q.d) / 2, kv = rv * K; // 타원이면 세로 반지름이 다르다
       return { closed: true, pts: [
-        { x: cx, y: cy + r, type: 'curve' },
-        { x: cx - k, y: cy + r, type: 'offcurve' }, { x: cx - r, y: cy + k, type: 'offcurve' }, { x: cx - r, y: cy, type: 'curve' },
-        { x: cx - r, y: cy - k, type: 'offcurve' }, { x: cx - k, y: cy - r, type: 'offcurve' }, { x: cx, y: cy - r, type: 'curve' },
-        { x: cx + k, y: cy - r, type: 'offcurve' }, { x: cx + r, y: cy - k, type: 'offcurve' }, { x: cx + r, y: cy, type: 'curve' },
-        { x: cx + r, y: cy + k, type: 'offcurve' }, { x: cx + k, y: cy + r, type: 'offcurve' },
+        { x: cx, y: cy + rv, type: 'curve' },
+        { x: cx - k, y: cy + rv, type: 'offcurve' }, { x: cx - r, y: cy + kv, type: 'offcurve' }, { x: cx - r, y: cy, type: 'curve' },
+        { x: cx - r, y: cy - kv, type: 'offcurve' }, { x: cx - k, y: cy - rv, type: 'offcurve' }, { x: cx, y: cy - rv, type: 'curve' },
+        { x: cx + k, y: cy - rv, type: 'offcurve' }, { x: cx + r, y: cy - kv, type: 'offcurve' }, { x: cx + r, y: cy, type: 'curve' },
+        { x: cx + r, y: cy + kv, type: 'offcurve' }, { x: cx + k, y: cy + rv, type: 'offcurve' },
       ] };
     }
     return { closed: true, pts: [
