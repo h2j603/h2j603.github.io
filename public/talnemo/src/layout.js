@@ -1,11 +1,22 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=bba5f2f';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=bba5f2f';
-import { filletPatches } from './fillet.js?v=bba5f2f';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=1e8ad57';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=1e8ad57';
+import { filletPatches } from './fillet.js?v=1e8ad57';
 
 const DBL = 'ㅐㅒㅔㅖㅙㅞ'; // 두 기둥 모음: vowel.dblThin 이 기둥(세로획) 가로 너비만 줄인다
 const isVert = (q) => q.t === 'line' && q.pts.length === 2 && Math.abs(q.pts[0][0] - q.pts[1][0]) < 1e-6;
+
+// 종성 y 고정 기준(로컬 y-아래): 이 글자의 모음과 무관하게 초성 아래끝 · 세로 기둥 아래끝 · ㅜ 꼭지 아래끝 중 가장 아래
+function fixedJongRef(P, pl, choBox) {
+  const V = P.vowel, wt = P.stroke.weight, hw = wt / 2;
+  const choB = choBox.y + choBox.h, vB = pl.vY + V.stem + wt;
+  const gapBar = choB + pl.gapCH + hw;
+  const euBar = pl.euBase === 'stem' ? Math.max(Math.max(choB, vB) - hw, choB + wt) : gapBar;
+  const uBar = pl.hBarY === 'fixed' ? euBar : gapBar;
+  const uB = uBar + horizontalVowel('ㅜ', { bar: V.bar, tick: V.tick, tickX: V.tickX, tickGap: V.tickGap }).h + hw;
+  return Math.max(choB, vB, uB);
+}
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -122,7 +133,6 @@ export function layoutSyllable(P, char, opt = {}) {
   let upperBottom = choBox.y + choBox.h;
   let stemPart = null;          // 기둥이 있는 세로 부분(받침까지 늘임 대상)
   let stemX = null;
-  let hRef = -Infinity;          // 가로·섞임 계열 종성 y 고정 기준(모음 모양과 무관한 값)
   const vOpts = (stem) => ({ stem, branch: V.branch, branchY: V.branchY, branchGap: V.branchGap, dbl: V.dbl });
   const hOpts = { bar: V.bar, tick: V.tick, tickX: V.tickX, tickGap: V.tickGap };
   const jm = mods.jung;
@@ -158,8 +168,7 @@ export function layoutSyllable(P, char, opt = {}) {
       return name === 'ㅡ' ? eu : oy0;
     };
     const oy = oyOf(hName);
-    // 종성 y 고정(jongY fixed)용: 가로 계열에서 가장 아래로 내려가는 모음(ㅜ 꼭지) 아랫끝
-    hRef = oyOf('ㅜ') + horizontalVowel('ㅜ', hOpts).h + hw;
+
     const hp = shiftPrims(hv.prims, barX + hw + (jm.dx || 0), oy);
     jungPrims.push({ prims: hp, kind: 'H' });
     upperBottom = oy + hv.h + hw;
@@ -174,7 +183,6 @@ export function layoutSyllable(P, char, opt = {}) {
       stemPart = { prims: shiftPrims(vv.prims, ox, top + hw), kind: 'V' };
       jungPrims.push(stemPart);
       stemX = ox;
-      hRef = Math.max(hRef, top + (jm.stem ?? V.stem) + wt);      // 섞임: 기본 기둥 아랫끝도 기준에 넣는다
     }
   }
   const jungAll = jungPrims.flatMap(j => j.prims);
@@ -201,10 +209,10 @@ export function layoutSyllable(P, char, opt = {}) {
       x = cxv - anchorW / 2;
     }
     // 종성 y: cho = 초성·가로모음 아래 / vowel = 이 글자 모음 전체 아래 / fixed = 모음 길이와 무관한 고정 자리
-    //   fixed: 세로 = 기둥 아래(세로모음 기둥은 길이가 같아 원래 고정), 가로·섞임 = 가장 긴 가로 계열(ㅜ 꼭지) 아래. ㅡ 가 짧다고 올라오지 않는다
+    //   fixed: 세로·가로·섞임 모두 한 자리 = 가장 아래로 내려가는 모음(세로 기둥 · ㅜ 꼭지) 아래. ㅡ 가 짧다고 올라오지 않는다
     const jbot = primsBounds(jungAll, hw).y + primsBounds(jungAll, hw).h;
     const baseY = pl.jongY === 'vowel' ? Math.max(upperBottom, jbot)
-      : pl.jongY === 'fixed' ? (vclass === 'V' ? Math.max(upperBottom, jbot) : Math.max(choBox.y + choBox.h, hRef))
+      : pl.jongY === 'fixed' ? fixedJongRef(P, pl, choBox)
       : upperBottom;
     jongBox = { x: x + (mods.jong.dx || 0), y: baseY + pl.gapVJ + (mods.jong.dy || 0), ...js };
     // 기둥을 종성 아래끝까지
