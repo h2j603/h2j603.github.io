@@ -1,8 +1,8 @@
 // 탈네모 프로토타이퍼 UI. 값과 결과만 보여 준다. 조형 판단은 사용자 몫.
-import { DEFAULTS, CONTROLS, SHIFT_CASES, shiftCase, pruneUnknown, getPath, setPath, merge, resolvePreset } from './schema.js?v=e391b02';
-import { layoutSyllable, layoutJamo } from './layout.js?v=e391b02';
-import { contourToPathD } from './outline.js?v=e391b02';
-import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=e391b02';
+import { DEFAULTS, CONTROLS, SHIFT_CASES, shiftCase, pruneUnknown, getPath, setPath, merge, resolvePreset } from './schema.js?v=fb9613f';
+import { layoutSyllable, layoutJamo } from './layout.js?v=fb9613f';
+import { contourToPathD } from './outline.js?v=fb9613f';
+import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=fb9613f';
 
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -535,7 +535,7 @@ const listOf = (x) => (typeof x === 'string' ? [...x] : x);
 async function resolveChars() {
   const mode = $('#range').value;
   let cs = null;
-  try { cs = await import('./charsets.js?v=e391b02'); } catch {}
+  try { cs = await import('./charsets.js?v=fb9613f'); } catch {}
   if (mode === '11172') {
     if (cs?.all11172) return listOf(typeof cs.all11172 === 'function' ? cs.all11172() : cs.all11172);
     const out = [];
@@ -568,7 +568,7 @@ async function doUFO() {
     status('만드는 중');
     const chars = await resolveChars();
     const [{ buildUFO }, { makeZip }] = await Promise.all([
-      import('./export-ufo.js?v=e391b02'), import('./zip.js?v=e391b02'),
+      import('./export-ufo.js?v=fb9613f'), import('./zip.js?v=fb9613f'),
     ]);
     const out = await buildUFO(state.P, chars, window.polygonClipping);
     const blob = out instanceof Blob ? out : await makeZip(out);
@@ -584,7 +584,7 @@ async function doOTF() {
     status('만드는 중');
     if (!window.opentype) throw new Error('opentype 없음');
     const chars = await resolveChars();
-    const { buildOTF } = await import('./export-otf.js?v=e391b02');
+    const { buildOTF } = await import('./export-otf.js?v=fb9613f');
     const out = await buildOTF(window.opentype, state.P, chars, window.polygonClipping);
     download(out instanceof Blob ? out : new Blob([out]), `${state.P.meta.id}.otf`);
     status('');
