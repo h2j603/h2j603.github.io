@@ -1,20 +1,20 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=38235b9';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=38235b9';
-import { filletPatches } from './fillet.js?v=38235b9';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=e29a7a4';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=e29a7a4';
+import { filletPatches } from './fillet.js?v=e29a7a4';
 
 const DBL = 'ㅐㅒㅔㅖㅙㅞ'; // 두 기둥 모음: vowel.dblThin 이 기둥(세로획) 가로 너비만 줄인다
 const isVert = (q) => q.t === 'line' && q.pts.length === 2 && Math.abs(q.pts[0][0] - q.pts[1][0]) < 1e-6;
 
 // 종성 y 고정 기준(로컬 y-아래): 이 글자의 모음과 무관하게 '알'의 받침 자리 = 초성 아래끝 · 세로 기둥 아래끝 중 아래
-// ㅎ 시각 보정: ㅎ 전체를 아래끝 고정으로 위로 d 만큼 늘린다(꼭지·가로획·원 모두 비례). 정렬이 끝난 뒤라 윗선 위로 튀어나온다
-function stretchH(prims, d) {
+// ㅎ 시각 보정: ㅎ 전체(꼭지·가로획·원)를 위로 up, 아래로 down 만큼 비례해 늘린다. 정렬이 끝난 뒤라 윗선·아랫선 밖으로 넘친다
+function stretchH(prims, up, down) {
   const hs = prims.filter((q) => q.hJ);
-  if (!d || !hs.length) return;
+  if (!(up || down) || !hs.length) return;
   const ys = hs.flatMap((q) => (q.t === 'line' ? q.pts.map((p) => p[1]) : [q.cy - (q.sy ?? q.s) / 2, q.cy + (q.sy ?? q.s) / 2]));
-  const yt = Math.min(...ys), yb = Math.max(...ys), f = (yb - yt + d) / (yb - yt);
-  const Y = (y) => yb - (yb - y) * f;
+  const yt = Math.min(...ys), yb = Math.max(...ys), f = (yb - yt + up + down) / (yb - yt);
+  const Y = (y) => yb + down - (yb - y) * f;
   for (const q of hs) {
     if (q.t === 'line') q.pts = q.pts.map(([x, y]) => [x, Y(y)]);
     else { q.cy = Y(q.cy); q.sy = (q.sy ?? q.s) * f; }
@@ -303,15 +303,16 @@ export function layoutSyllable(P, char, opt = {}) {
       const ins = inscribed([x0, y0, x1, y1], q.va);
       if (ell) {
         const [ncx, ncy] = rot(ins.cx, ins.cy);
-        return { t: 'circle', cx: ncx, cy: ncy, s: x1 - x0, sy: y1 - y0 + ov, ...(q.hJ ? { hJ: true } : {}) };
+        return { t: 'circle', cx: ncx, cy: ncy, s: x1 - x0, sy: y1 - y0 + (q.hJ ? 0 : ov), ...(q.hJ ? { hJ: true } : {}) };
       }
       const [ncx, ncy] = rot(ins.cx, ins.cy);
       const changed = Math.abs(ins.set.w - ins.set.h) > 0.5 || (q.t === 'square' && Math.abs(ang) > 1e-6);
       if (changed) constraints.push({ slot: p.slot, jamo: p.jamo, shape: q.t, set: { w: +ins.set.w.toFixed(1), h: +ins.set.h.toFixed(1), rotate: +(ang * 180 / Math.PI).toFixed(2) }, drawn: { side: +ins.s.toFixed(1), rotate: 0 } });
       const hj = q.hJ ? { hJ: true } : {};
-      return q.t === 'circle' && ov ? { t: 'circle', cx: ncx, cy: ncy, s: ins.s, sy: ins.s + ov, ...hj } : { t: q.t, cx: ncx, cy: ncy, s: ins.s, ...hj };
+      return q.t === 'circle' && ov && !q.hJ ? { t: 'circle', cx: ncx, cy: ncy, s: ins.s, sy: ins.s + ov, ...hj } : { t: q.t, cx: ncx, cy: ncy, s: ins.s, ...hj };
     });
-    stretchH(prims, P.cons.hTickOver || 0);
+    // ㅎ 은 원만이 아니라 글자 전체가 넘친다: 위 = ㅇ 넘침 + ㅎ 위로 늘림, 아래 = ㅇ 넘침
+    stretchH(prims, (P.cons.ngOver || 0) + (P.cons.hTickOver || 0), P.cons.ngOver || 0);
     return { slot: p.slot, jamo: p.jamo, prims };
   });
 
