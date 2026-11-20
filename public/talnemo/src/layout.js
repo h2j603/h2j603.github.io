@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=a71e032';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=a71e032';
-import { filletPatches } from './fillet.js?v=a71e032';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=349bc6d';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=349bc6d';
+import { filletPatches } from './fillet.js?v=349bc6d';
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -241,7 +241,7 @@ export function layoutSyllable(P, char, opt = {}) {
       if (q.t === 'line') return { t: 'line', pts: q.pts.map(([x, y]) => rot(...T(x, y))) };
       // 정원·정사각형: 상자를 비균등 변환한 뒤 내접 도형으로 다시 그린다. 회전은 받지 않고 이동만 받는다
       const [x0, y0] = T(q.box[0], q.box[1]), [x1, y1] = T(q.box[2], q.box[3]);
-      const ell = q.t === 'circle' && p.jamo === 'ㅇ' && P.cons.ngRound === false;
+      const ell = q.t === 'circle' && /[ㅇㅎㄶㅀ]/.test(p.jamo) && P.cons.ngRound === false; // ㅎ의 원도 ㅇ처럼 상자 폭에 맞춘 타원
       const ins = inscribed([x0, y0, x1, y1], q.va);
       if (ell) {
         const [ncx, ncy] = rot(ins.cx, ins.cy);

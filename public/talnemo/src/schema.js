@@ -24,7 +24,7 @@ export const DEFAULTS = {
     strokeMin: 1,        // 획수 기반 크기: 1획 자음 배율(4획 = 1). 1 = 끔. ㅇ은 예외
     strokeAxis: 'both',  // 획수 크기를 적용할 방향: both | w | h
     ngShape: 'ring',     // ㅇ 모양: ring(고리) | dot(점)
-    ngRound: true,       // ㅇ 정원 유지. false 면 폭 = 다른 자음 폭(cons.w), 높이 = ㅇ 기준 → 타원
+    ngRound: true,       // ㅇ·ㅎ 정원 유지. false 면 ㅇ 폭 = 다른 자음 폭(cons.w), 높이 = ㅇ 기준 → 타원. ㅎ 원도 상자 폭에 맞춘 타원
     ngDot: 0.5,          // 점 ㅇ 지름(상자 한 변 대비)
     pairW: 1.5,          // 겹자음 전체 너비 = w × pairW
     pairGap: 30,         // 겹자음 두 자소 사이
