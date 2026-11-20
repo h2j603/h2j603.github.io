@@ -1,9 +1,9 @@
 // CFF(OTF) 내보내기. opentype.js 를 인자로 받는다(브라우저·Node 공용).
 // 자소는 로컬 좌표 그대로(components 없이), 음절은 외곽선을 펼쳐 넣는다.
-import { CHO, JUNG, JONG, glyphName, jamoUnicode } from './jamo.js?v=38235b9';
-import { layoutSyllable, layoutJamo } from './layout.js?v=38235b9';
-import { localPart } from './export-ufo.js?v=38235b9';
-import { mergeContours } from './merge.js?v=38235b9';
+import { CHO, JUNG, JONG, glyphName, jamoUnicode } from './jamo.js?v=e29a7a4';
+import { layoutSyllable, layoutJamo } from './layout.js?v=e29a7a4';
+import { localPart } from './export-ufo.js?v=e29a7a4';
+import { mergeContours } from './merge.js?v=e29a7a4';
 
 export function buildOTF(opentype, P, chars, pc) {
   const { Path, Glyph, Font } = opentype;
