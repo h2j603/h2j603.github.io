@@ -341,3 +341,34 @@ summary {
 
 .ctrl[hidden] { display: none; }
 .seg button:disabled { opacity: 0.3; }
+
+/* 폰: 위 = 글자(고정), 아래 = 슬라이더(따로 스크롤). 페이지 전체는 스크롤하지 않는다 */
+@media (max-width: 760px) {
+  body {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .stage {
+    flex: 0 0 auto;
+    max-height: 52dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-bottom: 1px solid var(--line);
+  }
+  .sample { height: auto; min-height: 24dvh; overflow-y: visible; }
+  .panel {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-top: 0;
+  }
+}
