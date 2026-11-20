@@ -1,8 +1,8 @@
 // 탈네모 프로토타이퍼 UI. 값과 결과만 보여 준다. 조형 판단은 사용자 몫.
-import { DEFAULTS, CONTROLS, SHIFT_CASES, shiftCase, pruneUnknown, getPath, setPath, merge, resolvePreset } from './schema.js?v=6fd3df6';
-import { layoutSyllable, layoutJamo } from './layout.js?v=6fd3df6';
-import { contourToPathD } from './outline.js?v=6fd3df6';
-import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=6fd3df6';
+import { DEFAULTS, CONTROLS, SHIFT_CASES, shiftCase, pruneUnknown, getPath, setPath, merge, resolvePreset } from './schema.js?v=fa86fac';
+import { layoutSyllable, layoutJamo } from './layout.js?v=fa86fac';
+import { contourToPathD } from './outline.js?v=fa86fac';
+import { CHO, JUNG, JONG, VCLASS, decompose } from './jamo.js?v=fa86fac';
 
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -133,7 +133,7 @@ function skeletonHTML(parts) {
       const pts = k.pts.map(([x, y]) => `${x.toFixed(1)},${(a - y).toFixed(1)}`).join(' ');
       out += `<polyline points="${pts}" fill="none" stroke="#1F3BFF" stroke-width="1.5"/>`;
     } else if (k.t === 'circle') {
-      out += `<circle cx="${k.c[0].toFixed(1)}" cy="${(a - k.c[1]).toFixed(1)}" r="${(k.d / 2).toFixed(1)}" fill="none" stroke="#1F3BFF" stroke-width="1.5"/>`;
+      out += `<ellipse cx="${k.c[0].toFixed(1)}" cy="${(a - k.c[1]).toFixed(1)}" rx="${(k.d / 2).toFixed(1)}" ry="${((k.dy ?? k.d) / 2).toFixed(1)}" fill="none" stroke="#1F3BFF" stroke-width="1.5"/>`;
     } else if (k.t === 'square') {
       const x = k.c[0] - k.d / 2, y = a - k.c[1] - k.d / 2;
       out += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${k.d.toFixed(1)}" height="${k.d.toFixed(1)}" fill="none" stroke="#1F3BFF" stroke-width="1.5"/>`;
@@ -534,7 +534,7 @@ const listOf = (x) => (typeof x === 'string' ? [...x] : x);
 async function resolveChars() {
   const mode = $('#range').value;
   let cs = null;
-  try { cs = await import('./charsets.js?v=6fd3df6'); } catch {}
+  try { cs = await import('./charsets.js?v=fa86fac'); } catch {}
   if (mode === '11172') {
     if (cs?.all11172) return listOf(typeof cs.all11172 === 'function' ? cs.all11172() : cs.all11172);
     const out = [];
@@ -567,7 +567,7 @@ async function doUFO() {
     status('만드는 중');
     const chars = await resolveChars();
     const [{ buildUFO }, { makeZip }] = await Promise.all([
-      import('./export-ufo.js?v=6fd3df6'), import('./zip.js?v=6fd3df6'),
+      import('./export-ufo.js?v=fa86fac'), import('./zip.js?v=fa86fac'),
     ]);
     const out = await buildUFO(state.P, chars, window.polygonClipping);
     const blob = out instanceof Blob ? out : await makeZip(out);
@@ -583,7 +583,7 @@ async function doOTF() {
     status('만드는 중');
     if (!window.opentype) throw new Error('opentype 없음');
     const chars = await resolveChars();
-    const { buildOTF } = await import('./export-otf.js?v=6fd3df6');
+    const { buildOTF } = await import('./export-otf.js?v=fa86fac');
     const out = await buildOTF(window.opentype, state.P, chars, window.polygonClipping);
     download(out instanceof Blob ? out : new Blob([out]), `${state.P.meta.id}.otf`);
     status('');
