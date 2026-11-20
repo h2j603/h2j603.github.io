@@ -1,8 +1,8 @@
 // 배치 규칙: (초성, 중성, 종성) → 자리마다 상자·골격 → 외곽선.
 // 계산은 y-아래 로컬 좌표, 마지막에 폰트 좌표(y-위)로 바꾼다.
-import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=63dc5b2';
-import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=63dc5b2';
-import { filletPatches } from './fillet.js?v=63dc5b2';
+import { STROKES, SIMPLE, PAIR, SQUARE_JAMO, VCLASS, COMPOUND, verticalVowel, horizontalVowel, decompose } from './jamo.js?v=6fd3df6';
+import { strokeOpen, strokeClosed, strokeCircle, mapContour, reverseContour } from './outline.js?v=6fd3df6';
+import { filletPatches } from './fillet.js?v=6fd3df6';
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -112,6 +112,13 @@ export function layoutSyllable(P, char, opt = {}) {
 
   // 초성
   const cs = consSize(P, cho, 'cho', mods.cho);
+  // 가로모음+받침: 초성+가로모음 덩어리 높이를 초성+세로모음 덩어리 높이와 같게(초성 높이를 줄인다)
+  if (vclass === 'H' && jong && pl.hJongFit) {
+    const hv0 = horizontalVowel(jung, { bar: V.bar, tick: V.tick, tickX: V.tickX, tickGap: V.tickGap });
+    const top = Math.min(0, pl.vY), vBottom = Math.max(cs.h, pl.vY + V.stem + wt);
+    const h = Math.max(wt * 2, vBottom - top - pl.gapCH - hv0.h - wt);
+    if (h < cs.h) { if (Math.abs(cs.w - cs.h) < 1e-6) cs.w = h; cs.h = h; }
+  }
   const choBox = { x: mods.cho.dx || 0, y: mods.cho.dy || 0, ...cs };
 
   // 중성
