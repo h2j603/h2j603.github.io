@@ -26,6 +26,7 @@ export const DEFAULTS = {
     ngShape: 'ring',     // ㅇ 모양: ring(고리) | dot(점)
     ngRound: true,       // ㅇ·ㅎ 정원 유지. false 면 ㅇ 폭 = 다른 자음 폭(cons.w), 높이 = ㅇ 기준 → 타원. ㅎ 원도 상자 폭에 맞춘 타원
     ngDot: 0.5,          // 점 ㅇ 지름(상자 한 변 대비)
+    ngOver: 0,           // ㅇ·ㅎ 원 시각 보정(유닛): 위아래로 각각 이만큼 넘친다. 둥근 획이 같은 높이의 각진 획보다 작아 보이는 착시 보정
     pairW: 1.5,          // 겹자음 전체 너비 = w × pairW
     pairGap: 30,         // 겹자음 두 자소 사이
   },
@@ -109,6 +110,7 @@ export const CONTROLS = [
   { g: '자음', k: 'cons.ngShape', opts: ['ring', 'dot'], label: 'ㅇ 모양' },
   { g: '자음', k: 'cons.ngRound', opts: [true, false], label: 'ㅇ 정원' },
   { g: '자음', k: 'cons.ngDot', min: 0.15, max: 1, step: 0.01, label: '점 ㅇ 크기' },
+  { g: '자음', k: 'cons.ngOver', min: 0, max: 40, step: 1, label: 'ㅇ 위아래 넘침' },
   { g: '자음', k: 'jong.squareRef', opts: ['same', 'h', 'w', 'min', 'bar'], label: '종성 ㅇㅁ 기준' },
   { g: '자음', k: 'jong.ngShape', opts: ['same', 'ring', 'dot'], label: '종성 ㅇ 모양' },
   { g: '자음', k: 'cons.pairW', min: 1, max: 2.2, step: 0.01, label: '겹자음 너비' },
